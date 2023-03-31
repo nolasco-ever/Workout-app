@@ -15,6 +15,7 @@ import { Button } from './components/buttons/button';
 import { CustomTextInput } from './components/text-input/customTextInput';
 import { CustomText } from './components/text/customText';
 import { generalIcons } from './components/icons/icon-library';
+import { UserCardHeader } from './components/cards/userCardHeader';
 
 const App = () => {
   const appColors = colors();
@@ -33,6 +34,10 @@ const App = () => {
         contentInsetAdjustmentBehavior="automatic"
         style={[backgroundStyle]}
       >
+        <UserCardHeader
+          profilePhoto='https://picsum.photos/200'
+          welcomeMessage='Welcome back, Ever!'
+        />
         <View>
           <CustomText type='header' centered>Header Text</CustomText>
           <CustomText type='subheader' centered>Subheader text</CustomText>
