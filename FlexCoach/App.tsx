@@ -14,12 +14,14 @@ import {
 } from 'react-native/Libraries/NewAppScreen';
 import { colors } from './colors';
 import { Button } from './components/buttons/button';
+import { CustomText } from './components/text/customText';
 
 const App = () => {
   const appColors = colors();
 
   const backgroundStyle = {
     backgroundColor: appColors.background,
+    padding: 10
   };
 
   return (
@@ -27,8 +29,13 @@ const App = () => {
       <ScrollView
         contentInsetAdjustmentBehavior="automatic"
         style={backgroundStyle}
-        contentContainerStyle={{alignItems: 'center'}}
       >
+        <View>
+          <CustomText type='header' centered>Header Text</CustomText>
+          <CustomText type='subheader' centered>Subheader text</CustomText>
+          <CustomText>This is just body text. We'll see how this looks</CustomText>
+        </View>
+        <View style={{alignItems: 'center'}}>
           <Button
             onPress={() => console.log('primary button pressed')}
             title="Primary button"
@@ -39,6 +46,7 @@ const App = () => {
             title="Secondary button"
             isPrimary={false}
           />
+        </View>
       </ScrollView>
     </SafeAreaView>
   );
