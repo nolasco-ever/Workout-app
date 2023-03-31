@@ -1,4 +1,4 @@
-import React, {type PropsWithChildren} from 'react';
+import React, {useState, type PropsWithChildren} from 'react';
 import {
   SafeAreaView,
   ScrollView,
@@ -9,12 +9,12 @@ import {
   View,
 } from 'react-native';
 
-import {
-  Colors
-} from 'react-native/Libraries/NewAppScreen';
+import './components/icons/fontawesome';
 import { colors } from './colors';
 import { Button } from './components/buttons/button';
+import { CustomTextInput } from './components/text-input/customTextInput';
 import { CustomText } from './components/text/customText';
+import { generalIcons } from './components/icons/icon-library';
 
 const App = () => {
   const appColors = colors();
@@ -24,16 +24,36 @@ const App = () => {
     padding: 10
   };
 
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+
   return (
-    <SafeAreaView style={backgroundStyle}>
+    <SafeAreaView style={[backgroundStyle, {display: 'flex', flex: 1}]}>
       <ScrollView
         contentInsetAdjustmentBehavior="automatic"
-        style={backgroundStyle}
+        style={[backgroundStyle]}
       >
         <View>
           <CustomText type='header' centered>Header Text</CustomText>
           <CustomText type='subheader' centered>Subheader text</CustomText>
           <CustomText>This is just body text. We'll see how this looks</CustomText>
+        </View>
+        <View>
+        <View style={{alignItems: 'center'}}>
+          <CustomTextInput
+            icon={generalIcons.envelope}
+            placeholder="Email"
+            value={email}
+            onChangeText={setEmail}
+          />
+          <CustomTextInput
+            icon={generalIcons.key}
+            placeholder="Password"
+            value={password}
+            onChangeText={setPassword}
+            isPassword
+          />
+        </View>
         </View>
         <View style={{alignItems: 'center'}}>
           <Button
