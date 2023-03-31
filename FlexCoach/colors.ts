@@ -5,6 +5,7 @@ const isLightMode = false;
 const darkModeColors = {
     background: '#1a1a1a',
     text: '#ffffff',
+    onPrimaryText: '#ffffff',
     subtext: '#a2a2a2',
     primary: '#0e4c92',
     secondary: '#87cefa',
@@ -16,6 +17,7 @@ const darkModeColors = {
 const lightModeColors = {
     background: '#f4f4f4',
     text: '#262626',
+    onPrimaryText: '#ffffff',
     subtext: '#6f6f6f',
     primary: '#001f54',
     secondary: '#87cefa',
@@ -31,6 +33,7 @@ export const colors = () => {
     return {
         background: isLightMode ? lightModeColors.background : darkModeColors.background,
         text: isLightMode ? lightModeColors.text : darkModeColors.text,
+        onPrimaryText: isLightMode ? lightModeColors.onPrimaryText : darkModeColors.onPrimaryText,
         subtext: isLightMode ? lightModeColors.subtext : darkModeColors.subtext,
         primary: isLightMode ? lightModeColors.primary : darkModeColors.primary,
         secondary: isLightMode ? lightModeColors.secondary : darkModeColors.secondary,
