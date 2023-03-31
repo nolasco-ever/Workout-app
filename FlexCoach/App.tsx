@@ -16,6 +16,7 @@ import { CustomTextInput } from './components/text-input/customTextInput';
 import { CustomText } from './components/text/customText';
 import { generalIcons } from './components/icons/icon-library';
 import { UserCardHeader } from './components/cards/userCardHeader';
+import { NotificationButton } from './components/buttons/notificationButton';
 
 const App = () => {
   const appColors = colors();
@@ -37,6 +38,10 @@ const App = () => {
         <UserCardHeader
           profilePhoto='https://picsum.photos/200'
           welcomeMessage='Welcome back, Ever!'
+        />
+        <NotificationButton
+          unseenNotifications={true}
+          onPress={() => console.log('pressed')}
         />
         <View>
           <CustomText type='header' centered>Header Text</CustomText>
