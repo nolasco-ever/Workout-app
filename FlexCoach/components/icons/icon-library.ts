@@ -1,0 +1,37 @@
+import { IconProp } from "@fortawesome/fontawesome-svg-core";
+
+export const directionIcons = {
+    angleDown: 'fa-solid fa-angle-down',
+    angleLeft: 'fa-solid fa-angle-left',
+    angleRight: 'fa-solid fa-angle-right',
+    angleUp: 'fa-solid fa-angle-up',
+    leftCaret: 'fa-solid fa-caret-left',
+    rightArrow: 'fa-solid fa-circle-arrow-right',
+    rightCaret: 'fa-solid fa-caret-right',
+  };
+  
+  export const generalIcons = {
+    bulletPoint: 'fa-solid fa-circle',
+    comment: 'fa-solid fa-comment',
+    dollar: 'fa-solid fa-dollar-sign',
+    ellipsis: 'fa-solid fa-ellipsis',
+    envelope: 'fa-solid fa-envelope',
+    error: 'fa-solid fa-triangle-exclamation',
+    eye: 'fa-solid fa-eye',
+    eyeSlash: 'fa-solid fa-eye-slash',
+    gear: 'fa-solid fa-gear',
+    heart: 'fa-solid fa-heart',
+    key: 'fa-solid fa-key',
+    list: 'fa-solid fa-list-ul',
+    moneyBills: 'fa-solid fa-money-bills',
+    penToSquare: 'fa-solid fa-pen-to-square',
+    plus: 'fa-solid fa-plus',
+    signOut: 'fa-solid fa-right-from-bracket',
+    user: 'fa-solid fa-user',
+    xMark: 'fa-solid fa-xmark',
+  };
+  
+  
+  
+  
+  
