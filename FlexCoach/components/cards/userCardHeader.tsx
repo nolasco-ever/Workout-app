@@ -1,10 +1,14 @@
 import React from 'react';
 import { View, Text, Image, StyleSheet } from 'react-native';
+import { NotificationButton } from '../buttons/notificationButton';
+import { colors } from '../../colors';
 
 interface UserCardHeaderProps {
     profilePhoto: string;
     welcomeMessage: string;
 }
+
+const appColors = colors();
 
 export const UserCardHeader = ({ profilePhoto, welcomeMessage }: UserCardHeaderProps) => {
     const currentDate = new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' });
@@ -19,6 +23,10 @@ export const UserCardHeader = ({ profilePhoto, welcomeMessage }: UserCardHeaderP
         <Text style={styles.welcomeMessage}>{welcomeMessage}</Text>
         <Text style={styles.currentDate}>{currentDate}</Text>
       </View>
+      <NotificationButton
+        unseenNotifications={true}
+        onPress={() => console.log('pressed')}
+      />
     </View>
   );
 };
@@ -26,7 +34,7 @@ export const UserCardHeader = ({ profilePhoto, welcomeMessage }: UserCardHeaderP
 const styles = StyleSheet.create({
   container: {
     flexDirection: 'row',
-    alignItems: 'center',
+    alignItems: 'center'
   },
   imageContainer: {
     margin: 10,
@@ -45,11 +53,12 @@ const styles = StyleSheet.create({
   },
   welcomeMessage: {
     fontSize: 12,
-    color: 'gray',
+    color: appColors.subtext,
     marginBottom: 5,
   },
   currentDate: {
     fontWeight: 'bold',
     fontSize: 16,
+    color: appColors.text
   },
 });

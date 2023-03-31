@@ -39,10 +39,6 @@ const App = () => {
           profilePhoto='https://picsum.photos/200'
           welcomeMessage='Welcome back, Ever!'
         />
-        <NotificationButton
-          unseenNotifications={true}
-          onPress={() => console.log('pressed')}
-        />
         <View>
           <CustomText type='header' centered>Header Text</CustomText>
           <CustomText type='subheader' centered>Subheader text</CustomText>

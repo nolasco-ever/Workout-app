@@ -25,7 +25,7 @@ export const CustomTextInput = ({ icon, placeholder, isPassword, value, onChange
   }
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, {borderColor: isFocused ? appColors.accent : appColors.subtext}]}>
       {icon && (
         <FontAwesomeIcon
             icon={icon as IconProp}
@@ -62,11 +62,7 @@ const styles = StyleSheet.create({
         backgroundColor: appColors.background,
         borderRadius: 5,
         padding: 10,
-        shadowColor: appColors.text,
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.2,
-        shadowRadius: 2,
-        elevation: 2,
+        borderWidth: 1,
         margin: 5
       },
   input: {
