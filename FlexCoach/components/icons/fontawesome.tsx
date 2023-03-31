@@ -49,7 +49,8 @@ import {
     faEllipsis, 
     faAngleLeft,
     faEye,
-    faEyeSlash
+    faEyeSlash,
+    faBell
 } from '@fortawesome/free-solid-svg-icons';
 
 library.add(
@@ -101,5 +102,6 @@ library.add(
     faEllipsis, 
     faAngleLeft,
     faEye,
-    faEyeSlash
+    faEyeSlash,
+    faBell
 );

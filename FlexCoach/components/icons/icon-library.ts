@@ -11,6 +11,7 @@ export const directionIcons = {
   };
   
   export const generalIcons = {
+    bell: 'fa-solid fa-bell',
     bulletPoint: 'fa-solid fa-circle',
     comment: 'fa-solid fa-comment',
     dollar: 'fa-solid fa-dollar-sign',
