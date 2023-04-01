@@ -35,13 +35,13 @@ export const NotificationButton = ({ unseenNotifications, onPress }: Notificatio
 
 const styles = StyleSheet.create({
   container: {
-    width: 50,
-    height: 50,
+    width: 40,
+    height: 40,
     margin: 10
   },
   iconContainer: {
-    width: 50,
-    height: 50,
+    width: 40,
+    height: 40,
     borderWidth: 0.5,
     borderColor: appColors.subtext,
     borderRadius: 50,
