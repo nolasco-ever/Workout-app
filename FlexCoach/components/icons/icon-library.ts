@@ -31,6 +31,13 @@ export const directionIcons = {
     user: 'fa-solid fa-user',
     xMark: 'fa-solid fa-xmark',
   };
+
+  export const tabIcons = {
+    home: 'fa-solid fa-house',
+    stats: 'fa-solid fa-chart-line',
+    social: 'fa-solid fa-face-smile',
+    profile: 'fa-solid fa-user'
+  }
   
   
   

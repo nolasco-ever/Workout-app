@@ -50,7 +50,9 @@ import {
     faAngleLeft,
     faEye,
     faEyeSlash,
-    faBell
+    faBell,
+    faUsers,
+    faSmile
 } from '@fortawesome/free-solid-svg-icons';
 
 library.add(
@@ -103,5 +105,7 @@ library.add(
     faAngleLeft,
     faEye,
     faEyeSlash,
-    faBell
+    faBell,
+    faUsers,
+    faSmile
 );

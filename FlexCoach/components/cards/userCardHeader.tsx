@@ -33,6 +33,7 @@ export const UserCardHeader = ({ profilePhoto, welcomeMessage }: UserCardHeaderP
 
 const styles = StyleSheet.create({
   container: {
+    backgroundColor: appColors.background,
     flexDirection: 'row',
     alignItems: 'center'
   },
@@ -42,8 +43,8 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
   },
   image: {
-    width: 50,
-    height: 50,
+    width: 40,
+    height: 40,
   },
   textContainer: {
     flex: 1,
