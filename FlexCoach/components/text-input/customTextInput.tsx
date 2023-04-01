@@ -13,10 +13,9 @@ interface CustomTextInputProps {
   onChangeText?: (text: string) => void;
 }
 
-const appColors = colors();
-const screenWidth = Dimensions.get('window').width;
-
 export const CustomTextInput = ({ icon, placeholder, isPassword, value, onChangeText }: CustomTextInputProps) => {
+  const appColors = colors();
+  const screenWidth = Dimensions.get('window').width;
   const [showPassword, setShowPassword] = useState(false);
   const [isFocused, setIsFocused] = useState(false);
 
@@ -25,7 +24,16 @@ export const CustomTextInput = ({ icon, placeholder, isPassword, value, onChange
   }
 
   return (
-    <View style={[styles.container, {borderColor: isFocused ? appColors.accent : appColors.subtext}]}>
+    <View 
+      style={[
+        styles.container, 
+        {
+          borderColor: isFocused ? appColors.accent : appColors.subtext, 
+          width: screenWidth - 40, 
+          backgroundColor: appColors.background
+        }
+      ]}
+    >
       {icon && (
         <FontAwesomeIcon
             icon={icon as IconProp}
@@ -55,11 +63,9 @@ export const CustomTextInput = ({ icon, placeholder, isPassword, value, onChange
 
 const styles = StyleSheet.create({
     container: {
-        width: screenWidth - 40,
         height: 50,
         flexDirection: 'row',
         alignItems: 'center',
-        backgroundColor: appColors.background,
         borderRadius: 5,
         padding: 10,
         borderWidth: 1,

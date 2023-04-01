@@ -8,20 +8,19 @@ interface UserCardHeaderProps {
     welcomeMessage: string;
 }
 
-const appColors = colors();
-
 export const UserCardHeader = ({ profilePhoto, welcomeMessage }: UserCardHeaderProps) => {
+    const appColors = colors();
     const currentDate = new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' });
 
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, {backgroundColor: appColors.background}]}>
       <View style={styles.imageContainer}>
         <Image source={{ uri: profilePhoto }} style={styles.image} />
       </View>
       <View style={styles.textContainer}>
-        <Text style={styles.welcomeMessage}>{welcomeMessage}</Text>
-        <Text style={styles.currentDate}>{currentDate}</Text>
+        <Text style={[styles.welcomeMessage, {color: appColors.subtext}]}>{welcomeMessage}</Text>
+        <Text style={[styles.currentDate, {color: appColors.text}]}>{currentDate}</Text>
       </View>
       <NotificationButton
         unseenNotifications={true}
@@ -33,7 +32,6 @@ export const UserCardHeader = ({ profilePhoto, welcomeMessage }: UserCardHeaderP
 
 const styles = StyleSheet.create({
   container: {
-    backgroundColor: appColors.background,
     flexDirection: 'row',
     alignItems: 'center'
   },
@@ -54,12 +52,10 @@ const styles = StyleSheet.create({
   },
   welcomeMessage: {
     fontSize: 12,
-    color: appColors.subtext,
     marginBottom: 5,
   },
   currentDate: {
     fontWeight: 'bold',
-    fontSize: 16,
-    color: appColors.text
+    fontSize: 16
   },
 });

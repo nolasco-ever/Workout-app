@@ -10,10 +10,9 @@ interface NotificationButtonProps {
   onPress: () => void;
 }
 
-const screenWidth = Dimensions.get('window').width;
-const appColors = colors();
-
 export const NotificationButton = ({ unseenNotifications, onPress }: NotificationButtonProps) => {
+  const screenWidth = Dimensions.get('window').width;
+  const appColors = colors();
   const [showIndicator, setShowIndicator] = useState(unseenNotifications);
 
   const toggleIndicator = () => {
@@ -22,28 +21,36 @@ export const NotificationButton = ({ unseenNotifications, onPress }: Notificatio
   };
 
   return (
-    <TouchableOpacity style={styles.container} onPress={toggleIndicator}>
-      <View style={styles.iconContainer}>
+    <TouchableOpacity 
+      style={{
+        width: screenWidth / 10,
+        height: screenWidth / 10,
+        margin: 10
+      }} 
+      onPress={toggleIndicator}
+    >
+      <View 
+        style={[
+          styles.iconContainer, 
+          {
+            borderColor: appColors.subtext, 
+            width: screenWidth / 10,
+            height: screenWidth / 10
+          }
+        ]}
+      >
         <View>
           <FontAwesomeIcon icon={generalIcons.bell as IconProp} size={20} color={appColors.text} />
         </View>
-        {showIndicator && <View style={styles.notificationIndicator} />}
+        {showIndicator && <View style={[styles.notificationIndicator, {backgroundColor: appColors.accent}]} />}
       </View>
     </TouchableOpacity>
   );
 };
 
 const styles = StyleSheet.create({
-  container: {
-    width: 40,
-    height: 40,
-    margin: 10
-  },
   iconContainer: {
-    width: 40,
-    height: 40,
     borderWidth: 0.5,
-    borderColor: appColors.subtext,
     borderRadius: 50,
     alignItems: 'center',
     justifyContent: 'center',
@@ -53,7 +60,6 @@ const styles = StyleSheet.create({
     position: 'absolute',
     top: '20%',
     right: '20%',
-    backgroundColor: appColors.accent,
     borderRadius: 50,
     width: 10,
     height: 10,

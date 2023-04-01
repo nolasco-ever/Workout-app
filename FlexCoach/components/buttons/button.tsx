@@ -8,12 +8,30 @@ interface ButtonProps {
   isPrimary: boolean;
 }
 
-const screenWidth = Dimensions.get('window').width;
-const appColors = colors();
-
 export const Button = ({ onPress, title, isPrimary }: ButtonProps) => {
-  const buttonStyle = isPrimary ? styles.primaryButton : styles.secondaryButton;
-  const buttonTextStyle = isPrimary ? styles.primaryButtonText : styles.secondaryButtonText;
+  const screenWidth = Dimensions.get('window').width;
+  const appColors = colors();
+
+  const buttonStyle = isPrimary ? 
+    {
+      width: screenWidth - 40,
+      backgroundColor: appColors.primary,
+    } : 
+      {
+        width: screenWidth - 40,
+        backgroundColor: 'transparent',
+        borderWidth: 2,
+        borderColor: appColors.accent,
+      };
+
+  const buttonTextStyle = isPrimary ? 
+    {
+      color: appColors.onPrimaryText,
+    } : 
+      {
+        color: appColors.accent,
+      };
+      
   return (
     <TouchableOpacity onPress={onPress} style={[styles.button, buttonStyle]}>
       <Text style={[styles.buttonText, buttonTextStyle]}>{title}</Text>
@@ -24,7 +42,6 @@ export const Button = ({ onPress, title, isPrimary }: ButtonProps) => {
 const styles = StyleSheet.create({
   button: {
     height: 50,
-    width: screenWidth - 40,
     borderRadius: 10,
     justifyContent: 'center',
     alignItems: 'center',
@@ -33,19 +50,5 @@ const styles = StyleSheet.create({
   buttonText: {
     fontSize: 18,
     fontWeight: 'bold',
-  },
-  primaryButton: {
-    backgroundColor: appColors.primary,
-  },
-  primaryButtonText: {
-    color: appColors.onPrimaryText,
-  },
-  secondaryButton: {
-    backgroundColor: 'transparent',
-    borderWidth: 2,
-    borderColor: appColors.accent,
-  },
-  secondaryButtonText: {
-    color: appColors.accent,
   },
 });

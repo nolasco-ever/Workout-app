@@ -11,10 +11,9 @@ interface DayCardProps {
     onPress: () => void;
 }
 
-const appColors = colors();
-const screenWidth = Dimensions.get('window').width;
-
 export const DayCard = ({ number, dayName, isToday, isSelected, onPress }: DayCardProps) => {
+    const appColors = colors();
+    const screenWidth = Dimensions.get('window').width;
     return (
         <View style={styles.wrapper}>
             <TouchableOpacity onPress={onPress}>
@@ -22,6 +21,7 @@ export const DayCard = ({ number, dayName, isToday, isSelected, onPress }: DayCa
                     style={[
                         styles.container, 
                         {
+                            height: screenWidth / 5,
                             backgroundColor: isSelected ? appColors.primary : appColors.background,
                             borderWidth: isSelected ? 0 : 1,
                             borderColor: appColors.inactive
@@ -30,7 +30,18 @@ export const DayCard = ({ number, dayName, isToday, isSelected, onPress }: DayCa
                 >
                     <Text style={[styles.number, {color: isSelected ? appColors.onPrimaryText : appColors.inactive}]}>{number}</Text>
                     <Text style={[styles.dayName, {color: isSelected ? appColors.onPrimaryText : appColors.inactive}]}>{dayName}</Text>
-                    {isToday && <View style={styles.indicator}/>}
+                    {isToday && 
+                        <View 
+                            style={[
+                                styles.indicator, 
+                                {
+                                    height: screenWidth / 50,
+                                    width: screenWidth / 50, 
+                                    backgroundColor: appColors.accent
+                                }
+                            ]}
+                        />
+                    }
                 </View>
             </TouchableOpacity>
         </View>
@@ -45,7 +56,6 @@ const styles = StyleSheet.create({
     },
     container: {
         flex: 1,
-        height: screenWidth / 5,
         borderRadius: 20,
         alignItems: 'center',
         justifyContent: 'center',
@@ -59,11 +69,8 @@ const styles = StyleSheet.create({
         fontWeight: 'bold'
     },
     indicator: {
-        height: screenWidth / 50,
-        width: screenWidth / 50,
         borderRadius: 50,
         position: 'absolute',
         bottom: '10%',
-        backgroundColor: appColors.accent
     }
   });

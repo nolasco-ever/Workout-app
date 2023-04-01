@@ -1,13 +1,15 @@
+import React from 'react';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { colors } from '../colors';
 import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
 import { IconProp } from '@fortawesome/fontawesome-svg-core';
 import { appTabs } from '../config/appTabsConfig';
 
-const Tab = createBottomTabNavigator();
-const appColors = colors();
+export const TabNavigator = () => {
+    const Tab = createBottomTabNavigator();
+    const appColors = colors();
 
-export const TabNavigator = () => (
+    return(
     <Tab.Navigator
         screenOptions={() => ({
             headerShown: false,
@@ -32,4 +34,5 @@ export const TabNavigator = () => (
             />
         ))}
     </Tab.Navigator>
-)
+    );
+}

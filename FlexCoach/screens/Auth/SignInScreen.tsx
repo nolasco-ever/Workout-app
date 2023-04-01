@@ -7,11 +7,11 @@ import { CustomText } from '../../components/text/customText';
 type SignInScreenProps = {
     navigation: NavigationProp<ParamListBase>;
   };
-const appColors = colors();
-
+  
 export const SignInScreen = ({ navigation }: SignInScreenProps) => {
+  const appColors = colors();
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={[styles.container, {backgroundColor: appColors.background}]}>
         <TouchableOpacity onPress={() => navigation.navigate('Tabs')}>
         <CustomText type='header' centered>Sign In</CustomText>
         </TouchableOpacity>
@@ -23,12 +23,6 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: appColors.background
-  },
-  text: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    color: appColors.text
-  },
+    alignItems: 'center'
+  }
 });
