@@ -4,6 +4,7 @@ import { colors } from '../../../colors';
 import { WeekHeader } from '../../../components/calendars/weekHeader';
 import { UserCardHeader } from '../../../components/cards/userCardHeader';
 import { CustomText } from '../../../components/text/customText';
+import { NutritionTrackerCard } from '../../../components/cards/nutritionTrackerCard';
 
 export const HomeScreen = () => {
     const appColors = colors();
@@ -14,7 +15,12 @@ export const HomeScreen = () => {
             welcomeMessage='Welcome back, Ever!'
         />
         <ScrollView style={{borderTopWidth: 1, borderColor: appColors.subtext}}>
-            <CustomText type='header' centered>Home</CustomText>
+            <NutritionTrackerCard
+              dailyCalorieGoal={2400}
+              dailyProteinGoal={180}
+              currentCaloriesConsumed={630}
+              currentProteinConsumed={180}
+            />
         </ScrollView>
     </SafeAreaView>
   );
