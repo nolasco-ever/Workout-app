@@ -7,11 +7,6 @@ import { CustomText } from '../../../components/text/customText';
 
 export const HomeScreen = () => {
     const appColors = colors();
-    const [selectedDay, setSelectedDay] = useState(new Date().getDate());
-
-    const handleDayPress = (dayNumber: number) => {
-      setSelectedDay(dayNumber);
-    };
   return (
     <SafeAreaView style={[styles.container, {backgroundColor: appColors.background}]}>
         <UserCardHeader
@@ -19,10 +14,7 @@ export const HomeScreen = () => {
             welcomeMessage='Welcome back, Ever!'
         />
         <ScrollView style={{borderTopWidth: 1, borderColor: appColors.subtext}}>
-            <WeekHeader
-                selectedDay={selectedDay}
-                onDayPress={handleDayPress}
-            />
+            <CustomText type='header' centered>Home</CustomText>
         </ScrollView>
     </SafeAreaView>
   );

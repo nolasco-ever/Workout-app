@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { StyleSheet, View } from 'react-native';
+import { Dimensions, StyleSheet, View } from 'react-native';
 import { DayCard } from './dayCard';
 
 interface WeekHeaderProps {
@@ -8,6 +8,7 @@ interface WeekHeaderProps {
   }
 
 export const WeekHeader = ({selectedDay, onDayPress}: WeekHeaderProps) => {
+  const screenWidth = Dimensions.get('window').width;
   // Create an array of the day names starting from Sunday to Saturday
   const weekDayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
   const daysOfWeek = Array.from({ length: 7 }, (_, i) => {
@@ -23,7 +24,7 @@ export const WeekHeader = ({selectedDay, onDayPress}: WeekHeaderProps) => {
   });
 
   return (
-    <View style={styles.row}>
+    <View style={[styles.row, {height: screenWidth / 5,}]}>
       {daysOfWeek.map(({ dayNumber, dayName, isToday }, index) => (
         <DayCard
             key={index} 

@@ -15,7 +15,7 @@ export const DayCard = ({ number, dayName, isToday, isSelected, onPress }: DayCa
     const appColors = colors();
     const screenWidth = Dimensions.get('window').width;
     return (
-        <View style={styles.wrapper}>
+        <View style={[styles.wrapper, {height: screenWidth / 5,}]}>
             <TouchableOpacity onPress={onPress}>
                 <View 
                     style={[
@@ -55,7 +55,6 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
     },
     container: {
-        flex: 1,
         borderRadius: 20,
         alignItems: 'center',
         justifyContent: 'center',
