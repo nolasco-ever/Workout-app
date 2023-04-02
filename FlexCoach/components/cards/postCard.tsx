@@ -136,7 +136,7 @@ const postCardStyle = StyleSheet.create({
     },
     actionsContainer: {
         flexDirection: 'row',
-        justifyContent: 'space-evenly',
+        justifyContent: 'flex-start',
         padding: 10
     },
     actionItemContainer: {
