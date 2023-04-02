@@ -4,7 +4,9 @@ import { colors } from '../../../colors';
 import { WeekHeader } from '../../../components/calendars/weekHeader';
 import { UserCardHeader } from '../../../components/cards/userCardHeader';
 import { CustomText } from '../../../components/text/customText';
-import { NutritionTrackerCard } from '../../../components/cards/nutritionTrackerCard';
+import { TrackerCard } from '../../../components/cards/trackerCard';
+import { Section } from '../../../components/sections/Section';
+import { generalIcons } from '../../../components/icons/icon-library';
 
 export const HomeScreen = () => {
     const appColors = colors();
@@ -15,12 +17,18 @@ export const HomeScreen = () => {
             welcomeMessage='Welcome back, Ever!'
         />
         <ScrollView style={{borderTopWidth: 1, borderColor: appColors.subtext}}>
-            <NutritionTrackerCard
-              dailyCalorieGoal={2400}
-              dailyProteinGoal={180}
-              currentCaloriesConsumed={1030}
-              currentProteinConsumed={67}
+          <Section title="Nutrition Tracker" icon={generalIcons.heart}>
+            <TrackerCard
+              title='Calories'
+              goalAmount={2400}
+              currentAmount={1030}
             />
+            <TrackerCard
+              title='Protein (g)'
+              goalAmount={180}
+              currentAmount={127}
+            />
+          </Section>
         </ScrollView>
     </SafeAreaView>
   );
