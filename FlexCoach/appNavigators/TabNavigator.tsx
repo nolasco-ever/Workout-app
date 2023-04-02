@@ -4,6 +4,7 @@ import { colors } from '../colors';
 import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
 import { IconProp } from '@fortawesome/fontawesome-svg-core';
 import { appTabs } from '../config/appTabsConfig';
+import { tabIcons } from '../components/icons/icon-library';
 
 export const TabNavigator = () => {
     const Tab = createBottomTabNavigator();
@@ -27,7 +28,7 @@ export const TabNavigator = () => {
                         <FontAwesomeIcon 
                             icon={tab.icon as IconProp}
                             color={focused ? appColors.accent : appColors.inactive}
-                            size={25}
+                            size={tab.icon === tabIcons.log ? 40 : 25}
                         />
                     )
                 }}

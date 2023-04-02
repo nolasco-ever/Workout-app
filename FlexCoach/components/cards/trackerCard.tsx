@@ -3,6 +3,7 @@ import { StyleSheet, Text, View } from 'react-native';
 import { colors } from '../../colors';
 import { CustomText } from '../text/customText';
 import ProgressCircle from '../progress-indicators/progressCircle';
+import { TouchableOpacity } from 'react-native-gesture-handler';
 
 interface TrackerCardProps {
   title: string;
@@ -19,10 +20,10 @@ export const TrackerCard: React.FC<TrackerCardProps> = ({
     const calorieProgress = Math.round((currentAmount / goalAmount) * 100);
 
     return (
-        <View style={[styles.container, {backgroundColor: appColors.primary}]}>
+        <TouchableOpacity style={[styles.container, {backgroundColor: appColors.primary}]}>
             <View style={styles.infoContainer}>
                 <View style={styles.nutritionInfo}>
-                    <CustomText type='header' style={styles.nutritionLabel}>{title} </CustomText>
+                    <CustomText style={styles.nutritionLabel}>{title} </CustomText>
                     <CustomText type='subheader' style={styles.nutritionValue}>
                         {currentAmount} / {goalAmount}
                     </CustomText>
@@ -32,7 +33,7 @@ export const TrackerCard: React.FC<TrackerCardProps> = ({
                     size='sm'
                 />
             </View>
-        </View>
+        </TouchableOpacity>
     );
 };
 

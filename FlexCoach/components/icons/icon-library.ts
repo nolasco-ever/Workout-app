@@ -35,6 +35,7 @@ export const directionIcons = {
   export const tabIcons = {
     home: 'fa-solid fa-house',
     stats: 'fa-solid fa-chart-line',
+    log: 'fa-solid fa-circle-plus',
     social: 'fa-solid fa-face-smile',
     profile: 'fa-solid fa-user'
   }
