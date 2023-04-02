@@ -7,6 +7,7 @@ import { Section } from '../../../components/sections/Section';
 import { generalIcons } from '../../../components/icons/icon-library';
 import { ListCard } from '../../../components/cards/listCard';
 import { mockDietList, mockWorkoutList } from '../../../mocks/listMocks';
+import PostCard from '../../../components/cards/postCard';
 
 export const HomeScreen = () => {
     const appColors = colors();
