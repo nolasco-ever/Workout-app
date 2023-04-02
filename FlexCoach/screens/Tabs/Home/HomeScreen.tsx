@@ -18,8 +18,8 @@ export const HomeScreen = () => {
             <NutritionTrackerCard
               dailyCalorieGoal={2400}
               dailyProteinGoal={180}
-              currentCaloriesConsumed={630}
-              currentProteinConsumed={180}
+              currentCaloriesConsumed={1030}
+              currentProteinConsumed={67}
             />
         </ScrollView>
     </SafeAreaView>

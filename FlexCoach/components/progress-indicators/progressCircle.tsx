@@ -18,38 +18,39 @@ export default function ProgressCircle({percent, size='lg'}:ProgressCircleProps)
         const rotateBy = base_degrees + (percent*3.6)
 
         return{
-        transform:[{rotateZ: `${rotateBy}deg`}]
+            transform:[{rotateZ: `${rotateBy}deg`}]
         }
     }
 
     const renderThirdLayer = (percent: number) => {
         if(percent > 50){
-        return <View style={[
-            progressCircleStyle.thirdLayer,
-            {
-            width: screenWidth*dimensionsMultiplier,
-            height: screenWidth*dimensionsMultiplier,
-            borderRadius: screenWidth*0.2,
-            borderColor: appColors.accent,
-            transform: [{rotateZ: '45deg'}]
-            },
-            styleFromProp((percent - 50), 45) 
-        ]}/>
+            return <View style={[
+                progressCircleStyle.thirdLayer,
+                {
+                    borderWidth: borderWidth,
+                    width: screenWidth*dimensionsMultiplier,
+                    height: screenWidth*dimensionsMultiplier,
+                    borderRadius: screenWidth*0.2,
+                    borderColor: appColors.accent,
+                    transform: [{rotateZ: '45deg'}]
+                },
+                styleFromProp((percent - 50), 45) 
+            ]}/>
         } 
         else{
-        return  <View
-                    style={[
-                    progressCircleStyle.thirdLayer,
-                    {
-                        borderWidth: borderWidth,
-                        width: screenWidth*dimensionsMultiplier,
-                        height: screenWidth*dimensionsMultiplier,
-                        borderRadius: screenWidth*0.2,
-                        borderColor: appColors.inactive,
-                        transform:[{rotateZ: '-135deg'}]
-                    }
-                    ]}
-                />
+            return  <View
+                        style={[
+                        progressCircleStyle.thirdLayer,
+                        {
+                            borderWidth: borderWidth,
+                            width: screenWidth*dimensionsMultiplier,
+                            height: screenWidth*dimensionsMultiplier,
+                            borderRadius: screenWidth*0.2,
+                            borderColor: appColors.inactive,
+                            transform:[{rotateZ: '-135deg'}]
+                        }
+                        ]}
+                    />
         }
     }
 
@@ -62,16 +63,16 @@ export default function ProgressCircle({percent, size='lg'}:ProgressCircleProps)
 
     return (
         <View
-        style={[
-            progressCircleStyle.container,
-            {
-                borderWidth: borderWidth,
-                borderColor: appColors.inactive,
-                width: screenWidth*dimensionsMultiplier,
-                height: screenWidth*dimensionsMultiplier,
-                borderRadius: screenWidth*0.2,
-            }
-        ]}
+            style={[
+                progressCircleStyle.container,
+                {
+                    borderWidth: borderWidth,
+                    borderColor: appColors.inactive,
+                    width: screenWidth*dimensionsMultiplier,
+                    height: screenWidth*dimensionsMultiplier,
+                    borderRadius: screenWidth*0.2,
+                }
+            ]}
         >
         <View
             style={[
