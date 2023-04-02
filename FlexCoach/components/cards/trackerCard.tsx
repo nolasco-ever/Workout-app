@@ -4,47 +4,31 @@ import { colors } from '../../colors';
 import { CustomText } from '../text/customText';
 import ProgressCircle from '../progress-indicators/progressCircle';
 
-interface NutritionTrackerCardProps {
-  dailyCalorieGoal: number;
-  dailyProteinGoal: number;
-  currentCaloriesConsumed: number;
-  currentProteinConsumed: number;
+interface TrackerCardProps {
+  title: string;
+  goalAmount: number;
+  currentAmount: number;
 }
 
-export const NutritionTrackerCard: React.FC<NutritionTrackerCardProps> = ({
-  dailyCalorieGoal,
-  dailyProteinGoal,
-  currentCaloriesConsumed,
-  currentProteinConsumed,
+export const TrackerCard: React.FC<TrackerCardProps> = ({
+  title,
+  goalAmount,
+  currentAmount,
 }) => {
     const appColors = colors();
-    const calorieProgress = Math.round((currentCaloriesConsumed / dailyCalorieGoal) * 100);
-    const proteinProgress = Math.round((currentProteinConsumed / dailyProteinGoal) * 100);
+    const calorieProgress = Math.round((currentAmount / goalAmount) * 100);
 
     return (
         <View style={[styles.container, {backgroundColor: appColors.primary}]}>
-            <CustomText type='header'>Nutrition Tracker</CustomText>
             <View style={styles.infoContainer}>
                 <View style={styles.nutritionInfo}>
-                    <CustomText style={styles.nutritionLabel}>Calories </CustomText>
+                    <CustomText type='header' style={styles.nutritionLabel}>{title} </CustomText>
                     <CustomText type='subheader' style={styles.nutritionValue}>
-                        {currentCaloriesConsumed} / {dailyCalorieGoal}
+                        {currentAmount} / {goalAmount}
                     </CustomText>
                 </View>
                 <ProgressCircle
                     percent={calorieProgress}
-                    size='sm'
-                />
-            </View>
-            <View style={styles.infoContainer}>
-                <View style={styles.nutritionInfo}>
-                    <CustomText style={styles.nutritionLabel}>Protein (g) </CustomText>
-                    <CustomText type='subheader' style={styles.nutritionValue}>
-                        {currentProteinConsumed} / {dailyProteinGoal}
-                    </CustomText>
-                </View>
-                <ProgressCircle
-                    percent={proteinProgress}
                     size='sm'
                 />
             </View>
@@ -55,13 +39,13 @@ export const NutritionTrackerCard: React.FC<NutritionTrackerCardProps> = ({
 const styles = StyleSheet.create({
   container: {
     borderRadius: 15,
-    padding: 20,
+    padding: 10,
     margin: 10,
   },
   infoContainer: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    marginTop: 10,
+    margin: 5,
     alignItems: 'center'
   },
   progressCircle: {
