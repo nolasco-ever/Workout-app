@@ -8,10 +8,11 @@ import { CustomText } from '../text/customText';
 interface SectionProps {
   title: string;
   icon?: string;
+  iconColor?: string;
   children: React.ReactNode
 }
 
-export const Section: FC<SectionProps> = ({ title, icon, children }) => {
+export const Section: FC<SectionProps> = ({ title, icon, iconColor, children }) => {
     const appColors = colors();
     return (
         <View style={styles.container}>
@@ -20,7 +21,7 @@ export const Section: FC<SectionProps> = ({ title, icon, children }) => {
                     <View style={styles.iconContainer}>
                         <FontAwesomeIcon 
                             icon={icon as IconProp}
-                            color='red'
+                            color={iconColor ? iconColor : appColors.icon}
                             size={25}
                         />
                     </View>

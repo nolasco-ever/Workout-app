@@ -53,7 +53,8 @@ import {
     faBell,
     faUsers,
     faSmile,
-    faCirclePlus
+    faCirclePlus,
+    faCalendarDay
 } from '@fortawesome/free-solid-svg-icons';
 
 library.add(
@@ -109,5 +110,6 @@ library.add(
     faBell,
     faUsers,
     faSmile,
-    faCirclePlus
+    faCirclePlus,
+    faCalendarDay
 );

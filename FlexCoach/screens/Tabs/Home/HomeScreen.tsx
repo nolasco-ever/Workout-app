@@ -1,12 +1,12 @@
-import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, SafeAreaView } from 'react-native';
+import React from 'react';
+import { StyleSheet, ScrollView, SafeAreaView } from 'react-native';
 import { colors } from '../../../colors';
-import { WeekHeader } from '../../../components/calendars/weekHeader';
 import { UserCardHeader } from '../../../components/cards/userCardHeader';
-import { CustomText } from '../../../components/text/customText';
 import { TrackerCard } from '../../../components/cards/trackerCard';
 import { Section } from '../../../components/sections/Section';
 import { generalIcons } from '../../../components/icons/icon-library';
+import { ListCard } from '../../../components/cards/listCard';
+import { mockDietList, mockWorkoutList } from '../../../mocks/listMocks';
 
 export const HomeScreen = () => {
     const appColors = colors();
@@ -17,7 +17,7 @@ export const HomeScreen = () => {
             welcomeMessage='Welcome back, Ever!'
         />
         <ScrollView style={{borderTopWidth: 1, borderColor: appColors.subtext}}>
-          <Section title="Nutrition Tracker" icon={generalIcons.heart}>
+          <Section title="Nutrition Tracker" icon={generalIcons.heart} iconColor='red'>
             <TrackerCard
               title='Calories'
               goalAmount={2400}
@@ -29,8 +29,15 @@ export const HomeScreen = () => {
               currentAmount={127}
             />
           </Section>
-          <Section title='Today'>
-            
+          <Section title='Today' icon={generalIcons.calendarDay}>
+            <ListCard
+              title={mockWorkoutList.title}
+              items={mockWorkoutList.items}
+            />
+            <ListCard
+              title={mockDietList.title}
+              items={mockDietList.items}
+            />
           </Section>
         </ScrollView>
     </SafeAreaView>
