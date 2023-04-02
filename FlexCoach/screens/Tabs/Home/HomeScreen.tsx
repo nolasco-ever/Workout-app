@@ -29,6 +29,9 @@ export const HomeScreen = () => {
               currentAmount={127}
             />
           </Section>
+          <Section title='Today'>
+            
+          </Section>
         </ScrollView>
     </SafeAreaView>
   );

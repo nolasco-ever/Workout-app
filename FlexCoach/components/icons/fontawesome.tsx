@@ -52,7 +52,8 @@ import {
     faEyeSlash,
     faBell,
     faUsers,
-    faSmile
+    faSmile,
+    faCirclePlus
 } from '@fortawesome/free-solid-svg-icons';
 
 library.add(
@@ -107,5 +108,6 @@ library.add(
     faEyeSlash,
     faBell,
     faUsers,
-    faSmile
+    faSmile,
+    faCirclePlus
 );

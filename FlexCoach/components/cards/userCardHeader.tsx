@@ -2,6 +2,7 @@ import React from 'react';
 import { View, Text, Image, StyleSheet } from 'react-native';
 import { NotificationButton } from '../buttons/notificationButton';
 import { colors } from '../../colors';
+import { useNavigation } from '@react-navigation/native';
 
 interface UserCardHeaderProps {
     profilePhoto: string;
@@ -9,6 +10,7 @@ interface UserCardHeaderProps {
 }
 
 export const UserCardHeader = ({ profilePhoto, welcomeMessage }: UserCardHeaderProps) => {
+    const navigation = useNavigation();
     const appColors = colors();
     const currentDate = new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' });
 
@@ -24,7 +26,7 @@ export const UserCardHeader = ({ profilePhoto, welcomeMessage }: UserCardHeaderP
       </View>
       <NotificationButton
         unseenNotifications={true}
-        onPress={() => console.log('pressed')}
+        onPress={() => navigation.navigate('Notifications')}
       />
     </View>
   );
