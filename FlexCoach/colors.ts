@@ -1,7 +1,5 @@
 import { useColorScheme } from "react-native";
 
-const isLightMode = false;
-
 const darkModeColors = {
     background: '#1a1a1a',
     text: '#ffffff',
