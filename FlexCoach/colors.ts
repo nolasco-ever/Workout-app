@@ -26,19 +26,19 @@ const lightModeColors = {
     icon: '#001f54'
 }
 
-export const colors = () => {
-    const colorScheme = useColorScheme();
-    const isLightMode = colorScheme === 'light';
+const getSystemTheme = () => {
+    return useColorScheme();
+}
 
-    return {
-        background: isLightMode ? lightModeColors.background : darkModeColors.background,
-        text: isLightMode ? lightModeColors.text : darkModeColors.text,
-        onPrimaryText: isLightMode ? lightModeColors.onPrimaryText : darkModeColors.onPrimaryText,
-        subtext: isLightMode ? lightModeColors.subtext : darkModeColors.subtext,
-        primary: isLightMode ? lightModeColors.primary : darkModeColors.primary,
-        secondary: isLightMode ? lightModeColors.secondary : darkModeColors.secondary,
-        accent: isLightMode ? lightModeColors.accent : darkModeColors.accent,
-        inactive: isLightMode ? lightModeColors.inactive : darkModeColors.inactive,
-        icon: isLightMode ? lightModeColors.icon : darkModeColors.icon,
-      };
+const getColors = (systemTheme: string | null | undefined) => {
+    if (systemTheme === 'light') {
+        return lightModeColors;
+    } else {
+        return darkModeColors;
+    }
+}
+
+export const colors = () => {
+    const systemTheme = getSystemTheme();
+    return getColors(systemTheme);
 }
