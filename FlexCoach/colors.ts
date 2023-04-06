@@ -12,7 +12,8 @@ const darkModeColors = {
     inactive: '#a2a2a2',
     icon: '#ffffff',
     error: '#cf6679',
-    onError: '#000000'
+    onError: '#000000',
+    transparent: 'rgba(0, 0, 0, 0)'
 }
 
 const lightModeColors = {
@@ -27,7 +28,8 @@ const lightModeColors = {
     inactive: '#a2a2a2',
     icon: '#001f54',
     error: '#b00020',
-    onError: '#ffffff'
+    onError: '#ffffff',
+    transparent: 'rgba(0, 0, 0, 0)'
 }
 
 const getSystemTheme = () => {
