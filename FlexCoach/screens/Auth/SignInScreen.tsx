@@ -1,6 +1,6 @@
 import React from 'react';
 import { ParamListBase } from '@react-navigation/native';
-import { StyleSheet, TouchableOpacity, SafeAreaView, Dimensions } from 'react-native';
+import { StyleSheet, TouchableOpacity, SafeAreaView, Dimensions, Text } from 'react-native';
 import { colors } from '../../colors';
 import { CustomText } from '../../components/text/customText';
 import { StackNavigationProp } from '@react-navigation/stack';
@@ -18,8 +18,8 @@ export const SignInScreen = ({ navigation }: SignInScreenProps) => {
   return (
     <SafeAreaView style={[styles.container, {backgroundColor: appColors.background}]}>
         <TouchableOpacity style={[styles.button, {width: screenWidth/2, backgroundColor: appColors.primary}]} onPress={() => navigation.replace('Tabs')}>
-          <CustomText type='header' centered>Go To App</CustomText>
-          <FontAwesomeIcon icon={directionIcons.rightArrow as IconProp} size={25} color={appColors.icon}/>
+          <Text style={{fontWeight: 'bold', fontSize: 24, color: appColors.onPrimaryText}}>Go To App</Text>
+          <FontAwesomeIcon icon={directionIcons.rightArrow as IconProp} size={25} color={appColors.onPrimaryText}/>
         </TouchableOpacity>
     </SafeAreaView>
   );

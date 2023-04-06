@@ -9,14 +9,15 @@ interface SectionProps {
   title: string;
   icon?: string;
   iconColor?: string;
-  children: React.ReactNode
+  children: React.ReactNode,
+  centered?: boolean;
 }
 
-export const Section: FC<SectionProps> = ({ title, icon, iconColor, children }) => {
+export const Section: FC<SectionProps> = ({ title, icon, iconColor, children, centered=false }) => {
     const appColors = colors();
     return (
-        <View style={styles.container}>
-            <View style={styles.titleContainer}>
+        <View>
+            <View style={[styles.titleContainer, {justifyContent: centered ? 'center' : 'flex-start'}]}>
                 {icon && (
                     <View style={styles.iconContainer}>
                         <FontAwesomeIcon 
@@ -34,16 +35,12 @@ export const Section: FC<SectionProps> = ({ title, icon, iconColor, children }) 
 };
 
 const styles = StyleSheet.create({
-  container: {
-    alignItems: 'flex-start',
-  },
   iconContainer: {
     marginRight: 12,
   },
   titleContainer: {
     flex: 1,
     flexDirection: 'row',
-    alignItems: 'center',
     paddingTop: 15,
     paddingLeft: 15
   },
