@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet, useColorScheme } from 'react-native';
 import { colors } from '../../colors';
 
 interface ListItem {
@@ -25,8 +25,8 @@ export const ListCard = ({ title, items }: ListCardProps) => {
         <>
             {listItems.map((item, index) => (
             <View key={index} style={styles.listItem}>
-                <Text style={styles.itemName}>{item.name}</Text>
-                <Text style={styles.itemDescription}>{item.description}</Text>
+                <Text style={[styles.itemName, {color: appColors.text}]}>{item.name}</Text>
+                <Text style={[styles.itemDescription, {color: appColors.subtext}]}>{item.description}</Text>
             </View>
             ))}
         </>
@@ -34,9 +34,19 @@ export const ListCard = ({ title, items }: ListCardProps) => {
     };
 
     return (
-        <TouchableOpacity style={[styles.card, {backgroundColor: appColors.secondary}]}>
+        <TouchableOpacity 
+          style={[
+            styles.card, 
+            {
+              backgroundColor: appColors.onBackground,
+              shadowColor: '#000000',
+              shadowOpacity: useColorScheme() === 'light' ? 0.1 : 0,
+              shadowOffset: {width: 1, height: 1}
+            }
+          ]}
+        >
             <View style={styles.titleContainer}>
-                <Text style={styles.title}>{title}</Text>
+                <Text style={[styles.title, {color: appColors.text}]}>{title}</Text>
             </View>
             <View style={styles.listContainer}>{renderListItems()}</View>
         </TouchableOpacity>
