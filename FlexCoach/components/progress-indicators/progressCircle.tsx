@@ -31,7 +31,7 @@ export default function ProgressCircle({percent, size='lg'}:ProgressCircleProps)
                     width: screenWidth*dimensionsMultiplier,
                     height: screenWidth*dimensionsMultiplier,
                     borderRadius: screenWidth*0.2,
-                    borderColor: appColors.accent,
+                    borderColor: appColors.primary,
                     transform: [{rotateZ: '45deg'}]
                 },
                 styleFromProp((percent - 50), 45) 
@@ -79,7 +79,7 @@ export default function ProgressCircle({percent, size='lg'}:ProgressCircleProps)
                 progressCircleStyle.firstLayer,
                 {
                     borderWidth: borderWidth,
-                    borderColor: appColors.accent,
+                    borderColor: appColors.primary,
                     width: screenWidth*dimensionsMultiplier,
                     height: screenWidth*dimensionsMultiplier,
                     borderRadius: screenWidth*0.2,

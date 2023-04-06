@@ -16,7 +16,7 @@ const darkModeColors = {
 }
 
 const lightModeColors = {
-    background: '#ffffff',
+    background: '#fafafa',
     onBackground: '#ffffff',
     text: '#262626',
     onPrimaryText: '#ffffff',
