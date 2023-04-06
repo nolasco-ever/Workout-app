@@ -1,27 +1,33 @@
 import { useColorScheme } from "react-native";
 
 const darkModeColors = {
-    background: '#1a1a1a',
+    background: '#121212',
+    onBackground: '#2c2c2c',
     text: '#ffffff',
     onPrimaryText: '#ffffff',
     subtext: '#a2a2a2',
-    primary: '#0e4c92',
-    secondary: '#87cefa',
+    primary: '#326789',
+    secondary: '#e65c4f',
     accent: '#ff5733',
     inactive: '#a2a2a2',
-    icon: '#ffffff'
+    icon: '#ffffff',
+    error: '#cf6679',
+    onError: '#000000'
 }
 
 const lightModeColors = {
-    background: '#f4f4f4',
+    background: '#ffffff',
+    onBackground: '#ffffff',
     text: '#262626',
     onPrimaryText: '#ffffff',
     subtext: '#6f6f6f',
-    primary: '#001f54',
-    secondary: '#87cefa',
+    primary: '#326789',
+    secondary: '#e65c4f',
     accent: '#ff5733',
     inactive: '#a2a2a2',
-    icon: '#001f54'
+    icon: '#001f54',
+    error: '#b00020',
+    onError: '#ffffff'
 }
 
 const getSystemTheme = () => {

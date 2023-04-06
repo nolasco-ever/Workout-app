@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, Text, View, useColorScheme } from 'react-native';
 import { colors } from '../../colors';
 import { CustomText } from '../text/customText';
 import ProgressCircle from '../progress-indicators/progressCircle';
@@ -20,7 +20,17 @@ export const ProgressCard: React.FC<ProgressCardProps> = ({
     const calorieProgress = Math.round((currentAmount / goalAmount) * 100);
 
     return (
-        <TouchableOpacity style={[styles.container, {backgroundColor: appColors.primary}]}>
+        <TouchableOpacity 
+          style={[
+            styles.container, 
+            {
+              backgroundColor: appColors.onBackground,
+              shadowColor: '#000000',
+              shadowOpacity: useColorScheme() === 'light' ? 0.1 : 0,
+              shadowOffset: {width: 1, height: 1}
+            }
+          ]}
+        >
             <View style={styles.infoContainer}>
                 <View style={styles.nutritionInfo}>
                     <CustomText style={styles.nutritionLabel}>{title} </CustomText>

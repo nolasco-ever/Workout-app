@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Dimensions, StyleSheet, Text, View } from 'react-native';
+import { Dimensions, StyleSheet, Text, View, useColorScheme } from 'react-native';
 import { colors } from '../../colors';
 import { CustomText } from '../text/customText';
 import ProgressCircle from '../progress-indicators/progressCircle';
@@ -22,7 +22,18 @@ export const ProgressCardSquare: React.FC<ProgressCardSquareProps> = ({
 
     return (
         <View style={{flex: 1}}>
-            <TouchableOpacity style={[styles.container, {backgroundColor: appColors.primary, height: screenWidth/2}]}>
+            <TouchableOpacity 
+              style={[
+                styles.container, 
+                {
+                  backgroundColor: appColors.onBackground, 
+                  height: screenWidth/2,
+                  shadowColor: '#000000',
+                  shadowOpacity: useColorScheme() === 'light' ? 0.1 : 0,
+                  shadowOffset: {width: 1, height: 1}
+                }
+              ]}
+            >
                 <View style={styles.infoContainer}>
                     <ProgressCircle
                         percent={calorieProgress}
