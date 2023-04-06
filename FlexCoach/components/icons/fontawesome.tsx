@@ -54,7 +54,9 @@ import {
     faUsers,
     faSmile,
     faCirclePlus,
-    faCalendarDay
+    faCalendarDay,
+    faMoon,
+    faScrewdriverWrench
 } from '@fortawesome/free-solid-svg-icons';
 
 library.add(
@@ -111,5 +113,7 @@ library.add(
     faUsers,
     faSmile,
     faCirclePlus,
-    faCalendarDay
+    faCalendarDay,
+    faMoon,
+    faScrewdriverWrench
 );
