@@ -9,14 +9,15 @@ import { ListCard } from '../../../components/cards/listCard';
 import { mockDietList, mockWorkoutList } from '../../../mocks/listMocks';
 import PostCard from '../../../components/cards/postCard';
 import { ProgressCardSquare } from '../../../components/cards/progressCardSquare';
+import { user1 } from '../../../mocks/userMocks';
 
 export const HomeScreen = () => {
     const appColors = colors();
   return (
     <SafeAreaView style={[styles.container, {backgroundColor: appColors.background}]}>
         <UserCardHeader
-            profilePhoto='https://picsum.photos/200'
-            welcomeMessage='Welcome back, Ever!'
+            profilePhoto={user1.profilePicture}
+            welcomeMessage={`Welcome back, ${user1.firstName}`}
         />
         <ScrollView style={{borderTopWidth: 1, borderColor: appColors.subtext}}>
           <Section title='Overview'>
