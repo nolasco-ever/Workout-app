@@ -1,5 +1,5 @@
-import React from 'react';
-import { StyleSheet, ScrollView, SafeAreaView, View } from 'react-native';
+import React, { useState } from 'react';
+import { StyleSheet, ScrollView, SafeAreaView, View, RefreshControl } from 'react-native';
 import { colors } from '../../../colors';
 import { UserCardHeader } from '../../../components/cards/userCardHeader';
 import { ProgressCard } from '../../../components/cards/progressCard';
@@ -12,6 +12,8 @@ import { ProgressCardSquare } from '../../../components/cards/progressCardSquare
 import { user1 } from '../../../mocks/userMocks';
 import { CustomGraph } from '../../../components/graphs/customGraph';
 import { mockBenchPressData, mockDumbbellCurlData } from '../../../mocks/trainingDataMocks';
+import { SelectionCard } from '../../../components/cards/selectionCard';
+import { strengthTrainingTypesMock } from '../../../mocks/selectionCardListMocks';
 
 export const HomeScreen = () => {
     const appColors = colors();
@@ -21,13 +23,40 @@ export const HomeScreen = () => {
   
     const dumbbellCurlWeightData = mockDumbbellCurlData.map(item => item.weight);
     const dumbbellCurlDates = mockDumbbellCurlData.map(item => item.date);
+
+    const [refreshing, setRefreshing] = useState(false);
   return (
     <SafeAreaView style={[styles.container, {backgroundColor: appColors.background}]}>
         <UserCardHeader
             profilePhoto={user1.profilePicture}
             welcomeMessage={`Welcome back, ${user1.firstName}`}
         />
-        <ScrollView style={{borderTopWidth: 1, borderColor: appColors.subtext}}>
+        <ScrollView
+          refreshControl={
+            <RefreshControl
+              refreshing={refreshing}
+              onRefresh={() => {
+                // handle refresh
+              }}
+            />
+          }
+          showsVerticalScrollIndicator={false}
+          style={{
+            borderTopWidth: 1,
+            borderColor: appColors.subtext
+          }}
+        >
+          <Section title='Explore' seeMore onPressSeeMore={() => console.log(`Pressed 'See More'`)}>
+            {strengthTrainingTypesMock.map((item, index) => (
+              <SelectionCard
+                key={index}
+                imageSource={item.image}
+                title={item.title}
+                description={item.description}
+                onPress={() => console.log('Pressed Card')}
+              />
+            ))}
+          </Section>
           <Section title='Overview'>
             <View style={{flexDirection: 'row'}}>
               <ProgressCardSquare
@@ -78,6 +107,7 @@ export const HomeScreen = () => {
               xAxisLabels={dumbbellCurlDates}
             />
           </Section>
+
         </ScrollView>
     </SafeAreaView>
   );
