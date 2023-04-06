@@ -2,6 +2,7 @@ import { generalIcons, tabIcons } from "../components/icons/icon-library";
 import { HomeScreen } from "../screens/Tabs/Home/HomeScreen";
 import { LogScreen } from "../screens/Tabs/Log/LogScreen";
 import { ProfileStack } from "../screens/Tabs/Profile/ProfileStack";
+import { AppThemeScreen } from "../screens/Tabs/Profile/screens/AppThemeScreen";
 import { ProfileScreen } from "../screens/Tabs/Profile/screens/ProfileScreen";
 import { SettingsScreen } from "../screens/Tabs/Profile/screens/SettingsScreen";
 import { SocialScreen } from "../screens/Tabs/Social/SocialScreen";
@@ -21,10 +22,10 @@ export const profileStack = [
         component: SettingsScreen,
         icon: generalIcons.gear,
     },
-    // {
-    //     id: 'placeholderScreen',
-    //     name: 'Placeholder Screen',
-    //     component: PlaceholderScreen,
-    //     icon: generalIcons.screwdriverWrench
-    // },
+    {
+        id: 'appThemeScreen',
+        name: 'App Theme',
+        component: AppThemeScreen,
+        icon: generalIcons.moon
+    },
 ]

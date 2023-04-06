@@ -22,7 +22,7 @@ export const SettingsScreen = ({navigation}:{navigation: any}) => {
             icon={item.icon}
             title={item.title}
             description={item.description}
-            onPress={() => navigation.navigate('placeholderScreen', {title: item.title, icon: item.icon})}
+            onPress={() => navigation.navigate(item.navigateTo, {title: item.title, icon: item.icon})}
           />
         ))}
         <ListItem
