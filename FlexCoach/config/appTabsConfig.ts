@@ -17,16 +17,16 @@ export const appTabs = [
         component: StatsScreen,
         icon: tabIcons.stats
     },
-    {
-        name: 'Log',
-        component: LogScreen,
-        icon: tabIcons.log
-    },
-    {
-        name: 'Social',
-        component: SocialScreen,
-        icon: tabIcons.social
-    },
+    // {
+    //     name: 'Log',
+    //     component: LogScreen,
+    //     icon: tabIcons.log
+    // },
+    // {
+    //     name: 'Social',
+    //     component: SocialScreen,
+    //     icon: tabIcons.social
+    // },
     {
         name: 'Profile',
         component: ProfileStack,
