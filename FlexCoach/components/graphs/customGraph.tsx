@@ -6,14 +6,16 @@ import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
 import { generalIcons } from '../icons/icon-library';
 import { IconProp } from '@fortawesome/fontawesome-svg-core';
 import { TouchableOpacity } from 'react-native-gesture-handler';
+import { CustomText } from '../text/customText';
 
 interface CustomGraphProps {
     yAxisData: number[];
     xAxisLabels: string[];
     type: 'bar' | 'line';
+    title?: string;
 }
 
-export const CustomGraph = ({yAxisData, xAxisLabels, type}: CustomGraphProps) => {
+export const CustomGraph = ({yAxisData, xAxisLabels, type, title}: CustomGraphProps) => {
     const screenWidth = Dimensions.get('window').width;
     const screenHeight = Dimensions.get('window').height;
     const appColors = colors();
@@ -94,6 +96,7 @@ export const CustomGraph = ({yAxisData, xAxisLabels, type}: CustomGraphProps) =>
                 }
             ]}
         >
+            <CustomText type='subheader' centered>{title}</CustomText>
             <View style={{flex: 5, flexDirection: 'row', width: '100%'}}>
                 <View style={styles.yAxisContainer}>
                     {rangeArr.map((item, index) => (
@@ -118,9 +121,9 @@ export const CustomGraph = ({yAxisData, xAxisLabels, type}: CustomGraphProps) =>
                                     }
                                 ]}
                             >
-                                {type === 'line' && <FontAwesomeIcon icon={generalIcons.bulletPoint as IconProp} color={appColors.text} size={10} style={{alignSelf: 'center'}}/>}
+                                {type === 'line' && <FontAwesomeIcon icon={generalIcons.bulletPoint as IconProp} color={appColors.primary} size={10} style={{alignSelf: 'center'}}/>}
                                 {popUpState.visible && popUpState.index === index &&
-                                    <View style={{width: 50, bottom: 50, backgroundColor: appColors.secondary, padding: 10, borderRadius: 5, alignItems: 'center'}}>
+                                    <View style={{width: 50, height: 40, bottom: 55, backgroundColor: appColors.secondary, padding: 10, borderRadius: 5, alignItems: 'center', justifyContent: 'center'}}>
                                         <Text style={{color: appColors.onPrimaryText, fontWeight: 'bold'}}>{item}</Text>
                                     </View>
                                 }

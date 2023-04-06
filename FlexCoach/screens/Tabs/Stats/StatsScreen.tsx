@@ -46,21 +46,19 @@ export const StatsScreen = () => {
         showsVerticalScrollIndicator={false}
       >
         <CustomText type='header' centered>{selectedDay}</CustomText>
-        <Section title='Bench Press' centered>
           <CustomGraph
             yAxisData={benchPressWeightData}
             xAxisLabels={benchPressDates}
             type='bar'
+            title='Bench Press'
           />
-        </Section>
 
-        <Section title='Dumbbell Curl' centered>
           <CustomGraph
             yAxisData={dumbbellCurlWeightData}
             xAxisLabels={dumbbellCurlDates}
             type='line'
+            title='Dumbbell Curl'
           />
-        </Section>
       </ScrollView>
     </SafeAreaView>
   );

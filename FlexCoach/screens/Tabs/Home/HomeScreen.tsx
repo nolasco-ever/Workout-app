@@ -10,9 +10,17 @@ import { mockDietList, mockWorkoutList } from '../../../mocks/listMocks';
 import PostCard from '../../../components/cards/postCard';
 import { ProgressCardSquare } from '../../../components/cards/progressCardSquare';
 import { user1 } from '../../../mocks/userMocks';
+import { CustomGraph } from '../../../components/graphs/customGraph';
+import { mockBenchPressData, mockDumbbellCurlData } from '../../../mocks/trainingDataMocks';
 
 export const HomeScreen = () => {
     const appColors = colors();
+
+    const benchPressWeightData = mockBenchPressData.map(item => item.weight);
+    const benchPressDates = mockBenchPressData.map(item => item.date);
+  
+    const dumbbellCurlWeightData = mockDumbbellCurlData.map(item => item.weight);
+    const dumbbellCurlDates = mockDumbbellCurlData.map(item => item.date);
   return (
     <SafeAreaView style={[styles.container, {backgroundColor: appColors.background}]}>
         <UserCardHeader
@@ -53,6 +61,21 @@ export const HomeScreen = () => {
             <ListCard
               title={mockDietList.title}
               items={mockDietList.items}
+            />
+          </Section>
+
+          <Section title='Personal Records' icon={generalIcons.trophy}>
+            <CustomGraph
+              title='Bench Press'
+              type='line'
+              yAxisData={benchPressWeightData}
+              xAxisLabels={benchPressDates}
+            />
+            <CustomGraph
+              title='Overhead Barbell Press'
+              type='bar'
+              yAxisData={dumbbellCurlWeightData}
+              xAxisLabels={dumbbellCurlDates}
             />
           </Section>
         </ScrollView>

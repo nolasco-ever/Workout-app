@@ -32,6 +32,7 @@ export const directionIcons = {
     plus: 'fa-solid fa-plus',
     screwdriverWrench: 'fa-solid fa-screwdriver-wrench',
     signOut: 'fa-solid fa-right-from-bracket',
+    trophy: 'fa-solid fa-trophy',
     user: 'fa-solid fa-user',
     xMark: 'fa-solid fa-xmark',
   };
