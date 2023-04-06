@@ -1,4 +1,4 @@
-import { Dimensions, ScrollView, StyleSheet, Text, TouchableWithoutFeedback, View } from 'react-native'
+import { Dimensions, ScrollView, StyleSheet, Text, TouchableWithoutFeedback, View, useColorScheme } from 'react-native'
 import React, { useRef, useState } from 'react'
 import { colors } from '../../colors';
 import { useSpring,animated } from "@react-spring/native";
@@ -82,7 +82,18 @@ export const CustomGraph = ({yAxisData, xAxisLabels, type}: CustomGraphProps) =>
     const scrollViewRef: React.LegacyRef<ScrollView> = useRef(null)
 
     return (
-        <View style={[styles.container, {width: screenWidth, height: screenHeight * 0.3}]}>
+        <View
+            style={[
+                styles.container, 
+                {
+                    backgroundColor: appColors.onBackground,
+                    height: screenHeight * 0.3,
+                    shadowColor: '#000000',
+                    shadowOpacity: useColorScheme() === 'light' ? 0.1 : 0,
+                    shadowOffset: {width: 1, height: 1}
+                }
+            ]}
+        >
             <View style={{flex: 5, flexDirection: 'row', width: '100%'}}>
                 <View style={styles.yAxisContainer}>
                     {rangeArr.map((item, index) => (
@@ -128,10 +139,12 @@ const styles = StyleSheet.create({
         padding: 10,
         flexDirection: 'column',
         justifyContent: 'flex-end',
+        borderRadius: 15,
+        margin: 10
     },
     barsContainer: {
         flexDirection: 'row',
-        alignItems: 'flex-end',
+        alignItems: 'flex-end'
     },
     barAndTitleContainer: {
         flexDirection: 'column', 

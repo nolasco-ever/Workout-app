@@ -43,6 +43,7 @@ export const StatsScreen = () => {
             }}
           />
         }
+        showsVerticalScrollIndicator={false}
       >
         <CustomText type='header' centered>{selectedDay}</CustomText>
         <Section title='Bench Press' centered>
