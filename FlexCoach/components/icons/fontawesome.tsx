@@ -57,7 +57,8 @@ import {
     faCalendarDay,
     faMoon,
     faScrewdriverWrench,
-    faTrophy
+    faTrophy,
+    faClockRotateLeft
 } from '@fortawesome/free-solid-svg-icons';
 
 library.add(
@@ -117,5 +118,6 @@ library.add(
     faCalendarDay,
     faMoon,
     faScrewdriverWrench,
-    faTrophy
+    faTrophy,
+    faClockRotateLeft
 );

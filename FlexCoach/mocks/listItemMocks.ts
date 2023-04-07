@@ -36,4 +36,28 @@ export const settingsListMocks = [
         description: 'Reach out with any questions, comments, or concerns',
         navigateTo: 'placeholderScreen'
     }
+];
+
+export const profileListMocks = [
+    {
+        id: 'history',
+        icon: generalIcons.clock,
+        title: 'History',
+        description: 'View your previous workouts',
+        navigateTo: 'placeholderScreen'
+    },
+    {
+        id: 'createANewWorkoutPlan',
+        icon: generalIcons.plus,
+        title: 'Create a New Workout Plan',
+        description: `Customize and start a new training program`,
+        navigateTo: 'placeholderScreen'
+    },
+    {
+        id: 'createANewDietPlan',
+        icon: generalIcons.plus,
+        title: 'Create a New Diet Plan',
+        description: 'Make a plan for your body goals',
+        navigateTo: 'placeholderScreen'
+    },
 ]

@@ -6,7 +6,7 @@ import { ProgressCard } from '../../../components/cards/progressCard';
 import { Section } from '../../../components/sections/Section';
 import { generalIcons } from '../../../components/icons/icon-library';
 import { ListCard } from '../../../components/cards/listCard';
-import { mockDietList, mockWorkoutList } from '../../../mocks/listMocks';
+import { mockDietList, mockWorkoutList } from '../../../mocks/listCardMocks';
 import PostCard from '../../../components/cards/postCard';
 import { ProgressCardSquare } from '../../../components/cards/progressCardSquare';
 import { user1 } from '../../../mocks/userMocks';

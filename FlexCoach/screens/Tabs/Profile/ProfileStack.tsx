@@ -44,11 +44,11 @@ export const ProfileStack = () => {
             <Stack.Screen
                 name="placeholderScreen"
                 component={PlaceholderScreen}
-                options={{
+                options={({ route }) => ({
                     headerShown: true,
                     headerStyle: {backgroundColor: appColors.background},
                     headerTitleStyle: {color: appColors.text},
-                    headerTitle: 'Settings',
+                    headerTitle: (route.params as { title: string }).title,
                     headerBackTitleVisible: false,
                     headerBackImage: () => (
                         <FontAwesomeIcon
@@ -58,7 +58,7 @@ export const ProfileStack = () => {
                             style={{marginLeft: 10}}
                         />
                     )
-                }}
+                })}
             />
         </Stack.Navigator>
     );

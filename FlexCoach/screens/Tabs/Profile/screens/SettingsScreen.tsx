@@ -7,7 +7,7 @@ import { generalIcons, tabIcons } from '../../../../components/icons/icon-librar
 import { CustomText } from '../../../../components/text/customText';
 import { ListItem } from '../../../../components/list-items/ListItem';
 import { ScrollView } from 'react-native-gesture-handler';
-import { settingsListMocks } from '../../../../mocks/settingsListMocks';
+import { settingsListMocks } from '../../../../mocks/listItemMocks';
 
 
 export const SettingsScreen = ({navigation}:{navigation: any}) => {
