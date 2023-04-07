@@ -15,6 +15,7 @@ export const directionIcons = {
     bulletPoint: 'fa-solid fa-circle',
     calendarDay: 'fa-solid fa-calendar-day',
     check: 'fa-solid fa-check',
+    clock: 'fa-solid fa-clock-rotate-left',
     comment: 'fa-solid fa-comment',
     dollar: 'fa-solid fa-dollar-sign',
     ellipsis: 'fa-solid fa-ellipsis',
