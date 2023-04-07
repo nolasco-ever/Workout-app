@@ -1,10 +1,9 @@
 import { tabIcons } from "../components/icons/icon-library";
 import { HomeScreen } from "../screens/Tabs/Home/HomeScreen";
 import { LogScreen } from "../screens/Tabs/Log/LogScreen";
-import { ProfileScreen } from "../screens/Tabs/Profile/screens/ProfileScreen";
 import { ProfileStack } from "../screens/Tabs/Profile/ProfileStack";
 import { SocialScreen } from "../screens/Tabs/Social/SocialScreen";
-import { StatsScreen } from "../screens/Tabs/Stats/StatsScreen";
+import { StatsStack } from "../screens/Tabs/Stats/StatsStack";
 
 export const appTabs = [
     {
@@ -14,7 +13,7 @@ export const appTabs = [
     },
     {
         name: 'Stats',
-        component: StatsScreen,
+        component: StatsStack,
         icon: tabIcons.stats
     },
     // {

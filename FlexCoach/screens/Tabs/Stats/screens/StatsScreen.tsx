@@ -2,16 +2,17 @@ import { IconProp } from '@fortawesome/fontawesome-svg-core';
 import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
 import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, SafeAreaView, ScrollView, RefreshControl } from 'react-native';
-import { colors } from '../../../colors';
-import { tabIcons } from '../../../components/icons/icon-library';
-import { CustomText } from '../../../components/text/customText';
-import { WeekHeader } from '../../../components/calendars/weekHeader';
-import { CustomGraph } from '../../../components/graphs/customGraph';
-import { mockBenchPressData, mockDumbbellCurlData } from '../../../mocks/trainingDataMocks';
-import { Section } from '../../../components/sections/Section';
+import { colors } from '../../../../colors';
+import { generalIcons, tabIcons } from '../../../../components/icons/icon-library';
+import { CustomText } from '../../../../components/text/customText';
+import { WeekHeader } from '../../../../components/calendars/weekHeader';
+import { CustomGraph } from '../../../../components/graphs/customGraph';
+import { mockBenchPressData, mockDumbbellCurlData } from '../../../../mocks/trainingDataMocks';
+import { Section } from '../../../../components/sections/Section';
+import { ListItem } from '../../../../components/list-items/ListItem';
 
 
-export const StatsScreen = () => {
+export const StatsScreen = ({navigation}: {navigation: any}) => {
   const appColors = colors();
   const [selectedDay, setSelectedDay] = useState(new Date().getDate());
 
@@ -45,20 +46,29 @@ export const StatsScreen = () => {
         }
         showsVerticalScrollIndicator={false}
       >
-        <CustomText type='header' centered>{selectedDay}</CustomText>
-          <CustomGraph
-            yAxisData={benchPressWeightData}
-            xAxisLabels={benchPressDates}
-            type='bar'
-            title='Bench Press'
-          />
+        <View>
+          <Section title='Diet' icon={generalIcons.apple} iconColor='red'>
+            <ListItem
+              title={`Today's Log`}
+              description='View, add, or remove items'
+              icon={generalIcons.list}
+              onPress={() => navigation.navigate('dietLogScreen')}
+            />
+          </Section>
+        </View>
+        <CustomGraph
+          yAxisData={benchPressWeightData}
+          xAxisLabels={benchPressDates}
+          type='bar'
+          title='Bench Press'
+        />
 
-          <CustomGraph
-            yAxisData={dumbbellCurlWeightData}
-            xAxisLabels={dumbbellCurlDates}
-            type='line'
-            title='Dumbbell Curl'
-          />
+        <CustomGraph
+          yAxisData={dumbbellCurlWeightData}
+          xAxisLabels={dumbbellCurlDates}
+          type='line'
+          title='Dumbbell Curl'
+        />
       </ScrollView>
     </SafeAreaView>
   );
