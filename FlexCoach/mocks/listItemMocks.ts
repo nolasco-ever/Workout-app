@@ -43,7 +43,7 @@ export const profileListMocks = [
         id: 'history',
         icon: generalIcons.clock,
         title: 'History',
-        description: 'View your previous workouts',
+        description: 'View your previous workout programs',
         navigateTo: 'placeholderScreen'
     },
     {
