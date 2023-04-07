@@ -1,6 +1,6 @@
 import { IconProp } from '@fortawesome/fontawesome-svg-core';
 import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { View, Text, StyleSheet, SafeAreaView, ScrollView, RefreshControl } from 'react-native';
 import { colors } from '../../../../colors';
 import { generalIcons, tabIcons } from '../../../../components/icons/icon-library';
@@ -10,6 +10,7 @@ import { CustomGraph } from '../../../../components/graphs/customGraph';
 import { mockBenchPressData, mockDumbbellCurlData } from '../../../../mocks/trainingDataMocks';
 import { Section } from '../../../../components/sections/Section';
 import { ListItem } from '../../../../components/list-items/ListItem';
+import { useScrollToTop } from '@react-navigation/native';
 
 
 export const StatsScreen = ({navigation}: {navigation: any}) => {
@@ -28,7 +29,8 @@ export const StatsScreen = ({navigation}: {navigation: any}) => {
     setSelectedDay(dayNumber);
   };
 
-
+  const scrollViewRef = useRef<ScrollView>(null);
+  useScrollToTop(scrollViewRef);
   return (
     <SafeAreaView style={[styles.container, {backgroundColor: appColors.background}]}>
       <WeekHeader
@@ -36,6 +38,7 @@ export const StatsScreen = ({navigation}: {navigation: any}) => {
           onDayPress={handleDayPress}
         />
       <ScrollView
+        ref={scrollViewRef}
         refreshControl={
           <RefreshControl
             refreshing={refreshing}

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useRef, useState } from 'react';
 import { StyleSheet, ScrollView, SafeAreaView, View, RefreshControl } from 'react-native';
 import { colors } from '../../../colors';
 import { UserCardHeader } from '../../../components/cards/userCardHeader';
@@ -14,6 +14,7 @@ import { CustomGraph } from '../../../components/graphs/customGraph';
 import { mockBenchPressData, mockDumbbellCurlData } from '../../../mocks/trainingDataMocks';
 import { InformationCard } from '../../../components/cards/informationCard';
 import { strengthTrainingTypesMock } from '../../../mocks/selectionCardListMocks';
+import { useScrollToTop } from '@react-navigation/native';
 
 export const HomeScreen = () => {
     const appColors = colors();
@@ -25,6 +26,9 @@ export const HomeScreen = () => {
     const dumbbellCurlDates = mockDumbbellCurlData.map(item => item.date);
 
     const [refreshing, setRefreshing] = useState(false);
+
+    const scrollViewRef = useRef<ScrollView>(null);
+    useScrollToTop(scrollViewRef);
   return (
     <SafeAreaView style={[styles.container, {backgroundColor: appColors.background}]}>
         <UserCardHeader
@@ -32,6 +36,7 @@ export const HomeScreen = () => {
             welcomeMessage={`Welcome back, ${user1.firstName}`}
         />
         <ScrollView
+          ref={scrollViewRef}
           refreshControl={
             <RefreshControl
               refreshing={refreshing}
