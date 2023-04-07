@@ -96,7 +96,7 @@ export const CustomGraph = ({yAxisData, xAxisLabels, type, title}: CustomGraphPr
                 }
             ]}
         >
-            <CustomText type='subheader' centered>{title}</CustomText>
+            {title && <CustomText type='subheader' centered>{title}</CustomText>}
             <View style={{flex: 5, flexDirection: 'row', width: '100%'}}>
                 <View style={styles.yAxisContainer}>
                     {rangeArr.map((item, index) => (
@@ -142,7 +142,7 @@ const styles = StyleSheet.create({
         padding: 10,
         flexDirection: 'column',
         justifyContent: 'flex-end',
-        borderRadius: 15,
+        borderRadius: 10,
         margin: 10
     },
     barsContainer: {

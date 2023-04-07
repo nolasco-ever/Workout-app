@@ -58,7 +58,8 @@ import {
     faMoon,
     faScrewdriverWrench,
     faTrophy,
-    faClockRotateLeft
+    faClockRotateLeft,
+    faAppleWhole
 } from '@fortawesome/free-solid-svg-icons';
 
 library.add(
@@ -119,5 +120,6 @@ library.add(
     faMoon,
     faScrewdriverWrench,
     faTrophy,
-    faClockRotateLeft
+    faClockRotateLeft,
+    faAppleWhole
 );
