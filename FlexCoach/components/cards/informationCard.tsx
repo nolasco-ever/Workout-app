@@ -2,14 +2,14 @@ import React from 'react';
 import { StyleSheet, View, Text, Image, TouchableOpacity, useColorScheme, Dimensions } from 'react-native';
 import { colors } from '../../colors';
 
-interface SelectionCardProps {
+interface InformationCardProps {
   imageSource: string;
   title: string;
   description: string;
   onPress: () => void;
 }
 
-export const SelectionCard = ({ imageSource, title, description, onPress }: SelectionCardProps) => {
+export const InformationCard = ({ imageSource, title, description, onPress }: InformationCardProps) => {
     const appColors = colors();
     const screenWidth = Dimensions.get('window').width;
     return (

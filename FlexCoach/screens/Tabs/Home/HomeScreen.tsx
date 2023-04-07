@@ -12,7 +12,7 @@ import { ProgressCardSquare } from '../../../components/cards/progressCardSquare
 import { user1 } from '../../../mocks/userMocks';
 import { CustomGraph } from '../../../components/graphs/customGraph';
 import { mockBenchPressData, mockDumbbellCurlData } from '../../../mocks/trainingDataMocks';
-import { SelectionCard } from '../../../components/cards/selectionCard';
+import { InformationCard } from '../../../components/cards/informationCard';
 import { strengthTrainingTypesMock } from '../../../mocks/selectionCardListMocks';
 
 export const HomeScreen = () => {
@@ -48,7 +48,7 @@ export const HomeScreen = () => {
         >
           <Section title='Explore' seeMore onPressSeeMore={() => console.log(`Pressed 'See More'`)}>
             {strengthTrainingTypesMock.map((item, index) => (
-              <SelectionCard
+              <InformationCard
                 key={index}
                 imageSource={item.image}
                 title={item.title}
