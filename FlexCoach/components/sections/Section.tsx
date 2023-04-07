@@ -4,6 +4,7 @@ import React, { FC } from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { colors } from '../../colors';
 import { CustomText } from '../text/customText';
+import { TouchableOpacity } from 'react-native-gesture-handler';
 
 interface SectionProps {
   title: string;
@@ -11,9 +12,11 @@ interface SectionProps {
   iconColor?: string;
   children: React.ReactNode,
   centered?: boolean;
+  seeMore?: boolean;
+  onPressSeeMore?: () => void;
 }
 
-export const Section: FC<SectionProps> = ({ title, icon, iconColor, children, centered=false }) => {
+export const Section: FC<SectionProps> = ({ title, icon, iconColor, children, centered=false, seeMore=false, onPressSeeMore }) => {
     const appColors = colors();
     return (
         <View>
@@ -30,6 +33,11 @@ export const Section: FC<SectionProps> = ({ title, icon, iconColor, children, ce
                 <CustomText type='header'>{title}</CustomText>
             </View>
             <View style={styles.contentContainer}>{children}</View>
+            {seeMore && onPressSeeMore && (
+              <TouchableOpacity onPress={() => onPressSeeMore()}>
+                <CustomText type='subheader' centered>See More</CustomText>
+              </TouchableOpacity>
+            )}
         </View>
     );
 };

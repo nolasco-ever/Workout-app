@@ -51,7 +51,7 @@ export const ProgressCardSquare: React.FC<ProgressCardSquareProps> = ({
 
 const styles = StyleSheet.create({
   container: {
-    borderRadius: 15,
+    borderRadius: 10,
     padding: 10,
     margin: 10
   },
