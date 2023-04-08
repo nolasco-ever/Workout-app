@@ -60,4 +60,45 @@ export const profileListMocks = [
         description: 'Make a plan for your body goals',
         navigateTo: 'placeholderScreen'
     },
+];
+
+export const statsScreenDietListMock = [
+    {
+        id: 'todaysLog',
+        icon: generalIcons.list,
+        title: `Today's Log`,
+        description: 'View, add, or remove items',
+        navigateTo: 'dietLogScreen'
+    },
+    {
+        id: 'foodRecommendations',
+        icon: generalIcons.lightbulb,
+        title: 'Food Recommendations',
+        description: `Discover foods to eat and avoid based on your current diet plan`,
+        navigateTo: 'placeholderScreen'
+    },
+];
+
+export const statsScreenWorkoutListMock = [
+    {
+        id: 'todaysWorkout',
+        icon: generalIcons.list,
+        title: `Today's Workout`,
+        description: 'Log your sets, reps, and weights for your exercises',
+        navigateTo: 'placeholderScreen'
+    },
+    {
+        id: 'trainingProgress',
+        icon: generalIcons.simpleChart,
+        title: 'Training Progress',
+        description: `View the progress you've made so far`,
+        navigateTo: 'placeholderScreen'
+    },
+    {
+        id: 'yourTrainingProgram',
+        icon: generalIcons.personRunning,
+        title: 'Your Training Program',
+        description: `Read through your current workout plan`,
+        navigateTo: 'placeholderScreen'
+    },
 ]

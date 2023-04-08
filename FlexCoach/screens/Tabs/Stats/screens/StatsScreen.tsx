@@ -11,6 +11,7 @@ import { mockBenchPressData, mockDumbbellCurlData } from '../../../../mocks/trai
 import { Section } from '../../../../components/sections/Section';
 import { ListItem } from '../../../../components/list-items/ListItem';
 import { useScrollToTop } from '@react-navigation/native';
+import { statsScreenDietListMock, statsScreenWorkoutListMock } from '../../../../mocks/listItemMocks';
 
 
 export const StatsScreen = ({navigation}: {navigation: any}) => {
@@ -33,10 +34,10 @@ export const StatsScreen = ({navigation}: {navigation: any}) => {
   useScrollToTop(scrollViewRef);
   return (
     <SafeAreaView style={[styles.container, {backgroundColor: appColors.background}]}>
-      <WeekHeader
+      {/* <WeekHeader
           selectedDay={selectedDay}
           onDayPress={handleDayPress}
-        />
+        /> */}
       <ScrollView
         ref={scrollViewRef}
         refreshControl={
@@ -50,13 +51,27 @@ export const StatsScreen = ({navigation}: {navigation: any}) => {
         showsVerticalScrollIndicator={false}
       >
         <View>
+          <Section title='Workout' icon={generalIcons.dumbbell} iconColor={appColors.primary}>
+            {statsScreenWorkoutListMock.map(item => (
+              <ListItem
+                key={item.id}
+                title={item.title}
+                description={item.description}
+                icon={item.icon}
+                onPress={() => navigation.navigate(item.navigateTo, {title: item.title, icon: item.icon})}
+              />
+            ))}
+          </Section>
           <Section title='Diet' icon={generalIcons.apple} iconColor='red'>
-            <ListItem
-              title={`Today's Log`}
-              description='View, add, or remove items'
-              icon={generalIcons.list}
-              onPress={() => navigation.navigate('dietLogScreen')}
-            />
+            {statsScreenDietListMock.map(item => (
+              <ListItem
+                key={item.id}
+                title={item.title}
+                description={item.description}
+                icon={item.icon}
+                onPress={() => navigation.navigate(item.navigateTo, {title: item.title, icon: item.icon})}
+              />
+            ))}
           </Section>
         </View>
         <CustomGraph

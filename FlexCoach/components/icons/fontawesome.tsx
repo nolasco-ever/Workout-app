@@ -59,7 +59,10 @@ import {
     faScrewdriverWrench,
     faTrophy,
     faClockRotateLeft,
-    faAppleWhole
+    faAppleWhole,
+    faDumbbell,
+    faPersonRunning,
+    faChartSimple
 } from '@fortawesome/free-solid-svg-icons';
 
 library.add(
@@ -121,5 +124,8 @@ library.add(
     faScrewdriverWrench,
     faTrophy,
     faClockRotateLeft,
-    faAppleWhole
+    faAppleWhole,
+    faDumbbell,
+    faPersonRunning,
+    faChartSimple
 );
