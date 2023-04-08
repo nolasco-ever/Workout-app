@@ -52,21 +52,24 @@ export const HomeScreen = () => {
             borderColor: appColors.subtext
           }}
         >
-        <AlertBanner
-          message='This is just a test info message. Please disregard'
-          isClosable
-        />
+          <AlertBanner
+            message='This is just a test info message. Please disregard'
+            isClosable
+          />
           <AlertBanner
             message='This is just a test success message. Please disregard'
             type='success'
+            isClosable
           />
           <AlertBanner
             message='This is just a test warning message. Please disregard'
             type='warning'
+            isClosable
           />
           <AlertBanner
             message='This is just a test error message. Please disregard'
             type='error'
+            isClosable
           />
           <Section title='Explore' seeMore onPressSeeMore={() => console.log(`Pressed 'See More'`)}>
             {strengthTrainingTypesMock.map((item, index) => (
