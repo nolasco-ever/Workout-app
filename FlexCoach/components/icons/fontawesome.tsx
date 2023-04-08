@@ -62,7 +62,9 @@ import {
     faAppleWhole,
     faDumbbell,
     faPersonRunning,
-    faChartSimple
+    faChartSimple,
+    faCircleExclamation,
+    faCircleCheck
 } from '@fortawesome/free-solid-svg-icons';
 
 library.add(
@@ -127,5 +129,7 @@ library.add(
     faAppleWhole,
     faDumbbell,
     faPersonRunning,
-    faChartSimple
+    faChartSimple,
+    faCircleExclamation,
+    faCircleCheck
 );

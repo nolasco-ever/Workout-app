@@ -15,6 +15,7 @@ import { mockBenchPressData, mockDumbbellCurlData } from '../../../mocks/trainin
 import { InformationCard } from '../../../components/cards/informationCard';
 import { strengthTrainingTypesMock } from '../../../mocks/selectionCardListMocks';
 import { useScrollToTop } from '@react-navigation/native';
+import { AlertBanner } from '../../../components/banners/alertBanner';
 
 export const HomeScreen = () => {
     const appColors = colors();
@@ -51,6 +52,22 @@ export const HomeScreen = () => {
             borderColor: appColors.subtext
           }}
         >
+        <AlertBanner
+          message='This is just a test info message. Please disregard'
+          isClosable
+        />
+          <AlertBanner
+            message='This is just a test success message. Please disregard'
+            type='success'
+          />
+          <AlertBanner
+            message='This is just a test warning message. Please disregard'
+            type='warning'
+          />
+          <AlertBanner
+            message='This is just a test error message. Please disregard'
+            type='error'
+          />
           <Section title='Explore' seeMore onPressSeeMore={() => console.log(`Pressed 'See More'`)}>
             {strengthTrainingTypesMock.map((item, index) => (
               <InformationCard

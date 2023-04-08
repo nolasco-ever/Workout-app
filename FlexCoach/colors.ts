@@ -11,9 +11,16 @@ const darkModeColors = {
     accent: '#ff5733',
     inactive: '#a2a2a2',
     icon: '#ffffff',
-    error: '#cf6679',
-    onError: '#000000',
-    transparent: 'rgba(0, 0, 0, 0)'
+    transparent: 'rgba(0, 0, 0, 0)',
+    onBanner: '#000000',
+    info: '#b1edef',
+    onInfo: '#42bdd1',
+    success: '#c5efdd',
+    onSuccess: '#6ad0a1',
+    warning: '#f9efd7',
+    onWarning: '#f4ba45',
+    error: '#f4d9d9',
+    onError: '#de5965',
 }
 
 const lightModeColors = {
@@ -27,9 +34,16 @@ const lightModeColors = {
     accent: '#ff5733',
     inactive: '#a2a2a2',
     icon: '#001f54',
-    error: '#b00020',
-    onError: '#ffffff',
-    transparent: 'rgba(0, 0, 0, 0)'
+    transparent: 'rgba(0, 0, 0, 0)',
+    onBanner: '#000000',
+    info: '#b1edef',
+    onInfo: '#42bdd1',
+    success: '#c5efdd',
+    onSuccess: '#6ad0a1',
+    warning: '#f9efd7',
+    onWarning: '#f4ba45',
+    error: '#f4d9d9',
+    onError: '#de5965',
 }
 
 const getSystemTheme = () => {
