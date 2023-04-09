@@ -1,19 +1,16 @@
 import { Dimensions, Image, SafeAreaView, StyleSheet, Text, TouchableOpacity, View } from 'react-native'
 import React, { useState } from 'react'
 import { colors } from '../../../colors';
-import { ImageCard } from '../../../components/cards/imageCard';
 import { CustomText } from '../../../components/text/customText';
 import { Button } from '../../../components/buttons/button';
 import { AnimatedImage } from '../../../components/utils/AnimatedImage';
-import { benchPressAnimation } from '../../../animations/custom-training-program-flow';
-
-type GoalType = 'Build Muscle' | 'Lose Weight' | 'Increase Flexibility' | 'Cardiovascular Health';
+import { setFitnessGoalsOptions } from '../../../config/customize-training-program-flow/setFitnessGoals';
+import { defaultAnimation } from '../../../animations/custom-training-program-flow';
 
 export const SetFitnessGoalScreen = () => {
   const appColors = colors();
   const [selectedGoal, setSelectedGoal] = useState<number | null>(null);
 
-  const goals: GoalType[] = ['Build Muscle', 'Lose Weight', 'Increase Flexibility', 'Cardiovascular Health'];
   const goalImages = [
     'https://cdn.vox-cdn.com/thumbor/XSW5TTZRjsqJgUeBu46g2zmn4uE=/0x0:5472x3648/1200x800/filters:focal(1554x1539:2428x2413)/cdn.vox-cdn.com/uploads/chorus_image/image/67453937/1224663515.jpg.0.jpg',
     'https://www.nuvovivo.com/wp-content/uploads/2020/02/lose-weight.png',
@@ -25,7 +22,7 @@ export const SetFitnessGoalScreen = () => {
     setSelectedGoal(index);
   };
 
-  const renderGoal = (goal: GoalType, index: number) => {
+  const renderGoal = (goal: string, index: number) => {
     const isSelected = selectedGoal === index;
 
     return (
@@ -35,9 +32,7 @@ export const SetFitnessGoalScreen = () => {
         style={[
           styles.goalContainer,
           {
-            backgroundColor: isSelected ? appColors.secondary : appColors.transparent,
-            borderColor: appColors.text,
-            borderWidth: isSelected ? 0 : 1
+            backgroundColor: isSelected ? appColors.secondary : appColors.transparent
           }
         ]}
       >
@@ -57,20 +52,19 @@ export const SetFitnessGoalScreen = () => {
 
   const getImage = () => {
     if (selectedGoal === null) {
-      return 'https://robbreport.com/wp-content/uploads/2022/07/Himat_WeightRoom.jpg?w=1000'
+      return defaultAnimation
     } else {
-      return goalImages[selectedGoal]
+      return setFitnessGoalsOptions[selectedGoal].image
     }
   }
 
   return (
     <SafeAreaView style={[styles.container, {backgroundColor: appColors.background}]}>
-      <ImageCard imageUrl={getImage()}/>
-      {/* <AnimatedImage/> */}
+      <AnimatedImage source={getImage()}/>
       <View style={{flex: 1, alignItems: 'center', margin: 10}}>
         <CustomText type='header'>Select a goal</CustomText>
         <View style={styles.goalsContainer}>
-          {goals.map((goal, index) => renderGoal(goal, index))}
+          {setFitnessGoalsOptions.map((goal, index) => renderGoal(goal.name, index))}
         </View>
       </View>
       <Button

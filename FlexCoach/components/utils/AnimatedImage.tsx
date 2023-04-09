@@ -1,22 +1,20 @@
-import React from 'react'
-import { Dimensions, StyleSheet, View } from 'react-native';
+import React, { useRef } from 'react'
+import { Dimensions, Image, ImageSourcePropType, StyleSheet, View } from 'react-native';
 import AnimatedLottieView from 'lottie-react-native';
 
 interface AnimatedImageProps {
-    animationPath?: string;
-  }
+  source?: ImageSourcePropType;
+}
   
-export const AnimatedImage = ({ animationPath }: AnimatedImageProps) => {
+export const AnimatedImage = ({ source }: AnimatedImageProps) => {
     const screenWidth = Dimensions.get('window').width;
     const screenHeight = Dimensions.get('window').height;
-
   
     return (
       <View style={[styles.container, { height: screenHeight / 3 }]}>
-        <AnimatedLottieView
-          source={require('../../animations/custom-training-program-flow/animations/bench-press.json')}
-          autoPlay
-          loop
+        <Image
+          source={source}
+          resizeMode='contain'
           style={styles.animation}
         />
       </View>
@@ -30,6 +28,6 @@ const styles = StyleSheet.create({
     },
     animation: {
       width: '100%',
-      height: '100%',
+      height: '100%'
     },
   });
