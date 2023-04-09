@@ -51,7 +51,7 @@ export const profileListMocks = [
         icon: generalIcons.plus,
         title: 'Create a New Workout Plan',
         description: `Customize and start a new training program`,
-        navigateTo: 'placeholderScreen'
+        navigateTo: 'createYourCustomTrainingProgram'
     },
     {
         id: 'createANewDietPlan',

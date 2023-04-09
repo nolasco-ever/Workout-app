@@ -1,0 +1,1 @@
+export const benchPressAnimation = require('./animations/bench-press.json');
