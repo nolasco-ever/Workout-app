@@ -1,5 +1,5 @@
 import React from 'react';
-import { createStackNavigator } from '@react-navigation/stack';
+import { TransitionPresets, createStackNavigator } from '@react-navigation/stack';
 import { SignInScreen } from '../screens/Auth/SignInScreen';
 import { TabNavigator } from './TabNavigator';
 import { NotificationsScreen } from '../screens/Tabs/Home/NotificationsScreen';
@@ -49,7 +49,8 @@ export const AppStack = () => {
                 name='createYourCustomTrainingProgram'
                 component={CustomTrainingProgramStack}
                 options={{
-                    headerShown: false
+                    headerShown: false,
+                    ...TransitionPresets.ModalSlideFromBottomIOS
                 }}
             />
         </Stack.Navigator>

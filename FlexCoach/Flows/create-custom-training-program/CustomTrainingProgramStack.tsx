@@ -3,7 +3,7 @@ import { createStackNavigator } from "@react-navigation/stack";
 import { colors } from "../../colors";
 import { customTrainingProgramStack } from '../../config/customTrainingProgramStackConfig';
 import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
-import { directionIcons } from '../../components/icons/icon-library';
+import { directionIcons, generalIcons } from '../../components/icons/icon-library';
 import { IconProp } from '@fortawesome/fontawesome-svg-core';
 
 const Stack = createStackNavigator();
@@ -14,7 +14,7 @@ export const CustomTrainingProgramStack = () => {
     return (
         <Stack.Navigator
             screenOptions={{
-                headerShown: false
+                headerShown: false,
             }}
         >
             {customTrainingProgramStack.map((screen, index) => (
@@ -28,11 +28,18 @@ export const CustomTrainingProgramStack = () => {
                         headerTitleStyle: {color: appColors.text},
                         headerTitle: screen.name,
                         headerBackTitleVisible: false,
-                        headerBackImage: () => (
+                        headerBackImage: () => index === 0 ? (
+                            <FontAwesomeIcon
+                                icon={generalIcons.xMark as IconProp}
+                                color={appColors.icon}
+                                size={25}
+                                style={{marginLeft: 10}}
+                            />
+                        ) : (
                             <FontAwesomeIcon
                                 icon={directionIcons.angleLeft as IconProp}
                                 color={appColors.icon}
-                                size={30}
+                                size={25}
                                 style={{marginLeft: 10}}
                             />
                         )
