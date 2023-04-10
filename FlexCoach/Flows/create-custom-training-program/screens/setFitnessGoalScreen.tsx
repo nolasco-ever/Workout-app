@@ -12,6 +12,7 @@ export const SetFitnessGoalScreen = ({navigation}: {navigation: any}) => {
   const [selectedGoal, setSelectedGoal] = useState<number | null>(null);
 
   const handleGoalPress = (index: number) => {
+    console.log(index);
     setSelectedGoal(index);
   };
 
@@ -64,6 +65,7 @@ export const SetFitnessGoalScreen = ({navigation}: {navigation: any}) => {
           title='Next'
           onPress={() => navigation.navigate('selectYourWorkoutsScreen')}
           isPrimary
+          disabled={selectedGoal === null}
         />
     </SafeAreaView>
   )

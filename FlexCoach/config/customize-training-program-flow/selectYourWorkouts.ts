@@ -4,11 +4,11 @@ export const chestSection = {
     exercises: [
         'Bench Press',
         'Dumbbell Press',
-        'Dip',
-        'Push up',
-        'Machine Fly',
         'Machine Chest Press',
-        'Dumbbell Pull-Over'
+        'Dip',
+        'Dumbbell Pull-Over',
+        'Machine Fly',
+        'Push up',
     ]
 }
 
@@ -17,12 +17,12 @@ export const tricepsSection = {
     name: 'Triceps',
     exercises: [
         'Skullcrusher',
+        'Close Grip Bench Press',
+        'Cable Push-down',
         'Triceps Dip',
         'Bench Dip',
         'Dumbbell Tricep Extension',
-        'Close Grip Bench Press',
-        'Cable Push-down',
-        'Cable Overhead Extension'
+        'Cable Overhead Extension',
     ]
 }
 
@@ -30,12 +30,12 @@ export const bicepsSection = {
     id: 'bicepsSection',
     name: 'Biceps',
     exercises: [
-        'Dumbbell Curl',
-        'Chin up',
         'Cable Curl',
-        'Hammer Curl',
+        'Chin up',
         'Barbell Curl',
         'Reverse Grip Barbell Curl',
+        'Hammer Curl',
+        'Dumbbell Curl',
     ]
 }
 
@@ -47,8 +47,10 @@ export const backSection = {
         'Lat Pull-down',
         'Deadlift',
         'Wide-grip Pull-up',
-        'T-bar Row',
         'Chest-supported Row',
+        'T-bar Row',
+        'Incline Bench Dumbbell Row',
+        'Seated Cable Row'
     ]
 }
 
@@ -63,7 +65,7 @@ export const shouldersSection = {
         'Arnold Press',
         'Cable Face Pull',
         'Front Raise',
-        'Single Arm Cable Lateral Raise'
+        'Cable Lateral Raise'
     ]
 }
 
@@ -72,10 +74,10 @@ export const legsSection = {
     name: 'Legs',
     exercises: [
         'Barbell Squat',
-        'Leg Press',
-        'Bulgarian Split Squat',
-        'Lying Leg Curl',
         'Seated Leg Curl',
+        'Leg Press',
+        'Lying Leg Curl',
+        'Bulgarian Split Squat',
         'Calf Raise',
         'Leg Extension',
     ]
