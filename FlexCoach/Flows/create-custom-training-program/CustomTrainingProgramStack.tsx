@@ -6,6 +6,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
 import { directionIcons, generalIcons } from '../../components/icons/icon-library';
 import { IconProp } from '@fortawesome/fontawesome-svg-core';
 import { PlaceholderScreen } from '../../screens/placeholderScreen';
+import { TutorialScreen } from '../../shared-screens/tutorialScreen';
 
 const Stack = createStackNavigator();
 
@@ -47,6 +48,26 @@ export const CustomTrainingProgramStack = () => {
                     }}
                 />
             ))}
+            <Stack.Screen
+                name="tutorialScreen"
+                component={TutorialScreen}
+                options={({route}) => ({
+                    presentation: 'modal',
+                    headerShown: true,
+                    headerStyle: {backgroundColor: appColors.background},
+                    headerTitleStyle: {color: appColors.text},
+                    headerTitle: 'Tutorial Screen',
+                    headerBackTitleVisible: false,
+                    headerBackImage: () => (
+                        <FontAwesomeIcon
+                            icon={generalIcons.xMark as IconProp}
+                            color={appColors.icon}
+                            size={25}
+                            style={{marginLeft: 10}}
+                        />
+                    )
+                })}
+            />
             <Stack.Screen
                 name="placeholderScreen"
                 component={PlaceholderScreen}

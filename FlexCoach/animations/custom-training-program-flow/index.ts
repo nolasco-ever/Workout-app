@@ -1,5 +1,5 @@
-export const buildMuscleAnimation = require('./animations/bench-press.gif');
-export const loseWeightAnimation = require('./animations/lose-weight.gif');
-export const increaseFlexibilityAnimation = require('./animations/flexibility.gif');
-export const cardiovascularHealthAnimation = require('./animations/cardio.gif');
-export const defaultAnimation = require('./animations/default.gif');
+export const buildMuscleAnimation = require('./animations/bench-press.json');
+export const loseWeightAnimation = require('./animations/lose-weight.json');
+export const increaseFlexibilityAnimation = require('./animations/flexibility.json');
+export const cardiovascularHealthAnimation = require('./animations/cardio.json');
+export const defaultAnimation = require('./animations/default.json');

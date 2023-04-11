@@ -10,6 +10,7 @@ import { backSection, bicepsSection, chestSection, legsSection, shouldersSection
 import { Button } from '../../../components/buttons/button'
 import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome'
 import { IconProp } from '@fortawesome/fontawesome-svg-core'
+import { SelectionItem } from '../../../components/list-items/selectionItem'
 
 export const SelectYourWorkoutsScreen = ({navigation}: {navigation: any}) => {
   const appColors = colors();
@@ -34,33 +35,19 @@ export const SelectYourWorkoutsScreen = ({navigation}: {navigation: any}) => {
     }
   }, [selectedWorkouts])
 
-  const renderWorkoutGroup = (groupName: string, workouts: string[]) => {
+  const renderWorkoutGroup = (groupName: string, workouts: { name: string; link: string; howToSteps: string[]; }[]) => {
     return (
       <View>
         <Section title={groupName}>
           <View style={{flexDirection: 'row', padding: 10, flexWrap: 'wrap'}}>
-            {workouts.map((workout: string, index) => (
-              <TouchableOpacity
+            {workouts.map((workout: { name: string; link: string; howToSteps: string[] }, index) => (
+              <SelectionItem
                 key={index}
-                style={[
-                  styles.workoutItem,
-                  {
-                    backgroundColor: selectedWorkouts.includes(workout) ? appColors.secondary : appColors.onBackground,
-                    shadowColor: '#000000',
-                    shadowOpacity: useColorScheme() === 'light' ? 0.1 : 0,
-                    shadowOffset: {width: 1, height: 1}
-                  }
-                ]}
-                onPress={() => toggleWorkoutSelection(workout)}>
-                <Text style={[styles.workoutTitle, {color: appColors.text}]}>{workout}</Text>
-                <TouchableOpacity onPress={() => navigation.navigate('placeholderScreen', {title: 'Tutorial Screen', icon: generalIcons.personTeaching})}>
-                  <FontAwesomeIcon
-                    icon={generalIcons.info as IconProp}
-                    color={appColors.text}
-                    size={15}
-                  />
-                </TouchableOpacity>
-              </TouchableOpacity>
+                selectedItems={selectedWorkouts}
+                setSelectedItems={setSelectedWorkouts}
+                title={workout.name}
+                onPressInfo={() => navigation.navigate('tutorialScreen', {title: workout.name, videoLink: workout.link, steps: workout.howToSteps, muscleGroupWorkouts: workouts, navigation: navigation})}
+              />
             ))}
           </View>
         </Section>

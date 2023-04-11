@@ -12,7 +12,6 @@ export const SetFitnessGoalScreen = ({navigation}: {navigation: any}) => {
   const [selectedGoal, setSelectedGoal] = useState<number | null>(null);
 
   const handleGoalPress = (index: number) => {
-    console.log(index);
     setSelectedGoal(index);
   };
 
