@@ -46,7 +46,7 @@ export const SelectYourWorkoutsScreen = ({navigation}: {navigation: any}) => {
                 selectedItems={selectedWorkouts}
                 setSelectedItems={setSelectedWorkouts}
                 title={workout.name}
-                onPressInfo={() => navigation.navigate('tutorialScreen', {title: workout.name, videoLink: workout.link, steps: workout.howToSteps, muscleGroupWorkouts: workouts, navigation: navigation})}
+                onPressInfo={() => navigation.navigate('tutorialScreen', {title: workout.name, videoLink: workout.link, steps: workout.howToSteps, muscleGroupWorkouts: workouts})}
               />
             ))}
           </View>

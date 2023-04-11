@@ -6,8 +6,8 @@ import { CustomText } from '../components/text/customText';
 import { YouTubeVideo } from '../components/utils/youtubeVideo';
 import { Section } from '../components/sections/Section';
 
-export const TutorialScreen = ({route}: {route: any}) => {
-  const {title, videoLink, steps, muscleGroupWorkouts, navigation} = route.params;
+export const TutorialScreen = ({navigation, route}: {navigation: any, route: any}) => {
+  const {title, videoLink, steps, muscleGroupWorkouts} = route.params;
   const appColors = colors();
   const screenWidth = Dimensions.get('window').width
 
@@ -31,7 +31,16 @@ export const TutorialScreen = ({route}: {route: any}) => {
                     const videoId = item.link.match(/(?:https?:\/\/)?(?:www\.)?(?:youtube\.com|youtu\.be)\/(?:watch\/|embed\/|v\/|u\/\w\/|watch\?v=)?([^#\&\?]{11})/)?.[1];
                     const thumbnailUrl = `https://img.youtube.com/vi/${videoId}/hqdefault.jpg`;
                     return (
-                      <TouchableOpacity key={index} style={{margin: 10, width: screenWidth/2}} onPress={() => navigation.navigate('tutorialScreen', {title: item.name, videoLink: item.link, steps: item.howToSteps, muscleGroupWorkouts: muscleGroupWorkouts})}>
+                      <TouchableOpacity
+                        key={index} 
+                        style={{margin: 10, width: screenWidth/2}} 
+                        onPress={() => 
+                          navigation.navigate(
+                            'tutorialScreen', 
+                            {title: item.name, videoLink: item.link, steps: item.howToSteps, muscleGroupWorkouts: muscleGroupWorkouts}
+                          )
+                        }
+                      >
                         <Image
                         source={{
                           uri: thumbnailUrl
