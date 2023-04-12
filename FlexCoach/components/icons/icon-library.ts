@@ -35,6 +35,7 @@ export const directionIcons = {
     moon: 'fa-solid fa-moon',
     penToSquare: 'fa-solid fa-pen-to-square',
     personRunning: 'fa-solid fa-person-running',
+    personTeaching: 'fa-solid fa-person-chalkboard',
     plus: 'fa-solid fa-plus',
     screwdriverWrench: 'fa-solid fa-screwdriver-wrench',
     signOut: 'fa-solid fa-right-from-bracket',

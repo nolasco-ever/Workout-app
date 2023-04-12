@@ -1,5 +1,5 @@
 import React from 'react';
-import { createStackNavigator } from '@react-navigation/stack';
+import { TransitionPresets, createStackNavigator } from '@react-navigation/stack';
 import { SignInScreen } from '../screens/Auth/SignInScreen';
 import { TabNavigator } from './TabNavigator';
 import { NotificationsScreen } from '../screens/Tabs/Home/NotificationsScreen';
@@ -7,6 +7,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
 import { directionIcons } from '../components/icons/icon-library';
 import { IconProp } from '@fortawesome/fontawesome-svg-core';
 import { colors } from '../colors';
+import { CustomTrainingProgramStack } from '../Flows/create-custom-training-program/CustomTrainingProgramStack';
 
 const Stack = createStackNavigator();
 
@@ -42,6 +43,14 @@ export const AppStack = () => {
                             style={{marginLeft: 10}}
                         />
                     )
+                }}
+            />
+            <Stack.Screen
+                name='createYourCustomTrainingProgram'
+                component={CustomTrainingProgramStack}
+                options={{
+                    headerShown: false,
+                    ...TransitionPresets.ModalSlideFromBottomIOS
                 }}
             />
         </Stack.Navigator>

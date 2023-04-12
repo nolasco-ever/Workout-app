@@ -6,16 +6,17 @@ interface ButtonProps {
   onPress: () => void;
   title: string;
   isPrimary: boolean;
+  disabled?: boolean;
 }
 
-export const Button = ({ onPress, title, isPrimary }: ButtonProps) => {
+export const Button = ({ onPress, title, isPrimary, disabled }: ButtonProps) => {
   const screenWidth = Dimensions.get('window').width;
   const appColors = colors();
 
   const buttonStyle = isPrimary ? 
     {
       width: screenWidth - 40,
-      backgroundColor: appColors.primary,
+      backgroundColor: disabled ? appColors.inactive : appColors.primary,
     } : 
       {
         width: screenWidth - 40,
@@ -33,7 +34,7 @@ export const Button = ({ onPress, title, isPrimary }: ButtonProps) => {
       };
       
   return (
-    <TouchableOpacity onPress={onPress} style={[styles.button, buttonStyle]}>
+    <TouchableOpacity disabled={disabled} onPress={onPress} style={[styles.button, buttonStyle]}>
       <Text style={[styles.buttonText, buttonTextStyle]}>{title}</Text>
     </TouchableOpacity>
   );
@@ -45,6 +46,7 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     justifyContent: 'center',
     alignItems: 'center',
+    alignSelf: 'center',
     margin: 10,
   },
   buttonText: {
