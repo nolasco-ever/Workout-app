@@ -33,7 +33,7 @@ export const ScheduleTrainingProgramScreen = ({ navigation, route }: {navigation
         [],
     ]);
 
-    const [numOfWeeks, setNumOfWeeks] = useState(1);
+    const [numOfWeeks, setNumOfWeeks] = useState(4);
 
     const handleValueChange = (newValue: number) => {
         setNumOfWeeks(newValue);
