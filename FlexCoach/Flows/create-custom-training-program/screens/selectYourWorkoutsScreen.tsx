@@ -17,16 +17,6 @@ export const SelectYourWorkoutsScreen = ({navigation}: {navigation: any}) => {
   const [selectedWorkouts, setSelectedWorkouts] = useState<string[]>([]);
   const [isDisabled, setIsDisabled] = useState<boolean>(true);
 
-  const toggleWorkoutSelection = (workout: any) => {
-    if (selectedWorkouts.includes(workout)) {
-      setSelectedWorkouts(selectedWorkouts.filter((item) => item !== workout));
-    } else {
-      if (selectedWorkouts.length < 20) {
-        setSelectedWorkouts([...selectedWorkouts, workout]);
-      }
-    }
-  };
-
   useEffect(() => {
     if (selectedWorkouts.length < 6) {
       setIsDisabled(true);
@@ -34,6 +24,17 @@ export const SelectYourWorkoutsScreen = ({navigation}: {navigation: any}) => {
       setIsDisabled(false);
     }
   }, [selectedWorkouts])
+
+
+  const toggleWorkoutSelection = (title: any) => {
+    if (selectedWorkouts.includes(title)) {
+      setSelectedWorkouts(selectedWorkouts.filter((item) => item !== title));
+    } else {
+      if (selectedWorkouts.length < 20) {
+        setSelectedWorkouts([...selectedWorkouts, title]);
+      }
+    }
+  };
 
   const renderWorkoutGroup = (groupName: string, workouts: { name: string; link: string; howToSteps: string[]; }[]) => {
     return (
@@ -44,8 +45,8 @@ export const SelectYourWorkoutsScreen = ({navigation}: {navigation: any}) => {
               <SelectionItem
                 key={index}
                 selectedItems={selectedWorkouts}
-                setSelectedItems={setSelectedWorkouts}
                 title={workout.name}
+                onPressItem={() => toggleWorkoutSelection(workout.name)}
                 onPressInfo={() => navigation.navigate('tutorialScreen', {title: workout.name, videoLink: workout.link, steps: workout.howToSteps, muscleGroupWorkouts: workouts})}
               />
             ))}
@@ -62,6 +63,7 @@ export const SelectYourWorkoutsScreen = ({navigation}: {navigation: any}) => {
       </View>
       <AlertBanner
         message='Make sure to include exercises that target all major muscle groups'
+        isClosable
       />
       <ScrollView>
         {renderWorkoutGroup(chestSection.name, chestSection.exercises)}
@@ -73,7 +75,7 @@ export const SelectYourWorkoutsScreen = ({navigation}: {navigation: any}) => {
       </ScrollView>
       <Button
           title='Next'
-          onPress={() => console.log('Pressed')}
+          onPress={() => navigation.navigate('scheduleTrainingProgramScreen', {items: selectedWorkouts})}
           isPrimary
           disabled={isDisabled}
         />

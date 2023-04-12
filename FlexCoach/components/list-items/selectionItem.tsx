@@ -7,23 +7,13 @@ import { generalIcons } from '../icons/icon-library';
 
 interface SelectionItemProps {
     selectedItems: string[];
-    setSelectedItems: React.Dispatch<React.SetStateAction<string[]>>
     title: string;
+    onPressItem: () => void;
     onPressInfo?: () => void;
 }
 
-export const SelectionItem = ({selectedItems, setSelectedItems, title, onPressInfo}: SelectionItemProps) => {
+export const SelectionItem = ({selectedItems, title, onPressItem, onPressInfo}: SelectionItemProps) => {
     const appColors = colors();
-
-    const toggleWorkoutSelection = (title: any) => {
-        if (selectedItems.includes(title)) {
-          setSelectedItems(selectedItems.filter((item) => item !== title));
-        } else {
-          if (selectedItems.length < 20) {
-            setSelectedItems([...selectedItems, title]);
-          }
-        }
-      };
 
     return (
         <TouchableOpacity
@@ -36,7 +26,7 @@ export const SelectionItem = ({selectedItems, setSelectedItems, title, onPressIn
                 shadowOffset: {width: 1, height: 1}
                 }
             ]}
-            onPress={() => toggleWorkoutSelection(title)}>
+            onPress={onPressItem}>
             <Text style={[styles.workoutTitle, {color: appColors.text}]}>{title}</Text>
             {onPressInfo && <TouchableOpacity onPress={onPressInfo}>
                 <FontAwesomeIcon

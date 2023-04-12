@@ -1,3 +1,4 @@
+import { ScheduleTrainingProgramScreen } from "../Flows/create-custom-training-program/screens/scheduleTrainingProgramScreen";
 import { SelectYourWorkoutsScreen } from "../Flows/create-custom-training-program/screens/selectYourWorkoutsScreen";
 import { SetFitnessGoalScreen } from "../Flows/create-custom-training-program/screens/setFitnessGoalScreen";
 import { generalIcons } from "../components/icons/icon-library";
@@ -13,6 +14,12 @@ export const customTrainingProgramStack = [
         id: 'selectYourWorkoutsScreen',
         name: 'Select Your Workout',
         component: SelectYourWorkoutsScreen,
+        icon: generalIcons.dumbbell,
+    },
+    {
+        id: 'scheduleTrainingProgramScreen',
+        name: 'Schedule Your Training Program',
+        component: ScheduleTrainingProgramScreen,
         icon: generalIcons.dumbbell,
     }
 ]
