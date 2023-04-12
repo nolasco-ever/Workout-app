@@ -6,9 +6,10 @@ interface AnimatedImageProps {
   source: string | AnimationObject | {
     uri: string;
   }
+  loop?: boolean
 }
   
-export const AnimatedImage = ({ source }: AnimatedImageProps) => {
+export const AnimatedImage = ({ source, loop=true }: AnimatedImageProps) => {
     const screenHeight = Dimensions.get('window').height;
   
     return (
@@ -16,6 +17,7 @@ export const AnimatedImage = ({ source }: AnimatedImageProps) => {
         <LottieView
           source={source}
           autoPlay={true}
+          loop={loop}
         />
       </View>
     );

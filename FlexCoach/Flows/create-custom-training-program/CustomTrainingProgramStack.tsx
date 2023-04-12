@@ -5,8 +5,9 @@ import { customTrainingProgramStack } from '../../config/customTrainingProgramSt
 import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
 import { directionIcons, generalIcons } from '../../components/icons/icon-library';
 import { IconProp } from '@fortawesome/fontawesome-svg-core';
-import { PlaceholderScreen } from '../../screens/placeholderScreen';
 import { TutorialScreen } from '../../shared-screens/tutorialScreen';
+import MessageScreen from '../../shared-screens/messageScreen';
+import { successCheckAnimation } from '../../animations/shared';
 
 const Stack = createStackNavigator();
 
@@ -51,7 +52,7 @@ export const CustomTrainingProgramStack = () => {
             <Stack.Screen
                 name="tutorialScreen"
                 component={TutorialScreen}
-                options={({route}) => ({
+                options={{
                     presentation: 'modal',
                     headerShown: true,
                     headerStyle: {backgroundColor: appColors.background},
@@ -66,27 +67,20 @@ export const CustomTrainingProgramStack = () => {
                             style={{marginLeft: 10}}
                         />
                     )
-                })}
+                }}
             />
             <Stack.Screen
-                name="placeholderScreen"
-                component={PlaceholderScreen}
-                options={({route}) => ({
-                    presentation: 'modal',
-                    headerShown: true,
-                    headerStyle: {backgroundColor: appColors.background},
-                    headerTitleStyle: {color: appColors.text},
-                    headerTitle: (route.params as { title: string }).title,
-                    headerBackTitleVisible: false,
-                    headerBackImage: () => (
-                        <FontAwesomeIcon
-                            icon={generalIcons.xMark as IconProp}
-                            color={appColors.icon}
-                            size={25}
-                            style={{marginLeft: 10}}
-                        />
-                    )
-                })}
+                name="successScreen"
+                component={MessageScreen}
+                options={{
+                    headerShown: false,
+                }}
+                initialParams={{
+                    title: 'Congrats!',
+                    message: 'Your training program has been successfully created. Get ready to crush your fitness goals!',
+                    image: successCheckAnimation,
+                    buttonTitle: 'Finish'
+                }}
             />
         </Stack.Navigator>
     );

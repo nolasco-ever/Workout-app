@@ -1,0 +1,1 @@
+export const successCheckAnimation = require('./animations/success-check.json');

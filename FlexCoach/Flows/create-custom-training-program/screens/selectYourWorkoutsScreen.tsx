@@ -61,6 +61,9 @@ export const SelectYourWorkoutsScreen = ({navigation}: {navigation: any}) => {
       <View style={{margin: 10, flexDirection: 'row'}}>
         <CustomText type='subheader'>Create a balanced program by selecting 6-20 workouts {`(${selectedWorkouts.length}/20)`}</CustomText>
       </View>
+      <TouchableOpacity onPress={() => setSelectedWorkouts([])} style={{flexDirection: 'row', margin: 10, justifyContent: 'flex-end'}}>
+          <Text style={{color: appColors.text, fontWeight: 'bold', fontSize: 16}}>Clear</Text>
+      </TouchableOpacity>
       <AlertBanner
         message='Make sure to include exercises that target all major muscle groups'
         isClosable
