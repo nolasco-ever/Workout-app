@@ -42,10 +42,10 @@ export const TutorialScreen = ({navigation, route}: {navigation: any, route: any
                         }
                       >
                         <Image
-                        source={{
-                          uri: thumbnailUrl
-                        }}
-                          style={{width: '100%', height: screenWidth/4, backgroundColor: 'red', marginBottom: 5, borderRadius: 5}}
+                          source={{
+                            uri: thumbnailUrl
+                          }}
+                          style={{width: '100%', height: screenWidth/4, marginBottom: 5, borderRadius: 5}}
                         />
                         <Text numberOfLines={2} style={{color: appColors.text, fontSize: 16}}>{item.name}</Text>
                       </TouchableOpacity>
