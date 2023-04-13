@@ -13,6 +13,7 @@ export const directionIcons = {
   export const generalIcons = {
     apple: 'fa-solid fa-apple-whole',
     bell: 'fa-solid fa-bell',
+    book: 'fa-solid fa-book',
     bulletPoint: 'fa-solid fa-circle',
     calendarDay: 'fa-solid fa-calendar-day',
     check: 'fa-solid fa-check',

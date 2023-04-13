@@ -8,6 +8,7 @@ import { TouchableOpacity } from 'react-native-gesture-handler';
 
 interface SectionProps {
   title: string;
+  titleFontSize?: number;
   icon?: string;
   iconColor?: string;
   children: React.ReactNode,
@@ -16,7 +17,7 @@ interface SectionProps {
   onPressSeeMore?: () => void;
 }
 
-export const Section: FC<SectionProps> = ({ title, icon, iconColor, children, centered=false, seeMore=false, onPressSeeMore }) => {
+export const Section: FC<SectionProps> = ({ title, titleFontSize, icon, iconColor, children, centered=false, seeMore=false, onPressSeeMore }) => {
     const appColors = colors();
     return (
         <View>
@@ -30,7 +31,11 @@ export const Section: FC<SectionProps> = ({ title, icon, iconColor, children, ce
                         />
                     </View>
                 )}
-                <CustomText type='header'>{title}</CustomText>
+                {titleFontSize ? (
+                  <Text style={{color: appColors.text, fontWeight: 'bold', fontSize: titleFontSize}}>{title}</Text>
+                ) : (
+                  <CustomText type='header'>{title}</CustomText>
+                )}
             </View>
             <View style={styles.contentContainer}>{children}</View>
             {seeMore && onPressSeeMore && (

@@ -1,11 +1,21 @@
-import { Dimensions, NativeSyntheticEvent, StyleSheet, TargetedEvent, Text, TextInput, TouchableOpacity, View, useColorScheme } from 'react-native'
-import React, { useEffect, useRef, useState } from 'react'
+import { 
+    Dimensions, 
+    NativeSyntheticEvent, 
+    StyleSheet, 
+    TargetedEvent, 
+    Text, 
+    TextInput, 
+    TouchableOpacity, 
+    View, 
+    useColorScheme 
+} from 'react-native'
+import React, { useRef, useState } from 'react'
 import { colors } from '../../colors';
 import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
-import { generalIcons, tabIcons } from '../icons/icon-library';
+import { tabIcons } from '../icons/icon-library';
 import { IconProp } from '@fortawesome/fontawesome-svg-core';
-import { CustomText } from '../text/customText';
-import { SpringValue, animated, useSpring } from '@react-spring/native';
+import { animated, useSpring } from '@react-spring/native';
+import { ResultsList } from './resultsList';
 
 interface SearchBarProps {
     value: string;
@@ -13,6 +23,7 @@ interface SearchBarProps {
     onFocus?: null | ((event: NativeSyntheticEvent<TargetedEvent>) => void) | undefined;
     onCancel?: () => void;
     onClear: () => void;
+    navigation: any;
 }
 
 export const SearchBar = ({
@@ -20,7 +31,8 @@ export const SearchBar = ({
     onChangeText,
     onFocus,
     onCancel = () => {},
-    onClear
+    onClear,
+    navigation
     }: SearchBarProps
 ) => {
     const appColors = colors();
@@ -82,55 +94,59 @@ export const SearchBar = ({
     const cancelSpringStyle = isFocused ? onFocusCancelStyle() : onBlurCancelStyle()
 
     return (
-        <View style={[styles.container, {height: screenWidth/7}]}>
-            <View style={[styles.inputContainer, {backgroundColor: useColorScheme() === 'dark' ? appColors.onBackground : appColors.lightGrey}]}>
-                <FontAwesomeIcon
-                    icon={tabIcons.explore as IconProp}
-                    color={appColors.text}
-                    style={styles.icon}
-                />
-                <TextInput
-                    ref={inputRef}
-                    value={value}
-                    onChangeText={onChangeText}
-                    placeholder='Search'
-                    clearButtonMode='while-editing'
-                    onFocus={(e: any) => {
-                        if (onFocus) {
-                            onFocus(e)
-                        }
-                        setIsFocused(true);
-
-                        if (!animateCancel) {
-                            setAnimateCancel(true);
-                        }
-                    }}
-                    autoCorrect={false}
-                    style={[styles.input, {color: appColors.text}]}
-                />
-            </View>
-            <animated.View 
-                style={[
-                    styles.cancelContainer, 
-                    animateCancel ? cancelSpringStyle : {width: 0, opacity: 0, marginLeft: 0}
-                ]}
-            >
-                <TouchableOpacity onPress={toggleFocus} style={styles.cancelTouchable}>
-                    <Text
-                        style={[
-                            styles.cancelText,
-                            {
-                                color: appColors.text
+        <>
+            <View style={[styles.container, {height: screenWidth/7}]}>
+                <View style={[styles.inputContainer, {backgroundColor: useColorScheme() === 'dark' ? appColors.onBackground : appColors.lightGrey}]}>
+                    <FontAwesomeIcon
+                        icon={tabIcons.explore as IconProp}
+                        color={appColors.text}
+                        style={styles.icon}
+                    />
+                    <TextInput
+                        ref={inputRef}
+                        value={value}
+                        onChangeText={onChangeText}
+                        placeholder='Search'
+                        clearButtonMode='while-editing'
+                        onFocus={(e: any) => {
+                            if (onFocus) {
+                                onFocus(e)
                             }
-                        ]}
-                        numberOfLines={1}
-                        ellipsizeMode='clip'
-                    >
-                        Cancel
-                    </Text>
-                </TouchableOpacity>
-            </animated.View>
-        </View>
+                            setIsFocused(true);
+
+                            if (!animateCancel) {
+                                setAnimateCancel(true);
+                            }
+                        }}
+                        autoCorrect={false}
+                        style={[styles.input, {color: appColors.text}]}
+                    />
+                </View>
+                <animated.View 
+                    style={[
+                        styles.cancelContainer, 
+                        animateCancel ? cancelSpringStyle : {width: 0, opacity: 0, marginLeft: 0}
+                    ]}
+                >
+                    <TouchableOpacity onPress={toggleFocus} style={styles.cancelTouchable}>
+                        <Text
+                            style={[
+                                styles.cancelText,
+                                {
+                                    color: appColors.text
+                                }
+                            ]}
+                            numberOfLines={1}
+                            ellipsizeMode='clip'
+                        >
+                            Cancel
+                        </Text>
+                    </TouchableOpacity>
+                </animated.View>
+            </View>
+
+            {isFocused ? <ResultsList navigation={navigation}/> : null}
+        </>
     )
 }
 
