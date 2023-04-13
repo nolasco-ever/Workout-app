@@ -47,6 +47,7 @@ const styles = StyleSheet.create({
         justifyContent: 'flex-start'
     },
     title: {
+        fontWeight: 'bold',
         fontSize: 16,
         marginBottom: 5
     },

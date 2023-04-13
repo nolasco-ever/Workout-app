@@ -17,7 +17,7 @@ import { strengthTrainingTypesMock } from '../../../mocks/selectionCardListMocks
 import { useScrollToTop } from '@react-navigation/native';
 import { AlertBanner } from '../../../components/banners/alertBanner';
 
-export const HomeScreen = () => {
+export const HomeScreen = ({navigation}: {navigation: any}) => {
     const appColors = colors();
 
     const benchPressWeightData = mockBenchPressData.map(item => item.weight);
@@ -71,14 +71,14 @@ export const HomeScreen = () => {
             type='error'
             isClosable
           />
-          <Section title='Explore' seeMore onPressSeeMore={() => console.log(`Pressed 'See More'`)}>
+          <Section title='Explore' seeMore onPressSeeMore={() => navigation.navigate('Explore')}>
             {strengthTrainingTypesMock.map((item, index) => (
               <InformationCard
                 key={index}
                 imageSource={item.image}
                 title={item.title}
                 description={item.description}
-                onPress={() => console.log('Pressed Card')}
+                onPress={() => console.log('Pressed')}
               />
             ))}
           </Section>
