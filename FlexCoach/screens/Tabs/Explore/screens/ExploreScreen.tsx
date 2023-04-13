@@ -29,16 +29,14 @@ export const ExploreScreen = ({navigation}: {navigation: any}) => {
     }
 
     const [value, setValue] = useState<string>('');
-    const [isFocused, setIsFocused] = useState<boolean>(false);
 
     return (
         <SafeAreaView style={{flex: 1, backgroundColor: appColors.background}}>
             <SearchBar
                 value={value}
                 onChangeText={setValue}
-                onFocus={() => setIsFocused(true)}
                 onClear={() => setValue('')}
-                onCancel={() => setIsFocused(false)}
+                navigation={navigation}
             />
             <ScrollView style={{flex: 1}}>
                 <Section title='Discover'>
@@ -83,8 +81,6 @@ export const ExploreScreen = ({navigation}: {navigation: any}) => {
                     </View>
                 </Section>
             </ScrollView>
-
-            {isFocused ? <ResultsList/> : null}
         </SafeAreaView>
   )
 }

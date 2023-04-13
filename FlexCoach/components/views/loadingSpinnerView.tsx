@@ -1,4 +1,4 @@
-import { ActivityIndicator, StyleProp, StyleSheet, Text, View, ViewStyle } from 'react-native'
+import { StyleProp, StyleSheet, View, ViewStyle } from 'react-native'
 import React from 'react'
 import { AnimatedImage } from '../utils/AnimatedImage'
 import { loadingSpinnerAnimation } from '../../animations/shared'
@@ -11,7 +11,7 @@ interface LoadingSpinnerViewProps {
 
 export const LoadingSpinnerView = ({children, style, isLoading}: LoadingSpinnerViewProps) => {
   return (
-    <View style={style}>
+    <View style={style ? style : {height: '100%', width: '100%'}}>
       {isLoading && (
         <View style={styles.loadingContainer}>
           <AnimatedImage

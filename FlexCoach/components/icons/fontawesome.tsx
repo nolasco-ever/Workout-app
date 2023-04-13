@@ -66,7 +66,8 @@ import {
     faCircleExclamation,
     faCircleCheck,
     faPersonChalkboard,
-    faMagnifyingGlass
+    faMagnifyingGlass,
+    faBook
 } from '@fortawesome/free-solid-svg-icons';
 
 library.add(
@@ -135,5 +136,6 @@ library.add(
     faCircleExclamation,
     faCircleCheck,
     faPersonChalkboard,
-    faMagnifyingGlass
+    faMagnifyingGlass,
+    faBook
 );
