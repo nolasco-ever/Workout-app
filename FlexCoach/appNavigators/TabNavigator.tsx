@@ -27,7 +27,7 @@ export const TabNavigator = () => {
                     tabBarIcon: ({focused}) => (
                         <FontAwesomeIcon 
                             icon={tab.icon as IconProp}
-                            color={focused ? appColors.accent : appColors.inactive}
+                            color={focused ? appColors.text : appColors.inactive}
                             size={tab.icon === tabIcons.log ? 40 : 25}
                         />
                     )
