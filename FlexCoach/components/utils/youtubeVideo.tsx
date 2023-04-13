@@ -17,10 +17,6 @@ export const YouTubeVideo = ({videoLink}: YouTubeVideoProps) => {
     setLoading(false);
   };
 
-  useEffect(() => {
-    console.log(`LOADING: ${loading}`)
-  }, [loading])
-
   return (
     <LoadingSpinnerView isLoading={loading} style={[styles.container, {height: screenHeight/4}]}>
       <YoutubeIframe
