@@ -6,11 +6,13 @@ interface AnimatedImageProps {
   source: string | AnimationObject | {
     uri: string;
   }
-  loop?: boolean
+  loop?: boolean,
+  size?: number
 }
   
-export const AnimatedImage = ({ source, loop=true }: AnimatedImageProps) => {
+export const AnimatedImage = ({ source, loop=true, size }: AnimatedImageProps) => {
     const screenHeight = Dimensions.get('window').height;
+    const style = size ? { height: size, width: size} : {}
   
     return (
       <View style={[styles.container, { height: screenHeight / 3 }]}>
@@ -18,6 +20,7 @@ export const AnimatedImage = ({ source, loop=true }: AnimatedImageProps) => {
           source={source}
           autoPlay={true}
           loop={loop}
+          style={style}
         />
       </View>
     );
@@ -27,6 +30,8 @@ const styles = StyleSheet.create({
   container: {
     padding: 10,
     width: '100%',
+    alignItems: 'center',
+    justifyContent: 'center'
   },
   animation: {
     width: '100%',
