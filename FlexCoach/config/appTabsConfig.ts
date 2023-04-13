@@ -1,4 +1,5 @@
 import { tabIcons } from "../components/icons/icon-library";
+import { ExploreStack } from "../screens/Tabs/Explore/ExploreStack";
 import { HomeScreen } from "../screens/Tabs/Home/HomeScreen";
 import { LogScreen } from "../screens/Tabs/Log/LogScreen";
 import { ProfileStack } from "../screens/Tabs/Profile/ProfileStack";
@@ -15,6 +16,11 @@ export const appTabs = [
         name: 'Stats',
         component: StatsStack,
         icon: tabIcons.stats
+    },
+    {
+        name: 'Explore',
+        component: ExploreStack,
+        icon: tabIcons.explore
     },
     // {
     //     name: 'Log',

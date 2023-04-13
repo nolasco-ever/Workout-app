@@ -65,7 +65,8 @@ import {
     faChartSimple,
     faCircleExclamation,
     faCircleCheck,
-    faPersonChalkboard
+    faPersonChalkboard,
+    faMagnifyingGlass
 } from '@fortawesome/free-solid-svg-icons';
 
 library.add(
@@ -133,5 +134,6 @@ library.add(
     faChartSimple,
     faCircleExclamation,
     faCircleCheck,
-    faPersonChalkboard
+    faPersonChalkboard,
+    faMagnifyingGlass
 );
