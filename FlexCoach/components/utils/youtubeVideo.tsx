@@ -1,6 +1,7 @@
-import React, { useState } from 'react'
-import { Dimensions, StyleSheet, Text, View } from 'react-native'
+import React, { useEffect, useState } from 'react'
+import { ActivityIndicator, Dimensions, StyleSheet, Text, View } from 'react-native'
 import YoutubeIframe from 'react-native-youtube-iframe';
+import { LoadingSpinnerView } from '../views/loadingSpinnerView';
 
 interface YouTubeVideoProps {
     videoLink: string;
@@ -9,20 +10,36 @@ interface YouTubeVideoProps {
 export const YouTubeVideo = ({videoLink}: YouTubeVideoProps) => {
   const screenHeight = Dimensions.get('window').height;
   const videoId = videoLink.split('v=')[1];
-  const embedLink = `https://www.youtube.com/embed/${videoId}`;
+
+  const [loading, setLoading] = useState(true);
+
+  const handleOnReady = () => {
+    setLoading(false);
+  };
+
+  useEffect(() => {
+    console.log(`LOADING: ${loading}`)
+  }, [loading])
 
   return (
-    <View style={[styles.container]}>
+    <LoadingSpinnerView isLoading={loading} style={[styles.container, {height: screenHeight/4}]}>
       <YoutubeIframe
         height={screenHeight/4}
         videoId={videoId}
+        onReady={handleOnReady}
       />
-    </View>
+    </LoadingSpinnerView>
   )
 }
 
 const styles = StyleSheet.create({
   container: {
     width: '100%',
+  },
+  loadingContainer: {
+    width: '100%',
+    height: '100%',
+    justifyContent: 'center',
+    alignItems: 'center',
   }
 });
