@@ -1,5 +1,5 @@
-import { Image, SafeAreaView, ScrollView, StyleSheet, Text, View } from 'react-native'
-import React, { useState } from 'react'
+import { Image, RefreshControl, SafeAreaView, ScrollView, StyleSheet, Text, View } from 'react-native'
+import React, { useRef, useState } from 'react'
 import { colors } from '../../../../colors';
 import { Section } from '../../../../components/sections/Section';
 import { InformationCard } from '../../../../components/cards/informationCard';
@@ -8,6 +8,7 @@ import { backSection, bicepsSection, chestSection, legsSection, shouldersSection
 import { strengthTrainingTypesMock } from '../../../../mocks/selectionCardListMocks';
 import { SearchBar } from '../../../../components/search-bar/searchBar';
 import { ResultsList } from '../../../../components/search-bar/resultsList';
+import { useScrollToTop } from '@react-navigation/native';
 
 export const ExploreScreen = ({navigation}: {navigation: any}) => {
     const appColors = colors();
@@ -30,7 +31,10 @@ export const ExploreScreen = ({navigation}: {navigation: any}) => {
 
     const [value, setValue] = useState<string>('');
 
-    return (
+    const [refreshing, setRefreshing] = useState(false);
+    const scrollViewRef = useRef<ScrollView>(null);
+    useScrollToTop(scrollViewRef);
+    return (    
         <SafeAreaView style={{flex: 1, backgroundColor: appColors.background}}>
             <SearchBar
                 value={value}
@@ -38,7 +42,18 @@ export const ExploreScreen = ({navigation}: {navigation: any}) => {
                 onClear={() => setValue('')}
                 navigation={navigation}
             />
-            <ScrollView style={{flex: 1}}>
+            <ScrollView
+                ref={scrollViewRef} 
+                refreshControl={
+                    <RefreshControl
+                      refreshing={refreshing}
+                      onRefresh={() => {
+                        // handle refresh
+                      }}
+                    />
+                }
+                style={{flex: 1}}
+            >
                 <Section title='Discover'>
                     {strengthTrainingTypesMock.map((item, index) => (
                         <InformationCard
