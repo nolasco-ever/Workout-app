@@ -6,6 +6,8 @@ import { InformationCard } from '../../../../components/cards/informationCard';
 import { InformationCardSmall } from '../../../../components/cards/informationCardSmall';
 import { backSection, bicepsSection, chestSection, legsSection, shouldersSection, tricepsSection } from '../../../../config/customize-training-program-flow/selectYourWorkouts';
 import { strengthTrainingTypesMock } from '../../../../mocks/selectionCardListMocks';
+import { SearchBar } from '../../../../components/search-bar/searchBar';
+import { ResultsList } from '../../../../components/search-bar/resultsList';
 
 export const ExploreScreen = ({navigation}: {navigation: any}) => {
     const appColors = colors();
@@ -26,8 +28,18 @@ export const ExploreScreen = ({navigation}: {navigation: any}) => {
         }
     }
 
+    const [value, setValue] = useState<string>('');
+    const [isFocused, setIsFocused] = useState<boolean>(false);
+
     return (
         <SafeAreaView style={{flex: 1, backgroundColor: appColors.background}}>
+            <SearchBar
+                value={value}
+                onChangeText={setValue}
+                onFocus={() => setIsFocused(true)}
+                onClear={() => setValue('')}
+                onCancel={() => setIsFocused(false)}
+            />
             <ScrollView style={{flex: 1}}>
                 <Section title='Discover'>
                     {strengthTrainingTypesMock.map((item, index) => (
@@ -71,6 +83,8 @@ export const ExploreScreen = ({navigation}: {navigation: any}) => {
                     </View>
                 </Section>
             </ScrollView>
+
+            {isFocused ? <ResultsList/> : null}
         </SafeAreaView>
   )
 }
