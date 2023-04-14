@@ -8,6 +8,9 @@ import { progressBarAnimation, successCheckAnimation } from '../../../../animati
 import { ProgressBar } from '../../../../components/progress-indicators/progressBar'
 import { CustomText } from '../../../../components/text/customText'
 import { TouchableOpacity } from 'react-native-gesture-handler'
+import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome'
+import { directionIcons } from '../../../../components/icons/icon-library'
+import { IconProp } from '@fortawesome/fontawesome-svg-core'
 
 export const WorkoutHub = ({navigation, route}: {navigation: any, route: any}) => {
     const { title, icon } = route.params
@@ -90,7 +93,16 @@ export const WorkoutHub = ({navigation, route}: {navigation: any, route: any}) =
             <ScrollView>
                 {exercises.map((item, index) => {
                     return (
-                        <View key={index} style={{flexDirection: 'row', alignItems: 'center', height: screenHeight/15}}>
+                        <TouchableOpacity 
+                            key={index}
+                            style={{flexDirection: 'row', alignItems: 'center', height: screenHeight/15}}
+                            onPress={() => {
+                                const newExercises = [...exercises];
+                                newExercises[index].completed = true;
+                                setExercises(newExercises);
+                                setNumCompleted(prev => prev+1)
+                            }}
+                        >
                             <View style={{flex: 1}}>
                                 <ListItem
                                     title={item.name}
@@ -105,20 +117,15 @@ export const WorkoutHub = ({navigation, route}: {navigation: any, route: any}) =
                                             loop={false}
                                         />
                                     ) : (
-                                        <TouchableOpacity
-                                            onPress={() => {
-                                                const newExercises = [...exercises];
-                                                newExercises[index].completed = true;
-                                                setExercises(newExercises);
-                                                setNumCompleted(prev => prev+1)
-                                            }}
-                                        >
-                                            <CustomText>Begin</CustomText>
-                                        </TouchableOpacity>
+                                        <FontAwesomeIcon
+                                            icon={directionIcons.angleRight as IconProp}
+                                            size={25}
+                                            color={appColors.icon}
+                                        />
                                     )}
                                 </View>
                             )}
-                        </View>
+                        </TouchableOpacity>
                     )
                 })}
             </ScrollView>
