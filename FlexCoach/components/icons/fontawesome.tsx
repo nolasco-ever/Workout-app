@@ -67,7 +67,8 @@ import {
     faCircleCheck,
     faPersonChalkboard,
     faMagnifyingGlass,
-    faBook
+    faBook,
+    faMinus
 } from '@fortawesome/free-solid-svg-icons';
 
 library.add(
@@ -137,5 +138,6 @@ library.add(
     faCircleCheck,
     faPersonChalkboard,
     faMagnifyingGlass,
-    faBook
+    faBook,
+    faMinus
 );

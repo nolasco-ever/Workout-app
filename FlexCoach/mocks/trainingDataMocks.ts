@@ -142,4 +142,15 @@ export const mockDumbbellCurlData = [
         sets: 3,
         reps: 8
     }
-]
+];
+
+export const mockExercises = [
+    { name: "Overhead Barbell Press", completed: false, data: [{set: 1, weight: null, reps: null}] },
+    { name: "Bench Press", completed: false, data: [{set: 1, weight: null, reps: null}] },
+    { name: "Barbell Shrug", completed: false, data: [{set: 1, weight: null, reps: null}] },
+    { name: "Dumbbell Press", completed: false, data: [{set: 1, weight: null, reps: null}] },
+    { name: "Dumbbell Curl", completed: false, data: [{set: 1, weight: null, reps: null}] },
+    { name: "Incline Bench Dumbbell Row", completed: false, data: [{set: 1, weight: null, reps: null}] },
+    { name: "Tricep Extension", completed: false, data: [{set: 1, weight: null, reps: null}] },
+    { name: "Machine Fly", completed: false, data: [{set: 1, weight: null, reps: null}] },
+];

@@ -36,7 +36,6 @@ export const ProgressBar = ({title, percent=0.50, showPercent=true, setProgressC
     useEffect(() => {
         setPrevFill(currentFill);
         setCurrentFill(Math.round(percent*100) > 100 ? '100%' : `${Math.round(percent*100)}%`);
-        console.log(`Percent: ${percent}`)
 
         if (percent > 1) {
             setTimeout(() => {

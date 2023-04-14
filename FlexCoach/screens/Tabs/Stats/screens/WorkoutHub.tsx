@@ -11,6 +11,7 @@ import { TouchableOpacity } from 'react-native-gesture-handler'
 import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome'
 import { directionIcons } from '../../../../components/icons/icon-library'
 import { IconProp } from '@fortawesome/fontawesome-svg-core'
+import { mockExercises } from '../../../../mocks/trainingDataMocks'
 
 export const WorkoutHub = ({navigation, route}: {navigation: any, route: any}) => {
     const { title, icon } = route.params
@@ -19,21 +20,8 @@ export const WorkoutHub = ({navigation, route}: {navigation: any, route: any}) =
 
     const [started, setStarted] = useState<boolean>(false);
 
-    const [exercises, setExercises] = useState([
-        { name: "Deadlifts", completed: false },
-        { name: "Squats", completed: false },
-        { name: "Bench Press", completed: false },
-        { name: "Overhead Press", completed: false },
-        { name: "Barbell Rows", completed: false },
-        { name: "Pull-ups", completed: false },
-        { name: "Dips", completed: false },
-        { name: "Barbell Curls", completed: false },
-        { name: "Lunges", completed: false },
-        { name: "Romanian Deadlifts", completed: false },
-      ]);
-
     const [numCompleted, setNumCompleted] = useState<number>(0);
-    const total = exercises.length;
+    const total = mockExercises.length;
 
     const [progress, setProgress] = useState(numCompleted);
     const [progressCompleted, setProgressCompleted] = useState<boolean>(false);
@@ -91,17 +79,12 @@ export const WorkoutHub = ({navigation, route}: {navigation: any, route: any}) =
                 </View>
             )}
             <ScrollView>
-                {exercises.map((item, index) => {
+                {mockExercises.map((item, index) => {
                     return (
                         <TouchableOpacity 
                             key={index}
                             style={{flexDirection: 'row', alignItems: 'center', height: screenHeight/15}}
-                            onPress={() => {
-                                const newExercises = [...exercises];
-                                newExercises[index].completed = true;
-                                setExercises(newExercises);
-                                setNumCompleted(prev => prev+1)
-                            }}
+                            onPress={() => navigation.navigate('workoutLogger', {exercise: item})}
                         >
                             <View style={{flex: 1}}>
                                 <ListItem
