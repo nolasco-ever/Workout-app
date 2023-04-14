@@ -12,7 +12,7 @@ const MessageScreen = ({navigation, route}: {navigation: any, route: any}) => {
     return (
         <SafeAreaView style={[styles.container, {backgroundColor: appColors.background}]}>
             <View style={{flex: 1, padding: 10, justifyContent: 'flex-end'}}>
-                <AnimatedImage source={image} loop={false}/>
+                <AnimatedImage source={image} loop={false} size={250}/>
             </View>
             <View style={{flex: 1, padding: 10, justifyContent: 'flex-start'}}>
                 <CustomText centered type='header'>{title}</CustomText>

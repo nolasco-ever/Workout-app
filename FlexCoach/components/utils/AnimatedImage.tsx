@@ -1,4 +1,4 @@
-import React, { useRef } from 'react'
+import React, { useEffect, useRef } from 'react'
 import { Dimensions, Image, ImageSourcePropType, StyleSheet, View } from 'react-native';
 import LottieView, { AnimationObject } from 'lottie-react-native'
 
@@ -12,10 +12,10 @@ interface AnimatedImageProps {
   
 export const AnimatedImage = ({ source, loop=true, size }: AnimatedImageProps) => {
     const screenHeight = Dimensions.get('window').height;
-    const style = size ? { height: size, width: size} : {}
+    const style = size ? { height: size, width: size} : {};
   
     return (
-      <View style={[styles.container, { height: screenHeight / 3 }]}>
+      <View style={[styles.container]}>
         <LottieView
           source={source}
           autoPlay={true}
@@ -28,10 +28,9 @@ export const AnimatedImage = ({ source, loop=true, size }: AnimatedImageProps) =
 
 const styles = StyleSheet.create({
   container: {
-    padding: 10,
     width: '100%',
     alignItems: 'center',
-    justifyContent: 'center'
+    justifyContent: 'center',
   },
   animation: {
     width: '100%',

@@ -53,7 +53,7 @@ export const SetFitnessGoalScreen = ({navigation}: {navigation: any}) => {
 
   return (
     <SafeAreaView style={[styles.container, {backgroundColor: appColors.background}]}>
-      <AnimatedImage source={getImage()}/>
+      <AnimatedImage source={getImage()} size={250}/>
       <View style={{flex: 1, alignItems: 'center', margin: 10}}>
         <CustomText type='header'>Select a goal</CustomText>
         <View style={styles.goalsContainer}>
