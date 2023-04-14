@@ -33,7 +33,7 @@ export const StatsStack = () => {
                             <FontAwesomeIcon
                                 icon={directionIcons.angleLeft as IconProp}
                                 color={appColors.icon}
-                                size={30}
+                                size={25}
                                 style={{marginLeft: 10}}
                             />
                         )

@@ -85,7 +85,7 @@ export const statsScreenWorkoutListMock = [
         icon: generalIcons.list,
         title: `Today's Workout`,
         description: 'Log your sets, reps, and weights for your exercises',
-        navigateTo: 'placeholderScreen'
+        navigateTo: 'workoutHub'
     },
     {
         id: 'trainingProgress',
