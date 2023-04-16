@@ -32,6 +32,8 @@ export const AppStack = () => {
                 component={NotificationsScreen}
                 options={{
                     headerShown: true,
+                    headerStyle: {backgroundColor:  appColors.background},
+                    headerTitleStyle: {color: appColors.text},
                     headerBackTitleVisible: false,
                     headerTitle: 'Notifications',
                     headerBackImage: () => (
