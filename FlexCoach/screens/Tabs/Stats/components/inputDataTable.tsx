@@ -31,7 +31,7 @@ export const InputDataTable = ({data, navigation}: InputTableProps) => {
         const newExercise: Exercise = {
         set: lastExercise.set + 1,
         weight: lastExercise.weight,
-        reps: null,
+        reps: lastExercise.reps,
         };
         setTableData([...tableData, newExercise]);
     };
@@ -97,14 +97,6 @@ export const InputDataTable = ({data, navigation}: InputTableProps) => {
                 </TouchableOpacity>
             </View>
           </ScrollView>
-          <Button
-            title='Done'
-            isPrimary
-            onPress={(() => {
-                data = tableData;
-                navigation.goBack();
-            })}
-          />
         </View>
     );
 }

@@ -26,6 +26,8 @@ export const WorkoutHub = ({navigation, route}: {navigation: any, route: any}) =
     const [progress, setProgress] = useState(numCompleted);
     const [progressCompleted, setProgressCompleted] = useState<boolean>(false);
 
+    const [exercises, setExercises] = useState(mockExercises);
+
     useEffect(() => {
         const progressCompleted = Math.ceil((100 / total) * numCompleted);
         let diff = progressCompleted - progress;
@@ -53,6 +55,10 @@ export const WorkoutHub = ({navigation, route}: {navigation: any, route: any}) =
         }
     }, [progress])
 
+    useEffect(() => {
+        setNumCompleted(exercises.filter(item => item.completed === true).length)
+    }, [exercises])
+
     return (
         <SafeAreaView style={[styles.container, {backgroundColor: appColors.background}]}>
             {started ? (
@@ -79,12 +85,19 @@ export const WorkoutHub = ({navigation, route}: {navigation: any, route: any}) =
                 </View>
             )}
             <ScrollView>
-                {mockExercises.map((item, index) => {
+                {exercises.map((item, index) => {
                     return (
                         <TouchableOpacity 
                             key={index}
                             style={{flexDirection: 'row', alignItems: 'center', height: screenHeight/15}}
-                            onPress={() => navigation.navigate('workoutLogger', {exercise: item})}
+                            onPress={() => {
+                                if (started) {
+                                    const newExercises = [...exercises];
+                                    newExercises[index].completed = true;
+                                    setExercises(newExercises);
+                                    navigation.navigate('workoutLogger', {exercise: item})
+                                }
+                            }}
                         >
                             <View style={{flex: 1}}>
                                 <ListItem
