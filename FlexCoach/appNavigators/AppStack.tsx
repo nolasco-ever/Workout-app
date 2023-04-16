@@ -32,14 +32,13 @@ export const AppStack = () => {
                 component={NotificationsScreen}
                 options={{
                     headerShown: true,
-                    headerTransparent: true,
                     headerBackTitleVisible: false,
-                    headerTitle: '',
+                    headerTitle: 'Notifications',
                     headerBackImage: () => (
                         <FontAwesomeIcon
                             icon={directionIcons.angleLeft as IconProp} 
                             color={appColors.icon} 
-                            size={30} 
+                            size={25} 
                             style={{marginLeft: 10}}
                         />
                     )

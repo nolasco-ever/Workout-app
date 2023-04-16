@@ -101,4 +101,64 @@ export const statsScreenWorkoutListMock = [
         description: `Read through your current workout plan`,
         navigateTo: 'placeholderScreen'
     },
-]
+];
+
+export const mockNotificationMessages = [
+    {
+      id: 0,
+      message: "Congratulations! You hit a new personal record on bench press.",
+      type: "pr",
+      date: 'Today',
+      timePassed: '2h'
+    },
+    {
+      id: 1,
+      message: "You have consumed 100g of protein today. You have 50g remaining before the end of the day.",
+      type: "diet",
+      date: 'Today',
+      timePassed: '9h'
+    },
+    {
+      id: 2,
+      message: "Don't forget to drink enough water today!",
+      type: "health",
+      date: 'Yesterday',
+      timePassed: '1d'
+    },
+    {
+      id: 3,
+      message: "You have completed your scheduled workout for today. Great job!",
+      type: "workout",
+      date: 'Yesterday',
+      timePassed: '1d'
+    },
+    {
+      id: 4,
+      message: "You have exceeded your daily calorie limit. Try to stick to your diet plan.",
+      type: "diet",
+      date: 'Yesterday',
+      timePassed: '1d'
+    },
+    {
+      id: 5,
+      message: "A new article about the benefits of stretching has been published in the app.",
+      type: "news",
+      date: 'Last Week',
+      timePassed: '3d'
+    },
+    {
+      id: 6,
+      message: "You haven't logged your body weight in a week. Please update your progress.",
+      type: "health",
+      date: 'Last Week',
+      timePassed: '3d'
+    },
+    {
+      id: 7,
+      message: "Your workout plan for this week has been updated. Please check it out!",
+      type: "workout",
+      date: 'Last Week',
+      timePassed: '4d'
+    }
+  ];
+  
