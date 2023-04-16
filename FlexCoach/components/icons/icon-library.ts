@@ -32,6 +32,7 @@ export const directionIcons = {
     key: 'fa-solid fa-key',
     lightbulb: 'fa-solid fa-lightbulb',
     list: 'fa-solid fa-list-ul',
+    minus: 'fa-solid fa-minus',
     moneyBills: 'fa-solid fa-money-bills',
     moon: 'fa-solid fa-moon',
     penToSquare: 'fa-solid fa-pen-to-square',
