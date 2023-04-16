@@ -34,10 +34,10 @@ export const StatsScreen = ({navigation}: {navigation: any}) => {
   useScrollToTop(scrollViewRef);
   return (
     <SafeAreaView style={[styles.container, {backgroundColor: appColors.background}]}>
-      {/* <WeekHeader
+      <WeekHeader
           selectedDay={selectedDay}
           onDayPress={handleDayPress}
-        /> */}
+        />
       <ScrollView
         ref={scrollViewRef}
         refreshControl={
@@ -51,6 +51,12 @@ export const StatsScreen = ({navigation}: {navigation: any}) => {
         showsVerticalScrollIndicator={false}
       >
         <View>
+        <CustomGraph
+          yAxisData={benchPressWeightData}
+          xAxisLabels={benchPressDates}
+          type='bar'
+          title='Bench Press'
+        />
           <Section title='Workout' icon={generalIcons.dumbbell} iconColor={appColors.primary}>
             {statsScreenWorkoutListMock.map(item => (
               <ListItem
@@ -74,12 +80,6 @@ export const StatsScreen = ({navigation}: {navigation: any}) => {
             ))}
           </Section>
         </View>
-        <CustomGraph
-          yAxisData={benchPressWeightData}
-          xAxisLabels={benchPressDates}
-          type='bar'
-          title='Bench Press'
-        />
 
         <CustomGraph
           yAxisData={dumbbellCurlWeightData}
