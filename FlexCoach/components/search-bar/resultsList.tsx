@@ -8,35 +8,32 @@ import { Section } from '../sections/Section';
 import { strengthTrainingTypesMock } from '../../mocks/selectionCardListMocks';
 import { InformationCard } from '../cards/informationCard';
 import { chestSection, tricepsSection, bicepsSection, backSection, shouldersSection, legsSection } from '../../config/customize-training-program-flow/selectYourWorkouts';
+import { mockArticles } from '../../mocks/articleMocks';
 
 export const ResultsList = ({navigation}: {navigation: any}) => {
     const appColors = colors();
     const exercisesArray = [
-        chestSection.exercises.slice(0,2), 
-        tricepsSection.exercises.slice(0,2), 
-        bicepsSection.exercises.slice(0,2), 
-        backSection.exercises.slice(0,2), 
-        shouldersSection.exercises.slice(0,2), 
-        legsSection.exercises.slice(0,2)
+        chestSection.exercises.slice(0,1), 
+        tricepsSection.exercises.slice(0,1), 
+        bicepsSection.exercises.slice(0,1), 
+        backSection.exercises.slice(0,1), 
+        shouldersSection.exercises.slice(0,1), 
+        legsSection.exercises.slice(0,1)
     ]
 
     return (
         <ScrollView onScrollBeginDrag={() => Keyboard.dismiss()} style={[styles.container, {backgroundColor: appColors.background}]}>
             <ListItem
                 icon={tabIcons.explore}
-                title='Title'
+                title='weight loss'
             />
             <ListItem
                 icon={tabIcons.explore}
-                title='Title'
+                title='workout plan for building muscle'
             />
             <ListItem
                 icon={tabIcons.explore}
-                title='Title'
-            />
-            <ListItem
-                icon={tabIcons.explore}
-                title='Title'
+                title='tricep extensions tutorial'
             />
             <Section icon={generalIcons.personTeaching} title='Tutorials' titleFontSize={20}>                
                 {exercisesArray.flatMap((subArray, arraysIndex) =>
@@ -67,13 +64,13 @@ export const ResultsList = ({navigation}: {navigation: any}) => {
                 )}
             </Section>
             <Section icon={generalIcons.book} title="Articles" titleFontSize={20}>
-                {strengthTrainingTypesMock.map((item, index) => (
+                {mockArticles.slice(2,4).map((item, index) => (
                     <InformationCard
                         key={index}
                         imageSource={item.image}
                         title={item.title}
                         description={item.description}
-                        onPress={() => console.log('Pressed Card')}
+                        onPress={() => navigation.navigate('articleScreen', {articleData: item})}
                     />
                 ))}
             </Section>

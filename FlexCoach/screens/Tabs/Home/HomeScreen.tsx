@@ -16,6 +16,7 @@ import { InformationCard } from '../../../components/cards/informationCard';
 import { strengthTrainingTypesMock } from '../../../mocks/selectionCardListMocks';
 import { useScrollToTop } from '@react-navigation/native';
 import { AlertBanner } from '../../../components/banners/alertBanner';
+import { mockArticles } from '../../../mocks/articleMocks';
 
 export const HomeScreen = ({navigation}: {navigation: any}) => {
     const appColors = colors();
@@ -35,6 +36,7 @@ export const HomeScreen = ({navigation}: {navigation: any}) => {
         <UserCardHeader
             profilePhoto={user1.profilePicture}
             welcomeMessage={`Welcome back, ${user1.firstName}`}
+            navigation={navigation}
         />
         <ScrollView
           ref={scrollViewRef}
@@ -72,7 +74,7 @@ export const HomeScreen = ({navigation}: {navigation: any}) => {
             isClosable
           />
           <Section title='Explore' seeMore onPressSeeMore={() => navigation.navigate('Explore')}>
-            {strengthTrainingTypesMock.map((item, index) => (
+            {mockArticles.map((item, index) => (
               <InformationCard
                 key={index}
                 imageSource={item.image}

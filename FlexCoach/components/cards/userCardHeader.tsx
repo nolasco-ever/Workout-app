@@ -2,15 +2,14 @@ import React from 'react';
 import { View, Text, Image, StyleSheet } from 'react-native';
 import { NotificationButton } from '../buttons/notificationButton';
 import { colors } from '../../colors';
-import { useNavigation } from '@react-navigation/native';
 
 interface UserCardHeaderProps {
-    profilePhoto: string;
+    profilePhoto: any;
     welcomeMessage: string;
+    navigation: any;
 }
 
-export const UserCardHeader = ({ profilePhoto, welcomeMessage }: UserCardHeaderProps) => {
-    const navigation = useNavigation();
+export const UserCardHeader = ({ profilePhoto, welcomeMessage, navigation }: UserCardHeaderProps) => {
     const appColors = colors();
     const currentDate = new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' });
 
@@ -18,7 +17,7 @@ export const UserCardHeader = ({ profilePhoto, welcomeMessage }: UserCardHeaderP
   return (
     <View style={[styles.container, {backgroundColor: appColors.background}]}>
       <View style={styles.imageContainer}>
-        <Image source={{ uri: profilePhoto }} style={styles.image} />
+        <Image source={profilePhoto} style={styles.image} />
       </View>
       <View style={styles.textContainer}>
         <Text style={[styles.welcomeMessage, {color: appColors.subtext}]}>{welcomeMessage}</Text>

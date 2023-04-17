@@ -54,6 +54,7 @@ export const NotificationsScreen = () => {
           {mockNotificationMessages.filter(item => item.date === 'Today').map(item => {
             return (
               <ListItem
+                key={item.id}
                 icon={getIcon(item.type)}
                 iconColor={getIconColor(item.type)}
                 iconPosition='top'
@@ -67,6 +68,7 @@ export const NotificationsScreen = () => {
           {mockNotificationMessages.filter(item => item.date === 'Yesterday').map(item => {
             return (
               <ListItem
+                key={item.id}
                 icon={getIcon(item.type)}
                 iconColor={getIconColor(item.type)}
                 iconPosition='top'
@@ -80,6 +82,7 @@ export const NotificationsScreen = () => {
           {mockNotificationMessages.filter(item => item.date === 'Last Week').map(item => {
             return (
               <ListItem
+                key={item.id}
                 icon={getIcon(item.type)}
                 iconColor={getIconColor(item.type)}
                 iconPosition='top'

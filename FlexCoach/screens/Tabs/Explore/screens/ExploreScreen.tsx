@@ -9,6 +9,7 @@ import { strengthTrainingTypesMock } from '../../../../mocks/selectionCardListMo
 import { SearchBar } from '../../../../components/search-bar/searchBar';
 import { ResultsList } from '../../../../components/search-bar/resultsList';
 import { useScrollToTop } from '@react-navigation/native';
+import { mockArticles } from '../../../../mocks/articleMocks';
 
 export const ExploreScreen = ({navigation}: {navigation: any}) => {
     const appColors = colors();
@@ -55,13 +56,13 @@ export const ExploreScreen = ({navigation}: {navigation: any}) => {
                 style={{flex: 1}}
             >
                 <Section title='Discover'>
-                    {strengthTrainingTypesMock.map((item, index) => (
+                    {mockArticles.map((item, index) => (
                         <InformationCard
                             key={index}
                             imageSource={item.image}
                             title={item.title}
                             description={item.description}
-                            onPress={() => console.log('Pressed Card')}
+                            onPress={() => navigation.navigate('articleScreen', {articleData: item})}
                         />
                     ))}
                 </Section>

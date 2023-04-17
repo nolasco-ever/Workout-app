@@ -42,12 +42,8 @@ export const ProfileScreen = ({navigation}: {navigation: any}) => {
         <View>
           <Image
             resizeMode='contain'
-            source={{
-                width: screenWidth/2,
-                height: screenWidth/2,
-                uri: user1.profilePicture
-            }}
-            style={{borderRadius: 100, margin: 10}}
+            source={user1.profilePicture}
+            style={{borderRadius: 100, margin: 10, height: screenWidth/2, width: screenWidth/2}}
           />
           <CustomText centered>Joined April 7, 2023</CustomText>
         </View>
