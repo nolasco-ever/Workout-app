@@ -7,6 +7,7 @@ import { IconProp } from '@fortawesome/fontawesome-svg-core';
 import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
 import { directionIcons } from '../../../components/icons/icon-library';
 import { PlaceholderScreen } from '../../placeholderScreen';
+import { ArticleScreen } from '../../../shared-screens/articleScreen';
 
 const Stack = createStackNavigator();
 
@@ -34,13 +35,32 @@ export const ExploreStack = () => {
                             <FontAwesomeIcon
                                 icon={directionIcons.angleLeft as IconProp} 
                                 color={appColors.icon} 
-                                size={30} 
+                                size={25} 
                                 style={{marginLeft: 10}}
                             />
                         )
                     } : {}}
                 />
             ))}
+            <Stack.Screen
+                name="articleScreen"
+                component={ArticleScreen}
+                options={({ route }) => ({
+                    headerShown: true,
+                    headerStyle: {backgroundColor: appColors.background},
+                    headerTitleStyle: {color: appColors.text, marginLeft: 10},
+                    headerTitle: (route.params as { articleData: any }).articleData.title,
+                    headerBackTitleVisible: false,
+                    headerBackImage: () => (
+                        <FontAwesomeIcon
+                            icon={directionIcons.angleLeft as IconProp} 
+                            color={appColors.icon} 
+                            size={30} 
+                            style={{marginLeft: 10}}
+                        />
+                    )
+                })}
+            />
             <Stack.Screen
                 name="placeholderScreen"
                 component={PlaceholderScreen}

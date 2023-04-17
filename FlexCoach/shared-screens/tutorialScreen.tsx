@@ -35,7 +35,7 @@ export const TutorialScreen = ({navigation, route}: {navigation: any, route: any
                         key={index} 
                         style={{margin: 10, width: screenWidth/2}} 
                         onPress={() => 
-                          navigation.navigate(
+                          navigation.replace(
                             'tutorialScreen', 
                             {title: item.name, videoLink: item.link, steps: item.howToSteps, muscleGroupWorkouts: muscleGroupWorkouts}
                           )
