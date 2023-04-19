@@ -4,6 +4,7 @@ import { CustomText } from '../components/text/customText';
 import { colors } from '../colors';
 import { Section } from '../components/sections/Section';
 import { mockArticles } from '../mocks/articleMocks';
+import { AlertBanner } from '../components/banners/alertBanner';
 
 export const ArticleScreen = ({navigation, route}: {navigation: any, route: any}) => {
     const { articleData } = route.params;
@@ -48,14 +49,20 @@ export const ArticleScreen = ({navigation, route}: {navigation: any, route: any}
                     ]}
                 />
             </View>
-
-            <View style={[styles.contentContainer, {backgroundColor: appColors.background}]}>
-                <CustomText type='header'>{articleData.title}</CustomText>
-                <Text style={[styles.text, {color: appColors.subtext}]}>{articleData.date}</Text>
-                <CustomText type='subheader'>{articleData.description}</CustomText>
-                <CustomText>
-                    {articleData.content}
-                </CustomText>
+            
+            <View style={{backgroundColor: appColors.background}}>
+              <AlertBanner
+                message='This is an AI generated article. It is only a placeholder and is not intended for real use.'
+                type='warning'
+              />
+              <View style={[styles.contentContainer, {backgroundColor: appColors.background}]}>
+                  <CustomText type='header'>{articleData.title}</CustomText>
+                  <Text style={[styles.text, {color: appColors.subtext}]}>{articleData.date}</Text>
+                  <CustomText type='subheader'>{articleData.description}</CustomText>
+                  <CustomText>
+                      {articleData.content}
+                  </CustomText>
+              </View>
             </View>
 
             <Section title='Related'>
@@ -99,7 +106,7 @@ const styles = StyleSheet.create({
     resizeMode: 'cover',
   },
   contentContainer: {
-    padding: 20,
+    padding: 10,
   },
   text: {
     fontSize: 12,
