@@ -17,6 +17,7 @@ import { strengthTrainingTypesMock } from '../../../mocks/selectionCardListMocks
 import { useScrollToTop } from '@react-navigation/native';
 import { AlertBanner } from '../../../components/banners/alertBanner';
 import { mockArticles } from '../../../mocks/articleMocks';
+import { TriviaQuestion } from './components/triviaQuestion';
 
 export const HomeScreen = ({navigation}: {navigation: any}) => {
     const appColors = colors();
@@ -49,32 +50,10 @@ export const HomeScreen = ({navigation}: {navigation: any}) => {
             />
           }
           showsVerticalScrollIndicator={false}
-          style={{
-            borderTopWidth: 1,
-            borderColor: appColors.subtext
-          }}
         >
-          <AlertBanner
-            message='This is just a test info message. Please disregard'
-            isClosable
-          />
-          <AlertBanner
-            message='This is just a test success message. Please disregard'
-            type='success'
-            isClosable
-          />
-          <AlertBanner
-            message='This is just a test warning message. Please disregard'
-            type='warning'
-            isClosable
-          />
-          <AlertBanner
-            message='This is just a test error message. Please disregard'
-            type='error'
-            isClosable
-          />
+          <TriviaQuestion/>
           <Section title='Explore' seeMore onPressSeeMore={() => navigation.navigate('Explore')}>
-            {mockArticles.map((item, index) => (
+            {mockArticles.slice(2,4).map((item, index) => (
               <InformationCard
                 key={index}
                 imageSource={item.image}
