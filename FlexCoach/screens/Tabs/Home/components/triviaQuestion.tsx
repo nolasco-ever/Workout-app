@@ -1,4 +1,4 @@
-import { StyleSheet, Text, TouchableOpacity, Vibration, View, useColorScheme } from 'react-native'
+import { Dimensions, StyleSheet, Text, TouchableOpacity, Vibration, View, useColorScheme } from 'react-native'
 import React, { useState } from 'react'
 import { colors } from '../../../../colors'
 import { mockTriviaQuestions } from '../../../../mocks/triviaQuestionsMocks';
@@ -7,7 +7,10 @@ import LottieView from 'lottie-react-native'
 
 export const TriviaQuestion = () => {
     const appColors = colors();
+    const screenWidth = Dimensions.get('window').width;
     const systemTheme = useColorScheme();
+
+    const iconDimension = screenWidth/4
 
     const min = 0;
     const max = mockTriviaQuestions.length - 1;
@@ -43,29 +46,31 @@ export const TriviaQuestion = () => {
         >
                 <Text style={[styles.title, {color: appColors.text}]}>Question of the Day</Text>
                 <Text style={[styles.questionText, {color: appColors.text}]}>{mockTriviaQuestions[randomNum].question}</Text>
-                {mockTriviaQuestions[randomNum].possibleAnswers.map(item => (
-                    <TouchableOpacity
-                        key={item.id} 
-                        style={[
-                            styles.optionContainer, 
-                            {
-                                borderColor: selectedAnswer === item.id ? isCorrect ? appColors.onSuccess : appColors.onError : appColors.inactive,
-                                backgroundColor: selectedAnswer === item.id ? isCorrect ? appColors.onSuccess : appColors.onError : appColors.transparent
-                            }
-                        ]}
-                        onPress={() => handleSelectAnswer(item.id)}
-                    >
-                        <Text style={[styles.answerText, {color: selectedAnswer === item.id ? appColors.onBackground : appColors.text}]}>{item.answer}</Text>
-                        {selectedAnswer === item.id && isCorrect ? (
-                            <LottieView
-                                source={successCheckAnimation}
-                                autoPlay={true}
-                                loop={false}
-                                style={{height: '100%', width: '10%', marginRight: 5}}
-                            />
-                        ) : null}
-                    </TouchableOpacity>
-                ))}
+                <View style={{flex: 1}}>
+                    {mockTriviaQuestions[randomNum].possibleAnswers.map(item => (
+                        <TouchableOpacity
+                            key={item.id} 
+                            style={[
+                                styles.optionContainer, 
+                                {
+                                    borderColor: selectedAnswer === item.id ? isCorrect ? appColors.onSuccess : appColors.onError : appColors.inactive,
+                                    backgroundColor: selectedAnswer === item.id ? isCorrect ? appColors.onSuccess : appColors.onError : appColors.transparent
+                                }
+                            ]}
+                            onPress={() => handleSelectAnswer(item.id)}
+                        >
+                            <Text style={[styles.answerText, {color: selectedAnswer === item.id ? appColors.onBackground : appColors.text}]}>{item.answer}</Text>
+                        </TouchableOpacity>
+                    ))}
+                </View>
+                {isCorrect ? (
+                    <LottieView
+                        source={successCheckAnimation}
+                        autoPlay={true}
+                        loop={false}
+                        style={{height: iconDimension, width: iconDimension, alignSelf: 'center'}}
+                    />
+                ) : null}
         </View>
     )
 }
