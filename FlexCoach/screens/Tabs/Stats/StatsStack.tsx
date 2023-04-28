@@ -4,9 +4,10 @@ import { createStackNavigator } from '@react-navigation/stack'
 import { colors } from '../../../colors';
 import { statsStack } from '../../../config/statsStackConfig';
 import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
-import { directionIcons } from '../../../components/icons/icon-library';
+import { directionIcons, generalIcons } from '../../../components/icons/icon-library';
 import { IconProp } from '@fortawesome/fontawesome-svg-core';
 import { PlaceholderScreen } from '../../placeholderScreen';
+import { AddDietEntryScreen } from './screens/AddDietEntryScreen';
 
 const Stack = createStackNavigator();
 
@@ -41,6 +42,26 @@ export const StatsStack = () => {
                 />
             ))}
             <Stack.Screen
+                name="addDietEntryScreen"
+                component={AddDietEntryScreen}
+                options={{
+                    presentation: 'modal',
+                    headerShown: true,
+                    headerStyle: {backgroundColor: appColors.background},
+                    headerTitleStyle: {color: appColors.text},
+                    headerTitle: 'Record Meal',
+                    headerBackTitleVisible: false,
+                    headerBackImage: () => (
+                        <FontAwesomeIcon
+                            icon={generalIcons.xMark as IconProp}
+                            color={appColors.icon}
+                            size={25}
+                            style={{marginLeft: 10}}
+                        />
+                    )
+                }}
+            />
+            <Stack.Screen
                 name="placeholderScreen"
                 component={PlaceholderScreen}
                 options={({route}) => ({
@@ -53,7 +74,7 @@ export const StatsStack = () => {
                         <FontAwesomeIcon
                             icon={directionIcons.angleLeft as IconProp}
                             color={appColors.icon}
-                            size={30}
+                            size={25}
                             style={{marginLeft: 10}}
                         />
                     )
