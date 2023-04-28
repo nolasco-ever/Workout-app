@@ -15,11 +15,9 @@ export const Button = ({ onPress, title, isPrimary, disabled }: ButtonProps) => 
 
   const buttonStyle = isPrimary ? 
     {
-      width: screenWidth - 40,
       backgroundColor: disabled ? appColors.inactive : appColors.primary,
     } : 
       {
-        width: screenWidth - 40,
         backgroundColor: 'transparent',
         borderWidth: 2,
         borderColor: appColors.accent,
@@ -42,6 +40,7 @@ export const Button = ({ onPress, title, isPrimary, disabled }: ButtonProps) => 
 
 const styles = StyleSheet.create({
   button: {
+    width: '90%',
     height: 50,
     borderRadius: 10,
     justifyContent: 'center',

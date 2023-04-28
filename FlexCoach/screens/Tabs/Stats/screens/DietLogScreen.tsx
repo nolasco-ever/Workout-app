@@ -1,24 +1,33 @@
-import { FlatList, StyleSheet, Text, View } from 'react-native'
-import React from 'react'
-import { SafeAreaView } from 'react-native-safe-area-context'
+import { StyleSheet, View } from 'react-native'
+import React, { useState } from 'react'
 import { colors } from '../../../../colors'
-import { CustomText } from '../../../../components/text/customText'
 import { ScrollView } from 'react-native-gesture-handler'
 import { CustomTable } from '../../../../components/tables/customTable'
 import { mockDietTrackerData } from '../../../../mocks/tableDataMocks'
+import { Button } from '../../../../components/buttons/button'
 
-export const DietLogScreen = () => {
+export const DietLogScreen = ({navigation}: {navigation: any}) => {
     const appColors = colors();
+
+    const [tableData, setTableData] = useState(mockDietTrackerData.tableData)
 
     return (
       <View style={[styles.container, {backgroundColor: appColors.background}]}>
           <ScrollView style={{width: '100%'}}>
               <CustomTable
                 title={mockDietTrackerData.title}
-                data={mockDietTrackerData.tableData}
+                data={tableData}
                 columnHeaders={mockDietTrackerData.columnHeaders}
               />
           </ScrollView>
+          <Button
+            title='Add'
+            isPrimary
+            onPress={() => {
+              // setTableData(prev => [...prev, ['Item Name', 90, 20]])
+              navigation.navigate('addDietEntryScreen')
+            }}
+          />
       </View>
     )
 }
@@ -28,29 +37,4 @@ const styles = StyleSheet.create({
         flex: 1,
         alignItems: 'center',
     },
-    table: {
-        flex: 1,
-      },
-      row: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        paddingVertical: 8,
-        paddingHorizontal: 16,
-        borderBottomWidth: 1,
-        borderBottomColor: '#ccc',
-      },
-      name: {
-        flex: 2,
-      },
-      calories: {
-        flex: 1,
-        textAlign: 'right',
-      },
-      protein: {
-        flex: 1,
-        textAlign: 'right',
-      },
-      header: {
-        fontWeight: 'bold',
-      },
 });

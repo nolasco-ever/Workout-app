@@ -14,7 +14,7 @@ export const CustomTable = ({ title, data, columnHeaders }: CustomTableProps) =>
   const screenWidth = Dimensions.get('window').width;
   const tableContent = data.map((row, index) => {
     const tableRow = row.map((cell, index) => {
-      return <View style={[styles.cell, {width: screenWidth/3}]} key={index}><Text style={{color: appColors.text}}>{cell}</Text></View>
+      return <View style={[styles.cell, {width: '33%'}]} key={index}><Text style={{color: appColors.text}}>{cell}</Text></View>
     });
 
     return <View style={styles.row} key={index}>{tableRow}</View>
@@ -37,7 +37,7 @@ export const CustomTable = ({ title, data, columnHeaders }: CustomTableProps) =>
       ]}
     >
       {title && <CustomText type='subheader' centered>{title}</CustomText>}
-      <ScrollView horizontal={true} showsHorizontalScrollIndicator={false} contentContainerStyle={{flexDirection: 'column'}}>
+      <ScrollView horizontal={true} showsHorizontalScrollIndicator={false} contentContainerStyle={{flexDirection: 'column', width: '100%'}}>
         <View style={styles.headerRow}>{headerRow}</View>
         {tableContent}
       </ScrollView>
