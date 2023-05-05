@@ -7,28 +7,34 @@ interface ButtonProps {
   title: string;
   isPrimary: boolean;
   disabled?: boolean;
+  color?: string;
+  textColor?: string;
 }
 
-export const Button = ({ onPress, title, isPrimary, disabled }: ButtonProps) => {
+export const Button = ({ onPress, title, isPrimary, disabled, color, textColor }: ButtonProps) => {
   const screenWidth = Dimensions.get('window').width;
   const appColors = colors();
 
+  const primaryColor = color ? color : appColors.primary;
+  const buttonTextColor = textColor ? textColor : appColors.onPrimaryText;
+  const secondaryColor = color ? color : appColors.accent;
+
   const buttonStyle = isPrimary ? 
     {
-      backgroundColor: disabled ? appColors.inactive : appColors.primary,
+      backgroundColor: disabled ? appColors.inactive : primaryColor,
     } : 
       {
-        backgroundColor: 'transparent',
-        borderWidth: 2,
-        borderColor: appColors.accent,
+        backgroundColor: 'transparent'
       };
 
   const buttonTextStyle = isPrimary ? 
     {
-      color: appColors.onPrimaryText,
+      color: buttonTextColor,
+      fontSize: 18,
     } : 
       {
-        color: appColors.accent,
+        color: secondaryColor,
+        fontSize: 16,
       };
       
   return (
@@ -49,7 +55,6 @@ const styles = StyleSheet.create({
     margin: 10,
   },
   buttonText: {
-    fontSize: 18,
     fontWeight: 'bold',
   },
 });

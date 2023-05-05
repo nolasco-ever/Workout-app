@@ -21,7 +21,8 @@ const darkModeColors = {
     onWarning: '#f4ba45',
     error: '#f4d9d9',
     onError: '#de5965',
-    lightGrey: '#DDDDDD'
+    lightGrey: '#DDDDDD',
+    googleRed: '#DB4437'
 }
 
 const lightModeColors = {
@@ -45,7 +46,8 @@ const lightModeColors = {
     onWarning: '#f4ba45',
     error: '#f4d9d9',
     onError: '#de5965',
-    lightGrey: '#DDDDDD'
+    lightGrey: '#DDDDDD',
+    googleRed: '#DB4437'
 }
 
 const getSystemTheme = () => {

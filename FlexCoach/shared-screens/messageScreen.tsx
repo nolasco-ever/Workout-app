@@ -6,7 +6,7 @@ import { CustomText } from '../components/text/customText';
 import { Button } from '../components/buttons/button';
 
 const MessageScreen = ({navigation, route}: {navigation: any, route: any}) => {
-    const {title, message, image, buttonTitle} = route.params;
+    const {title, message, image, buttonTitle, buttonAction} = route.params;
     const appColors = colors();
 
     return (
@@ -23,7 +23,7 @@ const MessageScreen = ({navigation, route}: {navigation: any, route: any}) => {
             <Button
                 title={buttonTitle}
                 isPrimary
-                onPress={() => navigation.navigate('Home')}
+                onPress={buttonAction ? buttonAction : () => navigation.navigate('Home')}
             />
         </SafeAreaView>
     )

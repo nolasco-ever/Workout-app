@@ -139,5 +139,5 @@ library.add(
     faPersonChalkboard,
     faMagnifyingGlass,
     faBook,
-    faMinus
+    faMinus,
 );
