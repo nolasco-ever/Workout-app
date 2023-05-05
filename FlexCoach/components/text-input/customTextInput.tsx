@@ -11,9 +11,20 @@ interface CustomTextInputProps {
   isPassword?: boolean;
   value?: string;
   onChangeText?: (text: string) => void;
+  keyboardType?: 'email-address' | 'number-pad' | 'numeric' | 'default';
+  returnKeyType?: 'default' | 'done' | 'go';
 }
 
-export const CustomTextInput = ({ icon, placeholder, isPassword, value, onChangeText }: CustomTextInputProps) => {
+export const CustomTextInput = ({ 
+  icon, 
+  placeholder, 
+  isPassword, 
+  value, 
+  onChangeText, 
+  keyboardType="default", 
+  returnKeyType='default' 
+}: CustomTextInputProps) => {
+  
   const appColors = colors();
   const screenWidth = Dimensions.get('window').width;
   const systemTheme = useColorScheme();
@@ -50,12 +61,15 @@ export const CustomTextInput = ({ icon, placeholder, isPassword, value, onChange
           onChangeText={onChangeText}
           onFocus={() => setIsFocused(true)}
           onBlur={() => setIsFocused(false)}
+          keyboardType={keyboardType}
+          returnKeyType={returnKeyType}
         />
         {isPassword && (
           <TouchableOpacity onPress={toggleShowPassword}>
               <FontAwesomeIcon
                 icon={showPassword ? generalIcons.eye as IconProp : generalIcons.eyeSlash as IconProp}
                 style={styles.eyeIcon}
+                color={appColors.inactive}
               />
           </TouchableOpacity>
         )}
