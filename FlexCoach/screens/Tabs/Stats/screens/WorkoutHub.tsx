@@ -14,7 +14,6 @@ import { IconProp } from '@fortawesome/fontawesome-svg-core'
 import { mockExercises } from '../../../../mocks/trainingDataMocks'
 
 export const WorkoutHub = ({navigation, route}: {navigation: any, route: any}) => {
-    const { title, icon } = route.params
     const appColors = colors();
     const screenHeight = Dimensions.get('window').height;
 
