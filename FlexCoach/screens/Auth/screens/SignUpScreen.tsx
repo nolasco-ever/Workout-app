@@ -41,12 +41,6 @@ export const SignUpScreen = ({navigation}: SignUpScreenProps) => {
                 <View style={styles.textInputContainer}>
                     <CustomTextInput
                     icon={generalIcons.envelope}
-                    placeholder='Full Name'
-                    />
-                </View>
-                <View style={styles.textInputContainer}>
-                    <CustomTextInput
-                    icon={generalIcons.envelope}
                     placeholder='Email'
                     />
                 </View>
