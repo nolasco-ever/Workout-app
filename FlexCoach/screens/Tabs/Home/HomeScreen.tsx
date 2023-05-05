@@ -18,6 +18,7 @@ import { useScrollToTop } from '@react-navigation/native';
 import { AlertBanner } from '../../../components/banners/alertBanner';
 import { mockArticles } from '../../../mocks/articleMocks';
 import { TriviaQuestion } from './components/triviaQuestion';
+import { ActionButton } from '../../../components/buttons/actionButton';
 
 export const HomeScreen = ({navigation}: {navigation: any}) => {
     const appColors = colors();
@@ -51,6 +52,11 @@ export const HomeScreen = ({navigation}: {navigation: any}) => {
           }
           showsVerticalScrollIndicator={false}
         >
+          <ActionButton
+            navigation={navigation}
+            icon={generalIcons.dumbbell}
+            message='Tap here to begin your training program!'
+          />
           <TriviaQuestion/>
           <Section title='Explore' seeMore onPressSeeMore={() => navigation.navigate('Explore')}>
             {mockArticles.slice(2,4).map((item, index) => (
