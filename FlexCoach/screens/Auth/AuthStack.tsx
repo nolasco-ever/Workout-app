@@ -59,5 +59,3 @@ export const AuthStack = ({navigation}: {navigation: any}) => {
         </Stack.Navigator>
     )
 }
-
-const styles = StyleSheet.create({})

@@ -52,13 +52,12 @@ const styles = StyleSheet.create({
     marginRight: 12,
   },
   titleContainer: {
-    flex: 1,
     flexDirection: 'row',
     paddingTop: 15,
-    paddingLeft: 15
+    paddingLeft: 15,
   },
   contentContainer: {
     width: '100%',
-    flex: 1
+    // flex: 1
   },
 });

@@ -9,6 +9,7 @@ import { IconProp } from '@fortawesome/fontawesome-svg-core';
 import { colors } from '../colors';
 import { CustomTrainingProgramStack } from '../Flows/create-custom-training-program/CustomTrainingProgramStack';
 import { AuthStack } from '../screens/Auth/AuthStack';
+import { OnboardingStack } from '../screens/Onboarding/OnboardingStack';
 
 const Stack = createStackNavigator();
 
@@ -23,6 +24,10 @@ export const AppStack = () => {
             <Stack.Screen
                 name="SignIn"
                 component={AuthStack}
+            />
+            <Stack.Screen
+                name="Onboarding"
+                component={OnboardingStack}
             />
             <Stack.Screen
                 name="Tabs"
