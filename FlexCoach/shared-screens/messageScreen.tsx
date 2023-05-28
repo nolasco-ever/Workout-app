@@ -6,13 +6,13 @@ import { CustomText } from '../components/text/customText';
 import { Button } from '../components/buttons/button';
 
 const MessageScreen = ({navigation, route}: {navigation: any, route: any}) => {
-    const {title, message, image, buttonTitle, buttonAction} = route.params;
+    const {title, message, image, imageLoop, buttonTitle, buttonAction} = route.params;
     const appColors = colors();
 
     return (
         <SafeAreaView style={[styles.container, {backgroundColor: appColors.background}]}>
             <View style={{flex: 1, padding: 10, justifyContent: 'flex-end'}}>
-                <AnimatedImage source={image} loop={false} size={250}/>
+                <AnimatedImage source={image} loop={imageLoop ? imageLoop : false} size={250}/>
             </View>
             <View style={{flex: 1, padding: 10, justifyContent: 'flex-start'}}>
                 <CustomText centered type='header'>{title}</CustomText>

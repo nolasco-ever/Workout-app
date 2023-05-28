@@ -24,47 +24,47 @@ export const SignUpScreen = ({navigation}: SignUpScreenProps) => {
         keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 0}
         onTouchStart={() => Keyboard.dismiss}
         >
-        <SafeAreaView style={[styles.container, {backgroundColor: appColors.background}]} onTouchStart={() => Keyboard.dismiss()}>
-            <View style={{flex: 1, marginBottom: 30, alignItems: 'center'}}>
-                <View style={{flex: 1, justifyContent: 'center'}}>
-                    <AnimatedImage
-                    source={signUpAnimation}
-                    size={250}
-                    loop={false}
-                    />
+            <SafeAreaView style={[styles.container, {backgroundColor: appColors.background}]} onTouchStart={() => Keyboard.dismiss()}>
+                <View style={{flex: 1, marginBottom: 30, alignItems: 'center'}}>
+                    <View style={{flex: 1, justifyContent: 'center'}}>
+                        <AnimatedImage
+                        source={signUpAnimation}
+                        size={250}
+                        loop={false}
+                        />
+                    </View>
+                    <View style={{margin: 10}}>
+                        <CustomText type='subheader'>
+                            Create an account to start your fitness journey!
+                        </CustomText>
+                    </View>
+                    <View style={styles.textInputContainer}>
+                        <CustomTextInput
+                        icon={generalIcons.envelope}
+                        placeholder='Email'
+                        />
+                    </View>
+                    <View style={styles.textInputContainer}>
+                        <CustomTextInput
+                        icon={generalIcons.key}
+                        placeholder='Password'
+                        isPassword
+                        />
+                    </View>
+                    <View style={styles.textInputContainer}>
+                        <CustomTextInput
+                        icon={generalIcons.key}
+                        placeholder='Confirm Password'
+                        isPassword
+                        />
+                    </View>
                 </View>
-                <View style={{margin: 10}}>
-                    <CustomText type='subheader'>
-                        Create an account to start your fitness journey!
-                    </CustomText>
-                </View>
-                <View style={styles.textInputContainer}>
-                    <CustomTextInput
-                    icon={generalIcons.envelope}
-                    placeholder='Email'
-                    />
-                </View>
-                <View style={styles.textInputContainer}>
-                    <CustomTextInput
-                    icon={generalIcons.key}
-                    placeholder='Password'
-                    isPassword
-                    />
-                </View>
-                <View style={styles.textInputContainer}>
-                    <CustomTextInput
-                    icon={generalIcons.key}
-                    placeholder='Confirm Password'
-                    isPassword
-                    />
-                </View>
-            </View>
-            <Button
-            title='Sign Up'
-            isPrimary
-            onPress={() => navigation.replace('Tabs')}
-            />
-        </SafeAreaView>
+                <Button
+                title='Sign Up'
+                isPrimary
+                onPress={() => navigation.replace('Onboarding')}
+                />
+            </SafeAreaView>
         </KeyboardAvoidingView>
     )
 }
