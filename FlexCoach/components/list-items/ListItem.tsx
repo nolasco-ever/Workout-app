@@ -8,6 +8,8 @@ interface Props {
   icon?: string;
   iconPosition?: 'top' | 'middle' | 'bottom';
   iconColor?: string;
+  rightIcon?: string;
+  rightIconColor?: string;
   title: string;
   description?: string;
   rightText?: string;
@@ -18,7 +20,9 @@ interface Props {
 export const ListItem = ({
   icon, 
   iconPosition='middle', 
-  iconColor, 
+  iconColor,
+  rightIcon,
+  rightIconColor,
   title, 
   description,
   rightText,
@@ -46,7 +50,7 @@ export const ListItem = ({
               size={20}
               style={styles.iconContainer}
           />
-      }
+        }
         <View style={styles.textContainer}>
           <Text style={[styles.title, {color: appColors.text}]}>{title}</Text>
           {description && <Text style={[styles.description, {color: appColors.subtext}]}>{description}</Text>}
@@ -56,6 +60,14 @@ export const ListItem = ({
             <Text style={[styles.rightText, {color: appColors.subtext}]}>{rightText}</Text>
           </View>
         )}
+        {rightIcon && 
+          <FontAwesomeIcon
+              icon={rightIcon as IconProp}
+              color={rightIconColor ? rightIconColor : appColors.icon}
+              size={20}
+              style={styles.iconContainer}
+          />
+        }
       </TouchableOpacity>
     );
 };
@@ -64,7 +76,7 @@ const styles = StyleSheet.create({
   container: {
     width: '100%',
     flexDirection: 'row',
-    padding: 15,
+    padding: 10,
   },
   iconContainer: {
     marginRight: 15,

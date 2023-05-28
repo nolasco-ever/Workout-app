@@ -8,6 +8,7 @@ import { directionIcons } from '../../components/icons/icon-library';
 import { IconProp } from '@fortawesome/fontawesome-svg-core';
 import MessageScreen from '../../shared-screens/messageScreen';
 import { introScreenAnimation } from '../../animations/onboarding-flow';
+import { successCheckAnimation } from '../../animations/shared';
 
 const Stack = createStackNavigator();
 
@@ -22,7 +23,7 @@ export const OnboardingStack = ({navigation}: {navigation: any}) => {
             }}
         >
             <Stack.Screen
-                name='Welcome'
+                name='welcomeScreen'
                 component={MessageScreen}
                 options={{
                     headerShown: false
@@ -58,6 +59,21 @@ export const OnboardingStack = ({navigation}: {navigation: any}) => {
                     }}
                 />
             ))}
+            <Stack.Screen
+                name='successScreen'
+                component={MessageScreen}
+                options={{
+                    headerShown: false
+                }}
+                initialParams={{
+                    title: "Congratulations! You're All Set!",
+                    message: "Get ready to embark on a transformative experience as you take charge of your health and well-being.",
+                    image: successCheckAnimation,
+                    imageLoop: false,
+                    buttonTitle: 'Finish',
+                    buttonAction: () => navigation.replace('Tabs')
+                }}
+            />
         </Stack.Navigator>
     )
 }
