@@ -14,11 +14,11 @@ import { mockArticles } from '../../../../mocks/articleMocks';
 export const ExploreScreen = ({navigation}: {navigation: any}) => {
     const appColors = colors();
     const exercisesArray = [
-        chestSection.exercises, 
-        tricepsSection.exercises, 
-        bicepsSection.exercises, 
-        backSection.exercises, 
-        shouldersSection.exercises, 
+        chestSection.exercises,
+        tricepsSection.exercises,
+        bicepsSection.exercises,
+        backSection.exercises,
+        shouldersSection.exercises,
         legsSection.exercises
     ]
 
@@ -66,6 +66,17 @@ export const ExploreScreen = ({navigation}: {navigation: any}) => {
                         />
                     ))}
                 </Section>
+                <Section title={`What's New?`}>
+                    {mockArticles.map((item, index) => (
+                        <InformationCard
+                            key={index}
+                            imageSource={item.image}
+                            title={item.title}
+                            description={item.description}
+                            onPress={() => navigation.navigate('articleScreen', {articleData: item})}
+                        />
+                    ))}
+                </Section>
                 <Section title='Learn' seeMore={copyAmount < exercisesArray.length} onPressSeeMore={handleSeeMore}>
                     <View style={{flexDirection: 'row', flexWrap: 'wrap',}}>
                         {exercisesArray.slice(0,copyAmount).flatMap((subArray, arraysIndex) =>
@@ -78,7 +89,6 @@ export const ExploreScreen = ({navigation}: {navigation: any}) => {
                                         key={item.link}
                                         title={item.name}
                                         imageSource={thumbnailUrl}
-                                        size='s'
                                         onPress={() => 
                                             navigation.navigate(
                                                 'tutorialScreen', 

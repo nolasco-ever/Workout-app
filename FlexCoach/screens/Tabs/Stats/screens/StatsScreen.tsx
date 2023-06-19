@@ -11,7 +11,7 @@ import { mockBenchPressData, mockDumbbellCurlData } from '../../../../mocks/trai
 import { Section } from '../../../../components/sections/Section';
 import { ListItem } from '../../../../components/list-items/ListItem';
 import { useScrollToTop } from '@react-navigation/native';
-import { statsScreenDietListMock, statsScreenWorkoutListMock } from '../../../../mocks/listItemMocks';
+import { statsScreenActivityLogListMock } from '../../../../mocks/listItemMocks';
 
 
 export const StatsScreen = ({navigation}: {navigation: any}) => {
@@ -51,25 +51,14 @@ export const StatsScreen = ({navigation}: {navigation: any}) => {
         showsVerticalScrollIndicator={false}
       >
         <View>
-        <CustomGraph
-          yAxisData={benchPressWeightData}
-          xAxisLabels={benchPressDates}
-          type='bar'
-          title='Bench Press'
-        />
-          <Section title='Workout' icon={generalIcons.dumbbell} iconColor={appColors.primary}>
-            {statsScreenWorkoutListMock.map(item => (
-              <ListItem
-                key={item.id}
-                title={item.title}
-                description={item.description}
-                icon={item.icon}
-                onPress={() => navigation.navigate(item.navigateTo, {title: item.title, icon: item.icon})}
-              />
-            ))}
-          </Section>
-          <Section title='Diet' icon={generalIcons.apple} iconColor='red'>
-            {statsScreenDietListMock.map(item => (
+          <CustomGraph
+            yAxisData={benchPressWeightData}
+            xAxisLabels={benchPressDates}
+            type='bar'
+            title='Bench Press'
+          />
+          <Section title='Activity Log' icon={generalIcons.personRunning} iconColor={appColors.primary}>
+            {statsScreenActivityLogListMock.map(item => (
               <ListItem
                 key={item.id}
                 title={item.title}
@@ -80,13 +69,6 @@ export const StatsScreen = ({navigation}: {navigation: any}) => {
             ))}
           </Section>
         </View>
-
-        <CustomGraph
-          yAxisData={dumbbellCurlWeightData}
-          xAxisLabels={dumbbellCurlDates}
-          type='line'
-          title='Dumbbell Curl'
-        />
       </ScrollView>
     </SafeAreaView>
   );

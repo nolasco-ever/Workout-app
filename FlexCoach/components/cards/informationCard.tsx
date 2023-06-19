@@ -17,17 +17,17 @@ export const InformationCard = ({ imageSource, title, description, onPress }: In
             style={[
                 styles.container,
                 {
-                    backgroundColor: appColors.onBackground,
-                    shadowColor: '#000000',
-                    shadowOpacity: useColorScheme() === 'light' ? 0.1 : 0,
-                    shadowOffset: {width: 1, height: 1},
-                    height: screenWidth/3
+                    height: screenWidth/4
                 }
             ]} 
             onPress={onPress}
         >
-            <View style={{flex: 1}}>
-                <Image source={{ uri: imageSource }} style={styles.image} resizeMode="cover" />
+            <View style={{ flex: 1 }}>
+                <Image 
+                  source={{ uri: imageSource }} 
+                  style={styles.image} 
+                  resizeMode="cover" 
+                />
             </View>
             <View style={styles.contentContainer}>
                 <Text numberOfLines={1} ellipsizeMode='tail' style={[styles.title, {color: appColors.text}]}>{title}</Text>
@@ -47,20 +47,19 @@ const styles = StyleSheet.create({
   image: {
     height: '100%',
     width: '100%',
-    borderTopLeftRadius: 10,
-    borderBottomLeftRadius: 10
+    borderRadius: 10,
   },
   contentContainer: {
     flex: 2,
-    padding: 10,
-    height: '100%'
+    paddingLeft: 10,
+    height: '100%',
   },
   title: {
-    fontSize: 20,
+    fontSize: 16,
     fontWeight: 'bold',
     marginBottom: 5,
   },
   description: {
-    fontSize: 16,
+    fontSize: 14,
   },
 });

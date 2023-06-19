@@ -6,10 +6,10 @@ interface InformationCardSmallProps {
   imageSource: string;
   title: string;
   onPress: () => void;
-  size: 'l' | 's'
+  size?: 'l' | 's'
 }
 
-export const InformationCardSmall = ({ imageSource, title, onPress, size }: InformationCardSmallProps) => {
+export const InformationCardSmall = ({ imageSource, title, onPress, size='s' }: InformationCardSmallProps) => {
     const appColors = colors();
     const screenWidth = Dimensions.get('window').width;
     const numCardsPerRow = size === 'l' ? 1 : 2;
@@ -47,6 +47,7 @@ const styles = StyleSheet.create({
   },
   title: {
     fontWeight: 'bold',
+    fontSize: 16,
     marginBottom: 5,
   },
 });

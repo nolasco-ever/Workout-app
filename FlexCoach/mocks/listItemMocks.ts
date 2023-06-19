@@ -1,27 +1,27 @@
 import { generalIcons } from "../components/icons/icon-library";
 
 export const settingsListMocks = [
-    // {
-    //     id: 'appTheme',
-    //     icon: generalIcons.moon,
-    //     title: 'App Theme',
-    //     description: 'Switch between a light theme or a dark theme',
-    //     navigateTo: 'appThemeScreen'
-    // },
     {
-        id: 'notifications',
+        id: 'appTheme',
+        icon: generalIcons.moon,
+        title: 'App Theme',
+        description: 'Switch between a light theme or a dark theme',
+        navigateTo: 'appThemeScreen'
+    },
+    {
+        id: 'notificationPreferences',
         icon: generalIcons.bell,
-        title: 'Notifications',
+        title: 'Notification Preferences',
         description: `Choose what notifications you'd like to receive`,
         navigateTo: 'placeholderScreen'
     },
-    // {
-    //     id: 'privacyAndPermissions',
-    //     icon: generalIcons.key,
-    //     title: 'Privacy and Permissions',
-    //     description: 'Access our Terms of Use and Privacy Policy',
-    //     navigateTo: 'placeholderScreen'
-    // },
+    {
+        id: 'privacyAndPermissions',
+        icon: generalIcons.key,
+        title: 'Privacy and Permissions',
+        description: 'Access our Terms of Use and Privacy Policy',
+        navigateTo: 'placeholderScreen'
+    },
     {
         id: 'account',
         icon: generalIcons.user,
@@ -29,16 +29,23 @@ export const settingsListMocks = [
         description: 'Update, set, or remove information from your account',
         navigateTo: 'placeholderScreen'
     },
-    // {
-    //     id: 'contactUs',
-    //     icon: generalIcons.envelope,
-    //     title: 'Contact Us',
-    //     description: 'Reach out with any questions, comments, or concerns',
-    //     navigateTo: 'placeholderScreen'
-    // }
+    {
+        id: 'contactUs',
+        icon: generalIcons.envelope,
+        title: 'Contact Us',
+        description: 'Reach out with any questions, comments, or concerns',
+        navigateTo: 'placeholderScreen'
+    }
 ];
 
 export const profileListMocks = [
+    {
+      id: 'setYourGoals',
+      icon: generalIcons.plus,
+      title: 'Set Your Goals',
+      description: `Create a new training or nutrition plan`,
+      navigateTo: 'createYourCustomTrainingProgram'
+    },
     {
         id: 'history',
         icon: generalIcons.clock,
@@ -46,40 +53,9 @@ export const profileListMocks = [
         description: 'View your previous workout programs',
         navigateTo: 'placeholderScreen'
     },
-    {
-        id: 'createANewWorkoutPlan',
-        icon: generalIcons.plus,
-        title: 'Create a New Workout Plan',
-        description: `Customize and start a new training program`,
-        navigateTo: 'createYourCustomTrainingProgram'
-    },
-    {
-        id: 'createANewDietPlan',
-        icon: generalIcons.plus,
-        title: 'Create a New Diet Plan',
-        description: 'Make a plan for your body goals',
-        navigateTo: 'placeholderScreen'
-    },
 ];
 
-export const statsScreenDietListMock = [
-    {
-        id: 'todaysLog',
-        icon: generalIcons.list,
-        title: `Today's Log`,
-        description: 'View, add, or remove items',
-        navigateTo: 'dietLogScreen'
-    },
-    {
-        id: 'foodRecommendations',
-        icon: generalIcons.lightbulb,
-        title: 'Food Recommendations',
-        description: `Discover foods to eat and avoid based on your current diet plan`,
-        navigateTo: 'placeholderScreen'
-    },
-];
-
-export const statsScreenWorkoutListMock = [
+export const statsScreenActivityLogListMock = [
     {
         id: 'todaysWorkout',
         icon: generalIcons.list,
@@ -95,10 +71,10 @@ export const statsScreenWorkoutListMock = [
         navigateTo: 'placeholderScreen'
     },
     {
-        id: 'yourTrainingProgram',
-        icon: generalIcons.personRunning,
-        title: 'Your Training Program',
-        description: `Read through your current workout plan`,
+        id: 'todaysNutritionLog',
+        icon: generalIcons.apple,
+        title: `Today's Nutrition Log`,
+        description: `View, add, or remove items`,
         navigateTo: 'placeholderScreen'
     },
 ];

@@ -57,8 +57,8 @@ export const HomeScreen = ({navigation}: {navigation: any}) => {
             icon={generalIcons.dumbbell}
             message='Tap here to begin your training program!'
           />
-          <TriviaQuestion/>
-          <Section title='Explore' seeMore onPressSeeMore={() => navigation.navigate('Explore')}>
+          {/* <TriviaQuestion/> */}
+          <Section title='For You' seeMore onPressSeeMore={() => navigation.navigate('Explore')}>
             {mockArticles.slice(2,4).map((item, index) => (
               <InformationCard
                 key={index}
@@ -91,17 +91,6 @@ export const HomeScreen = ({navigation}: {navigation: any}) => {
               title='Protein (g)'
               goalAmount={180}
               currentAmount={127}
-            />
-          </Section>
-
-          <Section title='Today' icon={generalIcons.calendarDay}>
-            <ListCard
-              title={mockWorkoutList.title}
-              items={mockWorkoutList.items}
-            />
-            <ListCard
-              title={mockDietList.title}
-              items={mockDietList.items}
             />
           </Section>
 

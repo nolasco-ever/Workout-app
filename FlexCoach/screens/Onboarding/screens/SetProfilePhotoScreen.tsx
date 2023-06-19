@@ -58,13 +58,11 @@ export const SetProfilePhotoScreen = ({navigation}: {navigation: any}) => {
                     title="Choose from library"
                     isPrimary={false}
                     onPress={openLibrary}
-                    color={appColors.info}
                 />
                 <Button
                     title="Take photo"
                     isPrimary={false}
                     onPress={openCamera}
-                    color={appColors.info}
                 />
             </View>
             <Button

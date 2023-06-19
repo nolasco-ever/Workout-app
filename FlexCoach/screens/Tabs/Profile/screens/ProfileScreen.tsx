@@ -10,6 +10,7 @@ import { TouchableOpacity } from 'react-native-gesture-handler';
 import { useNavigation } from '@react-navigation/native';
 import { profileListMocks } from '../../../../mocks/listItemMocks';
 import { ListItem } from '../../../../components/list-items/ListItem';
+import { Section } from '../../../../components/sections/Section';
 
 
 export const ProfileScreen = ({navigation}: {navigation: any}) => {
@@ -17,6 +18,16 @@ export const ProfileScreen = ({navigation}: {navigation: any}) => {
   const screenWidth = Dimensions.get('window').width;
 
   const [refreshing, setRefreshing] = useState(false);
+
+  const badgeNamesTemp = [
+    'Badge1',
+    'Badge2',
+    'Badge3',
+    'Badge4',
+    'Badge5',
+    'Badge6',
+    'Badge7',
+  ]
 
   return (
     <SafeAreaView style={[styles.container, {backgroundColor: appColors.background}]}>
@@ -36,10 +47,9 @@ export const ProfileScreen = ({navigation}: {navigation: any}) => {
           />
         }
         showsVerticalScrollIndicator={false}
-        style={{width: '100%'}} 
-        contentContainerStyle={{alignItems: 'center'}}
+        style={{width: '100%'}}
       >
-        <View>
+        <View style={{alignItems: 'center'}}>
           <Image
             resizeMode='contain'
             source={user1.profilePicture}
@@ -47,6 +57,15 @@ export const ProfileScreen = ({navigation}: {navigation: any}) => {
           />
           <CustomText centered>Joined April 7, 2023</CustomText>
         </View>
+        <Section title="Your Achievements" titleFontSize={18} >
+          <ScrollView horizontal style={{paddingLeft: 10, paddingRight: 10}}>
+            {badgeNamesTemp.map((item, index) => (
+              <TouchableOpacity key={index} style={{height: 50, width: 100, alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: appColors.primary, padding: 10, borderRadius: 5, marginRight: 5}}>
+                <CustomText>{item}</CustomText>
+              </TouchableOpacity>
+            ))}
+          </ScrollView>
+        </Section>
         <View style={{marginTop: 10}}>
           {profileListMocks.map((item, index) => (
             <ListItem
@@ -55,7 +74,7 @@ export const ProfileScreen = ({navigation}: {navigation: any}) => {
               icon={item.icon}
               description={item.description}
               onPress={() => navigation.navigate(item.navigateTo, {title: item.title, icon: item.icon})}
-              topDivider={index === 0 ? true : false}
+              // topDivider={index === 0 ? true : false}
             />
           ))}
         </View>
