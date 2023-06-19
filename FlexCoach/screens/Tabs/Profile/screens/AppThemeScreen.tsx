@@ -1,6 +1,6 @@
 import { IconProp } from '@fortawesome/fontawesome-svg-core';
 import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, SafeAreaView, Image, Dimensions, ScrollView } from 'react-native';
 import { colors } from '../../../../colors';
 import { generalIcons, tabIcons } from '../../../../components/icons/icon-library';
@@ -11,36 +11,37 @@ import { useNavigation } from '@react-navigation/native';
 import { ListItemChoice } from '../../../../components/list-items/ListItemChoice';
 import { ListPicker } from '../../../../components/list-items/ListPicker';
 import { Button } from '../../../../components/buttons/button';
+import { useThemeContext } from '../../../../packages/core-contexts/theme-context';
 
 
 export const AppThemeScreen = ({navigation}: {navigation: any}) => {
+  const { appTheme, setAppTheme } = useThemeContext();
   const appColors = colors();
-  const screenWidth = Dimensions.get('window').width;
+  // const screenWidth = Dimensions.get('window').width;
 
   const listItems = [
     {
+      id: 'light',
       title: 'Light',
       selected: false
     },
     {
+      id: 'dark',
       title: 'Dark',
       selected: false
     },
     {
+        id: 'system',
         title: 'System',
         selected: true
     },
     // Add as many items as needed
   ];
 
-  const setTheme = (theme: string) => {
-    console.log(`Set app theme to: ${theme}`);
-  }
+  const [selecteditem, setSelectedItem] = useState<number>(listItems.findIndex(item => item.id === appTheme));
 
-  const [selecteditem, setSelectedItem] = useState<number>(0);
-
-  const setAppTheme = () => {
-    setTheme(listItems[selecteditem].title);
+  const handleSetAppTheme = () => {
+    setAppTheme(listItems[selecteditem].id);
     navigation.goBack();
   }
 
@@ -56,7 +57,7 @@ export const AppThemeScreen = ({navigation}: {navigation: any}) => {
             <View style={{flex: 1, flexDirection: 'column', justifyContent: 'flex-end', alignItems: 'center'}}>
                 <Button
                     title='Set Theme'
-                    onPress={() => setAppTheme()}
+                    onPress={handleSetAppTheme}
                     isPrimary
                 />
             </View>
