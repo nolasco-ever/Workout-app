@@ -1,4 +1,5 @@
 import { useColorScheme } from "react-native";
+import { useThemeContext } from "./packages/core-contexts/theme-context";
 
 const darkModeColors = {
     background: '#121212',
@@ -54,8 +55,8 @@ const getSystemTheme = () => {
     return useColorScheme();
 }
 
-const getColors = (systemTheme: string | null | undefined) => {
-    if (systemTheme === 'light') {
+const getColors = (theme: string | null | undefined) => {
+    if (theme === 'light') {
         return lightModeColors;
     } else {
         return darkModeColors;
@@ -63,6 +64,10 @@ const getColors = (systemTheme: string | null | undefined) => {
 }
 
 export const colors = () => {
+    const { appTheme } = useThemeContext();
     const systemTheme = getSystemTheme();
-    return getColors(systemTheme);
+
+    const chosenTheme = appTheme === 'system' ? systemTheme : appTheme
+    
+    return getColors(chosenTheme);
 }
