@@ -58,7 +58,7 @@ export const ProfileScreen = ({navigation}: {navigation: any}) => {
           <CustomText centered>Joined April 7, 2023</CustomText>
         </View>
         <Section title="Your Achievements" titleFontSize={18} >
-          <ScrollView horizontal style={{paddingLeft: 10, paddingRight: 10}}>
+          <ScrollView horizontal style={{paddingLeft: 10, paddingRight: 10, marginTop: 10, marginBottom: 10}}>
             {badgeNamesTemp.map((item, index) => (
               <TouchableOpacity key={index} style={{height: 50, width: 100, alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: appColors.primary, padding: 10, borderRadius: 5, marginRight: 5}}>
                 <CustomText>{item}</CustomText>
@@ -74,7 +74,7 @@ export const ProfileScreen = ({navigation}: {navigation: any}) => {
               icon={item.icon}
               description={item.description}
               onPress={() => navigation.navigate(item.navigateTo, {title: item.title, icon: item.icon})}
-              // topDivider={index === 0 ? true : false}
+              topDivider={index === 0 ? true : false}
             />
           ))}
         </View>
