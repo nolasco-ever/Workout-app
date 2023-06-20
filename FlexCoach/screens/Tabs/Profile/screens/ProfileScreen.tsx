@@ -20,13 +20,14 @@ export const ProfileScreen = ({navigation}: {navigation: any}) => {
   const [refreshing, setRefreshing] = useState(false);
 
   const badgeNamesTemp = [
-    'Badge1',
-    'Badge2',
-    'Badge3',
-    'Badge4',
-    'Badge5',
-    'Badge6',
-    'Badge7',
+    'https://cdn-icons-png.flaticon.com/512/7339/7339233.png',
+    'https://cdn3.iconfinder.com/data/icons/survey-feedback-caramel-vol-2/512/TOP_RATED-512.png',
+    'https://cdn.icon-icons.com/icons2/2744/PNG/512/medal_award_success_badge_achievement_icon_175957.png',
+    'https://static-00.iconduck.com/assets.00/achievement-badge-icon-2048x1328-gzuv2dzs.png',
+    'https://static-00.iconduck.com/assets.00/achievement-badge-icon-1481x2048-g5dnah98.png',
+    'https://cdn-icons-png.flaticon.com/512/771/771222.png',
+    'https://img.uxwing.com/wp-content/themes/uxwing/download/sport-awards/achievement-award-medal-icon.png',
+    'https://cdn.icon-icons.com/icons2/3570/PNG/512/success_reward_achievement_badge_medal_prize_trophy_icon_225522.png'
   ]
 
   return (
@@ -58,12 +59,20 @@ export const ProfileScreen = ({navigation}: {navigation: any}) => {
           <CustomText centered>Joined April 7, 2023</CustomText>
         </View>
         <Section title="Your Achievements" titleFontSize={18} >
-          <ScrollView horizontal style={{paddingLeft: 10, paddingRight: 10, marginTop: 10, marginBottom: 10}}>
+          <ScrollView showsHorizontalScrollIndicator={false} horizontal style={{paddingLeft: 10, paddingRight: 10, marginTop: 10, marginBottom: 10}}>
             {badgeNamesTemp.map((item, index) => (
-              <TouchableOpacity key={index} style={{height: 50, width: 100, alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: appColors.primary, padding: 10, borderRadius: 5, marginRight: 5}}>
-                <CustomText>{item}</CustomText>
+              <TouchableOpacity key={index} style={{height: 50, width: 50, alignItems: 'center', justifyContent: 'center', borderWidth: 3, borderColor: appColors.primary, borderRadius: 99, marginRight: 10, padding: 5}}>
+                {/* <CustomText>{item}</CustomText> */}
+                <Image
+                  source={{uri: item}}
+                  resizeMode='contain'
+                  style={{borderRadius: 100, margin: 10, height: '100%', width: '100%'}}
+                />
               </TouchableOpacity>
             ))}
+              <TouchableOpacity style={{height: 50, width: 100, alignItems: 'center', justifyContent: 'center', borderWidth: 3, borderColor: appColors.primary, padding: 10, borderRadius: 5, marginRight: 5}}>
+                <CustomText>View All</CustomText>
+              </TouchableOpacity>
           </ScrollView>
         </Section>
         <View style={{marginTop: 10}}>
