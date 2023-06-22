@@ -2,7 +2,7 @@ import { Dimensions, SafeAreaView, ScrollView, StyleSheet, Text, View } from 're
 import React, { useEffect, useState } from 'react'
 import { colors } from '../../../../colors'
 import { ListItem } from '../../../../components/list-items/ListItem'
-import { Button } from '../../../../components/buttons/button'
+import { Button } from '../../../../components/buttons/Button'
 import { AnimatedImage } from '../../../../components/utils/AnimatedImage'
 import { progressBarAnimation, successCheckAnimation } from '../../../../animations/shared'
 import { ProgressBar } from '../../../../components/progress-indicators/progressBar'
@@ -125,8 +125,7 @@ export const WorkoutHub = ({navigation, route}: {navigation: any, route: any}) =
                 })}
             </ScrollView>
             <Button
-                title={started ? 'Finish' : 'Start'}
-                isPrimary
+                label={started ? 'Finish' : 'Start'}
                 onPress={() => started ? navigation.goBack() : setStarted(true)}
             />
         </SafeAreaView>

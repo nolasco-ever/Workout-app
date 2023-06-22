@@ -8,7 +8,7 @@ import { AnimatedImage } from '../../../components/utils/AnimatedImage'
 import { ParamListBase } from '@react-navigation/native'
 import { StackNavigationProp } from '@react-navigation/stack'
 import { colors } from '../../../colors'
-import { Button } from '../../../components/buttons/button'
+import { Button } from '../../../components/buttons/Button'
 
 interface SignUpScreenProps {
     navigation: StackNavigationProp<ParamListBase>;
@@ -60,9 +60,8 @@ export const SignUpScreen = ({navigation}: SignUpScreenProps) => {
                     </View>
                 </View>
                 <Button
-                title='Sign Up'
-                isPrimary
-                onPress={() => navigation.replace('Onboarding')}
+                    label='Sign Up'
+                    onPress={() => navigation.replace('Onboarding')}
                 />
             </SafeAreaView>
         </KeyboardAvoidingView>

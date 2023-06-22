@@ -7,7 +7,7 @@ import { ThemeProvider } from './packages/core-contexts/theme-context';
 const App = () => {
 
   return (
-    <ThemeProvider appTheme='dark'>
+    <ThemeProvider appTheme='system'>
       <NavigationContainer>
         <AppStack/>
       </NavigationContainer>

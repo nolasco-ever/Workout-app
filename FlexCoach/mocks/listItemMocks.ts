@@ -75,7 +75,7 @@ export const statsScreenActivityLogListMock = [
         icon: generalIcons.apple,
         title: `Today's Nutrition Log`,
         description: `View, add, or remove items`,
-        navigateTo: 'placeholderScreen'
+        navigateTo: 'dietLogScreen'
     },
 ];
 

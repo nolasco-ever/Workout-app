@@ -5,7 +5,7 @@ import { CustomText } from '../../../../components/text/customText';
 import { InputDataListItem } from '../components/inputDataListItem';
 import { InputDataTable } from '../components/inputDataTable';
 import { PreviousWorkoutCard } from '../components/previousWorkoutCard';
-import { Button } from '../../../../components/buttons/button';
+import { Button } from '../../../../components/buttons/Button';
 
 const WorkoutLoggerScreen = ({ navigation, route}: {navigation: any, route: any}) => {
     const { exercise, completed } = route.params;
@@ -22,8 +22,7 @@ const WorkoutLoggerScreen = ({ navigation, route}: {navigation: any, route: any}
                 navigation={navigation}
             />
             <Button
-                title='Done'
-                isPrimary
+                label='Done'
                 onPress={(() => {
                     // data = tableData;
                     navigation.goBack();

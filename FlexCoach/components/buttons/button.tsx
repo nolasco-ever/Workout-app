@@ -3,43 +3,66 @@ import { StyleSheet, TouchableOpacity, Text, Dimensions } from 'react-native';
 import { colors } from '../../colors';
 
 interface ButtonProps {
+  type?: 'filled' | 'outline' | 'text';
+  isActive?: boolean;
+  label: string;
+  leftIcon?: string;
+  rightIcon?: string;
   onPress: () => void;
-  title: string;
-  isPrimary: boolean;
-  disabled?: boolean;
-  color?: string;
-  textColor?: string;
 }
 
-export const Button = ({ onPress, title, isPrimary, disabled, color, textColor }: ButtonProps) => {
+export const Button = ({ 
+  type='filled',
+  isActive=true,
+  label,
+  leftIcon,
+  rightIcon,
+  onPress
+}: ButtonProps) => {
   const screenWidth = Dimensions.get('window').width;
   const appColors = colors();
 
-  const primaryColor = color ? color : appColors.primary;
-  const buttonTextColor = textColor ? textColor : appColors.onPrimaryText;
-  const secondaryColor = color ? color : appColors.accent;
+  const getButtonColor = () => {
+    if (type === 'filled') {
+      if (isActive) {
+        return appColors.primary
+      } else {
+        return appColors.inactive
+      }
+    } else {
+      return appColors.transparent
+    }
+  }
 
-  const buttonStyle = isPrimary ? 
-    {
-      backgroundColor: disabled ? appColors.inactive : primaryColor,
-    } : 
-      {
-        backgroundColor: 'transparent'
-      };
+  const getTextColor = () => {
+    if (type === 'filled') {
+      if (isActive) {
+        return appColors.onPrimaryText
+      } else {
+        return appColors.lightGrey
+      }
+    } else {
+      if (isActive) {
+        return appColors.primary
+      } else {
+        return appColors.inactive
+      }
+    }
+  }
 
-  const buttonTextStyle = isPrimary ? 
-    {
-      color: buttonTextColor,
-      fontSize: 18,
-    } : 
-      {
-        color: secondaryColor,
-        fontSize: 16,
-      };
+  const buttonContainerStyle = {
+    backgroundColor: getButtonColor(),
+    borderWidth: type === 'outline' ? 2 : 0,
+    borderColor: isActive ? appColors.primary : appColors.inactive
+  }
+
+  const buttonTextStyle = {
+    color: getTextColor()
+  }
       
   return (
-    <TouchableOpacity disabled={disabled} onPress={onPress} style={[styles.button, buttonStyle]}>
-      <Text style={[styles.buttonText, buttonTextStyle]}>{title}</Text>
+    <TouchableOpacity disabled={!isActive} onPress={onPress} style={[styles.button, buttonContainerStyle]}>
+      <Text style={[styles.buttonText, buttonTextStyle]}>{label}</Text>
     </TouchableOpacity>
   );
 };
@@ -56,5 +79,6 @@ const styles = StyleSheet.create({
   },
   buttonText: {
     fontWeight: 'bold',
+    fontSize: 16
   },
 });

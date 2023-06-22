@@ -4,7 +4,7 @@ import { colors } from '../../../../colors'
 import { ScrollView } from 'react-native-gesture-handler'
 import { CustomTable } from '../../../../components/tables/customTable'
 import { mockDietTrackerData } from '../../../../mocks/tableDataMocks'
-import { Button } from '../../../../components/buttons/button'
+import { Button } from '../../../../components/buttons/Button'
 
 export const DietLogScreen = ({navigation}: {navigation: any}) => {
     const appColors = colors();
@@ -21,8 +21,7 @@ export const DietLogScreen = ({navigation}: {navigation: any}) => {
               />
           </ScrollView>
           <Button
-            title='Add'
-            isPrimary
+            label='Add'
             onPress={() => {
               // setTableData(prev => [...prev, ['Item Name', 90, 20]])
               navigation.navigate('addDietEntryScreen')

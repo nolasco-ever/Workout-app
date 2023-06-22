@@ -2,7 +2,7 @@ import { Dimensions, SafeAreaView, StyleSheet, Text, View } from 'react-native'
 import React from 'react'
 import { colors } from '../../../colors';
 import { CustomText } from '../../../components/text/customText';
-import { Button } from '../../../components/buttons/button';
+import { Button } from '../../../components/buttons/Button';
 import { ListItem } from '../../../components/list-items/ListItem';
 import { directionIcons } from '../../../components/icons/icon-library';
 
@@ -28,13 +28,12 @@ export const DesignYourPlanScreen = ({navigation}: {navigation: any}) => {
             </View>
             <View style={styles.buttonsContainer}>
                 <Button
-                    title='Next'
-                    isPrimary
+                    label='Next'
                     onPress={() => navigation.navigate('successScreen')}
                 />
                 <Button
-                    title='Skip'
-                    isPrimary={false}
+                    label='Maybe Later'
+                    type='outline'
                     onPress={() => navigation.navigate('successScreen')}
                 />
             </View>

@@ -2,7 +2,7 @@ import { Keyboard, ScrollView, StyleSheet, Text, View } from 'react-native'
 import React, { useState } from 'react'
 import { colors } from '../../../../colors'
 import { CustomText } from '../../../../components/text/customText';
-import { Button } from '../../../../components/buttons/button';
+import { Button } from '../../../../components/buttons/Button';
 import { CustomTextInput } from '../../../../components/text-input/customTextInput';
 import { NumberPicker } from '../../../../components/Pickers/numberPicker';
 import { SearchBar } from '../../../../components/search-bar/searchBar';
@@ -50,8 +50,7 @@ export const AddDietEntryScreen = ({navigation}: {navigation: any}) => {
                 />
             </ScrollView>
             <Button
-                title='Done'
-                isPrimary
+                label='Done'
                 onPress={() => navigation.goBack()}
             />
         </View>
