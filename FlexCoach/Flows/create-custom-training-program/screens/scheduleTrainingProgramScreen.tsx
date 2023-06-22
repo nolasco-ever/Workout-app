@@ -6,7 +6,7 @@ import { AlertBanner } from '../../../components/banners/alertBanner';
 import { WeekHeader } from '../../../components/calendars/weekHeader';
 import { SelectionItem } from '../../../components/list-items/selectionItem';
 import { ScrollView } from 'react-native-gesture-handler';
-import { Button } from '../../../components/buttons/Button';
+import { Button } from '../../../components/buttons/button';
 import { CheckBox } from '../../../components/buttons/checkBox';
 import { NumberPicker } from '../../../components/Pickers/numberPicker';
 

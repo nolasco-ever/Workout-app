@@ -2,8 +2,8 @@ import { Keyboard, ScrollView, StyleSheet, Text, View } from 'react-native'
 import React, { useState } from 'react'
 import { colors } from '../../../../colors'
 import { CustomText } from '../../../../components/text/customText';
-import { Button } from '../../../../components/buttons/Button';
-import { CustomTextInput } from '../../../../components/text-input/customTextInput';
+import { Button } from '../../../../components/buttons/button';
+import { CustomTextInput } from '../../../../components/text-input/CustomTextInput';
 import { NumberPicker } from '../../../../components/Pickers/numberPicker';
 import { SearchBar } from '../../../../components/search-bar/searchBar';
 
@@ -36,9 +36,12 @@ export const AddDietEntryScreen = ({navigation}: {navigation: any}) => {
                 <View style={styles.textInputContainer}>
                     <CustomTextInput
                         placeholder='Calories'
+                        keyboardType='number-pad'
                     />
                     <CustomTextInput
                         placeholder='Protein'
+                        keyboardType='number-pad'
+                        suffix='g'
                     />
                 </View>
 

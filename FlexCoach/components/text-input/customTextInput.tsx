@@ -1,38 +1,66 @@
 import React, { useState } from 'react';
-import { View, TextInput, StyleSheet, TouchableOpacity, Dimensions, useColorScheme } from 'react-native';
+import { View, TextInput, StyleSheet, TouchableOpacity, Dimensions, useColorScheme, Text } from 'react-native';
 import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
 import { IconProp } from '@fortawesome/fontawesome-svg-core';
 import { generalIcons } from '../icons/icon-library';
 import { colors } from '../../colors';
 
 interface CustomTextInputProps {
-  icon?: string;
-  placeholder?: string;
-  isPassword?: boolean;
   value?: string;
   onChangeText?: (text: string) => void;
+  placeholder?: string;
+  helperText?: string;
+  leftIcon?: string;
+  rightIcon?: string;
+  isSecure?: boolean;
   keyboardType?: 'email-address' | 'number-pad' | 'numeric' | 'default';
-  returnKeyType?: 'default' | 'done' | 'go';
+  returnKeyType?: 'default' | 'done';
+  error?: boolean;
+  numberOfLines?: number;
+  prefix?: string;
+  suffix?: string;
 }
 
 export const CustomTextInput = ({ 
-  icon, 
-  placeholder, 
-  isPassword, 
-  value, 
-  onChangeText, 
+  value,
+  onChangeText,
+  placeholder,
+  helperText,
+  leftIcon,
+  rightIcon, 
+  isSecure=false, 
   keyboardType="default", 
-  returnKeyType='default' 
+  returnKeyType='default',
+  error=false,
+  numberOfLines,
+  prefix,
+  suffix
 }: CustomTextInputProps) => {
   
   const appColors = colors();
   const screenWidth = Dimensions.get('window').width;
   const systemTheme = useColorScheme();
-  const [showPassword, setShowPassword] = useState(false);
+  const [showText, setShowText] = useState(false);
   const [isFocused, setIsFocused] = useState(false);
 
-  const toggleShowPassword = () => {
-    setShowPassword(!showPassword);
+  const toggleShowText = () => {
+    setShowText(!showText);
+  }
+
+  const getBorderColor = () => {
+    if (isFocused) {
+      if (error) {
+        return appColors.onError
+      } else {
+        return appColors.primary
+      }
+    } else {
+      if (error) {
+        return appColors.onError
+      } else {
+        return appColors.inactive
+      }
+    }
   }
 
   return (
@@ -41,39 +69,47 @@ export const CustomTextInput = ({
         style={[
           styles.container, 
           {
-            borderColor: isFocused ? appColors.accent : appColors.subtext,
-            height: screenWidth/10,
-            backgroundColor: systemTheme === 'dark' ? appColors.onBackground : appColors.lightGrey
+            borderColor: getBorderColor(),
+            borderWidth: isFocused ? 2 : 1,
+            height: screenWidth/9
           }
         ]}
       >
-        {icon && (
+        {leftIcon && (
           <FontAwesomeIcon
-              icon={icon as IconProp}
-              color={isFocused ? appColors.accent : appColors.text}
+              icon={leftIcon as IconProp}
+              color={error ? appColors.onError : isFocused ? appColors.primary : appColors.icon}
           />
+        )}
+        {prefix && (
+          <Text style={[styles.helperText, {color: getBorderColor()}]}>{prefix}</Text>
         )}
         <TextInput
           style={[styles.input, {color: appColors.text}]}
           placeholder={placeholder}
-          secureTextEntry={isPassword && !showPassword}
+          secureTextEntry={isSecure && !showText}
           value={value}
           onChangeText={onChangeText}
           onFocus={() => setIsFocused(true)}
           onBlur={() => setIsFocused(false)}
           keyboardType={keyboardType}
           returnKeyType={returnKeyType}
+          numberOfLines={numberOfLines}
+          placeholderTextColor={appColors.inactive}
         />
-        {isPassword && (
-          <TouchableOpacity onPress={toggleShowPassword}>
-              <FontAwesomeIcon
-                icon={showPassword ? generalIcons.eye as IconProp : generalIcons.eyeSlash as IconProp}
-                style={styles.eyeIcon}
-                color={appColors.inactive}
-              />
-          </TouchableOpacity>
+        {suffix && (
+          <Text style={[styles.helperText, {color: getBorderColor()}]}>{suffix}</Text>
+        )}
+        {rightIcon && (
+          <FontAwesomeIcon
+              icon={rightIcon as IconProp}
+              color={error ? appColors.onError : isFocused ? appColors.primary : appColors.icon}
+          />
         )}
       </View>
+      {helperText && (
+        <Text style={[styles.helperText, {color: getBorderColor()}]}>{helperText}</Text>
+      )}
     </View>
   );
 };
@@ -98,5 +134,8 @@ const styles = StyleSheet.create({
     eyeIcon: {
       marginLeft: 10,
     },
+    helperText: {
+      paddingLeft: 10
+    }
 });
 

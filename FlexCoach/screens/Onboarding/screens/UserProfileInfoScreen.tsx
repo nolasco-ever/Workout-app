@@ -1,10 +1,10 @@
 import { Keyboard, KeyboardAvoidingView, Platform, SafeAreaView, StyleSheet, Text, View } from 'react-native'
 import React from 'react'
 import { generalIcons } from '../../../components/icons/icon-library'
-import { CustomTextInput } from '../../../components/text-input/customTextInput'
+import { CustomTextInput } from '../../../components/text-input/CustomTextInput'
 import { CustomText } from '../../../components/text/customText'
 import { AnimatedImage } from '../../../components/utils/AnimatedImage'
-import { Button } from '../../../components/buttons/Button'
+import { Button } from '../../../components/buttons/button'
 import { colors } from '../../../colors'
 import { createUserProfileAnimation } from '../../../animations/onboarding-flow'
 import { NumberPicker } from '../../../components/Pickers/numberPicker'
@@ -36,24 +36,25 @@ export const UserProfileInfoScreen = ({navigation}: {navigation: any}) => {
                         </View>
                         <View style={styles.textInputContainer}>
                             <CustomTextInput
-                                icon={generalIcons.user}
                                 placeholder='First Name'
+                                leftIcon={generalIcons.user}
                                 returnKeyType='done'
                             />
                         </View>
                         <View style={styles.textInputContainer}>
                             <CustomTextInput
-                                icon={generalIcons.user}
                                 placeholder='Last Name'
+                                leftIcon={generalIcons.user}
                                 returnKeyType='done'
                             />
                         </View>
                         <View style={styles.textInputContainer}>
                             <CustomTextInput
-                                icon={generalIcons.user}
-                                placeholder='Weight (lbs)'
+                                placeholder='Weight'
+                                leftIcon={generalIcons.user}
                                 keyboardType='number-pad'
                                 returnKeyType='done'
+                                suffix='lbs'
                             />
                         </View>
                         <Section title='Height'>

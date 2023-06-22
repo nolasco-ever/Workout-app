@@ -10,7 +10,7 @@ import { TouchableOpacity } from 'react-native-gesture-handler';
 import { useNavigation } from '@react-navigation/native';
 import { ListItemChoice } from '../../../../components/list-items/ListItemChoice';
 import { ListPicker } from '../../../../components/list-items/ListPicker';
-import { Button } from '../../../../components/buttons/Button';
+import { Button } from '../../../../components/buttons/button';
 import { useThemeContext } from '../../../../packages/core-contexts/theme-context';
 
 

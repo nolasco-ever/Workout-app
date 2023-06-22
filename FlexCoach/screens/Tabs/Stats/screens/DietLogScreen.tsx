@@ -4,7 +4,7 @@ import { colors } from '../../../../colors'
 import { ScrollView } from 'react-native-gesture-handler'
 import { CustomTable } from '../../../../components/tables/customTable'
 import { mockDietTrackerData } from '../../../../mocks/tableDataMocks'
-import { Button } from '../../../../components/buttons/Button'
+import { Button } from '../../../../components/buttons/button'
 
 export const DietLogScreen = ({navigation}: {navigation: any}) => {
     const appColors = colors();

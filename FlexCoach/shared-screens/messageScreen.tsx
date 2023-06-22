@@ -3,7 +3,7 @@ import React from 'react'
 import { colors } from '../colors';
 import { AnimatedImage } from '../components/utils/AnimatedImage';
 import { CustomText } from '../components/text/customText';
-import { Button } from '../components/buttons/Button';
+import { Button } from '../components/buttons/button';
 
 const MessageScreen = ({navigation, route}: {navigation: any, route: any}) => {
     const {title, message, image, imageLoop, buttonTitle, buttonAction} = route.params;

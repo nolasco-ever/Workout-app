@@ -5,7 +5,7 @@ import { user1 } from '../../../mocks/userMocks';
 import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
 import { generalIcons } from '../../../components/icons/icon-library';
 import { IconProp } from '@fortawesome/fontawesome-svg-core';
-import { Button } from '../../../components/buttons/Button';
+import { Button } from '../../../components/buttons/button';
 import { launchImageLibrary, launchCamera, Asset, ImageLibraryOptions, CameraOptions } from 'react-native-image-picker';
 import { CustomText } from '../../../components/text/customText';
 
