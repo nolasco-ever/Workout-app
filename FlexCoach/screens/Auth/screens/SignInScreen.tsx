@@ -6,10 +6,9 @@ import { CustomText } from '../../../components/text/customText';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { generalIcons } from '../../../components/icons/icon-library';
 import { CustomTextInput } from '../../../components/text-input/customTextInput';
-import { Button } from '../../../components/buttons/button';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { AnimatedImage } from '../../../components/utils/AnimatedImage';
 import { welcomeAnimation } from '../../../animations/auth-flow';
+import { Button } from '../../../components/buttons/Button';
 
 interface SignInScreenProps {
     navigation: StackNavigationProp<ParamListBase>;
@@ -19,7 +18,6 @@ export const SignInScreen = ({ navigation }: SignInScreenProps) => {
   const appColors = colors();
   const screenWidth = Dimensions.get('window').width;
 
-  const { top, bottom } = useSafeAreaInsets();
   return (
     <KeyboardAvoidingView
       style={{flex: 1}}
@@ -58,13 +56,12 @@ export const SignInScreen = ({ navigation }: SignInScreenProps) => {
           </TouchableOpacity>
         </View>
         <Button
-          title='Sign In'
-          isPrimary
+          label='Sign In'
           onPress={() => navigation.replace('Tabs')}
         />
         <Button
-          title={`Don't have an account? Sign up here`}
-          isPrimary={false}
+          label={`Don't have an account? Sign up here`}
+          type='outline'
           onPress={() => navigation.navigate('signUpScreen')}
         />
       </SafeAreaView>

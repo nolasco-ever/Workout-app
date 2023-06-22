@@ -5,7 +5,7 @@ import { user1 } from '../../../mocks/userMocks';
 import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
 import { generalIcons } from '../../../components/icons/icon-library';
 import { IconProp } from '@fortawesome/fontawesome-svg-core';
-import { Button } from '../../../components/buttons/button';
+import { Button } from '../../../components/buttons/Button';
 import { launchImageLibrary, launchCamera, Asset, ImageLibraryOptions, CameraOptions } from 'react-native-image-picker';
 import { CustomText } from '../../../components/text/customText';
 
@@ -55,26 +55,24 @@ export const SetProfilePhotoScreen = ({navigation}: {navigation: any}) => {
                 </View>
 
                 <Button
-                    title="Choose from library"
-                    isPrimary={false}
+                    label="Choose from library"
+                    type='text'
                     onPress={openLibrary}
                 />
                 <Button
-                    title="Take photo"
-                    isPrimary={false}
+                    label="Take photo"
+                    type='text'
                     onPress={openCamera}
                 />
             </View>
             <Button
-                title='Next'
-                isPrimary
+                label='Next'
                 onPress={() => navigation.navigate('designYourPlan')}
             />
             <Button
-                title='Skip'
-                isPrimary={false}
+                label='Maybe Later'
+                type='outline'
                 onPress={() => navigation.navigate('designYourPlan')}
-                textColor={appColors.lightGrey}
             />
         </SafeAreaView>
     )

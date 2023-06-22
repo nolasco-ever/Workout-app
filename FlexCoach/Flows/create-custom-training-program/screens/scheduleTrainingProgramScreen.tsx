@@ -6,7 +6,7 @@ import { AlertBanner } from '../../../components/banners/alertBanner';
 import { WeekHeader } from '../../../components/calendars/weekHeader';
 import { SelectionItem } from '../../../components/list-items/selectionItem';
 import { ScrollView } from 'react-native-gesture-handler';
-import { Button } from '../../../components/buttons/button';
+import { Button } from '../../../components/buttons/Button';
 import { CheckBox } from '../../../components/buttons/checkBox';
 import { NumberPicker } from '../../../components/Pickers/numberPicker';
 
@@ -141,10 +141,9 @@ export const ScheduleTrainingProgramScreen = ({ navigation, route }: {navigation
                 onValueChange={handleValueChange}
             />
             <Button
-                title='Next'
+                label='Next'
                 onPress={() => navigation.navigate('reviewYourProgram', {workoutItems: organizedItems, numOfWeeks: numOfWeeks})}
-                isPrimary
-                disabled={organizedItems.some((arr) => arr.length === 0)}
+                isActive={organizedItems.every(arr => arr.length > 0)}
             />
         </SafeAreaView>
     );

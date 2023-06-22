@@ -2,7 +2,6 @@ import { Dimensions, Keyboard, ScrollView, StyleSheet, Text, TextInput, Touchabl
 import React, { useState } from 'react'
 import { InputDataListItem } from './inputDataListItem'
 import { colors } from '../../../../colors';
-import { Button } from '../../../../components/buttons/button';
 import { CustomText } from '../../../../components/text/customText';
 import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
 import { generalIcons } from '../../../../components/icons/icon-library';

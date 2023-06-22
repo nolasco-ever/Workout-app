@@ -3,7 +3,7 @@ import React from 'react'
 import { colors } from '../colors';
 import { AnimatedImage } from '../components/utils/AnimatedImage';
 import { CustomText } from '../components/text/customText';
-import { Button } from '../components/buttons/button';
+import { Button } from '../components/buttons/Button';
 
 const MessageScreen = ({navigation, route}: {navigation: any, route: any}) => {
     const {title, message, image, imageLoop, buttonTitle, buttonAction} = route.params;
@@ -21,8 +21,7 @@ const MessageScreen = ({navigation, route}: {navigation: any, route: any}) => {
                 </View>
             </View>
             <Button
-                title={buttonTitle}
-                isPrimary
+                label={buttonTitle}
                 onPress={buttonAction ? buttonAction : () => navigation.navigate('Home')}
             />
         </SafeAreaView>

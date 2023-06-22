@@ -4,7 +4,7 @@ import { generalIcons } from '../../../components/icons/icon-library'
 import { CustomTextInput } from '../../../components/text-input/customTextInput'
 import { CustomText } from '../../../components/text/customText'
 import { AnimatedImage } from '../../../components/utils/AnimatedImage'
-import { Button } from '../../../components/buttons/button'
+import { Button } from '../../../components/buttons/Button'
 import { colors } from '../../../colors'
 import { createUserProfileAnimation } from '../../../animations/onboarding-flow'
 import { NumberPicker } from '../../../components/Pickers/numberPicker'
@@ -74,9 +74,8 @@ export const UserProfileInfoScreen = ({navigation}: {navigation: any}) => {
                         </Section>
                     </View>
                     <Button
-                    title='Next'
-                    isPrimary
-                    onPress={() => navigation.navigate('setProfilePhotoScreen')}
+                        label='Next'
+                        onPress={() => navigation.navigate('setProfilePhotoScreen')}
                     />
                 </SafeAreaView>
             </KeyboardAvoidingView>

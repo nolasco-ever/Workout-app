@@ -4,7 +4,7 @@ import { CustomText } from '../../../components/text/customText'
 import { colors } from '../../../colors'
 import { AnimatedImage } from '../../../components/utils/AnimatedImage'
 import { forgotPasswordAnimation } from '../../../animations/auth-flow'
-import { Button } from '../../../components/buttons/button'
+import { Button } from '../../../components/buttons/Button'
 import { CustomTextInput } from '../../../components/text-input/customTextInput'
 import { generalIcons } from '../../../components/icons/icon-library'
 
@@ -36,9 +36,8 @@ export const ForgotPasswordScreen = ({navigation}: {navigation: any}) => {
         </View>
 
         <Button
-            title="Send"
-            isPrimary
-            disabled={!emailRegex.test(value)}
+            label="Send"
+            isActive={emailRegex.test(value)}
             onPress={() => navigation.navigate('emailSentScreen')}
         />
     </SafeAreaView>

@@ -10,7 +10,7 @@ import { TouchableOpacity } from 'react-native-gesture-handler';
 import { useNavigation } from '@react-navigation/native';
 import { ListItemChoice } from '../../../../components/list-items/ListItemChoice';
 import { ListPicker } from '../../../../components/list-items/ListPicker';
-import { Button } from '../../../../components/buttons/button';
+import { Button } from '../../../../components/buttons/Button';
 import { useThemeContext } from '../../../../packages/core-contexts/theme-context';
 
 
@@ -47,20 +47,17 @@ export const AppThemeScreen = ({navigation}: {navigation: any}) => {
 
   return (
     <SafeAreaView style={[styles.container, {backgroundColor: appColors.background}]}>
-            <View style={{flex: 1, width: '100%'}}>
-                <ListPicker
-                    listItems={listItems}
-                    selectedItem={selecteditem}
-                    setSelectedItem={setSelectedItem}
-                />
-            </View>
-            <View style={{flex: 1, flexDirection: 'column', justifyContent: 'flex-end', alignItems: 'center'}}>
-                <Button
-                    title='Set Theme'
-                    onPress={handleSetAppTheme}
-                    isPrimary
-                />
-            </View>
+      <View style={{flex: 1, width: '100%'}}>
+          <ListPicker
+              listItems={listItems}
+              selectedItem={selecteditem}
+              setSelectedItem={setSelectedItem}
+          />
+      </View>
+      <Button
+        label='Set Theme'
+        onPress={handleSetAppTheme}
+      />
     </SafeAreaView>
   );
 }
