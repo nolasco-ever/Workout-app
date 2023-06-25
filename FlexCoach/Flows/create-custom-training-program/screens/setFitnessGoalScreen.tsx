@@ -2,7 +2,7 @@ import { SafeAreaView, StyleSheet, Text, TouchableOpacity, View } from 'react-na
 import React, { useState } from 'react'
 import { colors } from '../../../colors';
 import { CustomText } from '../../../components/text/customText';
-import { Button } from '../../../components/buttons/Button';
+import { Button } from '../../../components/buttons/button';
 import { AnimatedImage } from '../../../components/utils/AnimatedImage';
 import { setFitnessGoalsOptions } from '../../../config/customize-training-program-flow/setFitnessGoals';
 import { defaultAnimation } from '../../../animations/custom-training-program-flow';

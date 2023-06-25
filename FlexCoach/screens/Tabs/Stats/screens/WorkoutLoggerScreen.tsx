@@ -5,7 +5,7 @@ import { CustomText } from '../../../../components/text/customText';
 import { InputDataListItem } from '../components/inputDataListItem';
 import { InputDataTable } from '../components/inputDataTable';
 import { PreviousWorkoutCard } from '../components/previousWorkoutCard';
-import { Button } from '../../../../components/buttons/Button';
+import { Button } from '../../../../components/buttons/button';
 
 const WorkoutLoggerScreen = ({ navigation, route}: {navigation: any, route: any}) => {
     const { exercise, completed } = route.params;

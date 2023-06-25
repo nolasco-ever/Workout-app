@@ -3,12 +3,12 @@ import React from 'react'
 import { CustomText } from '../../../components/text/customText'
 import { signUpAnimation } from '../../../animations/auth-flow'
 import { generalIcons } from '../../../components/icons/icon-library'
-import { CustomTextInput } from '../../../components/text-input/customTextInput'
+import { CustomTextInput } from '../../../components/text-input/CustomTextInput'
 import { AnimatedImage } from '../../../components/utils/AnimatedImage'
 import { ParamListBase } from '@react-navigation/native'
 import { StackNavigationProp } from '@react-navigation/stack'
 import { colors } from '../../../colors'
-import { Button } from '../../../components/buttons/Button'
+import { Button } from '../../../components/buttons/button'
 
 interface SignUpScreenProps {
     navigation: StackNavigationProp<ParamListBase>;
@@ -40,22 +40,22 @@ export const SignUpScreen = ({navigation}: SignUpScreenProps) => {
                     </View>
                     <View style={styles.textInputContainer}>
                         <CustomTextInput
-                        icon={generalIcons.envelope}
-                        placeholder='Email'
+                            leftIcon={generalIcons.envelope}
+                            placeholder='Email'
                         />
                     </View>
                     <View style={styles.textInputContainer}>
                         <CustomTextInput
-                        icon={generalIcons.key}
-                        placeholder='Password'
-                        isPassword
+                            leftIcon={generalIcons.key}
+                            placeholder='Password'
+                            isSecure
                         />
                     </View>
                     <View style={styles.textInputContainer}>
                         <CustomTextInput
-                        icon={generalIcons.key}
-                        placeholder='Confirm Password'
-                        isPassword
+                            leftIcon={generalIcons.key}
+                            placeholder='Confirm Password'
+                            isSecure
                         />
                     </View>
                 </View>

@@ -5,10 +5,10 @@ import { colors } from '../../../colors';
 import { CustomText } from '../../../components/text/customText';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { generalIcons } from '../../../components/icons/icon-library';
-import { CustomTextInput } from '../../../components/text-input/customTextInput';
+import { CustomTextInput } from '../../../components/text-input/CustomTextInput';
 import { AnimatedImage } from '../../../components/utils/AnimatedImage';
 import { welcomeAnimation } from '../../../animations/auth-flow';
-import { Button } from '../../../components/buttons/Button';
+import { Button } from '../../../components/buttons/button';
 
 interface SignInScreenProps {
     navigation: StackNavigationProp<ParamListBase>;
@@ -40,15 +40,15 @@ export const SignInScreen = ({ navigation }: SignInScreenProps) => {
           </View>
           <View style={styles.textInputContainer}>
             <CustomTextInput
-              icon={generalIcons.envelope}
+              leftIcon={generalIcons.envelope}
               placeholder='Email'
             />
           </View>
           <View style={styles.textInputContainer}>
             <CustomTextInput
-              icon={generalIcons.key}
+              leftIcon={generalIcons.key}
               placeholder='Password'
-              isPassword
+              isSecure
             />
           </View>
           <TouchableOpacity onPress={() => navigation.navigate('forgotPasswordScreen')}>

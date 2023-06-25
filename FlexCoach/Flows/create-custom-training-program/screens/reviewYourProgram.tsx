@@ -3,7 +3,7 @@ import React from 'react'
 import { colors } from '../../../colors'
 import { CustomText } from '../../../components/text/customText';
 import { Section } from '../../../components/sections/Section';
-import { Button } from '../../../components/buttons/Button';
+import { Button } from '../../../components/buttons/button';
 import { AlertBanner } from '../../../components/banners/alertBanner';
 
 

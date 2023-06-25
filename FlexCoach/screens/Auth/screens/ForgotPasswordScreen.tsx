@@ -4,8 +4,8 @@ import { CustomText } from '../../../components/text/customText'
 import { colors } from '../../../colors'
 import { AnimatedImage } from '../../../components/utils/AnimatedImage'
 import { forgotPasswordAnimation } from '../../../animations/auth-flow'
-import { Button } from '../../../components/buttons/Button'
-import { CustomTextInput } from '../../../components/text-input/customTextInput'
+import { Button } from '../../../components/buttons/button'
+import { CustomTextInput } from '../../../components/text-input/CustomTextInput'
 import { generalIcons } from '../../../components/icons/icon-library'
 
 export const ForgotPasswordScreen = ({navigation}: {navigation: any}) => {
@@ -26,10 +26,10 @@ export const ForgotPasswordScreen = ({navigation}: {navigation: any}) => {
         </View>
         <View style={{flex: 1, flexDirection: 'row', width: '90%'}}>
             <CustomTextInput
-                placeholder='Email'
-                icon={generalIcons.envelope}
                 value={value}
                 onChangeText={setValue}
+                placeholder='Email'
+                leftIcon={generalIcons.envelope}
                 keyboardType='email-address'
                 returnKeyType='done'
             />

@@ -2,7 +2,7 @@ import { Dimensions, SafeAreaView, StyleSheet, Text, View } from 'react-native'
 import React from 'react'
 import { colors } from '../../../colors';
 import { CustomText } from '../../../components/text/customText';
-import { Button } from '../../../components/buttons/Button';
+import { Button } from '../../../components/buttons/button';
 import { ListItem } from '../../../components/list-items/ListItem';
 import { directionIcons } from '../../../components/icons/icon-library';
 

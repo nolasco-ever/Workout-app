@@ -2,7 +2,7 @@ import { Dimensions, SafeAreaView, ScrollView, StyleSheet, Text, View } from 're
 import React, { useEffect, useState } from 'react'
 import { colors } from '../../../../colors'
 import { ListItem } from '../../../../components/list-items/ListItem'
-import { Button } from '../../../../components/buttons/Button'
+import { Button } from '../../../../components/buttons/button'
 import { AnimatedImage } from '../../../../components/utils/AnimatedImage'
 import { progressBarAnimation, successCheckAnimation } from '../../../../animations/shared'
 import { ProgressBar } from '../../../../components/progress-indicators/progressBar'
