@@ -9,10 +9,8 @@ import { ProgressCardSquare } from '../../../components/cards/progressCardSquare
 import { user1 } from '../../../mocks/userMocks';
 import { CustomGraph } from '../../../components/graphs/customGraph';
 import { mockBenchPressData, mockDumbbellCurlData } from '../../../mocks/trainingDataMocks';
-import { InformationCard } from '../../../components/cards/informationCard';
 import { useScrollToTop } from '@react-navigation/native';
 import { mockArticles } from '../../../mocks/articleMocks';
-import { ActionButton } from '../../../components/buttons/actionButton';
 import { Card } from '../../../components/cards/Card';
 
 export const HomeScreen = ({navigation}: {navigation: any}) => {
@@ -47,11 +45,6 @@ export const HomeScreen = ({navigation}: {navigation: any}) => {
           }
           showsVerticalScrollIndicator={false}
         >
-          <ActionButton
-            navigation={navigation}
-            icon={generalIcons.dumbbell}
-            message='Tap here to begin your training program!'
-          />
           <Section title='For You' seeMore onPressSeeMore={() => navigation.navigate('Explore')}>
             <ScrollView horizontal showsHorizontalScrollIndicator={false}>
               {mockArticles.map((item, index) => (
@@ -72,15 +65,6 @@ export const HomeScreen = ({navigation}: {navigation: any}) => {
                 imageText='3:14'
                 title={item.title}
                 size='l'
-                description={item.description}
-                onPress={() => console.log('Pressed')}
-              />
-            ))}
-            {mockArticles.slice(2,4).map((item, index) => (
-              <InformationCard
-                key={index}
-                imageSource={item.image}
-                title={item.title}
                 description={item.description}
                 onPress={() => console.log('Pressed')}
               />
