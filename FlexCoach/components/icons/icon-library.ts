@@ -14,6 +14,8 @@ export const directionIcons = {
     apple: 'fa-solid fa-apple-whole',
     bell: 'fa-solid fa-bell',
     book: 'fa-solid fa-book',
+    bookmarkOutline: 'fa-regular fa-bookmark' as IconProp,
+    bookmarkFilled: 'fa-solid fa-bookmark' as IconProp,
     bulletPoint: 'fa-solid fa-circle',
     calendarDay: 'fa-solid fa-calendar-day',
     check: 'fa-solid fa-check',

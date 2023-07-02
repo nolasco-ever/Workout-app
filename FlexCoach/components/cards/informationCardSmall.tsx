@@ -43,7 +43,6 @@ const styles = StyleSheet.create({
   contentContainer: {
     padding: 10,
     height: '100%',
-    backgroundColor: 'red'
   },
   title: {
     fontWeight: 'bold',

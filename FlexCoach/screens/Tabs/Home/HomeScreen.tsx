@@ -5,20 +5,15 @@ import { UserCardHeader } from '../../../components/cards/userCardHeader';
 import { ProgressCard } from '../../../components/cards/progressCard';
 import { Section } from '../../../components/sections/Section';
 import { generalIcons } from '../../../components/icons/icon-library';
-import { ListCard } from '../../../components/cards/listCard';
-import { mockDietList, mockWorkoutList } from '../../../mocks/listCardMocks';
-import PostCard from '../../../components/cards/postCard';
 import { ProgressCardSquare } from '../../../components/cards/progressCardSquare';
 import { user1 } from '../../../mocks/userMocks';
 import { CustomGraph } from '../../../components/graphs/customGraph';
 import { mockBenchPressData, mockDumbbellCurlData } from '../../../mocks/trainingDataMocks';
 import { InformationCard } from '../../../components/cards/informationCard';
-import { strengthTrainingTypesMock } from '../../../mocks/selectionCardListMocks';
 import { useScrollToTop } from '@react-navigation/native';
-import { AlertBanner } from '../../../components/banners/alertBanner';
 import { mockArticles } from '../../../mocks/articleMocks';
-import { TriviaQuestion } from './components/triviaQuestion';
 import { ActionButton } from '../../../components/buttons/actionButton';
+import { Card } from '../../../components/cards/Card';
 
 export const HomeScreen = ({navigation}: {navigation: any}) => {
     const appColors = colors();
@@ -57,8 +52,30 @@ export const HomeScreen = ({navigation}: {navigation: any}) => {
             icon={generalIcons.dumbbell}
             message='Tap here to begin your training program!'
           />
-          {/* <TriviaQuestion/> */}
           <Section title='For You' seeMore onPressSeeMore={() => navigation.navigate('Explore')}>
+            <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+              {mockArticles.map((item, index) => (
+                <Card
+                  key={index}
+                  imageSource={item.image}
+                  imageText='Read'
+                  title={item.title}
+                  description={index % 2 === 0 ? item.description : undefined}
+                  onPress={() => console.log('Pressed')}
+                />
+              ))}
+            </ScrollView>
+            {mockArticles.slice(4,5).map((item, index) => (
+              <Card
+                key={index}
+                imageSource={item.image}
+                imageText='3:14'
+                title={item.title}
+                size='l'
+                description={item.description}
+                onPress={() => console.log('Pressed')}
+              />
+            ))}
             {mockArticles.slice(2,4).map((item, index) => (
               <InformationCard
                 key={index}
