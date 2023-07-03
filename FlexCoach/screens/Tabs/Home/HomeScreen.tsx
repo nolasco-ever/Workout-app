@@ -5,7 +5,6 @@ import { UserCardHeader } from '../../../components/cards/userCardHeader';
 import { ProgressCard } from '../../../components/cards/progressCard';
 import { Section } from '../../../components/sections/Section';
 import { generalIcons } from '../../../components/icons/icon-library';
-import { ProgressCardSquare } from '../../../components/cards/progressCardSquare';
 import { user1 } from '../../../mocks/userMocks';
 import { CustomGraph } from '../../../components/graphs/customGraph';
 import { mockBenchPressData, mockDumbbellCurlData } from '../../../mocks/trainingDataMocks';
@@ -70,26 +69,28 @@ export const HomeScreen = ({navigation}: {navigation: any}) => {
           </Section>
           <Section title='Overview'>
             <View style={{flexDirection: 'row'}}>
-              <ProgressCardSquare
+              <ProgressCard
                 title='Calories'
                 goalAmount={2400}
                 currentAmount={1030}
+                type='circle'
               />
-              <ProgressCardSquare
-                title='Protein (g)'
+              <ProgressCard
+                title='Protein'
                 goalAmount={180}
                 currentAmount={127}
+                type='circle'
               />
             </View>
             <ProgressCard
-              title='Calories'
-              goalAmount={2400}
-              currentAmount={1030}
+              title='Water (oz)'
+              goalAmount={64}
+              currentAmount={48}
             />
             <ProgressCard
-              title='Protein (g)'
-              goalAmount={180}
-              currentAmount={127}
+              title='Steps'
+              goalAmount={1000}
+              currentAmount={682}
             />
           </Section>
 
