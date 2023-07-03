@@ -19,9 +19,6 @@ export const HomeScreen = ({navigation}: {navigation: any}) => {
 
     const benchPressWeightData = mockBenchPressData.map(item => item.weight);
     const benchPressDates = mockBenchPressData.map(item => item.date);
-  
-    const dumbbellCurlWeightData = mockDumbbellCurlData.map(item => item.weight);
-    const dumbbellCurlDates = mockDumbbellCurlData.map(item => item.date);
 
     const [refreshing, setRefreshing] = useState(false);
 
