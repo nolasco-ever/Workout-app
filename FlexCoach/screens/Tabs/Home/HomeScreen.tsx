@@ -46,6 +46,17 @@ export const HomeScreen = ({navigation}: {navigation: any}) => {
           showsVerticalScrollIndicator={false}
         >
           <Section title='For You' seeMore onPressSeeMore={() => navigation.navigate('Explore')}>
+            {mockArticles.slice(4,5).map((item, index) => (
+              <Card
+                key={index}
+                imageSource={item.image}
+                imageText='3:14'
+                title={item.title}
+                size='l'
+                description={item.description}
+                onPress={() => console.log('Pressed')}
+              />
+            ))}
             <ScrollView horizontal showsHorizontalScrollIndicator={false}>
               {mockArticles.map((item, index) => (
                 <Card
@@ -58,17 +69,6 @@ export const HomeScreen = ({navigation}: {navigation: any}) => {
                 />
               ))}
             </ScrollView>
-            {mockArticles.slice(4,5).map((item, index) => (
-              <Card
-                key={index}
-                imageSource={item.image}
-                imageText='3:14'
-                title={item.title}
-                size='l'
-                description={item.description}
-                onPress={() => console.log('Pressed')}
-              />
-            ))}
           </Section>
           <Section title='Overview'>
             <View style={{flexDirection: 'row'}}>
