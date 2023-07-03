@@ -1,0 +1,20 @@
+name: Delete Branch on Merge
+
+on:
+  pull_request:
+    types:
+      - closed
+
+jobs:
+  deleteBranch:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check if PR is merged
+        id: check_merge
+        run: echo "PR_NUMBER=${{ github.event.pull_request.number }} PR_STATE=${{ github.event.pull_request.state }}"
+      - name: Delete Branch
+        if: ${{ steps.check_merge.outputs.PR_STATE == 'merged' && steps.check_merge.outputs.PR_NUMBER }}
+        run: |
+            git config --global user.email "github-actions[bot]@users.noreply.github.com"
+            git config --global user.name "github-actions[bot]"
+            git push --delete origin ${{ github.head_ref }}
