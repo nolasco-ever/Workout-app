@@ -2,12 +2,12 @@ import { IconProp } from '@fortawesome/fontawesome-svg-core';
 import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
 import React from 'react';
 import { View, Text, StyleSheet, SafeAreaView, ScrollView } from 'react-native';
-import { colors } from '../../../colors';
-import { generalIcons, tabIcons } from '../../../components/icons/icon-library';
-import { CustomText } from '../../../components/text/customText';
-import { ListItem } from '../../../components/list-items/ListItem';
-import { Section } from '../../../components/sections/Section';
-import { mockNotificationMessages } from '../../../mocks/listItemMocks';
+import { colors } from '../../../../colors';
+import { generalIcons, tabIcons } from '../../../../components/icons/icon-library';
+import { CustomText } from '../../../../components/text/customText';
+import { ListItem } from '../../../../components/list-items/ListItem';
+import { Section } from '../../../../components/sections/Section';
+import { mockNotificationMessages } from '../../../../mocks/listItemMocks';
 
 
 export const NotificationsScreen = () => {
