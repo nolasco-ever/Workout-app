@@ -1,17 +1,16 @@
-import { StyleSheet, Text, View } from 'react-native'
 import React from 'react'
 import { createStackNavigator } from '@react-navigation/stack'
 import { colors } from '../../../colors';
-import { statsStack } from '../../../config/statsStackConfig';
 import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
 import { directionIcons, generalIcons } from '../../../components/icons/icon-library';
 import { IconProp } from '@fortawesome/fontawesome-svg-core';
 import { PlaceholderScreen } from '../../placeholderScreen';
+import { homeStack } from '../../../config/homeStackConfig';
 import { AddDietEntryScreen } from './screens/AddDietEntryScreen';
 
 const Stack = createStackNavigator();
 
-export const StatsStack = () => {
+export const HomeStack = () => {
     const appColors = colors();
     return (
         <Stack.Navigator
@@ -19,7 +18,7 @@ export const StatsStack = () => {
                 headerShown: false
             }}
         >
-            {statsStack.map((screen, index) => (
+            {homeStack.map((screen, index) => (
                 <Stack.Screen
                     key={index}
                     name={screen.id}

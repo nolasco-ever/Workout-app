@@ -2,7 +2,7 @@ import React from 'react';
 import { TransitionPresets, createStackNavigator } from '@react-navigation/stack';
 import { SignInScreen } from '../screens/Auth/screens/SignInScreen';
 import { TabNavigator } from './TabNavigator';
-import { NotificationsScreen } from '../screens/Tabs/Home/NotificationsScreen';
+import { NotificationsScreen } from '../screens/Tabs/Home/screens/NotificationsScreen';
 import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
 import { directionIcons } from '../components/icons/icon-library';
 import { IconProp } from '@fortawesome/fontawesome-svg-core';
