@@ -53,7 +53,6 @@ export const HomeScreen = ({navigation}: {navigation: any}) => {
                 imageText='3:14'
                 title={item.title}
                 size='l'
-                description={item.description}
                 onPress={() => console.log('Pressed')}
               />
             ))}
@@ -64,7 +63,6 @@ export const HomeScreen = ({navigation}: {navigation: any}) => {
                   imageSource={item.image}
                   imageText='Read'
                   title={item.title}
-                  description={index % 2 === 0 ? item.description : undefined}
                   onPress={() => console.log('Pressed')}
                 />
               ))}
@@ -73,14 +71,14 @@ export const HomeScreen = ({navigation}: {navigation: any}) => {
           <Section title='Overview'>
             <View style={{flexDirection: 'row'}}>
               <ProgressCardSquare
-                title='Steps'
-                goalAmount={10000}
-                currentAmount={5734}
+                title='Calories'
+                goalAmount={2400}
+                currentAmount={1030}
               />
               <ProgressCardSquare
-                title='Water (cups)'
-                goalAmount={10}
-                currentAmount={8}
+                title='Protein (g)'
+                goalAmount={180}
+                currentAmount={127}
               />
             </View>
             <ProgressCard
