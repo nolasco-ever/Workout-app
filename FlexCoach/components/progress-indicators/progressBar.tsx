@@ -7,10 +7,10 @@ type ProgressBarProps = {
     title?: string,
     percent: number,
     showPercent?: boolean
-    setProgressCompleted: React.Dispatch<React.SetStateAction<boolean>>;
+    setProgressCompleted?: React.Dispatch<React.SetStateAction<boolean>>;
   }
 
-export const ProgressBar = ({title, percent=0.50, showPercent=true, setProgressCompleted}: ProgressBarProps) => {
+export const ProgressBar = ({title, percent, showPercent=false, setProgressCompleted}: ProgressBarProps) => {
     const appColors = colors();
     
     const [prevFill, setPrevFill] = useState<string>('0%');
@@ -37,7 +37,7 @@ export const ProgressBar = ({title, percent=0.50, showPercent=true, setProgressC
         setPrevFill(currentFill);
         setCurrentFill(Math.round(percent*100) > 100 ? '100%' : `${Math.round(percent*100)}%`);
 
-        if (percent > 1) {
+        if (percent > 1 && setProgressCompleted) {
             setTimeout(() => {
                 setProgressCompleted(true)
             }, 500)
