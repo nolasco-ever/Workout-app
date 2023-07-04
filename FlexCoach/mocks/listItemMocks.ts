@@ -82,6 +82,7 @@ export const statsScreenActivityLogListMock = [
 export const mockNotificationMessages = [
     {
       id: 0,
+      title: 'New personal record',
       message: "Congratulations! You hit a new personal record on bench press.",
       type: "pr",
       date: 'Today',
@@ -89,6 +90,7 @@ export const mockNotificationMessages = [
     },
     {
       id: 1,
+      title: 'Almost there',
       message: "You have consumed 100g of protein today. You have 50g remaining before the end of the day.",
       type: "diet",
       date: 'Today',
@@ -96,6 +98,7 @@ export const mockNotificationMessages = [
     },
     {
       id: 2,
+      title: 'Stay hydrated',
       message: "Don't forget to drink enough water today!",
       type: "health",
       date: 'Yesterday',
@@ -103,6 +106,7 @@ export const mockNotificationMessages = [
     },
     {
       id: 3,
+      title: 'Workout complete',
       message: "You have completed your scheduled workout for today. Great job!",
       type: "workout",
       date: 'Yesterday',
@@ -110,6 +114,7 @@ export const mockNotificationMessages = [
     },
     {
       id: 4,
+      title: 'Calorie limit exceeded',
       message: "You have exceeded your daily calorie limit. Try to stick to your diet plan.",
       type: "diet",
       date: 'Yesterday',
@@ -117,13 +122,15 @@ export const mockNotificationMessages = [
     },
     {
       id: 5,
-      message: "A new article about the benefits of stretching has been published in the app.",
+      title: 'The Benefits of Weight Training',
+      message: "Tap to read more on why weight training is important for both our physical and mental health.",
       type: "news",
       date: 'Last Week',
       timePassed: '3d'
     },
     {
       id: 6,
+      title: 'Body weight log overdue',
       message: "You haven't logged your body weight in a week. Please update your progress.",
       type: "health",
       date: 'Last Week',
@@ -131,6 +138,7 @@ export const mockNotificationMessages = [
     },
     {
       id: 7,
+      title: 'New workout plan available',
       message: "Your workout plan for this week has been updated. Please check it out!",
       type: "workout",
       date: 'Last Week',

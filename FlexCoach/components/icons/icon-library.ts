@@ -13,6 +13,7 @@ export const directionIcons = {
   export const generalIcons = {
     apple: 'fa-solid fa-apple-whole',
     bell: 'fa-solid fa-bell',
+    bellSlash: 'fa-solid fa-bell-slash' as IconProp,
     book: 'fa-solid fa-book',
     bookmarkOutline: 'fa-regular fa-bookmark' as IconProp,
     bookmarkFilled: 'fa-solid fa-bookmark' as IconProp,
@@ -23,7 +24,8 @@ export const directionIcons = {
     comment: 'fa-solid fa-comment',
     dollar: 'fa-solid fa-dollar-sign',
     dumbbell: 'fa-solid fa-dumbbell',
-    ellipsis: 'fa-solid fa-ellipsis',
+    ellipsis: 'fa-solid fa-ellipsis' as IconProp,
+    ellipsisVertical: 'fa-solid fa-ellipsis-vertical' as IconProp,
     envelope: 'fa-solid fa-envelope',
     error: 'fa-solid fa-circle-exclamation',
     eye: 'fa-solid fa-eye',
@@ -48,7 +50,8 @@ export const directionIcons = {
     trophy: 'fa-solid fa-trophy',
     user: 'fa-solid fa-user',
     warning: 'fa-solid fa-triangle-exclamation',
-    xMark: 'fa-solid fa-xmark',
+    xMark: 'fa-solid fa-xmark' as IconProp,
+    xMarkCircle: 'fa-solid fa-circle-xmark' as IconProp
   };
 
   export const tabIcons = {

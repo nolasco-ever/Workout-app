@@ -69,7 +69,10 @@ import {
     faMagnifyingGlass,
     faBook,
     faMinus,
-    faBookmark
+    faBookmark,
+    faEllipsisVertical,
+    faCircleXmark,
+    faBellSlash
 } from '@fortawesome/free-solid-svg-icons';
 
 library.add(
@@ -141,5 +144,8 @@ library.add(
     faMagnifyingGlass,
     faBook,
     faMinus,
-    faBookmark
+    faBookmark,
+    faEllipsisVertical,
+    faCircleXmark,
+    faBellSlash
 );
