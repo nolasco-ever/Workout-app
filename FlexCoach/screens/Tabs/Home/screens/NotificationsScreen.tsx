@@ -1,10 +1,7 @@
-import { IconProp } from '@fortawesome/fontawesome-svg-core';
-import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
 import React from 'react';
-import { View, Text, StyleSheet, SafeAreaView, ScrollView } from 'react-native';
+import { StyleSheet, SafeAreaView, ScrollView } from 'react-native';
 import { colors } from '../../../../colors';
-import { generalIcons, tabIcons } from '../../../../components/icons/icon-library';
-import { CustomText } from '../../../../components/text/customText';
+import { generalIcons } from '../../../../components/icons/icon-library';
 import { ListItem } from '../../../../components/list-items/ListItem';
 import { Section } from '../../../../components/sections/Section';
 import { mockNotificationMessages } from '../../../../mocks/listItemMocks';
@@ -45,49 +42,74 @@ export const NotificationsScreen = () => {
       default:
         return appColors.primary;
     }
+    // return appColors.primary
   }
+
+  const optionsList = [
+    {
+      title: "Remove notification",
+      description: 'Remove this notification from the list',
+      icon: generalIcons.xMarkCircle
+    },
+    {
+      title: "Don't show me this type of notification",
+      description: 'Stop receiving these kinds of notifications',
+      icon: generalIcons.bellSlash
+    },
+    {
+      title: "Manage notifications",
+      description: 'Choose what kinds of notifications you receive',
+      icon: generalIcons.gear
+    }
+  ];
 
   return (
     <SafeAreaView style={[styles.container, {backgroundColor: appColors.background}]}>
       <ScrollView>
-        <Section title='Today' titleFontSize={18}>
+        <Section title='Today' titleFontSize={16}>
           {mockNotificationMessages.filter(item => item.date === 'Today').map(item => {
             return (
               <ListItem
                 key={item.id}
                 icon={getIcon(item.type)}
+                iconSize={30}
                 iconColor={getIconColor(item.type)}
-                iconPosition='top'
-                title={item.message}
+                title={item.title}
+                description={item.message}
                 rightText={item.timePassed}
+                options={optionsList}
               />
             );
           })}
         </Section>
-        <Section title='Yesterday' titleFontSize={18}>
+        <Section title='Yesterday' titleFontSize={16}>
           {mockNotificationMessages.filter(item => item.date === 'Yesterday').map(item => {
             return (
               <ListItem
                 key={item.id}
                 icon={getIcon(item.type)}
+                iconSize={30}
                 iconColor={getIconColor(item.type)}
-                iconPosition='top'
-                title={item.message}
+                title={item.title}
+                description={item.message}
                 rightText={item.timePassed}
+                options={optionsList}
               />
             );
           })}
         </Section>
-        <Section title='Last Week' titleFontSize={18}>
+        <Section title='Last Week' titleFontSize={16}>
           {mockNotificationMessages.filter(item => item.date === 'Last Week').map(item => {
             return (
               <ListItem
                 key={item.id}
                 icon={getIcon(item.type)}
+                iconSize={30}
                 iconColor={getIconColor(item.type)}
-                iconPosition='top'
-                title={item.message}
+                title={item.title}
+                description={item.message}
                 rightText={item.timePassed}
+                options={optionsList}
               />
             );
           })}
