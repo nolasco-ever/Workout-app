@@ -5,6 +5,9 @@ import { colors } from '../colors';
 import { Section } from '../components/sections/Section';
 import { mockArticles } from '../mocks/articleMocks';
 import { AlertBanner } from '../components/banners/alertBanner';
+import { AuthorCard } from './components/authorCard';
+import { InformationCard } from '../components/cards/informationCard';
+import { UserFeedbackCard } from './components/userFeedbackCard';
 
 export const ArticleScreen = ({navigation, route}: {navigation: any, route: any}) => {
     const { articleData } = route.params;
@@ -51,24 +54,52 @@ export const ArticleScreen = ({navigation, route}: {navigation: any, route: any}
             </View>
             
             <View style={{backgroundColor: appColors.background}}>
-              <AlertBanner
+              <View style={styles.contentContainer}>
+                <View style={[styles.titleContainer, {borderColor: appColors.lightGrey}]}>
+                    <CustomText type='header'>{articleData.title}</CustomText>
+                    {/* <Text style={[styles.text, {color: appColors.subtext}]}>{articleData.date}</Text> */}
+                    {/* <CustomText type='subheader'>{articleData.description}</CustomText> */}
+                    <AuthorCard
+                      photo={articleData.authorData.profilePhoto}
+                      name={articleData.authorData.name}
+                      date={articleData.authorData.date}
+                      // viewCount={articleData.authorData.viewCount}
+                    />
+                </View>
+                <AlertBanner
                 message='This is an AI generated article. It is only a placeholder and is not intended for real use.'
                 type='warning'
               />
-              <View style={[styles.contentContainer, {backgroundColor: appColors.background}]}>
-                  <CustomText type='header'>{articleData.title}</CustomText>
-                  <Text style={[styles.text, {color: appColors.subtext}]}>{articleData.date}</Text>
-                  <CustomText type='subheader'>{articleData.description}</CustomText>
                   <CustomText>
                       {articleData.content}
                   </CustomText>
               </View>
             </View>
 
+            <UserFeedbackCard
+            
+            />
+
             <Section title='Related'>
+              {mockArticles.slice(0,2).map((item, index) => {
+                return (
+                  <InformationCard
+                    key={index}
+                    imageSource={item.image}
+                    title={item.title}
+                    description={item.description}
+                    onPress={() => 
+                      navigation.replace(
+                        'articleScreen', 
+                        {articleData: item}
+                      )
+                    }
+                  />
+                );
+              })}
               <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-                {mockArticles.filter((item: { id: number; date: string; title: string; image: string; content: string, description: string }) => item.title !== articleData.title)
-                  .map((item: { id: number; date: string; title: string; image: string; content: string, description: string }) => {
+                {mockArticles.filter((item: { id: number; title: string; image: string; content: string, description: string }) => item.title !== articleData.title)
+                  .map((item: { id: number; title: string; image: string; content: string, description: string }) => {
                     return (
                       <TouchableOpacity
                         key={item.id} 
@@ -107,6 +138,9 @@ const styles = StyleSheet.create({
   },
   contentContainer: {
     padding: 10,
+  },
+  titleContainer: {
+    borderBottomWidth: 1
   },
   text: {
     fontSize: 12,

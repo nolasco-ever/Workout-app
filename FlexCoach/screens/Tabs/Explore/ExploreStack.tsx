@@ -1,13 +1,14 @@
 import { StyleSheet, Text, View } from 'react-native'
-import React from 'react'
+import React, { useState } from 'react'
 import { createStackNavigator } from '@react-navigation/stack'
 import { colors } from '../../../colors';
 import { exploreStack } from '../../../config/exploreStackConfig';
 import { IconProp } from '@fortawesome/fontawesome-svg-core';
 import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
-import { directionIcons } from '../../../components/icons/icon-library';
+import { directionIcons, generalIcons } from '../../../components/icons/icon-library';
 import { PlaceholderScreen } from '../../placeholderScreen';
 import { ArticleScreen } from '../../../shared-screens/articleScreen';
+import { TouchableOpacity } from 'react-native-gesture-handler';
 
 const Stack = createStackNavigator();
 
@@ -48,17 +49,33 @@ export const ExploreStack = () => {
                 options={({ route }) => ({
                     headerShown: true,
                     headerStyle: {backgroundColor: appColors.background},
-                    headerTitleStyle: {color: appColors.text, marginLeft: 10},
+                    headerTitleStyle: {color: appColors.text, marginLeft: 10, marginRight: 10, fontSize: 16},
                     headerTitle: (route.params as { articleData: any }).articleData.title,
                     headerBackTitleVisible: false,
                     headerBackImage: () => (
                         <FontAwesomeIcon
                             icon={directionIcons.angleLeft as IconProp} 
                             color={appColors.icon} 
-                            size={30} 
+                            size={25} 
                             style={{marginLeft: 10}}
                         />
-                    )
+                    ),
+                    headerRight: () => {
+                        const [bookmarked, setBookmarked] = useState<boolean>();
+
+                        return (
+                            <TouchableOpacity onPress={() => setBookmarked(prev => !prev)}>
+                                <FontAwesomeIcon
+                                    // icon={generalIcons.bookmarkFilled}
+                                    icon={bookmarked ? generalIcons.bookmarkFilled : generalIcons.bookmarkOutline}
+                                    // color={bookmarked ? appColors.icon : 'rgba(0,0,0,0.25)'}
+                                    color={appColors.icon}
+                                    size={25}
+                                    style={{marginRight: 10}}
+                                />
+                            </TouchableOpacity>
+                        )
+                    }
                 })}
             />
             <Stack.Screen

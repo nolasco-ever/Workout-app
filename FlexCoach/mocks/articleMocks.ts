@@ -1,7 +1,6 @@
 export const mockArticles = [
     {
         id: 0,
-        date: 'April 16, 2023',
         title: "The Benefits of Weight Training",
         image: 'https://wpassets.trainingpeaks.com/wp-content/uploads/2021/02/25090028/21027-Blog-1200x675-1.jpg',
         content: `
@@ -19,11 +18,16 @@ export const mockArticles = [
         
             Overall, weight training is a great form of exercise that can help improve your physical and mental health in many ways. If you're new to weight training, it's a good idea to start with lighter weights and focus on proper form to avoid injury. With time and practice, you can gradually increase the weight and intensity of your workouts to see even greater benefits.
         `,
-        description: "We should all prioritize both our physical and mental health. If you agree with this notion, then you should consider weight training."
+        description: "We should all prioritize both our physical and mental health. If you agree with this notion, then you should consider weight training.",
+        authorData: {
+            profilePhoto: 'data:image/jpeg;base64,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',
+            name: 'Phil McCracken',
+            date: 'April 16, 2023',
+            viewCount: '2,160'
+        }
     },
     {
         id: 1,
-        date: 'March 04, 2023',
         title: "The Importance of Sleep for a Healthy Lifestyle",
         image: 'https://media.cnn.com/api/v1/images/stellar/prod/220823045808-01-lack-of-sleep-selfish-stock-image.jpg?c=original',
         content: `
@@ -41,7 +45,13 @@ export const mockArticles = [
         
             In conclusion, getting enough sleep is essential for a healthy lifestyle. If you're having trouble sleeping, there are many things you can do to improve your sleep habits, such as establishing a regular sleep schedule, creating a relaxing sleep environment, and avoiding caffeine and other stimulants before bedtime. By prioritizing sleep and making it a part of your daily routine, you can reap the many benefits that come with a good night's sleep.
         `,
-        description: "Learn why sleep is so important for a healthy lifestyle and the many benefits it provides."
+        description: "Learn why sleep is so important for a healthy lifestyle and the many benefits it provides.",
+        authorData: {
+            profilePhoto: 'https://www.shutterstock.com/shutterstock/photos/1437938108/display_1500/stock-photo-smiling-african-american-millennial-businessman-in-glasses-isolated-on-grey-studio-background-1437938108.jpg',
+            name: 'Ben Dover',
+            date: 'March 04, 2023',
+            viewCount: '5,372'
+        }
     },
     {
         id: 2,
@@ -59,11 +69,16 @@ export const mockArticles = [
             
             In conclusion, if you want to lose fat, it's not just about going to the gym. While exercise is important, what you eat plays a much bigger role in weight loss. Focus on creating a caloric deficit by making small, sustainable changes to your eating habits and getting enough protein. With time and consistency, you'll start to see results. 
         `,
-        description: "Exercise alone isn't enough to lose fat. You need to pay attention to what you're consuming and how your diet plays a bigger role in weight loss."
+        description: "Exercise alone isn't enough to lose fat. You need to pay attention to what you're consuming and how your diet plays a bigger role in weight loss.",
+        authorData: {
+            profilePhoto: 'https://previews.123rf.com/images/lenanet/lenanet1711/lenanet171100048/92786934-beautiful-woman-headshot-over-white-background.jpg',
+            name: 'Eileen Dover',
+            date: 'April 12, 2023',
+            viewCount: '17,723'
+        }
     },
     {
         id: 3,
-        date: 'March 17, 2023',
         title: "Why Proper Form Is More Important Than Lifting Heavy Weights",
         image: 'https://images.pexels.com/photos/116077/pexels-photo-116077.jpeg?cs=srgb&dl=pexels-binyamin-mellish-116077.jpg&fm=jpg',
         content: `
@@ -79,11 +94,16 @@ export const mockArticles = [
       
           Overall, proper form is far more important than lifting heavier weights. If you're new to weightlifting, it's important to focus on proper form before you start increasing the weight. This will help you build a strong foundation and see better results in the long run.
         `,
-        description: "Reduce your risk of injury! Read how proper form is more important than lifting heavy weights and how it can help improve your results." 
+        description: "Reduce your risk of injury! Read how proper form is more important than lifting heavy weights and how it can help improve your results.",
+        authorData: {
+            profilePhoto: 'https://images.pexels.com/photos/3777943/pexels-photo-3777943.jpeg?cs=srgb&dl=pexels-andrea-piacquadio-3777943.jpg&fm=jpg',
+            name: 'Seymour Butts',
+            date: 'March 17, 2023',
+            viewCount: '4,354'
+        }
     },
     {
         id: 4,
-        date: 'February 22, 2023',
         title: "Bulking: Why a Small Calorie Surplus is Enough",
         image: 'https://media.self.com/photos/5873e3bce4f5ca1462a66ad4/4:3/w_2560%2Cc_limit/Count-calories-weight-loss.jpg',
         content: `
@@ -99,6 +119,12 @@ export const mockArticles = [
       
           In conclusion, you don't need to consume a massive amount of calories to bulk up. A small calorie surplus of 200-300 calories is enough for most people. Consuming more than that can lead to unwanted fat gain, which can be difficult to lose later on. Remember to be consistent and patient, and you'll see results over time.
         `,
-        description: "Learn why a small calorie surplus is enough when bulking and how consuming too many calories can lead to unwanted fat gain."
+        description: "Learn why a small calorie surplus is enough when bulking and how consuming too many calories can lead to unwanted fat gain.",
+        authorData: {
+            profilePhoto: 'https://st3.depositphotos.com/15754244/19097/i/600/depositphotos_190978340-stock-photo-happy-black-man-front-white.jpg',
+            name: 'Hugh G. Rection',
+            date: 'February 22, 2023',
+            viewCount: '2,439'
+        }
       }
 ];
