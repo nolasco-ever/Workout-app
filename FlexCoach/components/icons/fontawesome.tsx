@@ -69,11 +69,19 @@ import {
     faMagnifyingGlass,
     faBook,
     faMinus,
-    faBookmark,
+    faBookmark as faBookmarkFilled,
     faEllipsisVertical,
     faCircleXmark,
-    faBellSlash
+    faBellSlash,
+    faThumbsUp as faThumbsUpFilled,
+    faThumbsDown as faThumbsDownFilled
 } from '@fortawesome/free-solid-svg-icons';
+
+import {
+    faBookmark as faBookmarkOutline,
+    faThumbsUp as faThumbsUpOutline,
+    faThumbsDown as faThumbsDownOutline
+} from '@fortawesome/free-regular-svg-icons'
 
 library.add(
     faBasketShopping, 
@@ -144,8 +152,13 @@ library.add(
     faMagnifyingGlass,
     faBook,
     faMinus,
-    faBookmark,
+    faBookmarkFilled,
+    faBookmarkOutline,
     faEllipsisVertical,
     faCircleXmark,
-    faBellSlash
+    faBellSlash,
+    faThumbsUpFilled,
+    faThumbsUpOutline,
+    faThumbsDownFilled,
+    faThumbsDownOutline
 );
