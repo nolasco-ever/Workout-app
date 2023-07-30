@@ -33,7 +33,7 @@ export const CustomTrainingProgramStack = () => {
                         headerBackTitleVisible: false,
                         headerBackImage: () => index === 0 ? (
                             <FontAwesomeIcon
-                                icon={generalIcons.xMark as IconProp}
+                                icon={generalIcons.xMark}
                                 color={appColors.icon}
                                 size={25}
                                 style={{marginLeft: 10}}
