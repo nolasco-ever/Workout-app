@@ -5,9 +5,15 @@ import { LoadingSpinnerView } from '../views/loadingSpinnerView';
 
 interface YouTubeVideoProps {
     videoLink: string;
+    autoPlay?: boolean;
+    showControls?: boolean;
 }
 
-export const YouTubeVideo = ({videoLink}: YouTubeVideoProps) => {
+export const YouTubeVideo = ({
+  videoLink,
+  autoPlay = true,
+  showControls = false
+}: YouTubeVideoProps) => {
   const screenHeight = Dimensions.get('window').height;
   const videoId = videoLink.split('v=')[1];
 
@@ -23,6 +29,10 @@ export const YouTubeVideo = ({videoLink}: YouTubeVideoProps) => {
         height={screenHeight/4}
         videoId={videoId}
         onReady={handleOnReady}
+        play={autoPlay}
+        initialPlayerParams={{
+          controls: showControls
+        }}
       />
     </LoadingSpinnerView>
   )

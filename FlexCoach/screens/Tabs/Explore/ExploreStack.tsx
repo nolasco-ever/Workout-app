@@ -39,7 +39,21 @@ export const ExploreStack = () => {
                                 size={25} 
                                 style={{marginLeft: 10}}
                             />
-                        )
+                        ),
+                        headerRight: () => {
+                            const [bookmarked, setBookmarked] = useState<boolean>();
+    
+                            return (
+                                <TouchableOpacity onPress={() => setBookmarked(prev => !prev)}>
+                                    <FontAwesomeIcon
+                                        icon={bookmarked ? generalIcons.bookmarkFilled : generalIcons.bookmarkOutline}
+                                        color={appColors.icon}
+                                        size={25}
+                                        style={{marginRight: 10}}
+                                    />
+                                </TouchableOpacity>
+                            )
+                        }
                     } : {}}
                 />
             ))}
@@ -66,9 +80,7 @@ export const ExploreStack = () => {
                         return (
                             <TouchableOpacity onPress={() => setBookmarked(prev => !prev)}>
                                 <FontAwesomeIcon
-                                    // icon={generalIcons.bookmarkFilled}
                                     icon={bookmarked ? generalIcons.bookmarkFilled : generalIcons.bookmarkOutline}
-                                    // color={bookmarked ? appColors.icon : 'rgba(0,0,0,0.25)'}
                                     color={appColors.icon}
                                     size={25}
                                     style={{marginRight: 10}}
