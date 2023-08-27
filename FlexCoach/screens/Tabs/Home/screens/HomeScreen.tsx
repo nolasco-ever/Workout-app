@@ -43,13 +43,6 @@ export const HomeScreen = ({navigation}: {navigation: any}) => {
           }
           showsVerticalScrollIndicator={false}
         >
-          <CustomGraph
-            yAxisData={benchPressWeightData}
-            xAxisLabels={benchPressDates}
-            type='bar'
-            title='Bench Press'
-          />
-
           <Section title='Activity Log' icon={generalIcons.personRunning}>
             {statsScreenActivityLogListMock.map(item => (
               <ListItem
