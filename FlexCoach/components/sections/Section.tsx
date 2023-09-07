@@ -9,7 +9,7 @@ import { TouchableOpacity } from 'react-native-gesture-handler';
 interface SectionProps {
   title: string;
   titleFontSize?: number;
-  icon?: string;
+  icon?: IconProp;
   iconColor?: string;
   children: React.ReactNode,
   centered?: boolean;
@@ -25,7 +25,7 @@ export const Section: FC<SectionProps> = ({ title, titleFontSize, icon, iconColo
                 {icon && (
                     <View style={styles.iconContainer}>
                         <FontAwesomeIcon 
-                            icon={icon as IconProp}
+                            icon={icon}
                             color={iconColor ? iconColor : appColors.icon}
                             size={25}
                         />

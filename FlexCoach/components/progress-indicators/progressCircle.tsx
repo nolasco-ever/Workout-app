@@ -5,13 +5,20 @@ import { colors } from '../../colors';
 
 interface ProgressCircleProps {
   percent: number,
-  size?: 'sm' | 'md' | 'lg'
+  centerText?: string,
+  size?: 'sm' | 'md' | 'lg',
+  fillColor?: string;
 }
 
-export default function ProgressCircle({percent, size='lg'}:ProgressCircleProps) {
+export default function ProgressCircle({
+    percent,
+    centerText,
+    size='lg',
+    fillColor
+}:ProgressCircleProps) {
     const screenWidth = Dimensions.get('window').width;
     const appColors = colors();
-    const dimensionsMultiplier = size === 'sm' ? 0.15 : size === 'md' ? 0.25 : 0.4;
+    const dimensionsMultiplier = size === 'sm' ? 0.15 : size === 'md' ? 0.3 : 0.4;
     const borderWidth = size === 'sm' ? 5 : size === 'md' ? 12 : 20;
 
     const styleFromProp = (percent: number, base_degrees: number) => {
@@ -27,11 +34,11 @@ export default function ProgressCircle({percent, size='lg'}:ProgressCircleProps)
             return <View style={[
                 progressCircleStyle.thirdLayer,
                 {
-                    borderWidth: borderWidth,
+                    borderWidth: 5,
                     width: screenWidth*dimensionsMultiplier,
                     height: screenWidth*dimensionsMultiplier,
                     borderRadius: screenWidth*0.2,
-                    borderColor: appColors.primary,
+                    borderColor: fillColor || appColors.primary,
                     transform: [{rotateZ: '45deg'}]
                 },
                 styleFromProp((percent - 50), 45) 
@@ -42,7 +49,7 @@ export default function ProgressCircle({percent, size='lg'}:ProgressCircleProps)
                         style={[
                         progressCircleStyle.thirdLayer,
                         {
-                            borderWidth: borderWidth,
+                            borderWidth: 5,
                             width: screenWidth*dimensionsMultiplier,
                             height: screenWidth*dimensionsMultiplier,
                             borderRadius: screenWidth*0.2,
@@ -66,7 +73,7 @@ export default function ProgressCircle({percent, size='lg'}:ProgressCircleProps)
             style={[
                 progressCircleStyle.container,
                 {
-                    borderWidth: borderWidth,
+                    borderWidth: 5,
                     borderColor: appColors.inactive,
                     width: screenWidth*dimensionsMultiplier,
                     height: screenWidth*dimensionsMultiplier,
@@ -78,8 +85,8 @@ export default function ProgressCircle({percent, size='lg'}:ProgressCircleProps)
             style={[
                 progressCircleStyle.firstLayer,
                 {
-                    borderWidth: borderWidth,
-                    borderColor: appColors.primary,
+                    borderWidth: 5,
+                    borderColor: fillColor || appColors.primary,
                     width: screenWidth*dimensionsMultiplier,
                     height: screenWidth*dimensionsMultiplier,
                     borderRadius: screenWidth*0.2,
@@ -88,7 +95,7 @@ export default function ProgressCircle({percent, size='lg'}:ProgressCircleProps)
             ]}
         />
         {renderThirdLayer(percent)}
-        <CustomText>{percent}%</CustomText>
+        <CustomText centered>{centerText || `${percent}%`}</CustomText>
         </View>
     )
 }

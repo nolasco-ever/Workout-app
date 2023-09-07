@@ -74,7 +74,8 @@ import {
     faCircleXmark,
     faBellSlash,
     faThumbsUp as faThumbsUpFilled,
-    faThumbsDown as faThumbsDownFilled
+    faThumbsDown as faThumbsDownFilled,
+    faGlassWater
 } from '@fortawesome/free-solid-svg-icons';
 
 import {
@@ -160,5 +161,6 @@ library.add(
     faThumbsUpFilled,
     faThumbsUpOutline,
     faThumbsDownFilled,
-    faThumbsDownOutline
+    faThumbsDownOutline,
+    faGlassWater
 );
