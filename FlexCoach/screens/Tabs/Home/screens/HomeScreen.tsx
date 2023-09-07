@@ -54,7 +54,7 @@ export const HomeScreen = ({navigation}: {navigation: any}) => {
               />
             ))}
           </Section>
-
+          
           <Section title='Overview'>
             <View style={{flexDirection: 'row'}}>
               <ProgressCard
