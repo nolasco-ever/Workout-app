@@ -5,6 +5,7 @@ export const chestSection = {
         {
             name: 'Bench Press', 
             link: 'https://www.youtube.com/watch?v=CayG6UYqL8g',
+            length: '3:04',
             howToSteps: [
                 'Make sure you have a sturdy bench and that the bar isn\'t too high.',
                 'Keep your arms straight up in front of you and grip the bar firmly.',
@@ -16,6 +17,7 @@ export const chestSection = {
         {
             name: 'Dumbbell Press', 
             link: 'https://www.youtube.com/watch?v=4NC-rxGiCSM',
+            length: '2:13',
             howToSteps: [
                 'Sit on the edge of a bench with a dumbbell in each hand.',
                 'Lift the dumbbells up to your shoulders, with your palms facing forward.',
@@ -27,6 +29,7 @@ export const chestSection = {
         {
             name: 'Machine Chest Press', 
             link: 'https://www.youtube.com/watch?v=lRo9zZ7EwpM',
+            length: '1:52',
             howToSteps: [
                 'Adjust the seat and weight of the machine to your preference.',
                 'Sit down on the machine and grasp the handles with your palms facing down.',
@@ -38,6 +41,7 @@ export const chestSection = {
         {
             name: 'Chest Dip', 
             link: 'https://www.youtube.com/watch?v=dX_nSOOJIsE',
+            length: '3:12',
             howToSteps: [
                 'Position yourself on the dip bars with your arms locked out and your feet crossed.',
                 'Lower your body slowly, bending your elbows and leaning your torso slightly forward.',
@@ -48,6 +52,7 @@ export const chestSection = {
         {
             name: 'Dumbbell Pull-Over', 
             link: 'https://www.youtube.com/watch?v=FK4rHfWKEac',
+            length: '0:47',
             howToSteps: [
                 'Lie flat on a bench and hold a dumbbell above your chest with both hands.',
                 'Slowly lower the dumbbell behind your head, keeping your arms straight.',
@@ -58,6 +63,7 @@ export const chestSection = {
         {
             name: 'Machine Fly', 
             link: 'https://www.youtube.com/watch?v=yBPkerQu1Us',
+            length: '0:26',
             howToSteps: [
                 'Adjust the seat and weight of the machine to your preference.',
                 'Sit down on the machine and grasp the handles with your palms facing each other.',
@@ -69,6 +75,7 @@ export const chestSection = {
         {
             name: 'Push up',
             link: 'https://www.youtube.com/watch?v=WDIpL0pjun0',
+            length: '1:24',
             howToSteps: [
               'Start in a plank position with your hands shoulder-width apart and your feet hip-width apart.',
               'Lower your body down towards the floor by bending your elbows and keeping your body in a straight line.',

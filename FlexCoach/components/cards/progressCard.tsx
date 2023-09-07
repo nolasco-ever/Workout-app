@@ -34,7 +34,8 @@ export const ProgressCard: React.FC<ProgressCardProps> = ({
     const titleStyle = {
       fontSize: type === 'bar' ? 16 : 18,
       fontWeight: 'bold',
-      marginBottom: 5
+      marginBottom: type === 'bar' ? 5 : 10,
+      color: appColors.text
     }
 
     return type === 'bar' ? (
@@ -87,7 +88,7 @@ export const ProgressCard: React.FC<ProgressCardProps> = ({
           ]}
         >
           <View style={[styles.infoContainer, {alignItems: 'center'}]}>
-              <Text style={titleStyle}>{title} </Text>
+              <Text style={titleStyle}>{title}</Text>
               <ProgressCircle
                   percent={progress}
                   centerText={`${currentAmount}/${goalAmount}${unit ? `\n${unit}` : ''}`}

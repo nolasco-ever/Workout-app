@@ -21,13 +21,13 @@ export const IconButton = ({
     const appColors = colors();
 
     return (
-        <TouchableOpacity onPress={onPress} style={styles.container}>
+        <TouchableOpacity onPress={onPress} style={[styles.container, {backgroundColor: appColors.iconButton}]}>
             <FontAwesomeIcon
-                icon={generalIcons.dumbbell}
+                icon={icon}
                 color={iconColor || appColors.icon}
                 size={35}
             />
-            <Text style={styles.text}>{label}</Text>
+            <Text style={[styles.text, {color: appColors.text}]}>{label}</Text>
         </TouchableOpacity>
     )
 }
@@ -37,12 +37,12 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
         alignItems: 'center',
         padding: 5,
-        width: 120,
+        width: 110,
         height: 70,
-        backgroundColor: '#F2F2F2',
         borderRadius: 20
     },
     text: {
-        fontWeight: '600'
+        fontWeight: '600',
+        marginTop: 5
     }
 })

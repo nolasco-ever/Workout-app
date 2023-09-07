@@ -4,6 +4,7 @@ import { useThemeContext } from "./packages/core-contexts/theme-context";
 const darkModeColors = {
     background: '#121212',
     onBackground: '#2c2c2c',
+    iconButton: '#2c2c2c',
     text: '#ffffff',
     onPrimaryText: '#ffffff',
     subtext: '#a2a2a2',
@@ -29,6 +30,7 @@ const darkModeColors = {
 const lightModeColors = {
     background: '#fafafa',
     onBackground: '#ffffff',
+    iconButton: '#F2F2F2',
     text: '#262626',
     onPrimaryText: '#ffffff',
     subtext: '#6f6f6f',
