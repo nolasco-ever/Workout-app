@@ -8,9 +8,16 @@ type ProgressBarProps = {
     percent: number,
     showPercent?: boolean
     setProgressCompleted?: React.Dispatch<React.SetStateAction<boolean>>;
+    fillColor?: string;
   }
 
-export const ProgressBar = ({title, percent, showPercent=false, setProgressCompleted}: ProgressBarProps) => {
+export const ProgressBar = ({
+    title,
+    percent,
+    showPercent=false,
+    setProgressCompleted,
+    fillColor
+}: ProgressBarProps) => {
     const appColors = colors();
     
     const [prevFill, setPrevFill] = useState<string>('0%');
@@ -53,7 +60,7 @@ export const ProgressBar = ({title, percent, showPercent=false, setProgressCompl
                 styles.fillBar, 
                 {
                     width: currentFill, 
-                    backgroundColor: percent < 1 ? appColors.secondary : 'green'
+                    backgroundColor: fillColor || appColors.secondary
                 },
                 onIncreaseStyle()
             ]}
@@ -72,18 +79,16 @@ export const ProgressBar = ({title, percent, showPercent=false, setProgressCompl
 
 const styles = StyleSheet.create({
     container: {
-        padding: 10,
         justifyContent: 'center',
         alignItems: 'center'
     },
     barContainer: {
         width: '100%',
-        borderRadius: 10,
-        margin: 10
+        borderRadius: 3,
     },
     fillBar: {
-        height: 10,
-        borderRadius: 5
+        height: 15,
+        borderRadius: 3
     },
     bodyText: {
         fontSize: 16,
