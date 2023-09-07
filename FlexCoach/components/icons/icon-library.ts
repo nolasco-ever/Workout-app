@@ -23,7 +23,7 @@ export const directionIcons = {
     clock: 'fa-solid fa-clock-rotate-left',
     comment: 'fa-solid fa-comment',
     dollar: 'fa-solid fa-dollar-sign',
-    dumbbell: 'fa-solid fa-dumbbell',
+    dumbbell: 'fa-solid fa-dumbbell' as IconProp,
     ellipsis: 'fa-solid fa-ellipsis' as IconProp,
     ellipsisVertical: 'fa-solid fa-ellipsis-vertical' as IconProp,
     envelope: 'fa-solid fa-envelope',
