@@ -4,7 +4,7 @@ import { colors } from '../../../../colors';
 import { UserCardHeader } from '../../../../components/cards/userCardHeader';
 import { ProgressCard } from '../../../../components/cards/progressCard';
 import { Section } from '../../../../components/sections/Section';
-import { generalIcons } from '../../../../components/icons/icon-library';
+import { generalIcons, tabIcons } from '../../../../components/icons/icon-library';
 import { user1 } from '../../../../mocks/userMocks';
 import { CustomGraph } from '../../../../components/graphs/customGraph';
 import { mockBenchPressData, mockDumbbellCurlData } from '../../../../mocks/trainingDataMocks';
@@ -14,6 +14,7 @@ import { Card } from '../../../../components/cards/Card';
 import { statsScreenActivityLogListMock } from '../../../../mocks/listItemMocks';
 import { ListItem } from '../../../../components/list-items/ListItem';
 import { IconButton } from '../../../../components/buttons/IconButton';
+import { chestSection } from '../../../../config/customize-training-program-flow/selectYourWorkouts';
 
 export const HomeScreen = ({navigation}: {navigation: any}) => {
     const appColors = colors();
@@ -32,11 +33,6 @@ export const HomeScreen = ({navigation}: {navigation: any}) => {
             welcomeMessage={`Welcome back, ${user1.firstName}`}
             navigation={navigation}
         />
-        <IconButton
-          icon={generalIcons.dumbbell}
-          onPress={() => console.log('Icon button pressed')}
-          label='Workouts'
-        />
         <ScrollView
           ref={scrollViewRef}
           refreshControl={
@@ -49,67 +45,97 @@ export const HomeScreen = ({navigation}: {navigation: any}) => {
           }
           showsVerticalScrollIndicator={false}
         >
-          <Section title='Activity Log' icon={generalIcons.personRunning}>
+          <View style={{flexDirection: 'row', justifyContent: 'space-between', padding: 10}}>
             {statsScreenActivityLogListMock.map(item => (
-              <ListItem
+              <IconButton
                 key={item.id}
-                title={item.title}
-                description={item.description}
                 icon={item.icon}
+                iconColor={item.color}
+                label={item.title}
                 onPress={() => navigation.navigate(item.navigateTo, {title: item.title, icon: item.icon})}
               />
             ))}
-          </Section>
+          </View>
 
           <Section title='Overview'>
             <View style={{flexDirection: 'row'}}>
               <ProgressCard
+                title='Water'
+                unit='oz'
+                icon={generalIcons.glassWater}
+                goalAmount={64}
+                currentAmount={48}
+                color='#397FDB'
+              />
+              <ProgressCard
+                title='Steps'
+                icon={generalIcons.personRunning}
+                goalAmount={1000}
+                currentAmount={682}
+              />
+            </View>
+            <View style={{flexDirection: 'row'}}>
+              <ProgressCard
                 title='Calories'
+                unit='kal'
                 goalAmount={2400}
                 currentAmount={1030}
                 type='circle'
               />
               <ProgressCard
                 title='Protein'
+                unit='g'
                 goalAmount={180}
                 currentAmount={127}
                 type='circle'
+                color='#BA812C'
               />
             </View>
-            <ProgressCard
-              title='Water (oz)'
-              goalAmount={64}
-              currentAmount={48}
-            />
-            <ProgressCard
-              title='Steps'
-              goalAmount={1000}
-              currentAmount={682}
-            />
           </Section>
 
-          <Section title='For You' seeMore onPressSeeMore={() => navigation.navigate('Explore')}>
-            {mockArticles.slice(4,5).map((item, index) => (
-              <Card
-                key={index}
-                imageSource={item.image}
-                imageText='3:14'
-                title={item.title}
-                size='l'
-                onPress={() => console.log('Pressed')}
-              />
-            ))}
-            <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-              {mockArticles.map((item, index) => (
-                <Card
-                  key={index}
-                  imageSource={item.image}
-                  imageText='Read'
-                  title={item.title}
-                  onPress={() => console.log('Pressed')}
-                />
-              ))}
-            </ScrollView>
+          <Section title='For You'>
+            <Section title='Articles' titleFontSize={14}>
+              <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+                {mockArticles.map((item, index) => (
+                  <Card
+                    key={index}
+                    imageSource={item.image}
+                    title={item.title}
+                    subtitle='Jenna Tolls | Sep. 7, 2023'
+                    onPress={() => console.log('Pressed')}
+                  />
+                ))}
+              </ScrollView>
+            </Section>
+
+            <Section title='Videos' titleFontSize={14}>
+              <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+                {chestSection.exercises.map((item, index) => {
+                  const videoId = item.link.match(/(?:https?:\/\/)?(?:www\.)?(?:youtube\.com|youtu\.be)\/(?:watch\/|embed\/|v\/|u\/\w\/|watch\?v=)?([^#\&\?]{11})/)?.[1];
+                  const thumbnailUrl = `https://img.youtube.com/vi/${videoId}/hqdefault.jpg`;
+
+                  return (
+                      <Card
+                          key={index}
+                          title={item.name}
+                          imageSource={thumbnailUrl}
+                          imageText={item.length}
+                          onPress={() => 
+                              navigation.navigate(
+                                  'tutorialScreen', 
+                                  {
+                                      title: item.name,
+                                      videoLink: item.link,
+                                      steps: item.howToSteps,
+                                      muscleGroupWorkouts: chestSection.exercises
+                                  }
+                              )
+                          }
+                      />
+                  )   
+                })}
+              </ScrollView>
+            </Section>
           </Section>
 
         </ScrollView>

@@ -11,7 +11,7 @@ export const directionIcons = {
   };
   
   export const generalIcons = {
-    apple: 'fa-solid fa-apple-whole',
+    apple: 'fa-solid fa-apple-whole' as IconProp,
     bell: 'fa-solid fa-bell',
     bellSlash: 'fa-solid fa-bell-slash' as IconProp,
     book: 'fa-solid fa-book',
@@ -46,7 +46,7 @@ export const directionIcons = {
     plus: 'fa-solid fa-plus',
     screwdriverWrench: 'fa-solid fa-screwdriver-wrench',
     signOut: 'fa-solid fa-right-from-bracket',
-    simpleChart: 'fa-solid fa-chart-simple',
+    simpleChart: 'fa-solid fa-chart-simple' as IconProp,
     success: 'fa-solid fa-circle-check',
     thumbsDownFilled: 'fa-solid fa-thumbs-down' as IconProp,
     thumbsDownOutline: 'fa-regular fa-thumbs-down' as IconProp,
@@ -61,7 +61,7 @@ export const directionIcons = {
 
   export const tabIcons = {
     home: 'fa-solid fa-house',
-    stats: 'fa-solid fa-chart-line',
+    stats: 'fa-solid fa-chart-line' as IconProp,
     log: 'fa-solid fa-circle-plus',
     explore: 'fa-solid fa-magnifying-glass',
     social: 'fa-solid fa-face-smile',

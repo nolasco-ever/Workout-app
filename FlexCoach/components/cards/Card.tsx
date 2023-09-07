@@ -6,8 +6,8 @@ interface CardProps {
     imageSource?: string;
     imageText?: string;
     title: string;
+    subtitle?: string;
     onPress?: () => void;
-    size?: 's' | 'l'
 }
 
 const screenWidth = Dimensions.get('screen').width;
@@ -16,61 +16,54 @@ export const Card = ({
     imageSource,
     imageText,
     title,
+    subtitle,
     onPress,
-    size='s'
 }: CardProps) => {
     const appColors = colors();
     
     return (
         <TouchableOpacity onPress={onPress} style={{margin: 10}}>
             <View 
-                style={[
-                    styles(size).container, 
-                    {
-                        backgroundColor: appColors.onBackground,
-                        shadowColor: '#000000',
-                        shadowOpacity: useColorScheme() === 'light' ? 0.1 : 0,
-                        shadowOffset: {width: 1, height: 1}
-                    }
-                ]}
+                style={styles.container}
             >
-                <View style={styles(size).imageContainer}>
+                <View style={styles.imageContainer}>
                     <Image
                         source={{uri: imageSource}}
-                        style={styles().image}
+                        style={styles.image}
                     />
                     {imageText && (
-                        <View style={styles().imageTextContainer}>
-                            <Text style={styles().imageText}>{imageText}</Text>
+                        <View style={styles.imageTextContainer}>
+                            <Text style={styles.imageText}>{imageText}</Text>
                         </View>
                     )}
                 </View>
-                <View style={styles().contentContainer}>
-                    <Text numberOfLines={2} style={[styles(size).title, {color: appColors.text}]}>{title}</Text>
+                <View style={styles.contentContainer}>
+                    <Text numberOfLines={2} style={[styles.title, {color: appColors.text}]}>{title}</Text>
+                    <Text numberOfLines={1} style={[styles.subtitle, {color: appColors.subtext}]}>{subtitle}</Text>
                 </View>
             </View>
         </TouchableOpacity>
     )
 }
 
-const styles = (size?: string) => StyleSheet.create({
+const styles = StyleSheet.create({
     container: {
-        width: size === 's' ? screenWidth/2 : '100%',
+        width: screenWidth/2,
         borderRadius: 10,
     },
     imageContainer: {
         width: '100%',
-        height: size === 's' ? screenWidth/4 : screenWidth/2
+        height: screenWidth/4
     },
     image: {
         height: '100%',
         width: '100%',
-        borderTopLeftRadius: 5,
-        borderTopRightRadius: 5
+        borderRadius: 5
     },
     imageTextContainer: {
         position: 'absolute',
         bottom: 0,
+        right: 0,
         margin: 5,
         backgroundColor: 'rgba(0,0,0,0.5)',
         padding: 5,
@@ -84,10 +77,13 @@ const styles = (size?: string) => StyleSheet.create({
         color: '#fff'
     },
     contentContainer: {
-        padding: 10,
+        padding: 5,
     },
     title: {
-        fontWeight: 'bold',
-        fontSize: size === 's' ? 16 : 18,
+        fontWeight: '500',
+        fontSize: 16
     },
+    subtitle: {
+        fontSize: 10
+    }
   });

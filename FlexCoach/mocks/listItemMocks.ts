@@ -58,24 +58,27 @@ export const profileListMocks = [
 export const statsScreenActivityLogListMock = [
     {
         id: 'todaysWorkout',
-        icon: generalIcons.list,
-        title: `Today's Workout`,
+        icon: generalIcons.dumbbell,
+        title: `Workouts`,
         description: 'Log your sets, reps, and weights for your exercises',
-        navigateTo: 'workoutHub'
+        navigateTo: 'workoutHub',
+        color: '#001f54'
     },
     {
         id: 'trainingProgress',
         icon: generalIcons.simpleChart,
-        title: 'Training Progress',
+        title: 'Progress',
         description: `View the progress you've made so far`,
-        navigateTo: 'placeholderScreen'
+        navigateTo: 'placeholderScreen',
+        color: '#134162'
     },
     {
         id: 'todaysNutritionLog',
         icon: generalIcons.apple,
-        title: `Today's Nutrition Log`,
+        title: `Nutrition`,
         description: `View, add, or remove items`,
-        navigateTo: 'dietLogScreen'
+        navigateTo: 'dietLogScreen',
+        color: '#D04242'
     },
 ];
 
