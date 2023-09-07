@@ -13,6 +13,7 @@ import { mockArticles } from '../../../../mocks/articleMocks';
 import { Card } from '../../../../components/cards/Card';
 import { statsScreenActivityLogListMock } from '../../../../mocks/listItemMocks';
 import { ListItem } from '../../../../components/list-items/ListItem';
+import { IconButton } from '../../../../components/buttons/IconButton';
 
 export const HomeScreen = ({navigation}: {navigation: any}) => {
     const appColors = colors();
@@ -30,6 +31,11 @@ export const HomeScreen = ({navigation}: {navigation: any}) => {
             profilePhoto={user1.profilePicture}
             welcomeMessage={`Welcome back, ${user1.firstName}`}
             navigation={navigation}
+        />
+        <IconButton
+          icon={generalIcons.dumbbell}
+          onPress={() => console.log('Icon button pressed')}
+          label='Workouts'
         />
         <ScrollView
           ref={scrollViewRef}
@@ -54,7 +60,7 @@ export const HomeScreen = ({navigation}: {navigation: any}) => {
               />
             ))}
           </Section>
-          
+
           <Section title='Overview'>
             <View style={{flexDirection: 'row'}}>
               <ProgressCard
