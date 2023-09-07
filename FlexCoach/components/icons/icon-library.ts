@@ -12,7 +12,7 @@ export const directionIcons = {
   
   export const generalIcons = {
     apple: 'fa-solid fa-apple-whole' as IconProp,
-    bell: 'fa-solid fa-bell',
+    bell: 'fa-solid fa-bell' as IconProp,
     bellSlash: 'fa-solid fa-bell-slash' as IconProp,
     book: 'fa-solid fa-book',
     bookmarkOutline: 'fa-regular fa-bookmark' as IconProp,

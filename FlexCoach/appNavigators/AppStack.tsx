@@ -13,6 +13,13 @@ import { OnboardingStack } from '../screens/Onboarding/OnboardingStack';
 
 const Stack = createStackNavigator();
 
+export type LocalParams = {
+    SignIn: undefined;
+    Onboarding: undefined;
+    Tabs: undefined;
+    Notifications: undefined;
+}
+
 export const AppStack = () => {
     const appColors = colors();
     return (

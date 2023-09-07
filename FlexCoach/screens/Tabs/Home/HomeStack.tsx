@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useEffect, useState } from 'react'
 import { createStackNavigator } from '@react-navigation/stack'
 import { colors } from '../../../colors';
 import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
@@ -7,28 +7,41 @@ import { IconProp } from '@fortawesome/fontawesome-svg-core';
 import { PlaceholderScreen } from '../../placeholderScreen';
 import { homeStack } from '../../../config/homeStackConfig';
 import { AddDietEntryScreen } from './screens/AddDietEntryScreen';
+import { getScreenHeaderOptions } from '../../../config/getScreenHeader';
+import { NavigationHeader } from '../../../components/headers/NavigationHeader';
+import { NotificationButton } from '../../../components/headers/HeaderActionButtons/NotificationButton';
+import { HomeScreen } from './screens/HomeScreen';
 
 const Stack = createStackNavigator();
 
 export const HomeStack = () => {
     const appColors = colors();
+
+    const navigationButtons = [
+        <NotificationButton key="notificationsButton"/>
+    ]
+
     return (
-        <Stack.Navigator
-            screenOptions={{
-                headerShown: false
-            }}
-        >
-            {homeStack.map((screen, index) => (
+        <Stack.Navigator>
+            <Stack.Screen
+                name={'homeScreen'}
+                component={HomeScreen}
+                options={{
+                    header: () => (
+                        <NavigationHeader
+                            title={"Home"}
+                            subtitle='Thu, September 20'
+                            navigationButtons={navigationButtons}
+                        />
+                    )
+                }}
+            />
+            {homeStack.slice(1,).flatMap((screen, index) => (
                 <Stack.Screen
                     key={index}
                     name={screen.id}
                     component={screen.component}
                     options={index !== 0 ? {
-                        headerShown: true,
-                        headerStyle: {backgroundColor:  appColors.background},
-                        headerTitleStyle: {color: appColors.text},
-                        headerTitle: screen.name,
-                        headerBackTitleVisible: false,
                         headerBackImage: () => (
                             <FontAwesomeIcon
                                 icon={directionIcons.angleLeft as IconProp}
@@ -36,8 +49,17 @@ export const HomeStack = () => {
                                 size={25}
                                 style={{marginLeft: 10}}
                             />
+                        ),
+                        ...getScreenHeaderOptions({appColors, screen})
+                    } : {
+                        header: () => (
+                            <NavigationHeader
+                                title={screen.name}
+                                subtitle='Thu, September 20'
+                                navigationButtons={navigationButtons}
+                            />
                         )
-                    } : {}}
+                    }}
                 />
             ))}
             <Stack.Screen
