@@ -48,7 +48,8 @@ const styles = StyleSheet.create({
         fontWeight: 'bold'
     },
     subtext: {
-        fontSize: 14
+        fontSize: 14,
+        fontWeight: 'bold'
     },
     buttonsContainer: {
         flexDirection: 'row'
