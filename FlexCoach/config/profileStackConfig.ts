@@ -3,22 +3,21 @@ import { AppThemeScreen } from "../screens/Tabs/Profile/screens/AppThemeScreen";
 import { ProfileScreen } from "../screens/Tabs/Profile/screens/ProfileScreen";
 import { SettingsScreen } from "../screens/Tabs/Profile/screens/SettingsScreen";
 
+export interface ProfileTabParams {
+    Profile: undefined;
+    Settings: undefined;
+    AppTheme: undefined;
+}
 
 export const profileStack = [
     {
-        id: 'profileScreen',
-        name: 'Profile',
-        component: ProfileScreen,
-        icon: tabIcons.profile
-    },
-    {
-        id: 'settingsScreen',
+        id: 'Settings',
         name: 'Settings',
         component: SettingsScreen,
         icon: generalIcons.gear,
     },
     {
-        id: 'appThemeScreen',
+        id: 'AppTheme',
         name: 'App Theme',
         component: AppThemeScreen,
         icon: generalIcons.moon

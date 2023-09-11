@@ -4,12 +4,6 @@ import { TutorialScreen } from "../shared-screens/tutorialScreen";
 
 export const exploreStack = [
     {
-        id: 'exploreScreen',
-        name: 'Explore',
-        component: ExploreScreen,
-        icon: tabIcons.explore
-    },
-    {
         id: 'tutorialScreen',
         name: 'Tutorial',
         component: TutorialScreen,

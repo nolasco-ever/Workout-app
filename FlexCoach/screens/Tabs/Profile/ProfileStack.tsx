@@ -8,23 +8,39 @@ import { SettingsScreen } from './screens/SettingsScreen';
 import { directionIcons } from '../../../components/icons/icon-library';
 import { profileStack } from '../../../config/profileStackConfig';
 import { PlaceholderScreen } from '../../placeholderScreen';
+import { NavigationHeader } from '../../../components/headers/NavigationHeader';
+import { SettingsButton } from '../../../components/headers/HeaderActionButtons/SettingsButton';
 
 const Stack = createStackNavigator();
 
 export const ProfileStack = () => {
     const appColors = colors();
+
+    const navigationButtons = [
+        <SettingsButton key="settingsButton" />
+    ]
+
     return (
-        <Stack.Navigator
-            screenOptions={{
-                headerShown: false
-            }}
-        >
+        <Stack.Navigator>
+            <Stack.Screen
+                name='profileScreen'
+                component={ProfileScreen}
+                options={{
+                    header: () => (
+                        <NavigationHeader
+                            title='Profile'
+                            subtitle='Ever Nolasco'
+                            navigationButtons={navigationButtons}
+                        />
+                    )
+                }}
+            />
             {profileStack.map((screen, index) => (
                 <Stack.Screen
                     key={index}
                     name={screen.id}
                     component={screen.component}
-                    options={index !== 0 ? {
+                    options={{
                         headerShown: true,
                         headerStyle: {backgroundColor: appColors.background},
                         headerTitleStyle: {color: appColors.text},
@@ -38,7 +54,7 @@ export const ProfileStack = () => {
                                 style={{marginLeft: 10}}
                             />
                         )
-                    } : {}}
+                    }}
                 />
             ))}
             <Stack.Screen
