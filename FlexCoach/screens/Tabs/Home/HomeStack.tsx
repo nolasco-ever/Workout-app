@@ -41,7 +41,7 @@ export const HomeStack = () => {
                     key={index}
                     name={screen.id}
                     component={screen.component}
-                    options={index !== 0 ? {
+                    options={{
                         headerBackImage: () => (
                             <FontAwesomeIcon
                                 icon={directionIcons.angleLeft as IconProp}
@@ -51,14 +51,6 @@ export const HomeStack = () => {
                             />
                         ),
                         ...getScreenHeaderOptions({appColors, screen})
-                    } : {
-                        header: () => (
-                            <NavigationHeader
-                                title={screen.name}
-                                subtitle='Thu, September 20'
-                                navigationButtons={navigationButtons}
-                            />
-                        )
                     }}
                 />
             ))}
