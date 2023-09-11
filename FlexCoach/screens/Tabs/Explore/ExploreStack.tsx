@@ -9,6 +9,10 @@ import { directionIcons, generalIcons } from '../../../components/icons/icon-lib
 import { PlaceholderScreen } from '../../placeholderScreen';
 import { ArticleScreen } from '../../../shared-screens/articleScreen';
 import { TouchableOpacity } from 'react-native-gesture-handler';
+import { ExploreScreen } from './screens/ExploreScreen';
+import { NavigationHeader } from '../../../components/headers/NavigationHeader';
+import { TutorialScreen } from '../../../shared-screens/tutorialScreen';
+import { getScreenHeaderOptions } from '../../../config/getScreenHeader';
 
 const Stack = createStackNavigator();
 
@@ -16,22 +20,24 @@ export const ExploreStack = () => {
     const appColors = colors();
 
     return (
-        <Stack.Navigator
-            screenOptions={{
-                headerShown: false
-            }}
-        >
+        <Stack.Navigator>
+            <Stack.Screen
+                name="exploreScreen"
+                component={ExploreScreen}
+                options={{
+                    header: () => (
+                        <NavigationHeader
+                            title="Explore"
+                        />
+                    )
+                }}
+            />
             {exploreStack.map((screen, index) => (
                 <Stack.Screen
                     key={index}
                     name={screen.id}
                     component={screen.component}
-                    options={index !== 0 ? {
-                        headerShown: true,
-                        headerStyle: {backgroundColor: appColors.background},
-                        headerTitleStyle: {color: appColors.text},
-                        headerTitle: screen.name,
-                        headerBackTitleVisible: false,
+                    options={{
                         headerBackImage: () => (
                             <FontAwesomeIcon
                                 icon={directionIcons.angleLeft as IconProp} 
@@ -53,8 +59,9 @@ export const ExploreStack = () => {
                                     />
                                 </TouchableOpacity>
                             )
-                        }
-                    } : {}}
+                        },
+                        ...getScreenHeaderOptions({appColors, screen})
+                    }}
                 />
             ))}
             <Stack.Screen

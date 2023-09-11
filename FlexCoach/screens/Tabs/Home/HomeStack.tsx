@@ -24,12 +24,12 @@ export const HomeStack = () => {
     return (
         <Stack.Navigator>
             <Stack.Screen
-                name={'homeScreen'}
+                name='homeScreen'
                 component={HomeScreen}
                 options={{
                     header: () => (
                         <NavigationHeader
-                            title={"Home"}
+                            title="Home"
                             subtitle='Thu, September 20'
                             navigationButtons={navigationButtons}
                         />

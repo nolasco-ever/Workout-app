@@ -32,12 +32,6 @@ export const ProfileScreen = ({navigation}: {navigation: any}) => {
 
   return (
     <SafeAreaView style={[styles.container, {backgroundColor: appColors.background}]}>
-      <View style={styles.topBarContainer}>
-        <CustomText type='subheader'>{user1.firstName} {user1.lastName}</CustomText>
-        <TouchableOpacity onPress={() => navigation.navigate('settingsScreen')}>
-          <FontAwesomeIcon icon={generalIcons.gear as IconProp} color={appColors.icon} size={30}/>
-        </TouchableOpacity>
-      </View>
       <ScrollView
         refreshControl={
           <RefreshControl

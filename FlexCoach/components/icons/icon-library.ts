@@ -30,7 +30,7 @@ export const directionIcons = {
     error: 'fa-solid fa-circle-exclamation',
     eye: 'fa-solid fa-eye',
     eyeSlash: 'fa-solid fa-eye-slash',
-    gear: 'fa-solid fa-gear',
+    gear: 'fa-solid fa-gear' as IconProp,
     glassWater: 'fa-solid fa-glass-water' as IconProp,
     heart: 'fa-solid fa-heart',
     info: 'fa-solid fa-circle-info',
