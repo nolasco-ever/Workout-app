@@ -13,11 +13,12 @@ import { OnboardingStack } from '../screens/Onboarding/OnboardingStack';
 
 const Stack = createStackNavigator();
 
-export type LocalParams = {
-    SignIn: undefined;
-    Onboarding: undefined;
-    Tabs: undefined;
-    Notifications: undefined;
+export type AppStackParams = {
+    SignInStack: undefined;
+    OnboardingStack: undefined;
+    TabNavigator: undefined;
+    NotificationsScreen: undefined;
+    CustomTrainingProgramStack: undefined;
 }
 
 export const AppStack = () => {
@@ -29,19 +30,19 @@ export const AppStack = () => {
             }}
         >
             <Stack.Screen
-                name="SignIn"
+                name="SignInStack"
                 component={AuthStack}
             />
             <Stack.Screen
-                name="Onboarding"
+                name="OnboardingStack"
                 component={OnboardingStack}
             />
             <Stack.Screen
-                name="Tabs"
+                name="TabNavigator"
                 component={TabNavigator}
             />
             <Stack.Screen
-                name='Notifications'
+                name='NotificationsScreen'
                 component={NotificationsScreen}
                 options={{
                     headerShown: true,
@@ -60,7 +61,7 @@ export const AppStack = () => {
                 }}
             />
             <Stack.Screen
-                name='createYourCustomTrainingProgram'
+                name='CustomTrainingProgramStack'
                 component={CustomTrainingProgramStack}
                 options={{
                     headerShown: false,

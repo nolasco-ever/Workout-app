@@ -5,11 +5,15 @@ import { CustomText } from '../../../components/text/customText';
 import { Section } from '../../../components/sections/Section';
 import { Button } from '../../../components/buttons/button';
 import { AlertBanner } from '../../../components/banners/alertBanner';
+import { NavigationProp, useNavigation } from '@react-navigation/native';
+import { CustomTrainingProgramStackParams } from '../CustomTrainingProgramStack';
 
 
 type Day = 'Sun' | 'Mon' | 'Tue' | 'Wed' | 'Thu' | 'Fri' | 'Sat';
 
-export const ReviewYourProgram = ({navigation, route}: {navigation: any, route: any}) => {
+export const ReviewYourProgram = ({ route }: { route: any }) => {
+    const navigation = useNavigation<NavigationProp<CustomTrainingProgramStackParams, "SuccessScreen">>();
+
     const { workoutItems, numOfWeeks } = route.params;
     const appColors = colors();
     const screenWidth = Dimensions.get('window').width
@@ -56,7 +60,7 @@ export const ReviewYourProgram = ({navigation, route}: {navigation: any, route: 
         </ScrollView>
         <Button
             label='Next'
-            onPress={() => navigation.navigate('successScreen')}
+            onPress={() => navigation.navigate('SuccessScreen')}
         />
     </SafeAreaView>
   )

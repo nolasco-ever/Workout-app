@@ -6,8 +6,12 @@ import { Button } from '../../../components/buttons/button';
 import { AnimatedImage } from '../../../components/utils/AnimatedImage';
 import { setFitnessGoalsOptions } from '../../../config/customize-training-program-flow/setFitnessGoals';
 import { defaultAnimation } from '../../../animations/custom-training-program-flow';
+import { NavigationProp, useNavigation } from '@react-navigation/native';
+import { CustomTrainingProgramStackParams } from '../CustomTrainingProgramStack';
 
-export const SetFitnessGoalScreen = ({navigation}: {navigation: any}) => {
+export const SetFitnessGoalScreen = () => {
+  const navigation = useNavigation<NavigationProp<CustomTrainingProgramStackParams, "SelectWorkoutsScreen">>();
+
   const appColors = colors();
   const [selectedGoal, setSelectedGoal] = useState<number | null>(null);
 
@@ -62,7 +66,7 @@ export const SetFitnessGoalScreen = ({navigation}: {navigation: any}) => {
       </View>
       <Button
           label='Next'
-          onPress={() => navigation.navigate('selectYourWorkoutsScreen')}
+          onPress={() => navigation.navigate('SelectWorkoutsScreen')}
           isActive={selectedGoal !== null}
         />
     </SafeAreaView>

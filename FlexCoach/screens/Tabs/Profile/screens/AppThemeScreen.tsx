@@ -7,14 +7,17 @@ import { generalIcons, tabIcons } from '../../../../components/icons/icon-librar
 import { CustomText } from '../../../../components/text/customText';
 import { user1 } from '../../../../mocks/userMocks';
 import { TouchableOpacity } from 'react-native-gesture-handler';
-import { useNavigation } from '@react-navigation/native';
+import { NavigationProp, useNavigation } from '@react-navigation/native';
 import { ListItemChoice } from '../../../../components/list-items/ListItemChoice';
 import { ListPicker } from '../../../../components/list-items/ListPicker';
 import { Button } from '../../../../components/buttons/button';
 import { useThemeContext } from '../../../../packages/core-contexts/theme-context';
+import { ProfileStackParams } from '../ProfileStack';
 
 
-export const AppThemeScreen = ({navigation}: {navigation: any}) => {
+export const AppThemeScreen = () => {
+  const navigation = useNavigation<NavigationProp<ProfileStackParams>>();
+
   const { appTheme, setAppTheme } = useThemeContext();
   const appColors = colors();
   // const screenWidth = Dimensions.get('window').width;

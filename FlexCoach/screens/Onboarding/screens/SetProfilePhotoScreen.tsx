@@ -8,8 +8,12 @@ import { IconProp } from '@fortawesome/fontawesome-svg-core';
 import { Button } from '../../../components/buttons/button';
 import { launchImageLibrary, launchCamera, Asset, ImageLibraryOptions, CameraOptions } from 'react-native-image-picker';
 import { CustomText } from '../../../components/text/customText';
+import { NavigationProp, useNavigation } from '@react-navigation/native';
+import { OnboardingStackParams } from '../OnboardingStack';
 
-export const SetProfilePhotoScreen = ({navigation}: {navigation: any}) => {
+export const SetProfilePhotoScreen = () => {
+    const navigation = useNavigation<NavigationProp<OnboardingStackParams>>();
+
     const appColors = colors();
     const screenWidth = Dimensions.get('window').width;
 
@@ -67,12 +71,12 @@ export const SetProfilePhotoScreen = ({navigation}: {navigation: any}) => {
             </View>
             <Button
                 label='Next'
-                onPress={() => navigation.navigate('designYourPlan')}
+                onPress={() => navigation.navigate('DesignYourPlanScreen')}
             />
             <Button
                 label='Maybe Later'
                 type='outline'
-                onPress={() => navigation.navigate('designYourPlan')}
+                onPress={() => navigation.navigate('DesignYourPlanScreen')}
             />
         </SafeAreaView>
     )

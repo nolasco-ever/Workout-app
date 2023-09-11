@@ -9,8 +9,12 @@ import { colors } from '../../../colors'
 import { createUserProfileAnimation } from '../../../animations/onboarding-flow'
 import { NumberPicker } from '../../../components/Pickers/numberPicker'
 import { Section } from '../../../components/sections/Section'
+import { NavigationProp, useNavigation } from '@react-navigation/native'
+import { OnboardingStackParams } from '../OnboardingStack'
 
-export const UserProfileInfoScreen = ({navigation}: {navigation: any}) => {
+export const UserProfileInfoScreen = () => {
+    const navigation = useNavigation<NavigationProp<OnboardingStackParams>>();
+    
     const appColors = colors();
 
     return (
@@ -76,7 +80,7 @@ export const UserProfileInfoScreen = ({navigation}: {navigation: any}) => {
                     </View>
                     <Button
                         label='Next'
-                        onPress={() => navigation.navigate('setProfilePhotoScreen')}
+                        onPress={() => navigation.navigate('SetProfilePhotoScreen')}
                     />
                 </SafeAreaView>
             </KeyboardAvoidingView>

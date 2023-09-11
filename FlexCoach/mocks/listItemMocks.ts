@@ -61,7 +61,7 @@ export const statsScreenActivityLogListMock = [
         icon: generalIcons.dumbbell,
         title: `Workouts`,
         description: 'Log your sets, reps, and weights for your exercises',
-        navigateTo: 'workoutHub',
+        navigateTo: 'WorkoutHubScreen',
         color: '#001f54'
     },
     {
@@ -69,7 +69,7 @@ export const statsScreenActivityLogListMock = [
         icon: generalIcons.simpleChart,
         title: 'Progress',
         description: `View the progress you've made so far`,
-        navigateTo: 'placeholderScreen',
+        navigateTo: 'PlaceholderScreen',
         color: '#134162'
     },
     {
@@ -77,7 +77,7 @@ export const statsScreenActivityLogListMock = [
         icon: generalIcons.apple,
         title: `Nutrition`,
         description: `View, add, or remove items`,
-        navigateTo: 'dietLogScreen',
+        navigateTo: 'DietLogScreen',
         color: '#D04242'
     },
 ];

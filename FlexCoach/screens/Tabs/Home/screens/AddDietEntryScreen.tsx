@@ -6,8 +6,11 @@ import { Button } from '../../../../components/buttons/button';
 import { CustomTextInput } from '../../../../components/text-input/CustomTextInput';
 import { NumberPicker } from '../../../../components/Pickers/numberPicker';
 import { SearchBar } from '../../../../components/search-bar/searchBar';
+import { NavigationProp, useNavigation } from '@react-navigation/native';
+import { HomeStackParams } from '../HomeStack';
 
-export const AddDietEntryScreen = ({navigation}: {navigation: any}) => {
+export const AddDietEntryScreen = () => {
+    const navigation = useNavigation<NavigationProp<HomeStackParams>>();
     const appColors = colors();
 
     const [numOfServings, setNumOfServings] = useState<number>(0);

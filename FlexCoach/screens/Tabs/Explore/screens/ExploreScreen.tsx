@@ -8,10 +8,13 @@ import { backSection, bicepsSection, chestSection, legsSection, shouldersSection
 import { strengthTrainingTypesMock } from '../../../../mocks/selectionCardListMocks';
 import { SearchBar } from '../../../../components/search-bar/searchBar';
 import { ResultsList } from '../../../../components/search-bar/resultsList';
-import { useScrollToTop } from '@react-navigation/native';
+import { NavigationProp, useNavigation, useScrollToTop } from '@react-navigation/native';
 import { mockArticles } from '../../../../mocks/articleMocks';
+import { ExploreStackParams } from '../ExploreStack';
 
-export const ExploreScreen = ({navigation}: {navigation: any}) => {
+export const ExploreScreen = () => {
+    const navigation = useNavigation<NavigationProp<ExploreStackParams>>();
+
     const appColors = colors();
     const exercisesArray = [
         chestSection.exercises,
@@ -62,7 +65,7 @@ export const ExploreScreen = ({navigation}: {navigation: any}) => {
                             imageSource={item.image}
                             title={item.title}
                             description={item.description}
-                            onPress={() => navigation.navigate('articleScreen', {articleData: item})}
+                            onPress={() => navigation.navigate('ArticleScreen', {articleData: item})}
                         />
                     ))}
                 </Section>
@@ -73,7 +76,7 @@ export const ExploreScreen = ({navigation}: {navigation: any}) => {
                             imageSource={item.image}
                             title={item.title}
                             description={item.description}
-                            onPress={() => navigation.navigate('articleScreen', {articleData: item})}
+                            onPress={() => navigation.navigate('ArticleScreen', {articleData: item})}
                         />
                     ))}
                 </Section>
@@ -91,7 +94,7 @@ export const ExploreScreen = ({navigation}: {navigation: any}) => {
                                         imageSource={thumbnailUrl}
                                         onPress={() => 
                                             navigation.navigate(
-                                                'tutorialScreen', 
+                                                'TutorialScreen', 
                                                 {
                                                     title: item.name,
                                                     videoLink: item.link,

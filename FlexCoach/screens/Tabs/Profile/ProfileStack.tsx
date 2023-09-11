@@ -10,8 +10,17 @@ import { profileStack } from '../../../config/profileStackConfig';
 import { PlaceholderScreen } from '../../placeholderScreen';
 import { NavigationHeader } from '../../../components/headers/NavigationHeader';
 import { SettingsButton } from '../../../components/headers/HeaderActionButtons/SettingsButton';
+import { getScreenHeaderOptions } from '../../../config/getScreenHeader';
+import { AppThemeScreen } from './screens/AppThemeScreen';
 
-const Stack = createStackNavigator();
+export type ProfileStackParams = {
+    ProfileScreen: undefined;
+    SettingsScreen: undefined;
+    AppThemeScreen: undefined;
+    PlaceholderScreen: { title: string };
+}
+
+const Stack = createStackNavigator<ProfileStackParams>();
 
 export const ProfileStack = () => {
     const appColors = colors();
@@ -23,7 +32,7 @@ export const ProfileStack = () => {
     return (
         <Stack.Navigator>
             <Stack.Screen
-                name='profileScreen'
+                name='ProfileScreen'
                 component={ProfileScreen}
                 options={{
                     header: () => (
@@ -35,30 +44,38 @@ export const ProfileStack = () => {
                     )
                 }}
             />
-            {profileStack.map((screen, index) => (
-                <Stack.Screen
-                    key={index}
-                    name={screen.id}
-                    component={screen.component}
-                    options={{
-                        headerShown: true,
-                        headerStyle: {backgroundColor: appColors.background},
-                        headerTitleStyle: {color: appColors.text},
-                        headerTitle: screen.name,
-                        headerBackTitleVisible: false,
-                        headerBackImage: () => (
-                            <FontAwesomeIcon
-                                icon={directionIcons.angleLeft as IconProp} 
-                                color={appColors.icon} 
-                                size={30} 
-                                style={{marginLeft: 10}}
-                            />
-                        )
-                    }}
-                />
-            ))}
             <Stack.Screen
-                name="placeholderScreen"
+                name='SettingsScreen'
+                component={SettingsScreen}
+                options={{
+                    headerBackImage: () => (
+                        <FontAwesomeIcon
+                            icon={directionIcons.angleLeft as IconProp} 
+                            color={appColors.icon} 
+                            size={30} 
+                            style={{marginLeft: 10}}
+                        />
+                    ),
+                    ...getScreenHeaderOptions(appColors, 'Settings')
+                }}
+            />
+            <Stack.Screen
+                name='AppThemeScreen'
+                component={AppThemeScreen}
+                options={{
+                    headerBackImage: () => (
+                        <FontAwesomeIcon
+                            icon={directionIcons.angleLeft as IconProp} 
+                            color={appColors.icon} 
+                            size={30} 
+                            style={{marginLeft: 10}}
+                        />
+                    ),
+                    ...getScreenHeaderOptions(appColors, 'App Theme')
+                }}
+            />
+            <Stack.Screen
+                name="PlaceholderScreen"
                 component={PlaceholderScreen}
                 options={({ route }) => ({
                     headerShown: true,
