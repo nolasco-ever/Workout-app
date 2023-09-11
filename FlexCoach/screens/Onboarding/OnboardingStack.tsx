@@ -9,21 +9,45 @@ import { IconProp } from '@fortawesome/fontawesome-svg-core';
 import MessageScreen from '../../shared-screens/messageScreen';
 import { introScreenAnimation } from '../../animations/onboarding-flow';
 import { successCheckAnimation } from '../../animations/shared';
+import { UserProfileInfoScreen } from './screens/UserProfileInfoScreen';
+import { SetProfilePhotoScreen } from './screens/SetProfilePhotoScreen';
+import { DesignYourPlanScreen } from './screens/DesignYourPlanScreen';
+import { NavigationProp, StackActions, useNavigation } from '@react-navigation/native';
 
-const Stack = createStackNavigator();
+export type OnboardingStackParams = {
+    WelcomeScreen: {
+        title: string;
+        message: string;
+        image: any;
+        imageLoop: boolean;
+        buttonTitle: string;
+        buttonAction: () => void;
+    } | undefined;
+    UserProfileInfoScreen: undefined;
+    SetProfilePhotoScreen: undefined;
+    DesignYourPlanScreen: undefined;
+    SuccessScreen: {
+        title: string;
+        message: string;
+        image: any;
+        imageLoop: boolean;
+        buttonTitle: string;
+        buttonAction: () => void;
+    } | undefined;
+}
 
-export const OnboardingStack = ({navigation}: {navigation: any}) => {
+const Stack = createStackNavigator<OnboardingStackParams>();
+
+export const OnboardingStack = () => {
+    const navigation = useNavigation<NavigationProp<OnboardingStackParams>>();
+
     const appColors = colors();
 
 
     return (
-        <Stack.Navigator
-            screenOptions={{
-                headerShown: false
-            }}
-        >
+        <Stack.Navigator>
             <Stack.Screen
-                name='welcomeScreen'
+                name='WelcomeScreen'
                 component={MessageScreen}
                 options={{
                     headerShown: false
@@ -34,33 +58,68 @@ export const OnboardingStack = ({navigation}: {navigation: any}) => {
                     image: introScreenAnimation,
                     imageLoop: true,
                     buttonTitle: 'Start',
-                    buttonAction: () => navigation.navigate('userProfileInfoScreen')
+                    buttonAction: () => navigation.navigate('UserProfileInfoScreen')
                 }}
             />
-            {onboardingStack.map((screen, index) => (
-                <Stack.Screen
-                    key={index}
-                    name={screen.id}
-                    component={screen.component}
-                    options={{
-                        headerShown: true,
-                        headerStyle: {backgroundColor: appColors.background},
-                        headerTitleStyle: {color: appColors.text},
-                        headerTitle: screen.name,
-                        headerBackTitleVisible: false,
-                        headerBackImage: () => (
-                            <FontAwesomeIcon
-                                icon={directionIcons.angleLeft as IconProp}
-                                color={appColors.icon}
-                                size={25}
-                                style={{marginLeft: 10}}
-                            />
-                        )
-                    }}
-                />
-            ))}
             <Stack.Screen
-                name='successScreen'
+                name='UserProfileInfoScreen'
+                component={UserProfileInfoScreen}
+                options={{
+                    headerShown: true,
+                    headerStyle: {backgroundColor: appColors.background},
+                    headerTitleStyle: {color: appColors.text},
+                    headerTitle: "Create Your Profile",
+                    headerBackTitleVisible: false,
+                    headerBackImage: () => (
+                        <FontAwesomeIcon
+                            icon={directionIcons.angleLeft as IconProp}
+                            color={appColors.icon}
+                            size={25}
+                            style={{marginLeft: 10}}
+                        />
+                    )
+                }}
+            />
+            <Stack.Screen
+                name='SetProfilePhotoScreen'
+                component={SetProfilePhotoScreen}
+                options={{
+                    headerShown: true,
+                    headerStyle: {backgroundColor: appColors.background},
+                    headerTitleStyle: {color: appColors.text},
+                    headerTitle: "Set Your Photo",
+                    headerBackTitleVisible: false,
+                    headerBackImage: () => (
+                        <FontAwesomeIcon
+                            icon={directionIcons.angleLeft as IconProp}
+                            color={appColors.icon}
+                            size={25}
+                            style={{marginLeft: 10}}
+                        />
+                    )
+                }}
+            />
+            <Stack.Screen
+                name='DesignYourPlanScreen'
+                component={DesignYourPlanScreen}
+                options={{
+                    headerShown: true,
+                    headerStyle: {backgroundColor: appColors.background},
+                    headerTitleStyle: {color: appColors.text},
+                    headerTitle: "Design Your Plan",
+                    headerBackTitleVisible: false,
+                    headerBackImage: () => (
+                        <FontAwesomeIcon
+                            icon={directionIcons.angleLeft as IconProp}
+                            color={appColors.icon}
+                            size={25}
+                            style={{marginLeft: 10}}
+                        />
+                    )
+                }}
+            />
+            <Stack.Screen
+                name='SuccessScreen'
                 component={MessageScreen}
                 options={{
                     headerShown: false
@@ -71,7 +130,7 @@ export const OnboardingStack = ({navigation}: {navigation: any}) => {
                     image: successCheckAnimation,
                     imageLoop: false,
                     buttonTitle: 'Finish',
-                    buttonAction: () => navigation.replace('Tabs')
+                    buttonAction: () => navigation.dispatch(StackActions.replace('TabNavigator'))
                 }}
             />
         </Stack.Navigator>

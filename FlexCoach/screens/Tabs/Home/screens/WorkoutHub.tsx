@@ -12,8 +12,12 @@ import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome'
 import { directionIcons } from '../../../../components/icons/icon-library'
 import { IconProp } from '@fortawesome/fontawesome-svg-core'
 import { mockExercises } from '../../../../mocks/trainingDataMocks'
+import { useNavigation, NavigationProp } from '@react-navigation/native'
+import { HomeStackParams } from '../HomeStack'
 
-export const WorkoutHub = ({navigation, route}: {navigation: any, route: any}) => {
+export const WorkoutHub = () => {
+    const navigation = useNavigation<NavigationProp<HomeStackParams>>();
+
     const appColors = colors();
     const screenHeight = Dimensions.get('window').height;
 
@@ -94,7 +98,7 @@ export const WorkoutHub = ({navigation, route}: {navigation: any, route: any}) =
                                     const newExercises = [...exercises];
                                     newExercises[index].completed = true;
                                     setExercises(newExercises);
-                                    navigation.navigate('workoutLogger', {exercise: item})
+                                    navigation.navigate('WorkoutLoggerScreen', { exercise: item })
                                 }
                             }}
                         >

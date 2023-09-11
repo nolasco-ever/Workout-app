@@ -12,8 +12,11 @@ import { generalIcons } from '../components/icons/icon-library';
 import { InformationCardSmall } from '../components/cards/informationCardSmall';
 import { mockArticles } from '../mocks/articleMocks';
 import { InformationCard } from '../components/cards/informationCard';
+import { NavigationProp, StackActions, useNavigation } from '@react-navigation/native';
+import { ExploreStackParams } from '../screens/Tabs/Explore/ExploreStack';
 
-export const TutorialScreen = ({navigation, route}: {navigation: any, route: any}) => {
+export const TutorialScreen = ({route}: {route: any}) => {
+  const navigation = useNavigation<NavigationProp<ExploreStackParams>>();
   const {title, videoLink, steps, muscleGroupWorkouts} = route.params;
   const appColors = colors();
   const screenWidth = Dimensions.get('window').width
@@ -70,7 +73,7 @@ export const TutorialScreen = ({navigation, route}: {navigation: any, route: any
         <Button
           type='outline'
           label='Step-by-step instructions'
-          onPress={() => navigation.navigate('instructionsStack')}
+          onPress={() => (navigation as any).navigate('instructionsStack')}
         />
         <Section title='Related'>
           {mockArticles.slice(0,3).map((item, index) => (
@@ -79,7 +82,7 @@ export const TutorialScreen = ({navigation, route}: {navigation: any, route: any
               imageSource={item.image}
               title={item.title}
               description={item.description}
-              onPress={() => navigation.navigate('articleScreen', {articleData: item})}
+              onPress={() => navigation.navigate('ArticleScreen', {articleData: item})}
             />
           ))}
           <View style={{flexDirection: 'row'}}>
@@ -94,10 +97,10 @@ export const TutorialScreen = ({navigation, route}: {navigation: any, route: any
                     imageSource={thumbnailUrl}
                     title={item.name}
                     onPress={() => 
-                      navigation.replace(
-                        'tutorialScreen', 
+                      navigation.dispatch(StackActions.replace(
+                        'TutorialScreen', 
                         {title: item.name, videoLink: item.link, steps: item.howToSteps, muscleGroupWorkouts: muscleGroupWorkouts}
-                      )
+                      ))
                     }
                   />
                 );

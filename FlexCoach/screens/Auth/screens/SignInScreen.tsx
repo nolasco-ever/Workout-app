@@ -1,5 +1,5 @@
 import React from 'react';
-import { ParamListBase } from '@react-navigation/native';
+import { NavigationProp, ParamListBase, StackActions, useNavigation } from '@react-navigation/native';
 import { StyleSheet, TouchableOpacity, SafeAreaView, Dimensions, Text, View, KeyboardAvoidingView, Platform, Keyboard } from 'react-native';
 import { colors } from '../../../colors';
 import { CustomText } from '../../../components/text/customText';
@@ -9,12 +9,12 @@ import { CustomTextInput } from '../../../components/text-input/CustomTextInput'
 import { AnimatedImage } from '../../../components/utils/AnimatedImage';
 import { welcomeAnimation } from '../../../animations/auth-flow';
 import { Button } from '../../../components/buttons/button';
-
-interface SignInScreenProps {
-    navigation: StackNavigationProp<ParamListBase>;
-};
+import { AuthStackParams } from '../AuthStack';
+import { AppStackParams } from '../../../appNavigators/AppStack';
   
-export const SignInScreen = ({ navigation }: SignInScreenProps) => {
+export const SignInScreen = () => {
+  const navigation = useNavigation<NavigationProp<AuthStackParams | AppStackParams>>();
+
   const appColors = colors();
   const screenWidth = Dimensions.get('window').width;
 
@@ -51,18 +51,18 @@ export const SignInScreen = ({ navigation }: SignInScreenProps) => {
               isSecure
             />
           </View>
-          <TouchableOpacity onPress={() => navigation.navigate('forgotPasswordScreen')}>
+          <TouchableOpacity onPress={() => (navigation as NavigationProp<AuthStackParams>).navigate('ForgotPasswordScreen')}>
             <Text style={{color: appColors.subtext}}>Forgot Password?</Text>
           </TouchableOpacity>
         </View>
         <Button
           label='Sign In'
-          onPress={() => navigation.replace('Tabs')}
+          onPress={() => navigation.dispatch(StackActions.replace('TabNavigator'))}
         />
         <Button
           label={`Don't have an account? Sign up here`}
           type='outline'
-          onPress={() => navigation.navigate('signUpScreen')}
+          onPress={() => (navigation as NavigationProp<AuthStackParams>).navigate('SignUpScreen')}
         />
       </SafeAreaView>
     </KeyboardAvoidingView>

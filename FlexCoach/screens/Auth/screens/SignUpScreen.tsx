@@ -5,16 +5,15 @@ import { signUpAnimation } from '../../../animations/auth-flow'
 import { generalIcons } from '../../../components/icons/icon-library'
 import { CustomTextInput } from '../../../components/text-input/CustomTextInput'
 import { AnimatedImage } from '../../../components/utils/AnimatedImage'
-import { ParamListBase } from '@react-navigation/native'
+import { NavigationProp, ParamListBase, StackActions, useNavigation } from '@react-navigation/native'
 import { StackNavigationProp } from '@react-navigation/stack'
 import { colors } from '../../../colors'
 import { Button } from '../../../components/buttons/button'
+import { AppStackParams } from '../../../appNavigators/AppStack'
 
-interface SignUpScreenProps {
-    navigation: StackNavigationProp<ParamListBase>;
-};
+export const SignUpScreen = () => {
+    const navigation = useNavigation<NavigationProp<AppStackParams>>();
 
-export const SignUpScreen = ({navigation}: SignUpScreenProps) => {
     const appColors = colors();
     
     return (
@@ -61,7 +60,7 @@ export const SignUpScreen = ({navigation}: SignUpScreenProps) => {
                 </View>
                 <Button
                     label='Sign Up'
-                    onPress={() => navigation.replace('Onboarding')}
+                    onPress={() => navigation.dispatch(StackActions.replace('OnboardingStack'))}
                 />
             </SafeAreaView>
         </KeyboardAvoidingView>

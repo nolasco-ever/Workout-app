@@ -7,13 +7,15 @@ import { generalIcons, tabIcons } from '../../../../components/icons/icon-librar
 import { CustomText } from '../../../../components/text/customText';
 import { user1 } from '../../../../mocks/userMocks';
 import { TouchableOpacity } from 'react-native-gesture-handler';
-import { useNavigation } from '@react-navigation/native';
-import { profileListMocks } from '../../../../mocks/listItemMocks';
+import { NavigationProp, useNavigation } from '@react-navigation/native';
 import { ListItem } from '../../../../components/list-items/ListItem';
 import { Section } from '../../../../components/sections/Section';
+import { ProfileStackParams } from '../ProfileStack';
+import { AppStackParams } from '../../../../appNavigators/AppStack';
 
 
-export const ProfileScreen = ({navigation}: {navigation: any}) => {
+export const ProfileScreen = () => {
+  const navigation = useNavigation<NavigationProp<ProfileStackParams | AppStackParams>>();
   const appColors = colors();
   const screenWidth = Dimensions.get('window').width;
 
@@ -70,16 +72,20 @@ export const ProfileScreen = ({navigation}: {navigation: any}) => {
           </ScrollView>
         </Section>
         <View style={{marginTop: 10}}>
-          {profileListMocks.map((item, index) => (
-            <ListItem
-              key={item.id}
-              title={item.title}
-              icon={item.icon}
-              description={item.description}
-              onPress={() => navigation.navigate(item.navigateTo, {title: item.title, icon: item.icon})}
-              topDivider={index === 0 ? true : false}
-            />
-          ))}
+          <ListItem
+              title="Set Your Goals"
+              icon={generalIcons.plus}
+              description='Create a new training or nutrition plan'
+              onPress={() => (navigation as NavigationProp<AppStackParams>).navigate('CustomTrainingProgramStack')}
+              topDivider={true}
+          />
+          <ListItem
+              title="History"
+              icon={generalIcons.clock}
+              description='View your previous workout programs'
+              onPress={() => (navigation as NavigationProp<ProfileStackParams>).navigate('PlaceholderScreen', { title: 'History' })}
+              topDivider={false}
+          />
         </View>
       </ScrollView>
     </SafeAreaView>

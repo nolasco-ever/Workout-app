@@ -11,8 +11,11 @@ import { Button } from '../../../components/buttons/button'
 import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome'
 import { IconProp } from '@fortawesome/fontawesome-svg-core'
 import { SelectionItem } from '../../../components/list-items/selectionItem'
+import { NavigationProp, useNavigation } from '@react-navigation/native'
+import { CustomTrainingProgramStackParams } from '../CustomTrainingProgramStack'
 
-export const SelectYourWorkoutsScreen = ({navigation}: {navigation: any}) => {
+export const SelectYourWorkoutsScreen = () => {
+  const navigation = useNavigation<NavigationProp<CustomTrainingProgramStackParams, "TutorialScreen" | "ScheduleTrainingProgramScreen">>();
   const appColors = colors();
   const [selectedWorkouts, setSelectedWorkouts] = useState<string[]>([]);
 
@@ -38,7 +41,7 @@ export const SelectYourWorkoutsScreen = ({navigation}: {navigation: any}) => {
                 selectedItems={selectedWorkouts}
                 title={workout.name}
                 onPressItem={() => toggleWorkoutSelection(workout.name)}
-                onPressInfo={() => navigation.navigate('tutorialScreen', {title: workout.name, videoLink: workout.link, steps: workout.howToSteps, muscleGroupWorkouts: workouts})}
+                onPressInfo={() => navigation.navigate('TutorialScreen', {title: workout.name, videoLink: workout.link, steps: workout.howToSteps, muscleGroupWorkouts: workouts})}
               />
             ))}
           </View>
@@ -69,7 +72,7 @@ export const SelectYourWorkoutsScreen = ({navigation}: {navigation: any}) => {
       </ScrollView>
       <Button
           label='Next'
-          onPress={() => navigation.navigate('scheduleTrainingProgramScreen', {items: selectedWorkouts})}
+          onPress={() => navigation.navigate('ScheduleTrainingProgramScreen', {items: selectedWorkouts})}
           isActive={selectedWorkouts.length >= 6}
         />
     </SafeAreaView>

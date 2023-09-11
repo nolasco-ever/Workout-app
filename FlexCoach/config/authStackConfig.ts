@@ -4,17 +4,17 @@ import { SignUpScreen } from "../screens/Auth/screens/SignUpScreen";
 
 export const authStack = [
     {
-        id: 'signInScreen',
+        id: 'SignInScreen',
         name: 'Sign In',
         component: SignInScreen,
     },
     {
-        id: 'signUpScreen',
+        id: 'SignUpScreen',
         name: 'Sign Up',
         component: SignUpScreen
     },
     {
-        id: 'forgotPasswordScreen',
+        id: 'ForgotPasswordScreen',
         name: 'Reset Your Password',
         component: ForgotPasswordScreen
     }

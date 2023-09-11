@@ -6,8 +6,12 @@ import { InputDataListItem } from '../components/inputDataListItem';
 import { InputDataTable } from '../components/inputDataTable';
 import { PreviousWorkoutCard } from '../components/previousWorkoutCard';
 import { Button } from '../../../../components/buttons/button';
+import { useNavigation, NavigationProp } from '@react-navigation/native';
+import { HomeStackParams } from '../HomeStack';
 
-const WorkoutLoggerScreen = ({ navigation, route}: {navigation: any, route: any}) => {
+const WorkoutLoggerScreen = ({ route}: { route: any }) => {
+    const navigation = useNavigation<NavigationProp<HomeStackParams>>();
+    
     const { exercise, completed } = route.params;
     const appColors = colors();
 

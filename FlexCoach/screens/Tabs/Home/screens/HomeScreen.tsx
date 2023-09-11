@@ -1,22 +1,25 @@
 import React, { useRef, useState } from 'react';
 import { StyleSheet, ScrollView, SafeAreaView, View, RefreshControl, NativeScrollEvent, NativeSyntheticEvent } from 'react-native';
 import { colors } from '../../../../colors';
-import { UserCardHeader } from '../../../../components/cards/userCardHeader';
 import { ProgressCard } from '../../../../components/cards/progressCard';
 import { Section } from '../../../../components/sections/Section';
 import { generalIcons, tabIcons } from '../../../../components/icons/icon-library';
 import { user1 } from '../../../../mocks/userMocks';
 import { CustomGraph } from '../../../../components/graphs/customGraph';
 import { mockBenchPressData, mockDumbbellCurlData } from '../../../../mocks/trainingDataMocks';
-import { useScrollToTop } from '@react-navigation/native';
+import { NavigationProp, useNavigation, useScrollToTop } from '@react-navigation/native';
 import { mockArticles } from '../../../../mocks/articleMocks';
 import { Card } from '../../../../components/cards/Card';
 import { statsScreenActivityLogListMock } from '../../../../mocks/listItemMocks';
 import { ListItem } from '../../../../components/list-items/ListItem';
 import { IconButton } from '../../../../components/buttons/IconButton';
 import { chestSection } from '../../../../config/customize-training-program-flow/selectYourWorkouts';
+import { HomeStackParams } from '../HomeStack';
+import { ExploreStackParams } from '../../Explore/ExploreStack';
 
-export const HomeScreen = ({navigation, route}: {navigation: any, route: any}) => {
+export const HomeScreen = () => {
+    const navigation = useNavigation<NavigationProp<HomeStackParams>>();
+
     const appColors = colors();
 
     const [refreshing, setRefreshing] = useState(false);
@@ -40,15 +43,24 @@ export const HomeScreen = ({navigation, route}: {navigation: any, route: any}) =
             showsVerticalScrollIndicator={false}
           >
             <View style={{flexDirection: 'row', justifyContent: 'space-between', padding: 10}}>
-              {statsScreenActivityLogListMock.map(item => (
-                <IconButton
-                  key={item.id}
-                  icon={item.icon}
-                  iconColor={item.color}
-                  label={item.title}
-                  onPress={() => navigation.navigate(item.navigateTo, {title: item.title, icon: item.icon})}
-                />
-              ))}
+              <IconButton
+                  icon={generalIcons.dumbbell}
+                  iconColor='#001f54'
+                  label="Workouts"
+                  onPress={() => navigation.navigate("WorkoutHubScreen")}
+              />
+              <IconButton
+                  icon={generalIcons.simpleChart}
+                  iconColor='#134162'
+                  label="Progress"
+                  onPress={() => navigation.navigate("PlaceholderScreen", { title: 'Progress' })}
+              />
+              <IconButton
+                  icon={generalIcons.apple}
+                  iconColor='#D04242'
+                  label="Nutrition"
+                  onPress={() => navigation.navigate("DietLogScreen")}
+              />
             </View>
 
             <Section title='Overview'>
@@ -115,8 +127,8 @@ export const HomeScreen = ({navigation, route}: {navigation: any, route: any}) =
                             imageSource={thumbnailUrl}
                             imageText={item.length}
                             onPress={() => 
-                                navigation.navigate(
-                                    'tutorialScreen', 
+                                (navigation as NavigationProp<ExploreStackParams>).navigate(
+                                    'TutorialScreen', 
                                     {
                                         title: item.name,
                                         videoLink: item.link,

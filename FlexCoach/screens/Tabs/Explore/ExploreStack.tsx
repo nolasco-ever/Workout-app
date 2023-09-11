@@ -14,7 +14,20 @@ import { NavigationHeader } from '../../../components/headers/NavigationHeader';
 import { TutorialScreen } from '../../../shared-screens/tutorialScreen';
 import { getScreenHeaderOptions } from '../../../config/getScreenHeader';
 
-const Stack = createStackNavigator();
+type exercisesArrayType = {
+    name: string;
+    link: string;
+    howToSteps: string[];
+}[]
+
+export type ExploreStackParams = {
+    ExploreScreen: undefined;
+    TutorialScreen: ({ title: string, videoLink: string, steps: string[], muscleGroupWorkouts: exercisesArrayType });
+    ArticleScreen: ({ articleData: any });
+    PlaceholderScreen: { title: string };
+}
+
+const Stack = createStackNavigator<ExploreStackParams>();
 
 export const ExploreStack = () => {
     const appColors = colors();
@@ -22,7 +35,7 @@ export const ExploreStack = () => {
     return (
         <Stack.Navigator>
             <Stack.Screen
-                name="exploreScreen"
+                name="ExploreScreen"
                 component={ExploreScreen}
                 options={{
                     header: () => (
@@ -32,40 +45,41 @@ export const ExploreStack = () => {
                     )
                 }}
             />
-            {exploreStack.map((screen, index) => (
-                <Stack.Screen
-                    key={index}
-                    name={screen.id}
-                    component={screen.component}
-                    options={{
-                        headerBackImage: () => (
-                            <FontAwesomeIcon
-                                icon={directionIcons.angleLeft as IconProp} 
-                                color={appColors.icon} 
-                                size={25} 
-                                style={{marginLeft: 10}}
-                            />
-                        ),
-                        headerRight: () => {
-                            const [bookmarked, setBookmarked] = useState<boolean>();
-    
-                            return (
-                                <TouchableOpacity onPress={() => setBookmarked(prev => !prev)}>
-                                    <FontAwesomeIcon
-                                        icon={bookmarked ? generalIcons.bookmarkFilled : generalIcons.bookmarkOutline}
-                                        color={appColors.icon}
-                                        size={25}
-                                        style={{marginRight: 10}}
-                                    />
-                                </TouchableOpacity>
-                            )
-                        },
-                        ...getScreenHeaderOptions({appColors, screen})
-                    }}
-                />
-            ))}
             <Stack.Screen
-                name="articleScreen"
+                name="TutorialScreen"
+                component={TutorialScreen}
+                options={{
+                    headerShown: true,
+                    headerStyle: {backgroundColor: appColors.background},
+                    headerTitleStyle: {color: appColors.text, marginLeft: 10, marginRight: 10, fontSize: 16},
+                    headerTitle: "Tutorial",
+                    headerBackTitleVisible: false,
+                    headerBackImage: () => (
+                        <FontAwesomeIcon
+                            icon={directionIcons.angleLeft as IconProp} 
+                            color={appColors.icon} 
+                            size={25} 
+                            style={{marginLeft: 10}}
+                        />
+                    ),
+                    headerRight: () => {
+                        const [bookmarked, setBookmarked] = useState<boolean>();
+
+                        return (
+                            <TouchableOpacity onPress={() => setBookmarked(prev => !prev)}>
+                                <FontAwesomeIcon
+                                    icon={bookmarked ? generalIcons.bookmarkFilled : generalIcons.bookmarkOutline}
+                                    color={appColors.icon}
+                                    size={25}
+                                    style={{marginRight: 10}}
+                                />
+                            </TouchableOpacity>
+                        )
+                    }
+                }}
+            />
+            <Stack.Screen
+                name="ArticleScreen"
                 component={ArticleScreen}
                 options={({ route }) => ({
                     headerShown: true,
@@ -98,7 +112,7 @@ export const ExploreStack = () => {
                 })}
             />
             <Stack.Screen
-                name="placeholderScreen"
+                name="PlaceholderScreen"
                 component={PlaceholderScreen}
                 options={({ route }) => ({
                     headerShown: true,

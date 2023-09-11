@@ -1,35 +1,56 @@
-import { IconProp } from '@fortawesome/fontawesome-svg-core';
-import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
 import React from 'react';
 import { View, Text, StyleSheet, SafeAreaView } from 'react-native';
 import { colors } from '../../../../colors';
 import { generalIcons, tabIcons } from '../../../../components/icons/icon-library';
-import { CustomText } from '../../../../components/text/customText';
 import { ListItem } from '../../../../components/list-items/ListItem';
 import { ScrollView } from 'react-native-gesture-handler';
-import { settingsListMocks } from '../../../../mocks/listItemMocks';
+import { useNavigation, NavigationProp, StackActions } from '@react-navigation/native';
+import { ProfileStackParams } from '../ProfileStack';
 
 
-export const SettingsScreen = ({navigation}:{navigation: any}) => {
+export const SettingsScreen = () => {
+  const navigation = useNavigation<NavigationProp<ProfileStackParams>>();
   
   const appColors = colors();
   return (
     <SafeAreaView style={[styles.container, {backgroundColor: appColors.background}]}>
-      <ScrollView style={{width: '100%'}}>        
-        {settingsListMocks.map((item) => (
-          <ListItem
-            key={item.id}
-            icon={item.icon}
-            title={item.title}
-            description={item.description}
-            onPress={() => navigation.navigate(item.navigateTo, {title: item.title, icon: item.icon})}
-          />
-        ))}
+      <ScrollView style={{width: '100%'}}>       
+        <ListItem
+          icon={generalIcons.moon}
+          title='App Theme'
+          description='Switch between a light theme or a dark theme'
+          onPress={() => navigation.navigate('AppThemeScreen')}
+        /> 
+        <ListItem
+          icon={generalIcons.bell}
+          title='Notification Preferences'
+          description={`Choose what notifications you'd like to receive`}
+          onPress={() => navigation.navigate('PlaceholderScreen', { title: 'Notification Preferences' })}
+        /> 
+        <ListItem
+          icon={generalIcons.key}
+          title="Privacy and Permissions"
+          description="Access our Terms of Use and Privacy Policy"
+          onPress={() => navigation.navigate('PlaceholderScreen', { title: 'Privacy and Permissions' })}
+        />
+        <ListItem
+          icon={generalIcons.user}
+          title="Account"
+          description="Update, set, or remove information from your account"
+          onPress={() => navigation.navigate('PlaceholderScreen', { title: 'Account' })}
+        />
+        <ListItem
+          icon={generalIcons.envelope}
+          title="Contact Us"
+          description="Reach out with any questions, comments, or concerns"
+          onPress={() => navigation.navigate('PlaceholderScreen', { title: 'Contact Us' })}
+        />
+
         <ListItem
           icon={generalIcons.signOut}
           title="Sign Out"
           topDivider
-          onPress={() => navigation.replace('SignIn')}
+          onPress={() => navigation.dispatch(StackActions.replace('SignInStack'))}
         />
       </ScrollView>
     </SafeAreaView>

@@ -14,7 +14,7 @@ export const directionIcons = {
     apple: 'fa-solid fa-apple-whole' as IconProp,
     bell: 'fa-solid fa-bell' as IconProp,
     bellSlash: 'fa-solid fa-bell-slash' as IconProp,
-    book: 'fa-solid fa-book',
+    book: 'fa-solid fa-book' as IconProp,
     bookmarkOutline: 'fa-regular fa-bookmark' as IconProp,
     bookmarkFilled: 'fa-solid fa-bookmark' as IconProp,
     bulletPoint: 'fa-solid fa-circle',
@@ -42,7 +42,7 @@ export const directionIcons = {
     moon: 'fa-solid fa-moon',
     penToSquare: 'fa-solid fa-pen-to-square',
     personRunning: 'fa-solid fa-person-running' as IconProp,
-    personTeaching: 'fa-solid fa-person-chalkboard',
+    personTeaching: 'fa-solid fa-person-chalkboard' as IconProp,
     plus: 'fa-solid fa-plus',
     screwdriverWrench: 'fa-solid fa-screwdriver-wrench',
     signOut: 'fa-solid fa-right-from-bracket',
@@ -60,12 +60,12 @@ export const directionIcons = {
   };
 
   export const tabIcons = {
-    home: 'fa-solid fa-house',
+    home: 'fa-solid fa-house' as IconProp,
     stats: 'fa-solid fa-chart-line' as IconProp,
-    log: 'fa-solid fa-circle-plus',
-    explore: 'fa-solid fa-magnifying-glass',
-    social: 'fa-solid fa-face-smile',
-    profile: 'fa-solid fa-user'
+    log: 'fa-solid fa-circle-plus' as IconProp,
+    explore: 'fa-solid fa-magnifying-glass' as IconProp,
+    social: 'fa-solid fa-face-smile' as IconProp,
+    profile: 'fa-solid fa-user' as IconProp
   }
   
   

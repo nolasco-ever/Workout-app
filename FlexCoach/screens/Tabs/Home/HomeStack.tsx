@@ -5,14 +5,25 @@ import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
 import { directionIcons, generalIcons } from '../../../components/icons/icon-library';
 import { IconProp } from '@fortawesome/fontawesome-svg-core';
 import { PlaceholderScreen } from '../../placeholderScreen';
-import { homeStack } from '../../../config/homeStackConfig';
 import { AddDietEntryScreen } from './screens/AddDietEntryScreen';
 import { getScreenHeaderOptions } from '../../../config/getScreenHeader';
 import { NavigationHeader } from '../../../components/headers/NavigationHeader';
 import { NotificationButton } from '../../../components/headers/HeaderActionButtons/NotificationButton';
 import { HomeScreen } from './screens/HomeScreen';
+import { WorkoutHub } from './screens/WorkoutHub';
+import WorkoutLoggerScreen from './screens/WorkoutLoggerScreen';
+import { DietLogScreen } from './screens/DietLogScreen';
 
-const Stack = createStackNavigator();
+export type HomeStackParams = {
+    HomeScreen: undefined;
+    WorkoutHubScreen: undefined;
+    WorkoutLoggerScreen: { exercise: any, completed?: any };
+    DietLogScreen: undefined;
+    AddDietEntryScreen: undefined;
+    PlaceholderScreen: { title: string };
+}
+
+const Stack = createStackNavigator<HomeStackParams>();
 
 export const HomeStack = () => {
     const appColors = colors();
@@ -24,7 +35,7 @@ export const HomeStack = () => {
     return (
         <Stack.Navigator>
             <Stack.Screen
-                name='homeScreen'
+                name='HomeScreen'
                 component={HomeScreen}
                 options={{
                     header: () => (
@@ -36,34 +47,56 @@ export const HomeStack = () => {
                     )
                 }}
             />
-            {homeStack.slice(1,).flatMap((screen, index) => (
-                <Stack.Screen
-                    key={index}
-                    name={screen.id}
-                    component={screen.component}
-                    options={{
-                        headerBackImage: () => (
-                            <FontAwesomeIcon
-                                icon={directionIcons.angleLeft as IconProp}
-                                color={appColors.icon}
-                                size={25}
-                                style={{marginLeft: 10}}
-                            />
-                        ),
-                        ...getScreenHeaderOptions({appColors, screen})
-                    }}
-                />
-            ))}
             <Stack.Screen
-                name="addDietEntryScreen"
+                name="WorkoutHubScreen"
+                component={WorkoutHub}
+                options={{
+                    headerBackImage: () => (
+                        <FontAwesomeIcon
+                            icon={directionIcons.angleLeft as IconProp}
+                            color={appColors.icon}
+                            size={25}
+                            style={{marginLeft: 10}}
+                        />
+                    ),
+                    ...getScreenHeaderOptions(appColors, `Today's Workout`)
+                }}
+            />
+            <Stack.Screen
+                name="WorkoutLoggerScreen"
+                component={WorkoutLoggerScreen}
+                options={{
+                    headerBackImage: () => (
+                        <FontAwesomeIcon
+                            icon={directionIcons.angleLeft as IconProp}
+                            color={appColors.icon}
+                            size={25}
+                            style={{marginLeft: 10}}
+                        />
+                    ),
+                    ...getScreenHeaderOptions(appColors, 'Workout Logger')
+                }}
+            />
+            <Stack.Screen
+                name="DietLogScreen"
+                component={DietLogScreen}
+                options={{
+                    headerBackImage: () => (
+                        <FontAwesomeIcon
+                            icon={directionIcons.angleLeft as IconProp}
+                            color={appColors.icon}
+                            size={25}
+                            style={{marginLeft: 10}}
+                        />
+                    ),
+                    ...getScreenHeaderOptions(appColors, 'Diet Log')
+                }}
+            />
+            <Stack.Screen
+                name="AddDietEntryScreen"
                 component={AddDietEntryScreen}
                 options={{
                     presentation: 'modal',
-                    headerShown: true,
-                    headerStyle: {backgroundColor: appColors.background},
-                    headerTitleStyle: {color: appColors.text},
-                    headerTitle: 'Record Meal',
-                    headerBackTitleVisible: false,
                     headerBackImage: () => (
                         <FontAwesomeIcon
                             icon={generalIcons.xMark as IconProp}
@@ -71,11 +104,12 @@ export const HomeStack = () => {
                             size={25}
                             style={{marginLeft: 10}}
                         />
-                    )
+                    ),
+                    ...getScreenHeaderOptions(appColors, 'Record Meal')
                 }}
             />
             <Stack.Screen
-                name="placeholderScreen"
+                name="PlaceholderScreen"
                 component={PlaceholderScreen}
                 options={({route}) => ({
                     headerShown: true,

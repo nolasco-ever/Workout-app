@@ -5,8 +5,12 @@ import { ScrollView } from 'react-native-gesture-handler'
 import { CustomTable } from '../../../../components/tables/customTable'
 import { mockDietTrackerData } from '../../../../mocks/tableDataMocks'
 import { Button } from '../../../../components/buttons/button'
+import { NavigationProp, useNavigation } from '@react-navigation/native'
+import { HomeStackParams } from '../HomeStack'
 
-export const DietLogScreen = ({navigation}: {navigation: any}) => {
+export const DietLogScreen = () => {
+  const navigation = useNavigation<NavigationProp<HomeStackParams>>();
+
     const appColors = colors();
 
     const [tableData, setTableData] = useState(mockDietTrackerData.tableData)
@@ -24,7 +28,7 @@ export const DietLogScreen = ({navigation}: {navigation: any}) => {
             label='Add'
             onPress={() => {
               // setTableData(prev => [...prev, ['Item Name', 90, 20]])
-              navigation.navigate('addDietEntryScreen')
+              navigation.navigate('AddDietEntryScreen')
             }}
           />
       </View>

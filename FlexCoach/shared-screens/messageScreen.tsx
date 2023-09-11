@@ -4,8 +4,11 @@ import { colors } from '../colors';
 import { AnimatedImage } from '../components/utils/AnimatedImage';
 import { CustomText } from '../components/text/customText';
 import { Button } from '../components/buttons/button';
+import { NavigationProp, useNavigation } from '@react-navigation/native';
+import { AppStackParams } from '../appNavigators/AppStack';
 
-const MessageScreen = ({navigation, route}: {navigation: any, route: any}) => {
+const MessageScreen = ({route}: {route: any}) => {
+    const navigation = useNavigation<NavigationProp<AppStackParams>>();
     const {title, message, image, imageLoop, buttonTitle, buttonAction} = route.params;
     const appColors = colors();
 
@@ -22,7 +25,7 @@ const MessageScreen = ({navigation, route}: {navigation: any, route: any}) => {
             </View>
             <Button
                 label={buttonTitle}
-                onPress={buttonAction ? buttonAction : () => navigation.navigate('Home')}
+                onPress={buttonAction ? buttonAction : () => navigation.navigate('TabNavigator')}
             />
         </SafeAreaView>
     )

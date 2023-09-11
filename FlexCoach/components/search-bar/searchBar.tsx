@@ -145,7 +145,7 @@ export const SearchBar = ({
                 </animated.View>
             </View>
 
-            {isFocused ? <ResultsList navigation={navigation}/> : null}
+            {isFocused ? <ResultsList /> : null}
         </>
     )
 }

@@ -9,6 +9,8 @@ import { ScrollView } from 'react-native-gesture-handler';
 import { Button } from '../../../components/buttons/button';
 import { CheckBox } from '../../../components/buttons/checkBox';
 import { NumberPicker } from '../../../components/Pickers/numberPicker';
+import { NavigationProp, useNavigation } from '@react-navigation/native';
+import { CustomTrainingProgramStackParams } from '../CustomTrainingProgramStack';
 
 type Props = {
   items: string[];
@@ -16,7 +18,8 @@ type Props = {
 
 type Day = 'Sun' | 'Mon' | 'Tue' | 'Wed' | 'Thu' | 'Fri' | 'Sat';
 
-export const ScheduleTrainingProgramScreen = ({ navigation, route }: {navigation: any, route: any}) => {
+export const ScheduleTrainingProgramScreen = ({ route }: { route: any }) => {
+    const navigation = useNavigation<NavigationProp<CustomTrainingProgramStackParams, "ReviewYourProgramScreen">>();
     const {items} = route.params;
     const appColors = colors();
 
@@ -142,7 +145,7 @@ export const ScheduleTrainingProgramScreen = ({ navigation, route }: {navigation
             />
             <Button
                 label='Next'
-                onPress={() => navigation.navigate('reviewYourProgram', {workoutItems: organizedItems, numOfWeeks: numOfWeeks})}
+                onPress={() => navigation.navigate('ReviewYourProgramScreen', {workoutItems: organizedItems, numOfWeeks: numOfWeeks})}
                 isActive={organizedItems.every(arr => arr.length > 0)}
             />
         </SafeAreaView>

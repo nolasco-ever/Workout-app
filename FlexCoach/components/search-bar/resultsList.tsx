@@ -10,8 +10,11 @@ import { InformationCard } from '../cards/informationCard';
 import { chestSection, tricepsSection, bicepsSection, backSection, shouldersSection, legsSection } from '../../config/customize-training-program-flow/selectYourWorkouts';
 import { mockArticles } from '../../mocks/articleMocks';
 import { InformationCardSmall } from '../cards/informationCardSmall';
+import { NavigationProp, useNavigation } from '@react-navigation/native';
+import { ExploreStackParams } from '../../screens/Tabs/Explore/ExploreStack';
 
-export const ResultsList = ({navigation}: {navigation: any}) => {
+export const ResultsList = () => {
+    const navigation = useNavigation<NavigationProp<ExploreStackParams, "ArticleScreen" | "TutorialScreen">>();
     const appColors = colors();
     const exercisesArray = [
         chestSection.exercises.slice(0,1), 
@@ -39,7 +42,7 @@ export const ResultsList = ({navigation}: {navigation: any}) => {
                         imageSource={item.image}
                         title={item.title}
                         description={item.description}
-                        onPress={() => navigation.navigate('articleScreen', {articleData: item})}
+                        onPress={() => navigation.navigate('ArticleScreen', {articleData: item})}
                     />
                 ))}
             </Section>
@@ -57,7 +60,7 @@ export const ResultsList = ({navigation}: {navigation: any}) => {
                                     imageSource={thumbnailUrl}
                                     onPress={() => 
                                         navigation.navigate(
-                                            'tutorialScreen', 
+                                            'TutorialScreen', 
                                             {
                                                 title: item.name,
                                                 videoLink: item.link,

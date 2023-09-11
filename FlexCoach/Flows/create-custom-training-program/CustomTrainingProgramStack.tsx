@@ -9,6 +9,21 @@ import { TutorialScreen } from '../../shared-screens/tutorialScreen';
 import MessageScreen from '../../shared-screens/messageScreen';
 import { successCheckAnimation } from '../../animations/shared';
 
+type exercisesArrayType = {
+    name: string;
+    link: string;
+    howToSteps: string[];
+}[]
+
+export interface CustomTrainingProgramStackParams {
+    SetFitnessGoalsScreen: undefined;
+    SelectWorkoutsScreen: undefined;
+    ScheduleTrainingProgramScreen: ({ items: string[] });
+    ReviewYourProgramScreen: ({ workoutItems: string[][], numOfWeeks: number });
+    TutorialScreen: ({ title: string, videoLink: string, steps: string[], muscleGroupWorkouts: exercisesArrayType });
+    SuccessScreen: undefined;
+}
+
 const Stack = createStackNavigator();
 
 export const CustomTrainingProgramStack = () => {
@@ -50,7 +65,7 @@ export const CustomTrainingProgramStack = () => {
                 />
             ))}
             <Stack.Screen
-                name="tutorialScreen"
+                name="TutorialScreen"
                 component={TutorialScreen}
                 options={{
                     presentation: 'modal',

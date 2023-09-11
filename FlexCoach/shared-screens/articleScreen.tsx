@@ -8,8 +8,12 @@ import { AlertBanner } from '../components/banners/alertBanner';
 import { AuthorCard } from './components/authorCard';
 import { InformationCard } from '../components/cards/informationCard';
 import { UserFeedbackCard } from './components/userFeedbackCard';
+import { NavigationProp, StackActions, useNavigation } from '@react-navigation/native';
+import { ExploreStackParams } from '../screens/Tabs/Explore/ExploreStack';
 
-export const ArticleScreen = ({navigation, route}: {navigation: any, route: any}) => {
+export const ArticleScreen = ({ route }: { route: any }) => {
+    const navigation = useNavigation<NavigationProp<ExploreStackParams>>();
+
     const { articleData } = route.params;
     const appColors = colors();
     const scrollY = useRef(new Animated.Value(0)).current;
@@ -89,10 +93,10 @@ export const ArticleScreen = ({navigation, route}: {navigation: any, route: any}
                     title={item.title}
                     description={item.description}
                     onPress={() => 
-                      navigation.replace(
-                        'articleScreen', 
+                      navigation.dispatch(StackActions.replace(
+                        'ArticleScreen', 
                         {articleData: item}
-                      )
+                      ))
                     }
                   />
                 );
@@ -105,10 +109,10 @@ export const ArticleScreen = ({navigation, route}: {navigation: any, route: any}
                         key={item.id} 
                         style={{margin: 10, width: screenWidth/2}} 
                         onPress={() => 
-                          navigation.replace(
-                            'articleScreen', 
+                          navigation.dispatch(StackActions.replace(
+                            'ArticleScreen', 
                             {articleData: item}
-                          )
+                          ))
                         }
                       >
                         <Image

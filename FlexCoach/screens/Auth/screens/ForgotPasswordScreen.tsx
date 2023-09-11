@@ -7,8 +7,11 @@ import { forgotPasswordAnimation } from '../../../animations/auth-flow'
 import { Button } from '../../../components/buttons/button'
 import { CustomTextInput } from '../../../components/text-input/CustomTextInput'
 import { generalIcons } from '../../../components/icons/icon-library'
+import { NavigationProp, useNavigation } from '@react-navigation/native'
+import { AuthStackParams } from '../AuthStack'
 
-export const ForgotPasswordScreen = ({navigation}: {navigation: any}) => {
+export const ForgotPasswordScreen = () => {
+    const navigation = useNavigation<NavigationProp<AuthStackParams, "EmailSentScreen">>();
     const appColors = colors();
     const [value, setValue] = useState<string>('');
 
@@ -38,7 +41,7 @@ export const ForgotPasswordScreen = ({navigation}: {navigation: any}) => {
         <Button
             label="Send"
             isActive={emailRegex.test(value)}
-            onPress={() => navigation.navigate('emailSentScreen')}
+            onPress={() => navigation.navigate("EmailSentScreen")}
         />
     </SafeAreaView>
   )
