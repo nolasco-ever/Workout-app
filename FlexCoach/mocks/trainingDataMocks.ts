@@ -145,12 +145,52 @@ export const mockDumbbellCurlData = [
 ];
 
 export const mockExercises = [
-    { name: "Overhead Barbell Press", completed: false, data: [{set: 1, weight: null, reps: null}] },
-    { name: "Bench Press", completed: false, data: [{set: 1, weight: null, reps: null}] },
-    { name: "Barbell Shrug", completed: false, data: [{set: 1, weight: null, reps: null}] },
-    { name: "Dumbbell Press", completed: false, data: [{set: 1, weight: null, reps: null}] },
-    { name: "Dumbbell Curl", completed: false, data: [{set: 1, weight: null, reps: null}] },
-    { name: "Incline Bench Dumbbell Row", completed: false, data: [{set: 1, weight: null, reps: null}] },
-    { name: "Tricep Extension", completed: false, data: [{set: 1, weight: null, reps: null}] },
-    { name: "Machine Fly", completed: false, data: [{set: 1, weight: null, reps: null}] },
+    { 
+        name: "Overhead Barbell Press",
+        description: "3 Sets | 10 Reps",
+        completed: false,
+        data: [{set: 1, weight: null, reps: null}]
+    },
+    { 
+        name: "Bench Press",
+        description: "3 Sets | 10 Reps",
+        completed: false,
+        data: [{set: 1, weight: null, reps: null}]
+    },
+    { 
+        name: "Barbell Shrug",
+        description: "3 Sets | 10 Reps",
+        completed: false,
+        data: [{set: 1, weight: null, reps: null}]
+    },
+    { 
+        name: "Dumbbell Press",
+        description: "3 Sets | 10 Reps",
+        completed: false,
+        data: [{set: 1, weight: null, reps: null}]
+    },
+    { 
+        name: "Dumbbell Curl",
+        description: "3 Sets | 10 Reps",
+        completed: false,
+        data: [{set: 1, weight: null, reps: null}]
+    },
+    { 
+        name: "Incline Bench Dumbbell Row",
+        description: "3 Sets | 10 Reps",
+        completed: false,
+        data: [{set: 1, weight: null, reps: null}]
+    },
+    { 
+        name: "Tricep Extension",
+        description: "3 Sets | 10 Reps",
+        completed: false,
+        data: [{set: 1, weight: null, reps: null}]
+    },
+    { 
+        name: "Machine Fly",
+        description: "3 Sets | 10 Reps",
+        completed: false,
+        data: [{set: 1, weight: null, reps: null}]
+    },
 ];
