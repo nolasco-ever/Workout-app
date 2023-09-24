@@ -13,10 +13,14 @@ import { HomeScreen } from './screens/HomeScreen';
 import { WorkoutHub } from './screens/WorkoutHub';
 import WorkoutLoggerScreen from './screens/WorkoutLoggerScreen';
 import { DietLogScreen } from './screens/DietLogScreen';
+import { WorkoutOverviewScreen } from './screens/WorkoutOverviewScreen';
+import { WorkoutProgressScreen } from './screens/WorkoutProgressScreen';
 
 export type HomeStackParams = {
     HomeScreen: undefined;
     WorkoutHubScreen: undefined;
+    WorkoutOverviewScreen: undefined;
+    WorkoutProgressScreen: undefined;
     WorkoutLoggerScreen: { exercise: any, completed?: any };
     DietLogScreen: undefined;
     AddDietEntryScreen: undefined;
@@ -48,8 +52,8 @@ export const HomeStack = () => {
                 }}
             />
             <Stack.Screen
-                name="WorkoutHubScreen"
-                component={WorkoutHub}
+                name="WorkoutOverviewScreen"
+                component={WorkoutOverviewScreen}
                 options={{
                     headerBackImage: () => (
                         <FontAwesomeIcon
@@ -59,7 +63,22 @@ export const HomeStack = () => {
                             style={{marginLeft: 10}}
                         />
                     ),
-                    ...getScreenHeaderOptions(appColors, `Today's Workout`)
+                    ...getScreenHeaderOptions(appColors, `Workout Overview`)
+                }}
+            />
+            <Stack.Screen
+                name="WorkoutProgressScreen"
+                component={WorkoutProgressScreen}
+                options={{
+                    headerBackImage: () => (
+                        <FontAwesomeIcon
+                            icon={directionIcons.angleLeft as IconProp}
+                            color={appColors.icon}
+                            size={25}
+                            style={{marginLeft: 10}}
+                        />
+                    ),
+                    ...getScreenHeaderOptions(appColors, `Workout Progress`)
                 }}
             />
             <Stack.Screen

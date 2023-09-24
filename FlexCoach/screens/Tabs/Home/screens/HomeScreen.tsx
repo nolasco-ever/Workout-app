@@ -47,7 +47,7 @@ export const HomeScreen = () => {
                   icon={generalIcons.dumbbell}
                   iconColor='#001f54'
                   label="Workouts"
-                  onPress={() => navigation.navigate("WorkoutHubScreen")}
+                  onPress={() => navigation.navigate("WorkoutOverviewScreen")}
               />
               <IconButton
                   icon={generalIcons.simpleChart}
