@@ -24,108 +24,111 @@ interface ListItemProps {
 }
 
 export const ListItem = ({
-  icon, 
-  iconSize=20,
-  iconPosition='middle', 
+  icon,
+  iconSize = 20,
+  iconPosition = 'middle',
   iconColor,
   rightIcon,
-  rightIconSize=20,
+  rightIconSize = 20,
   rightIconColor,
-  title, 
+  title,
   description,
   rightText,
-  topDivider=false, 
+  topDivider = false,
   onPress,
-  options
+  options,
 }: ListItemProps) => {
-    const appColors = colors();
-    const colorScheme = useColorScheme();
+  const appColors = colors();
+  const colorScheme = useColorScheme();
 
-    const { openModal, setModalVisible } = useModalContext();
+  const { openModal, setModalVisible } = useModalContext();
 
-    const ModalComponent = (options: ListItemProps[]) => {
-      return (
-        <View 
-          style={[
-            styles.modalContentContainer, 
-            {
-              backgroundColor: appColors.onBackground,
-              shadowColor: '#000000',
-              shadowOpacity: colorScheme === 'light' ? 0.1 : 0,
-              shadowOffset: {width: 1, height: 1}
-          }
-          ]}
-        >
-          <View style={{flexDirection: 'row', justifyContent: 'space-between', padding: 10}}>
-            <CustomText type='subheader'>Options</CustomText>
-            <TouchableOpacity onPress={() => setModalVisible(false)}>
-              <FontAwesomeIcon
-                icon={generalIcons.xMark}
-                color={appColors.icon}
-                size={20}
-              />
-            </TouchableOpacity>
-          </View>
-          {options.map((item, index) => (
-              <ListItem
-                  key={index}
-                  title={item.title}
-                  icon={item.icon}
-                  description={item.description}
-              />
-          ))}
-        </View>
-      );
-    }
-
+  const ModalComponent = (options: ListItemProps[]) => {
     return (
-      <TouchableOpacity
-        onPress={onPress} 
+      <View
         style={[
-          styles.container, 
+          styles.modalContentContainer,
           {
-            borderColor: appColors.inactive, 
-            borderTopWidth: topDivider ? 3 : 0,
-            alignItems: iconPosition === 'middle' ? 'center' : iconPosition === 'top' ? 'flex-start' : 'flex-end',
-          }
+            backgroundColor: appColors.onBackground,
+            shadowColor: '#000000',
+            shadowOpacity: colorScheme === 'light' ? 0.1 : 0,
+            shadowOffset: { width: 1, height: 1 },
+          },
         ]}
       >
-        {icon && 
-          <FontAwesomeIcon
-              icon={icon as IconProp}
-              color={iconColor ? iconColor : appColors.icon}
-              size={iconSize}
-              style={styles.iconContainer}
-          />
-        }
-        <View style={styles.textContainer}>
-          <Text style={[styles.title, {color: appColors.text}]}>{title}</Text>
-          {description && <Text style={[styles.description, {color: appColors.subtext}]}>{description}</Text>}
-        </View>
-        {rightText && (
-          <View style={styles.rightTextContainer}>
-            <Text style={[styles.rightText, {color: appColors.subtext}]}>{rightText}</Text>
-          </View>
-        )}
-        {rightIcon && 
-          <FontAwesomeIcon
-              icon={rightIcon as IconProp}
-              color={rightIconColor ? rightIconColor : appColors.icon}
-              size={rightIconSize}
-              style={styles.iconContainer}
-          />
-        }
-        {options && (
-          <TouchableOpacity onPress={() => openModal(ModalComponent(options))} style={styles.optionsButton}>
-            <FontAwesomeIcon
-              icon={generalIcons.ellipsisVertical}
-              color={appColors.icon}
-              size={20}
-            />
+        <View style={{ flexDirection: 'row', justifyContent: 'space-between', padding: 10 }}>
+          <CustomText type="subheader">Options</CustomText>
+          <TouchableOpacity onPress={() => setModalVisible(false)}>
+            <FontAwesomeIcon icon={generalIcons.xMark} color={appColors.icon} size={20} />
           </TouchableOpacity>
-        )}
-      </TouchableOpacity>
+        </View>
+        {options.map((item, index) => (
+          <ListItem
+            key={index}
+            title={item.title}
+            icon={item.icon}
+            description={item.description}
+          />
+        ))}
+      </View>
     );
+  };
+
+  return (
+    <TouchableOpacity
+      onPress={onPress}
+      style={[
+        styles.container,
+        {
+          borderColor: appColors.inactive,
+          borderTopWidth: topDivider ? 3 : 0,
+          alignItems:
+            iconPosition === 'middle'
+              ? 'center'
+              : iconPosition === 'top'
+              ? 'flex-start'
+              : 'flex-end',
+        },
+      ]}
+    >
+      {icon && (
+        <View style={[styles.iconContainer, { backgroundColor: '#fff', borderRadius: 20 }]}>
+          <FontAwesomeIcon
+            icon={icon as IconProp}
+            color={iconColor ? iconColor : appColors.icon}
+            size={iconSize}
+          />
+        </View>
+      )}
+      <View style={styles.textContainer}>
+        <Text style={[styles.title, { color: appColors.text }]}>{title}</Text>
+        {description && (
+          <Text style={[styles.description, { color: appColors.subtext }]}>{description}</Text>
+        )}
+      </View>
+      {rightText && (
+        <View style={styles.rightTextContainer}>
+          <Text style={[styles.rightText, { color: appColors.subtext }]}>{rightText}</Text>
+        </View>
+      )}
+      {rightIcon && (
+        <FontAwesomeIcon
+          icon={rightIcon as IconProp}
+          color={rightIconColor ? rightIconColor : appColors.icon}
+          size={rightIconSize}
+          style={styles.iconContainer}
+        />
+      )}
+      {options && (
+        <TouchableOpacity
+          onPress={() => openModal(ModalComponent(options))}
+          style={styles.optionsButton}
+        >
+          <FontAwesomeIcon icon={generalIcons.ellipsisVertical} color={appColors.icon} size={20} />
+        </TouchableOpacity>
+      )}
+    </TouchableOpacity>
+  );
 };
 
 const styles = StyleSheet.create({
@@ -149,17 +152,17 @@ const styles = StyleSheet.create({
     fontSize: 14,
   },
   rightTextContainer: {
-    marginLeft: 10
+    marginLeft: 10,
   },
   rightText: {
     fontSize: 12,
-    fontWeight: 'bold'
+    fontWeight: 'bold',
   },
   optionsButton: {
-    marginLeft: 10
+    marginLeft: 10,
   },
   modalContentContainer: {
     width: '100%',
-    borderRadius: 10
-  }
+    borderRadius: 10,
+  },
 });
