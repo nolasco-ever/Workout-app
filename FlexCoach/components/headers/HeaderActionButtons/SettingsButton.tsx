@@ -4,12 +4,12 @@ import { colors } from '../../../colors'
 import { NavigationProp, useNavigation } from '@react-navigation/native';
 import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
 import { generalIcons } from '../../icons/icon-library';
-import { ProfileTabParams } from '../../../screens/Tabs/Profile/ProfileStack';
+import { ProfileStackParams } from '../../../screens/Tabs/Profile/ProfileStack';
 
 export const SettingsButton = () => {
     const appColors = colors();
 
-    const navigation = useNavigation<NavigationProp<ProfileTabParams, "SettingsScreen">>();
+    const navigation = useNavigation<NavigationProp<ProfileStackParams, "SettingsScreen">>();
 
     return (
         <TouchableOpacity onPress={() => navigation.navigate('SettingsScreen')}>

@@ -82,7 +82,7 @@ export const ProfileStack = () => {
                     headerStyle: {backgroundColor: appColors.background},
                     headerTitleStyle: {color: appColors.text},
                     headerTitle: (route.params as { title: string }).title,
-                    headerBackTitleVisible: false,
+                    headerBackTitle: '',
                     headerBackImage: () => (
                         <FontAwesomeIcon
                             icon={directionIcons.angleLeft as IconProp} 

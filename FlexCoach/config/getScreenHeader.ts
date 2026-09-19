@@ -11,7 +11,7 @@ export const getScreenHeaderOptions = (appColors: any, screenName: any, ...props
         headerStyle: {backgroundColor:  appColors.background},
         headerTitleStyle: {color: appColors.text},
         headerTitle: screenName,
-        headerBackTitleVisible: false,
+        headerBackTitle: '',
         ...props
     }
 }

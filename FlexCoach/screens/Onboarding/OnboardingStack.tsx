@@ -69,7 +69,7 @@ export const OnboardingStack = () => {
                     headerStyle: {backgroundColor: appColors.background},
                     headerTitleStyle: {color: appColors.text},
                     headerTitle: "Create Your Profile",
-                    headerBackTitleVisible: false,
+                    headerBackTitle: '',
                     headerBackImage: () => (
                         <FontAwesomeIcon
                             icon={directionIcons.angleLeft as IconProp}
@@ -88,7 +88,7 @@ export const OnboardingStack = () => {
                     headerStyle: {backgroundColor: appColors.background},
                     headerTitleStyle: {color: appColors.text},
                     headerTitle: "Set Your Photo",
-                    headerBackTitleVisible: false,
+                    headerBackTitle: '',
                     headerBackImage: () => (
                         <FontAwesomeIcon
                             icon={directionIcons.angleLeft as IconProp}
@@ -107,7 +107,7 @@ export const OnboardingStack = () => {
                     headerStyle: {backgroundColor: appColors.background},
                     headerTitleStyle: {color: appColors.text},
                     headerTitle: "Design Your Plan",
-                    headerBackTitleVisible: false,
+                    headerBackTitle: '',
                     headerBackImage: () => (
                         <FontAwesomeIcon
                             icon={directionIcons.angleLeft as IconProp}

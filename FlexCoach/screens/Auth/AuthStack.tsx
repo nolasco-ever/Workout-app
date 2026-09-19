@@ -48,7 +48,7 @@ export const AuthStack = () => {
                     headerStyle: {backgroundColor: appColors.background},
                     headerTitleStyle: {color: appColors.text},
                     headerTitle: 'Sign Up',
-                    headerBackTitleVisible: false,
+                    headerBackTitle: '',
                     headerBackImage: () => (
                         <FontAwesomeIcon
                         icon={directionIcons.angleLeft as IconProp}
@@ -67,7 +67,7 @@ export const AuthStack = () => {
                     headerStyle: {backgroundColor: appColors.background},
                     headerTitleStyle: {color: appColors.text},
                     headerTitle: 'Reset Your Password',
-                    headerBackTitleVisible: false,
+                    headerBackTitle: '',
                     headerBackImage: () => (
                         <FontAwesomeIcon
                         icon={directionIcons.angleLeft as IconProp}

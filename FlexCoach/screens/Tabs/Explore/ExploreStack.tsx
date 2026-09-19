@@ -53,7 +53,7 @@ export const ExploreStack = () => {
                     headerStyle: {backgroundColor: appColors.background},
                     headerTitleStyle: {color: appColors.text, marginLeft: 10, marginRight: 10, fontSize: 16},
                     headerTitle: "Tutorial",
-                    headerBackTitleVisible: false,
+                    headerBackTitle: '',
                     headerBackImage: () => (
                         <FontAwesomeIcon
                             icon={directionIcons.angleLeft as IconProp} 
@@ -86,7 +86,7 @@ export const ExploreStack = () => {
                     headerStyle: {backgroundColor: appColors.background},
                     headerTitleStyle: {color: appColors.text, marginLeft: 10, marginRight: 10, fontSize: 16},
                     headerTitle: (route.params as { articleData: any }).articleData.title,
-                    headerBackTitleVisible: false,
+                    headerBackTitle: '',
                     headerBackImage: () => (
                         <FontAwesomeIcon
                             icon={directionIcons.angleLeft as IconProp} 
@@ -119,7 +119,7 @@ export const ExploreStack = () => {
                     headerStyle: {backgroundColor: appColors.background},
                     headerTitleStyle: {color: appColors.text},
                     headerTitle: (route.params as { title: string }).title,
-                    headerBackTitleVisible: false,
+                    headerBackTitle: '',
                     headerBackImage: () => (
                         <FontAwesomeIcon
                             icon={directionIcons.angleLeft as IconProp} 

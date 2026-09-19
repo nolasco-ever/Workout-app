@@ -41,7 +41,7 @@ export const SearchBar = ({
 
     const [isFocused, setIsFocused] = useState<boolean>(false);
     const [animateCancel, setAnimateCancel] = useState<boolean>(false);
-    const inputRef = useRef<TextInput>(null);
+    const inputRef = useRef<any>(null);
 
     const toggleFocus = () => {
         inputRef.current?.blur();

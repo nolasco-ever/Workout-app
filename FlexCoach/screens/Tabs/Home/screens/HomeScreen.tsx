@@ -24,7 +24,7 @@ export const HomeScreen = () => {
 
     const [refreshing, setRefreshing] = useState(false);
 
-    const scrollViewRef = useRef<ScrollView>(null);
+    const scrollViewRef = useRef<any>(null);
     useScrollToTop(scrollViewRef);
 
     return (

@@ -48,7 +48,7 @@ export const AppStack = () => {
                     headerShown: true,
                     headerStyle: {backgroundColor:  appColors.background},
                     headerTitleStyle: {color: appColors.text},
-                    headerBackTitleVisible: false,
+                    headerBackTitle: '',
                     headerTitle: 'Notifications',
                     headerBackImage: () => (
                         <FontAwesomeIcon

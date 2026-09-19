@@ -45,7 +45,7 @@ export const CustomTrainingProgramStack = () => {
                         headerStyle: {backgroundColor: appColors.background},
                         headerTitleStyle: {color: appColors.text},
                         headerTitle: screen.name,
-                        headerBackTitleVisible: false,
+                        headerBackTitle: '',
                         headerBackImage: () => index === 0 ? (
                             <FontAwesomeIcon
                                 icon={generalIcons.xMark}
@@ -73,7 +73,7 @@ export const CustomTrainingProgramStack = () => {
                     headerStyle: {backgroundColor: appColors.background},
                     headerTitleStyle: {color: appColors.text},
                     headerTitle: 'Tutorial Screen',
-                    headerBackTitleVisible: false,
+                    headerBackTitle: '',
                     headerBackImage: () => (
                         <FontAwesomeIcon
                             icon={generalIcons.xMark as IconProp}

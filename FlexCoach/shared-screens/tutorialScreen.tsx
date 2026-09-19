@@ -52,7 +52,7 @@ export const TutorialScreen = ({route}: {route: any}) => {
           headerStyle: {backgroundColor: appColors.background},
           headerTitleStyle: {color: appColors.text},
           headerTitle: 'Step-by-step',
-          headerBackTitleVisible: false,
+          headerBackTitle: '',
           headerBackImage: () => (
             <FontAwesomeIcon
               icon={generalIcons.xMark}

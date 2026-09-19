@@ -81,7 +81,7 @@ export const CustomGraph = ({yAxisData, xAxisLabels, type, title}: CustomGraphPr
     }
 
     const [popUpState, setPopUpState] = useState({visible: false, index: 0});
-    const scrollViewRef: React.LegacyRef<ScrollView> = useRef(null)
+    const scrollViewRef = useRef<any>(null)
 
     return (
         <View

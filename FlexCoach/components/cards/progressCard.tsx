@@ -33,7 +33,7 @@ export const ProgressCard: React.FC<ProgressCardProps> = ({
 
     const titleStyle = {
       fontSize: type === 'bar' ? 16 : 18,
-      fontWeight: 'bold',
+      fontWeight: 'bold' as const,
       marginBottom: type === 'bar' ? 5 : 10,
       color: appColors.text
     }
