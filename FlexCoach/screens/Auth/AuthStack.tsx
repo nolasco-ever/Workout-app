@@ -8,7 +8,7 @@ import { directionIcons, generalIcons } from '../../components/icons/icon-librar
 import { IconProp } from '@fortawesome/fontawesome-svg-core';
 import MessageScreen from '../../shared-screens/messageScreen';
 import { emailSentAniamtion } from '../../animations/auth-flow';
-import { NavigationProp, StackActions, useNavigation } from '@react-navigation/native';
+import { NavigationProp } from '@react-navigation/native';
 import { SignInScreen } from './screens/SignInScreen';
 import { SignUpScreen } from './screens/SignUpScreen';
 import { ForgotPasswordScreen } from './screens/ForgotPasswordScreen';
@@ -29,8 +29,6 @@ export type AuthStackParams = {
 const Stack = createStackNavigator<AuthStackParams>();
 
 export const AuthStack = () => {
-    const navigation = useNavigation<NavigationProp<AuthStackParams>>();
-
     const appColors = colors();
 
     return (
@@ -89,7 +87,7 @@ export const AuthStack = () => {
                     message: 'Check your inbox for instructions on resetting your password',
                     image: emailSentAniamtion,
                     buttonTitle: 'Finish',
-                    buttonAction: () => navigation.dispatch(StackActions.popToTop())
+                    popToTop: true
                 }}
             />
         </Stack.Navigator>

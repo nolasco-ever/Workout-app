@@ -4,13 +4,26 @@ import { colors } from '../colors';
 import { AnimatedImage } from '../components/utils/AnimatedImage';
 import { CustomText } from '../components/text/customText';
 import { Button } from '../components/buttons/button';
-import { NavigationProp, useNavigation } from '@react-navigation/native';
-import { AppStackParams } from '../appNavigators/AppStack';
+import { CommonActions, StackActions, useNavigation } from '@react-navigation/native';
 
 const MessageScreen = ({route}: {route: any}) => {
-    const navigation = useNavigation<NavigationProp<AppStackParams>>();
-    const {title, message, image, imageLoop, buttonTitle, buttonAction} = route.params;
+    const navigation = useNavigation<any>();
+    const {title, message, image, imageLoop, buttonTitle, buttonAction, navigateTo, replaceWith, popToTop} = route.params;
     const appColors = colors();
+
+    const handlePress = () => {
+        if (buttonAction) {
+            buttonAction();
+        } else if (popToTop) {
+            navigation.dispatch(StackActions.popToTop());
+        } else if (replaceWith) {
+            navigation.dispatch(StackActions.replace(replaceWith));
+        } else if (navigateTo) {
+            navigation.navigate(navigateTo);
+        } else {
+            navigation.navigate('TabNavigator');
+        }
+    };
 
     return (
         <SafeAreaView style={[styles.container, {backgroundColor: appColors.background}]}>
@@ -25,7 +38,7 @@ const MessageScreen = ({route}: {route: any}) => {
             </View>
             <Button
                 label={buttonTitle}
-                onPress={buttonAction ? buttonAction : () => navigation.navigate('TabNavigator')}
+                onPress={handlePress}
             />
         </SafeAreaView>
     )

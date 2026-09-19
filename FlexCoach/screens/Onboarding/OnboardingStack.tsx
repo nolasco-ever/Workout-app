@@ -12,8 +12,6 @@ import { successCheckAnimation } from '../../animations/shared';
 import { UserProfileInfoScreen } from './screens/UserProfileInfoScreen';
 import { SetProfilePhotoScreen } from './screens/SetProfilePhotoScreen';
 import { DesignYourPlanScreen } from './screens/DesignYourPlanScreen';
-import { NavigationProp, StackActions, useNavigation } from '@react-navigation/native';
-
 export type OnboardingStackParams = {
     WelcomeScreen: {
         title: string;
@@ -21,7 +19,7 @@ export type OnboardingStackParams = {
         image: any;
         imageLoop: boolean;
         buttonTitle: string;
-        buttonAction: () => void;
+        navigateTo?: string;
     } | undefined;
     UserProfileInfoScreen: undefined;
     SetProfilePhotoScreen: undefined;
@@ -32,15 +30,13 @@ export type OnboardingStackParams = {
         image: any;
         imageLoop: boolean;
         buttonTitle: string;
-        buttonAction: () => void;
+        replaceWith?: string;
     } | undefined;
 }
 
 const Stack = createStackNavigator<OnboardingStackParams>();
 
 export const OnboardingStack = () => {
-    const navigation = useNavigation<NavigationProp<OnboardingStackParams>>();
-
     const appColors = colors();
 
 
@@ -58,7 +54,7 @@ export const OnboardingStack = () => {
                     image: introScreenAnimation,
                     imageLoop: true,
                     buttonTitle: 'Start',
-                    buttonAction: () => navigation.navigate('UserProfileInfoScreen')
+                    navigateTo: 'UserProfileInfoScreen'
                 }}
             />
             <Stack.Screen
@@ -130,7 +126,7 @@ export const OnboardingStack = () => {
                     image: successCheckAnimation,
                     imageLoop: false,
                     buttonTitle: 'Finish',
-                    buttonAction: () => navigation.dispatch(StackActions.replace('TabNavigator'))
+                    replaceWith: 'TabNavigator'
                 }}
             />
         </Stack.Navigator>
