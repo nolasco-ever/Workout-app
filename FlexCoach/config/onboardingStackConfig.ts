@@ -1,4 +1,3 @@
-import { CustomTrainingProgramStack } from "../Flows/create-custom-training-program/CustomTrainingProgramStack";
 import { DesignYourPlanScreen } from "../screens/Onboarding/screens/DesignYourPlanScreen";
 import { SetProfilePhotoScreen } from "../screens/Onboarding/screens/SetProfilePhotoScreen";
 import { UserProfileInfoScreen } from "../screens/Onboarding/screens/UserProfileInfoScreen";

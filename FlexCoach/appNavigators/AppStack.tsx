@@ -6,7 +6,7 @@ import { NotificationsScreen } from '../screens/Tabs/Home/screens/NotificationsS
 import { Icon } from '../components/icons/Icon';
 import { directionIcons } from '../components/icons/icon-library';
 import { colors } from '../colors';
-import { CustomTrainingProgramStack } from '../Flows/create-custom-training-program/CustomTrainingProgramStack';
+import { PlansStack } from '../screens/Plans/PlansStack';
 import { AuthStack } from '../screens/Auth/AuthStack';
 import { OnboardingStack } from '../screens/Onboarding/OnboardingStack';
 import { devFlags } from '../dev/flags';
@@ -18,7 +18,7 @@ export type AppStackParams = {
     OnboardingStack: undefined;
     TabNavigator: undefined;
     NotificationsScreen: undefined;
-    CustomTrainingProgramStack: undefined;
+    PlansStack: undefined;
 }
 
 export const AppStack = () => {
@@ -62,8 +62,8 @@ export const AppStack = () => {
                 }}
             />
             <Stack.Screen
-                name='CustomTrainingProgramStack'
-                component={CustomTrainingProgramStack}
+                name='PlansStack'
+                component={PlansStack}
                 options={{
                     headerShown: false,
                     ...TransitionPresets.ModalSlideFromBottomIOS

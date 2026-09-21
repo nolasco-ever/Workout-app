@@ -51,6 +51,7 @@ export const rotationPlan = (): Plan => ({
   name: 'PPL',
   description: null,
   status: 'active',
+  goal: 'hypertrophy',
   workouts: [
     { id: 'push', name: 'Push', order: 0, exercises: [] },
     { id: 'pull', name: 'Pull', order: 1, exercises: [] },

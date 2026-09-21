@@ -1,13 +1,17 @@
 import React from 'react';
 import { Image, ScrollView, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { RouteProp, useRoute } from '@react-navigation/native';
+import { RouteProp, useNavigation, useRoute } from '@react-navigation/native';
+import { StackNavigationProp } from '@react-navigation/stack';
+import { newEntry } from '../../../../data/services/planService';
+import { usePlanEditor } from '../../../Plans/PlanEditorContext';
+import { PrimaryButton } from '../../../../components/buttons/PrimaryButton';
+import { generalIcons } from '../../../../components/icons/icon-library';
 import { getCatalogExercise } from '../../../../data/catalog/exerciseCatalog';
 import { MuscleMap } from '../../../../components/anatomy/MuscleMap';
 import { CustomText } from '../../../../components/text/customText';
 import { useTheme } from '../../../../theme';
-import { WorkoutStackParams } from '../WorkoutStack';
-import { Card } from '../components/Card';
+import { SurfaceCard as Card } from '../../../../components/cards/SurfaceCard';
 
 const title = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
 
@@ -25,9 +29,23 @@ const Chip = ({ label }: { label: string }) => {
  * photos, and step-by-step instructions. Video comes later.
  */
 export const ExerciseDetailScreen = () => {
-  const { params } = useRoute<RouteProp<WorkoutStackParams, 'ExerciseDetailScreen'>>();
+  const { params } = useRoute<RouteProp<{ ExerciseDetailScreen: { exerciseId: string; addToWorkoutId?: string } }, 'ExerciseDetailScreen'>>();
+  const navigation = useNavigation<StackNavigationProp<Record<string, object | undefined>>>();
   const { colors, spacing, radius } = useTheme();
   const ex = getCatalogExercise(params.exerciseId);
+  const editor = usePlanEditor();
+  const targetWorkout = params.addToWorkoutId ? editor.draft?.workouts.find(w => w.id === params.addToWorkoutId) : undefined;
+  const alreadyAdded = !!targetWorkout && !!ex && targetWorkout.exercises.some(e => e.exerciseId === ex.id);
+
+  const addToWorkout = () => {
+    if (!ex || !targetWorkout) return;
+    editor.update(p => ({
+      ...p,
+      workouts: p.workouts.map(w => (w.id === targetWorkout.id ? { ...w, exercises: [...w.exercises, newEntry(ex, w.exercises.length, p.goal)] } : w)),
+    }));
+    // Pop the detail screen and the picker beneath it, back to the workout editor.
+    navigation.pop(2);
+  };
 
   if (!ex) {
     return (
@@ -94,6 +112,11 @@ export const ExerciseDetailScreen = () => {
           </Card>
         </View>
       </ScrollView>
+      {targetWorkout && (
+        <View style={{ padding: spacing.lg, borderTopWidth: 1, borderTopColor: colors.line }}>
+          <PrimaryButton label={alreadyAdded ? `Already in ${targetWorkout.name}` : `Add to ${targetWorkout.name}`} icon={generalIcons.plus} disabled={alreadyAdded} onPress={addToWorkout} />
+        </View>
+      )}
     </SafeAreaView>
   );
 };

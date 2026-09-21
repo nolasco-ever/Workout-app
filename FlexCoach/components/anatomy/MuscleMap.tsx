@@ -53,7 +53,7 @@ interface Props {
   views?: 'both' | 'auto';
 }
 
-export const MuscleMap = ({ primary, secondary = [], height = 200, views = 'both' }: Props) => {
+const MuscleMapInner = ({ primary, secondary = [], height = 200, views = 'both' }: Props) => {
   const { colors, spacing, isDark } = useTheme();
   const scale = height / NATURAL_HEIGHT;
 
@@ -95,3 +95,7 @@ export const MuscleMap = ({ primary, secondary = [], height = 200, views = 'both
     </View>
   );
 };
+
+export const MuscleMap = React.memo(MuscleMapInner, (a, b) =>
+  a.height === b.height && a.views === b.views && a.primary.join() === b.primary.join() && (a.secondary ?? []).join() === (b.secondary ?? []).join(),
+);

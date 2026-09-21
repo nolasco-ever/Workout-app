@@ -6,6 +6,7 @@ import { useTheme } from '../../../theme';
 import { Icon } from '../../../components/icons/Icon';
 import { directionIcons, generalIcons } from '../../../components/icons/icon-library';
 import { NavigationHeader } from '../../../components/headers/NavigationHeader';
+import { PlansButton } from '../../../components/headers/HeaderActionButtons/PlansButton';
 import { WorkoutHomeScreen } from './screens/WorkoutHomeScreen';
 import { WorkoutPreviewScreen } from './screens/WorkoutPreviewScreen';
 import { SessionScreen } from './screens/SessionScreen';
@@ -39,7 +40,7 @@ export const WorkoutStack = () => {
 
   return (
     <Stack.Navigator>
-      <Stack.Screen name="WorkoutHomeScreen" component={WorkoutHomeScreen} options={{ header: () => <NavigationHeader title="Workout" /> }} />
+      <Stack.Screen name="WorkoutHomeScreen" component={WorkoutHomeScreen} options={{ header: () => <NavigationHeader title="Workout" navigationButtons={[<PlansButton key="plans" />]} /> }} />
       <Stack.Screen
         name="WorkoutPreviewScreen"
         component={WorkoutPreviewScreen}

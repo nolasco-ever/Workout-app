@@ -15,7 +15,7 @@ import { Icon } from '../../../../components/icons/Icon';
 import { directionIcons, generalIcons } from '../../../../components/icons/icon-library';
 import { useTheme } from '../../../../theme';
 import { WorkoutStackParams } from '../WorkoutStack';
-import { PrimaryButton } from '../components/PrimaryButton';
+import { PrimaryButton } from '../../../../components/buttons/PrimaryButton';
 import { MuscleMap } from '../../../../components/anatomy/MuscleMap';
 import { RestTimer } from '../components/RestTimer';
 import { SetDraft, SetRow } from '../components/SetRow';

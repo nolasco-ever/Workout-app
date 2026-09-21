@@ -8,13 +8,14 @@ import { Occurrence } from '../../../../data/models';
 import { findWorkout } from '../../../../data/engine/schedule';
 import { fromLocalDate } from '../../../../data/engine/dates';
 import { pushWorkoutTo, seedSamplePlan, skipWorkout, startSession } from '../../../../data/services/workoutService';
+import { startFreshCycle } from '../../../../data/services/planService';
 import { CustomText } from '../../../../components/text/customText';
 import { Icon } from '../../../../components/icons/Icon';
 import { generalIcons } from '../../../../components/icons/icon-library';
 import { useTheme } from '../../../../theme';
 import { WorkoutStackParams } from '../WorkoutStack';
-import { Card } from '../components/Card';
-import { PrimaryButton } from '../components/PrimaryButton';
+import { SurfaceCard as Card } from '../../../../components/cards/SurfaceCard';
+import { PrimaryButton } from '../../../../components/buttons/PrimaryButton';
 import { OccurrenceRow } from '../components/OccurrenceRow';
 import { AppStackParams } from '../../../../appNavigators/AppStack';
 import { devFlags } from '../../../../dev/flags';
@@ -56,6 +57,19 @@ export const WorkoutHomeScreen = () => {
 
   const { plan, cycle } = state;
 
+  if (plan && !cycle) {
+    return (
+      <SafeAreaView edges={['left', 'right']} style={{ flex: 1, backgroundColor: colors.ground }}>
+        <View style={{ flex: 1, padding: spacing.xl, justifyContent: 'center', gap: spacing.lg }}>
+          <CustomText variant="overline" color={colors.inkMuted}>{plan.name}</CustomText>
+          <CustomText variant="title">Ready when you are</CustomText>
+          <CustomText variant="body" color={colors.inkMuted}>This plan is active but has no cycle running. Start one and today's workout appears here.</CustomText>
+          <PrimaryButton label="Start cycle" busy={busy === 'cycle'} onPress={() => run('cycle', async () => { if (uid) await startFreshCycle(uid, plan); })} />
+        </View>
+      </SafeAreaView>
+    );
+  }
+
   if (!plan || !cycle) {
     return (
       <SafeAreaView edges={['left', 'right']} style={{ flex: 1, backgroundColor: colors.ground }}>
@@ -67,16 +81,8 @@ export const WorkoutHomeScreen = () => {
           </CustomText>
           <PrimaryButton
             label="Create a plan"
-            onPress={() => (navigation as unknown as NavigationProp<AppStackParams>).navigate('CustomTrainingProgramStack')}
+            onPress={() => (navigation as unknown as NavigationProp<AppStackParams>).navigate('PlansStack')}
           />
-          {__DEV__ && uid && (
-            <PrimaryButton
-              label="Use sample Push Pull Legs plan (dev)"
-              variant="outline"
-              busy={busy === 'seed'}
-              onPress={() => run('seed', async () => { await seedSamplePlan(uid); })}
-            />
-          )}
         </View>
       </SafeAreaView>
     );

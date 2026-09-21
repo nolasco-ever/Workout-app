@@ -1,6 +1,6 @@
 import { paths } from '../firebase/paths';
 import { Id, Plan } from '../models';
-import { listDocs, orderBy, patchDoc, readDoc, touch, watchDoc, watchDocs, where, writeDoc, Unsubscribe } from './base';
+import { listDocs, orderBy, patchDoc, readDoc, removeDoc, touch, watchDoc, watchDocs, where, writeDoc, Unsubscribe } from './base';
 import { userRepository } from './userRepository';
 
 export const planRepository = {
@@ -19,8 +19,9 @@ export const planRepository = {
   save: (uid: Id, plan: Plan) => writeDoc(paths.plan(uid, plan.id), touch(plan)),
 
   /**
-   * Make a plan the active one. Any previously active plan is archived,
-   * since only one plan can be active at a time.
+   * Make a plan the active one. Only one plan can be active, so any other
+   * active plan becomes inactive (status 'draft'); archiving is a separate,
+   * deliberate action.
    */
   activate: async (uid: Id, planId: Id): Promise<void> => {
     const active = await listDocs<Plan>(paths.plans(uid), where('status', '==', 'active'));
@@ -28,11 +29,15 @@ export const planRepository = {
     await Promise.all(
       active
         .filter(p => p.id !== planId)
-        .map(p => patchDoc<Plan>(paths.plan(uid, p.id), { status: 'archived', archivedAt: now, updatedAt: now })),
+        .map(p => patchDoc<Plan>(paths.plan(uid, p.id), { status: 'draft', updatedAt: now })),
     );
     await patchDoc<Plan>(paths.plan(uid, planId), { status: 'active', archivedAt: null, updatedAt: now });
     await userRepository.update(uid, { activePlanId: planId });
   },
+
+  unarchive: (uid: Id, planId: Id) => patchDoc<Plan>(paths.plan(uid, planId), { status: 'draft', archivedAt: null, updatedAt: Date.now() }),
+
+  remove: (uid: Id, planId: Id) => removeDoc(paths.plan(uid, planId)),
 
   archive: async (uid: Id, planId: Id): Promise<void> => {
     const now = Date.now();

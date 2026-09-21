@@ -79,7 +79,17 @@ export interface WeeklySchedule {
 
 export type Schedule = RotationSchedule | WeeklySchedule;
 
+/** 'draft' also covers a finished plan that is simply not the active one. */
 export type PlanStatus = 'draft' | 'active' | 'archived';
+
+/** Sets the default sets and rep range for exercises added to the plan. */
+export type PlanGoal = 'strength' | 'hypertrophy' | 'endurance';
+
+export const GOAL_DEFAULTS: Record<PlanGoal, { sets: number; repRangeMin: number; repRangeMax: number; restSec: number }> = {
+  strength: { sets: 4, repRangeMin: 4, repRangeMax: 6, restSec: 150 },
+  hypertrophy: { sets: 3, repRangeMin: 8, repRangeMax: 12, restSec: 90 },
+  endurance: { sets: 3, repRangeMin: 12, repRangeMax: 15, restSec: 60 },
+};
 
 /** Stored at users/{uid}/plans/{planId}. Workouts are embedded. */
 export interface Plan extends BaseDocument {
@@ -87,6 +97,7 @@ export interface Plan extends BaseDocument {
   name: string;
   description: string | null;
   status: PlanStatus;
+  goal: PlanGoal | null;
   workouts: Workout[];
   schedule: Schedule;
   /** Set when this plan was copied from a buddy's plan. */

@@ -9,8 +9,8 @@ import { getCycleReview, startNextCycle } from '../../../../data/services/workou
 import { CustomText } from '../../../../components/text/customText';
 import { useTheme } from '../../../../theme';
 import { WorkoutStackParams } from '../WorkoutStack';
-import { Card } from '../components/Card';
-import { PrimaryButton } from '../components/PrimaryButton';
+import { SurfaceCard as Card } from '../../../../components/cards/SurfaceCard';
+import { PrimaryButton } from '../../../../components/buttons/PrimaryButton';
 
 const Stat = ({ label, value, tone }: { label: string; value: string; tone?: string }) => {
   const { colors } = useTheme();

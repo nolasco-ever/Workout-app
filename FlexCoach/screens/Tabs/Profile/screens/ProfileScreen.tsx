@@ -73,10 +73,10 @@ export const ProfileScreen = () => {
         </Section>
         <View style={{marginTop: 10}}>
           <ListItem
-              title="Set Your Goals"
-              icon={generalIcons.plus}
-              description='Create a new training plan'
-              onPress={() => (navigation as NavigationProp<AppStackParams>).navigate('CustomTrainingProgramStack')}
+              title="My plans"
+              icon={generalIcons.dumbbell}
+              description='Create, edit, and switch workout plans'
+              onPress={() => (navigation as NavigationProp<AppStackParams>).navigate('PlansStack')}
               topDivider={true}
           />
           <ListItem

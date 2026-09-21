@@ -1,4 +1,5 @@
 import React from 'react';
+import { LogBox } from 'react-native';
 import { DarkTheme, DefaultTheme, NavigationContainer } from '@react-navigation/native';
 import { AppStack } from './appNavigators/AppStack';
 import { ThemeProvider } from './packages/core-contexts/theme-context';
@@ -6,7 +7,12 @@ import { ModalProvider } from './packages/core-contexts/modal-context';
 import { CustomModal } from './packages/core-components/Modal/CustomModal';
 import { AuthProvider } from './data/auth/AuthProvider';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { useTheme } from './theme';
+
+// react-native-sortables passes dependency arrays to Reanimated hooks (meant
+// for web); Reanimated 4.7 warns about it on native. Harmless, and not ours.
+LogBox.ignoreLogs(['[Reanimated] Dependencies should only be used on the web']);
 
 /** Sits inside ThemeProvider so the navigation container can read the tokens. */
 const Navigation = () => {
@@ -34,6 +40,7 @@ const Navigation = () => {
 const App = () => {
 
   return (
+    <GestureHandlerRootView style={{ flex: 1 }}>
     <SafeAreaProvider>
       <AuthProvider>
       <ThemeProvider appTheme='system'>
@@ -44,6 +51,7 @@ const App = () => {
       </ThemeProvider>
       </AuthProvider>
     </SafeAreaProvider>
+    </GestureHandlerRootView>
   );
 };
 

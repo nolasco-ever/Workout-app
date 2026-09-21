@@ -9,8 +9,8 @@ import { Icon } from '../../../../components/icons/Icon';
 import { generalIcons } from '../../../../components/icons/icon-library';
 import { useTheme } from '../../../../theme';
 import { WorkoutStackParams } from '../WorkoutStack';
-import { Card } from '../components/Card';
-import { PrimaryButton } from '../components/PrimaryButton';
+import { SurfaceCard as Card } from '../../../../components/cards/SurfaceCard';
+import { PrimaryButton } from '../../../../components/buttons/PrimaryButton';
 
 const Stat = ({ label, value }: { label: string; value: string }) => {
   const { colors } = useTheme();

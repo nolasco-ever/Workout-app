@@ -17,8 +17,8 @@ import { Icon } from '../../../../components/icons/Icon';
 import { generalIcons } from '../../../../components/icons/icon-library';
 import { useTheme } from '../../../../theme';
 import { WorkoutStackParams } from '../WorkoutStack';
-import { Card } from '../components/Card';
-import { PrimaryButton } from '../components/PrimaryButton';
+import { SurfaceCard as Card } from '../../../../components/cards/SurfaceCard';
+import { PrimaryButton } from '../../../../components/buttons/PrimaryButton';
 
 const describeTarget = (entry: WorkoutExercise, t: SetTarget, unit: 'kg' | 'lb', dist: 'km' | 'mi'): string => {
   switch (entry.measurement) {

@@ -26,11 +26,11 @@ import {
 import { buildPlannedSets, suggestTarget } from '../engine/progression';
 import { currentStreakDays, findPersonalRecords, summarizeCycle, totalVolumeKg } from '../engine/stats';
 import { cycleRepository } from '../repositories/cycleRepository';
-import { planRepository } from '../repositories/planRepository';
 import { sessionRepository } from '../repositories/sessionRepository';
 import { userRepository } from '../repositories/userRepository';
 import { achievementRepository } from '../repositories/achievementRepository';
 import { buildSamplePlan } from './samplePlan';
+import { activatePlan } from './planService';
 
 /**
  * Use-case layer for the Workout tab. Screens call these; they compose the
@@ -40,18 +40,9 @@ import { buildSamplePlan } from './samplePlan';
 
 const laterOf = (a: LocalDate, b: LocalDate): LocalDate => (a > b ? a : b);
 
-export const activatePlan = async (uid: Id, plan: Plan): Promise<Cycle> => {
-  await planRepository.activate(uid, plan.id);
-  const cycle = generateCycle(plan, uid, 1, today());
-  await cycleRepository.save(uid, cycle);
-  await userRepository.update(uid, { activePlanId: plan.id, activeCycleId: cycle.id });
-  return cycle;
-};
-
 /** Development helper: write and activate the sample plan for this user. */
 export const seedSamplePlan = async (uid: Id): Promise<{ plan: Plan; cycle: Cycle }> => {
   const plan = buildSamplePlan(uid);
-  await planRepository.save(uid, plan);
   const cycle = await activatePlan(uid, plan);
   return { plan, cycle };
 };

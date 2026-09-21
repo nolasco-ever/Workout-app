@@ -25,7 +25,7 @@ export const DesignYourPlanScreen = () => {
                 <ListItem
                     title='Create Your Custom Training Program'
                     rightIcon={directionIcons.angleRight}
-                    onPress={() => (navigation as NavigationProp<AppStackParams>).navigate('CustomTrainingProgramStack')}
+                    onPress={() => (navigation as NavigationProp<AppStackParams>).navigate('PlansStack')}
                 />
             </View>
             <View style={styles.buttonsContainer}>

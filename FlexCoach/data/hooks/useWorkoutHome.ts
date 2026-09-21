@@ -18,6 +18,8 @@ export interface WorkoutHomeState {
   inProgressSession: Session | null;
   /** Every workout in the cycle has been resolved, or the end date has passed. */
   cycleFinished: boolean;
+  /** An active plan with no live cycle, e.g. after an interrupted activation. */
+  needsCycle: boolean;
 }
 
 /**
@@ -31,7 +33,7 @@ export const useWorkoutHome = (): WorkoutHomeState => {
 
   const [plan, setPlan] = useState<Plan | null>(null);
   const [planLoaded, setPlanLoaded] = useState(false);
-  const [cycle, setCycle] = useState<Cycle | null>(null);
+  const [rawCycle, setCycle] = useState<Cycle | null>(null);
   const [cycleLoaded, setCycleLoaded] = useState(false);
   const [inProgress, setInProgress] = useState<Session[]>([]);
 
@@ -69,6 +71,8 @@ export const useWorkoutHome = (): WorkoutHomeState => {
   const todayDate = today();
 
   return useMemo(() => {
+    const cycleMatches = !!rawCycle && !!plan && rawCycle.planId === plan.id && rawCycle.status === 'active';
+    const cycle = cycleMatches ? rawCycle : null;
     const overdue = cycle ? getOverdueOccurrences(cycle, todayDate) : [];
     const todayOccurrence = cycle ? getOccurrenceForDate(cycle, todayDate) ?? null : null;
     const upcoming = cycle ? getUpcomingOccurrences(cycle, todayDate) : [];
@@ -83,6 +87,7 @@ export const useWorkoutHome = (): WorkoutHomeState => {
       upcoming,
       inProgressSession: inProgress.find(s => s.cycleId === cycle?.id) ?? inProgress[0] ?? null,
       cycleFinished: cycle ? isCycleFinished(cycle, todayDate) || allResolved : false,
+      needsCycle: !!plan && plan.status === 'active' && !cycle,
     };
-  }, [ready, planLoaded, cycleLoaded, plan, cycle, todayDate, inProgress]);
+  }, [ready, planLoaded, cycleLoaded, plan, rawCycle, todayDate, inProgress]);
 };

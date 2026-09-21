@@ -1,8 +1,8 @@
 import React from 'react';
 import { ActivityIndicator, TouchableOpacity, View } from 'react-native';
-import { CustomText } from '../../../../components/text/customText';
-import { Icon, IconSource } from '../../../../components/icons/Icon';
-import { useTheme } from '../../../../theme';
+import { CustomText } from '../text/customText';
+import { Icon, IconSource } from '../icons/Icon';
+import { useTheme } from '../../theme';
 
 interface Props {
   label: string;

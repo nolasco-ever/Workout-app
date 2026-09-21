@@ -69,6 +69,7 @@ export const buildSamplePlan = (ownerId: Id): Plan => {
     name: 'Push Pull Legs',
     description: 'Sample plan. Three training days then a rest day, repeating.',
     status: 'draft',
+    goal: 'hypertrophy',
     workouts: [push, pull, legs],
     schedule: { mode: 'rotation', slots: [push.id, pull.id, legs.id, null], passesPerCycle: 3 },
     sharedFrom: null,
