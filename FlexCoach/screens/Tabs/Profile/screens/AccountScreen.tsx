@@ -1,0 +1,97 @@
+import React, { useState } from 'react';
+import { Alert, KeyboardAvoidingView, Platform, ScrollView, View } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { useAuth } from '../../../../data/auth/AuthProvider';
+import { authService } from '../../../../data/auth/authService';
+import { CustomText } from '../../../../components/text/customText';
+import { SurfaceCard } from '../../../../components/cards/SurfaceCard';
+import { Row } from '../../../../components/list-items/Row';
+import { TextField } from '../../../../components/inputs/TextField';
+import { PrimaryButton } from '../../../../components/buttons/PrimaryButton';
+import { useTheme } from '../../../../theme';
+
+const providerLabel = { password: 'Email and password', google: 'Google', apple: 'Apple', anonymous: 'No account' } as const;
+
+export const AccountScreen = () => {
+  const { colors, spacing } = useTheme();
+  const { user, profile } = useAuth();
+  const provider = profile?.authProvider ?? 'anonymous';
+  const [current, setCurrent] = useState('');
+  const [next, setNext] = useState('');
+  const [busy, setBusy] = useState<string | null>(null);
+  const [message, setMessage] = useState<{ tone: 'ok' | 'error'; text: string } | null>(null);
+
+  const changePassword = async () => {
+    setBusy('password');
+    setMessage(null);
+    try {
+      await authService.changePassword(current, next);
+      setCurrent('');
+      setNext('');
+      setMessage({ tone: 'ok', text: 'Password updated.' });
+    } catch (err) {
+      setMessage({ tone: 'error', text: err instanceof Error ? err.message : 'Something went wrong.' });
+    } finally {
+      setBusy(null);
+    }
+  };
+
+  const deleteAccount = () => {
+    const proceed = (password?: string) =>
+      Alert.alert('Delete your account?', 'Your plans, sessions, weigh-ins, and profile are erased. This cannot be undone.', [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Delete everything',
+          style: 'destructive',
+          onPress: async () => {
+            setBusy('delete');
+            try {
+              await authService.deleteAccount(password);
+            } catch (err) {
+              Alert.alert("Couldn't delete the account", err instanceof Error ? err.message : 'Try again.');
+            } finally {
+              setBusy(null);
+            }
+          },
+        },
+      ]);
+    if (provider === 'password') {
+      Alert.prompt('Confirm your password', 'For safety, enter your password to delete the account.', [
+        { text: 'Cancel', style: 'cancel' },
+        { text: 'Continue', onPress: pw => proceed(pw) },
+      ], 'secure-text');
+    } else {
+      proceed();
+    }
+  };
+
+  return (
+    <SafeAreaView edges={['bottom', 'left', 'right']} style={{ flex: 1, backgroundColor: colors.ground }}>
+      <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={{ flex: 1 }} keyboardVerticalOffset={100}>
+        <ScrollView contentContainerStyle={{ padding: spacing.lg, gap: spacing.lg }} keyboardShouldPersistTaps="handled">
+          <SurfaceCard style={{ padding: 0 }}>
+            <Row title="Signed in with" right={providerLabel[provider]} chevron={false} />
+            <Row title="Email" right={user?.email ?? '—'} chevron={false} divider />
+          </SurfaceCard>
+
+          {provider === 'password' && (
+            <SurfaceCard style={{ gap: spacing.md }}>
+              <CustomText variant="heading">Change password</CustomText>
+              <TextField id="pw-current" label="Current password" value={current} onChangeText={setCurrent} secureTextEntry autoCapitalize="none" textContentType="password" />
+              <TextField id="pw-next" label="New password" value={next} onChangeText={setNext} secureTextEntry autoCapitalize="none" textContentType="newPassword" hint="At least 6 characters." />
+              {message && <CustomText variant="caption" color={message.tone === 'ok' ? colors.success : colors.error}>{message.text}</CustomText>}
+              <PrimaryButton label="Update password" variant="outline" disabled={current.length === 0 || next.length < 6} busy={busy === 'password'} onPress={changePassword} />
+            </SurfaceCard>
+          )}
+
+          <View style={{ gap: spacing.sm }}>
+            <CustomText variant="overline" color={colors.inkMuted}>Danger zone</CustomText>
+            <SurfaceCard style={{ padding: 0 }}>
+              <Row title="Delete account" description="Erases your data permanently." tone="destructive" chevron={false} onPress={busy ? undefined : deleteAccount} />
+            </SurfaceCard>
+          </View>
+        </ScrollView>
+      </KeyboardAvoidingView>
+    </SafeAreaView>
+  );
+};

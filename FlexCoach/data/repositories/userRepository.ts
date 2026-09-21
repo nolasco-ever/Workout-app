@@ -1,6 +1,6 @@
 import { paths } from '../firebase/paths';
 import { Id, PublicProfile, UserProfile } from '../models';
-import { patchDoc, readDoc, watchDoc, writeDoc, Unsubscribe } from './base';
+import { listDocs, patchDoc, readDoc, removeDoc, watchDoc, writeDoc, Unsubscribe } from './base';
 
 export const userRepository = {
   get: (uid: Id) => readDoc<UserProfile>(paths.user(uid)),
@@ -40,4 +40,15 @@ export const userRepository = {
   getPublicProfile: (uid: Id) => readDoc<PublicProfile>(paths.publicProfile(uid)),
 
   writePublicProfile: (profile: PublicProfile) => writeDoc(paths.publicProfile(profile.id), profile),
+
+  /** Remove every document under the user, then the profile documents. */
+  deleteAllData: async (uid: Id): Promise<void> => {
+    const collections = [paths.plans(uid), paths.cycles(uid), paths.sessions(uid), paths.bodyWeight(uid), paths.achievements(uid), paths.buddies(uid), paths.customExercises(uid)];
+    for (const c of collections) {
+      const docs = await listDocs<{ id: string }>(c);
+      for (const d of docs) await removeDoc(`${c}/${d.id}`);
+    }
+    await removeDoc(paths.publicProfile(uid)).catch(() => undefined);
+    await removeDoc(paths.user(uid));
+  },
 };

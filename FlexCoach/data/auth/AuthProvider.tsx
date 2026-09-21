@@ -10,9 +10,11 @@ interface AuthState {
   user: User | null;
   profile: UserProfile | null;
   ready: boolean;
+  /** True while the session is the automatic anonymous one, i.e. no account yet. */
+  isAnonymous: boolean;
 }
 
-const AuthContext = createContext<AuthState>({ uid: null, user: null, profile: null, ready: false });
+const AuthContext = createContext<AuthState>({ uid: null, user: null, profile: null, ready: false, isAnonymous: true });
 
 /**
  * Signs the device in anonymously on first launch so every write has an
@@ -20,7 +22,7 @@ const AuthContext = createContext<AuthState>({ uid: null, user: null, profile: n
  * linked to the Apple, Google, or email credential and keeps all its data.
  */
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
-  const [state, setState] = useState<AuthState>({ uid: null, user: null, profile: null, ready: false });
+  const [state, setState] = useState<AuthState>({ uid: null, user: null, profile: null, ready: false, isAnonymous: true });
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async user => {
@@ -29,7 +31,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
           await signInAnonymously(auth);
         } catch (err) {
           console.warn('Anonymous sign-in failed', err);
-          setState({ uid: null, user: null, profile: null, ready: true });
+          setState({ uid: null, user: null, profile: null, ready: true, isAnonymous: true });
         }
         return;
       }
@@ -40,12 +42,12 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
           displayName: user.displayName,
           photoUrl: user.photoURL,
         });
-        setState({ uid: user.uid, user, profile, ready: true });
+        setState({ uid: user.uid, user, profile, ready: true, isAnonymous: user.isAnonymous });
       } catch (err) {
         // Most likely a rules or connectivity problem. The app stays usable;
         // the profile watcher below will fill in once access is restored.
         console.warn('Could not load user profile', err);
-        setState({ uid: user.uid, user, profile: null, ready: true });
+        setState({ uid: user.uid, user, profile: null, ready: true, isAnonymous: user.isAnonymous });
       }
     });
     return unsubscribe;

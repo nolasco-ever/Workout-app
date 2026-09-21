@@ -1,0 +1,95 @@
+import React, { useState } from 'react';
+import { KeyboardAvoidingView, Platform, ScrollView, TouchableOpacity, View } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { RouteProp, useNavigation, useRoute } from '@react-navigation/native';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { authService } from '../../../data/auth/authService';
+import { CustomText } from '../../../components/text/customText';
+import { TextField } from '../../../components/inputs/TextField';
+import { PrimaryButton } from '../../../components/buttons/PrimaryButton';
+import { useTheme } from '../../../theme';
+import { AuthStackParams } from '../AuthStack';
+
+const validEmail = (s: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(s.trim());
+
+/** One screen for both sign in and create account; the mode toggles at the bottom. */
+export const EmailAuthScreen = () => {
+  const navigation = useNavigation<NativeStackNavigationProp<AuthStackParams>>();
+  const { params } = useRoute<RouteProp<AuthStackParams, 'EmailAuthScreen'>>();
+  const { colors, spacing } = useTheme();
+  const [mode, setMode] = useState(params.mode);
+  const [name, setName] = useState('');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [busy, setBusy] = useState(false);
+
+  const create = mode === 'create';
+  const canSubmit = validEmail(email) && password.length >= 6 && (!create || name.trim().length > 0);
+
+  const submit = async () => {
+    setBusy(true);
+    setError(null);
+    try {
+      if (create) await authService.createWithEmail(email, password, name);
+      else await authService.signInWithEmail(email, password);
+      // AppStack switches routes when the auth state changes.
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Something went wrong.');
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const switchMode = () => {
+    const next = create ? 'signin' : 'create';
+    setMode(next);
+    setError(null);
+    navigation.setOptions({ title: next === 'create' ? 'Create account' : 'Sign in' });
+  };
+
+  return (
+    <SafeAreaView edges={['bottom', 'left', 'right']} style={{ flex: 1, backgroundColor: colors.ground }}>
+      <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={{ flex: 1 }} keyboardVerticalOffset={100}>
+        <ScrollView contentContainerStyle={{ padding: spacing.lg, gap: spacing.lg }} keyboardShouldPersistTaps="handled">
+          {create && <TextField id="auth-name" label="Your name" placeholder="What should we call you?" value={name} onChangeText={setName} autoCapitalize="words" autoComplete="name" textContentType="name" returnKeyType="next" autoFocus />}
+          <TextField id="auth-email" label="Email" placeholder="you@example.com" value={email} onChangeText={setEmail} autoCapitalize="none" autoCorrect={false} keyboardType="email-address" autoComplete="email" textContentType="emailAddress" returnKeyType="next" autoFocus={!create} />
+          <View style={{ gap: spacing.xs }}>
+            <TextField
+              id="auth-password"
+              label="Password"
+              placeholder={create ? 'At least 6 characters' : 'Your password'}
+              value={password}
+              onChangeText={setPassword}
+              secureTextEntry={!showPassword}
+              autoCapitalize="none"
+              autoComplete={create ? 'new-password' : 'current-password'}
+              textContentType={create ? 'newPassword' : 'password'}
+              returnKeyType="go"
+              onSubmitEditing={() => canSubmit && submit()}
+              suffix={showPassword ? 'hide' : 'show'}
+            />
+            <TouchableOpacity onPress={() => setShowPassword(s => !s)} hitSlop={8} style={{ alignSelf: 'flex-start' }}>
+              <CustomText variant="caption" color={colors.inkMuted}>{showPassword ? 'Hide password' : 'Show password'}</CustomText>
+            </TouchableOpacity>
+          </View>
+          {error && <CustomText variant="caption" color={colors.error}>{error}</CustomText>}
+          <PrimaryButton label={create ? 'Create account' : 'Sign in'} disabled={!canSubmit} busy={busy} onPress={submit} />
+          {!create && (
+            <TouchableOpacity onPress={() => navigation.navigate('ForgotPasswordScreen', { email })} style={{ alignSelf: 'center' }} hitSlop={8}>
+              <CustomText variant="label" color={colors.accent}>Forgot password?</CustomText>
+            </TouchableOpacity>
+          )}
+          <View style={{ flexDirection: 'row', justifyContent: 'center', gap: spacing.xs, marginTop: spacing.md }}>
+            <CustomText variant="caption" color={colors.inkMuted}>{create ? 'Already have an account?' : 'New here?'}</CustomText>
+            <CustomText variant="caption" color={colors.accent} onPress={switchMode}>{create ? 'Sign in' : 'Create an account'}</CustomText>
+          </View>
+          {create && (
+            <CustomText variant="caption" color={colors.inkMuted} centered>By creating an account you agree to the Terms of Use and Privacy Policy.</CustomText>
+          )}
+        </ScrollView>
+      </KeyboardAvoidingView>
+    </SafeAreaView>
+  );
+};
