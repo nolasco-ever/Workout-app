@@ -8,11 +8,9 @@ require Pod::Executable.execute_command('node', ['-p',
 platform :ios, min_ios_version_supported
 prepare_react_native_project!
 
-linkage = ENV['USE_FRAMEWORKS']
-if linkage != nil
-  Pod::UI.puts "Configuring Pod with #{linkage}ally linked Frameworks".green
-  use_frameworks! :linkage => linkage.to_sym
-end
+# React Native Firebase resolves the Firebase Apple SDK via Swift Package
+# Manager, which requires dynamically linked frameworks.
+use_frameworks! :linkage => :dynamic
 
 target 'FlexCoach' do
   config = use_native_modules!
@@ -34,6 +32,15 @@ target 'FlexCoach' do
       target.build_configurations.each do |config|
         if config.build_settings['IPHONEOS_DEPLOYMENT_TARGET'].to_f < 15.0
           config.build_settings['IPHONEOS_DEPLOYMENT_TARGET'] = '15.0'
+        end
+        # react-native-image-picker uses MobileCoreServices (UTType*) symbols
+        # without declaring the framework. With dynamic frameworks every pod
+        # links on its own, so add it explicitly.
+        if target.name == 'react-native-image-picker'
+          flags = config.build_settings['OTHER_LDFLAGS']
+          flags = flags.is_a?(Array) ? flags : [flags || '$(inherited)']
+          flags << '-framework' << 'MobileCoreServices'
+          config.build_settings['OTHER_LDFLAGS'] = flags
         end
       end
     end

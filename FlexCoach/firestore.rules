@@ -1,0 +1,74 @@
+rules_version = '2';
+
+// FlexCoach Firestore security rules.
+//
+// Every user's data lives under users/{uid}. Only that user can read or write
+// it. Buddies can read one document, publicProfiles/{uid}, and only when an
+// accepted buddy relationship exists on the owner's side. Nothing else is
+// readable across accounts.
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function signedIn() {
+      return request.auth != null;
+    }
+
+    function isOwner(uid) {
+      return signedIn() && request.auth.uid == uid;
+    }
+
+    function isAcceptedBuddyOf(uid) {
+      return signedIn()
+        && exists(/databases/$(database)/documents/users/$(uid)/buddies/$(request.auth.uid))
+        && get(/databases/$(database)/documents/users/$(uid)/buddies/$(request.auth.uid)).data.status == 'accepted';
+    }
+
+    // Private user tree: profile plus every subcollection.
+    match /users/{uid} {
+      allow read, write: if isOwner(uid);
+
+      match /plans/{planId} {
+        allow read, write: if isOwner(uid);
+      }
+      match /cycles/{cycleId} {
+        allow read, write: if isOwner(uid);
+      }
+      match /sessions/{sessionId} {
+        allow read, write: if isOwner(uid);
+      }
+      match /bodyWeight/{entryId} {
+        allow read, write: if isOwner(uid);
+      }
+      match /achievements/{achievementId} {
+        allow read, write: if isOwner(uid);
+      }
+      match /customExercises/{exerciseId} {
+        allow read, write: if isOwner(uid);
+      }
+
+      // Buddy relationships are mirrored on both sides. The owner manages
+      // their own list; another signed-in user may only create a pending
+      // request or accept/remove the row about themselves.
+      match /buddies/{otherUid} {
+        allow read: if isOwner(uid);
+        allow write: if isOwner(uid);
+        allow create: if signedIn() && request.auth.uid == otherUid
+          && request.resource.data.status in ['pending_received', 'pending_sent'];
+        allow update: if signedIn() && request.auth.uid == otherUid
+          && request.resource.data.status == 'accepted';
+        allow delete: if signedIn() && request.auth.uid == otherUid;
+      }
+    }
+
+    // Buddy-visible summary. Owner writes; accepted buddies read.
+    match /publicProfiles/{uid} {
+      allow read: if isOwner(uid) || isAcceptedBuddyOf(uid);
+      allow write: if isOwner(uid);
+    }
+
+    // Deny anything not matched above.
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
