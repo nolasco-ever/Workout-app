@@ -11,17 +11,6 @@ export const mockTriviaQuestions = [
       ]
     },
     {
-      id: 1,
-      question: "Which of the following is a good source of protein for vegetarians?",
-      correctAnswer: 3,
-      possibleAnswers: [
-        { id: 0, answer: "Chicken" },
-        { id: 1, answer: "Fish" },
-        { id: 2, answer: "Beef" },
-        { id: 3, answer: "Lentils" }
-      ]
-    },
-    {
       id: 2,
       question: "What is the maximum number of consecutive days you should workout without taking a rest day?",
       correctAnswer: 3,

@@ -10,13 +10,11 @@ import { Button } from '../components/buttons/button';
 import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
 import { generalIcons } from '../components/icons/icon-library';
 import { InformationCardSmall } from '../components/cards/informationCardSmall';
-import { mockArticles } from '../mocks/articleMocks';
-import { InformationCard } from '../components/cards/informationCard';
 import { NavigationProp, StackActions, useNavigation } from '@react-navigation/native';
-import { ExploreStackParams } from '../screens/Tabs/Explore/ExploreStack';
+import { CustomTrainingProgramStackParams } from '../Flows/create-custom-training-program/CustomTrainingProgramStack';
 
 export const TutorialScreen = ({route}: {route: any}) => {
-  const navigation = useNavigation<NavigationProp<ExploreStackParams>>();
+  const navigation = useNavigation<NavigationProp<CustomTrainingProgramStackParams>>();
   const {title, videoLink, steps, muscleGroupWorkouts} = route.params;
   const appColors = colors();
   const screenWidth = Dimensions.get('window').width
@@ -76,15 +74,6 @@ export const TutorialScreen = ({route}: {route: any}) => {
           onPress={() => (navigation as any).navigate('instructionsStack')}
         />
         <Section title='Related'>
-          {mockArticles.slice(0,3).map((item, index) => (
-            <InformationCard
-              key={index}
-              imageSource={item.image}
-              title={item.title}
-              description={item.description}
-              onPress={() => navigation.navigate('ArticleScreen', {articleData: item})}
-            />
-          ))}
           <View style={{flexDirection: 'row'}}>
             {muscleGroupWorkouts.filter((item: { name: string; link: string; howToSteps: string[] }) => item.name !== title)
               .slice(0,2)

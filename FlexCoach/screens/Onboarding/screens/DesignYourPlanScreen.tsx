@@ -18,17 +18,13 @@ export const DesignYourPlanScreen = () => {
     return (
         <SafeAreaView style={[styles.container, {backgroundColor: appColors.background}]}>
             <View style={styles.textContainer}>
-                <CustomText type='subheader'>Tailor your fitness journey by creating a training program and/or diet plan that caters to your unique needs</CustomText>
+                <CustomText type='subheader'>Tailor your fitness journey by creating a training program that caters to your unique needs</CustomText>
             </View>
             <View style={styles.listItemContainer}>
                 <ListItem
                     title='Create Your Custom Training Program'
                     rightIcon={directionIcons.angleRight}
                     onPress={() => (navigation as NavigationProp<AppStackParams>).navigate('CustomTrainingProgramStack')}
-                />
-                <ListItem
-                    title='Create Your Custom Diet Plan'
-                    rightIcon={directionIcons.angleRight}
                 />
             </View>
             <View style={styles.buttonsContainer}>

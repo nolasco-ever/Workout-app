@@ -11,7 +11,6 @@ export const directionIcons = {
   };
   
   export const generalIcons = {
-    apple: 'fa-solid fa-apple-whole' as IconProp,
     bell: 'fa-solid fa-bell' as IconProp,
     bellSlash: 'fa-solid fa-bell-slash' as IconProp,
     book: 'fa-solid fa-book' as IconProp,
@@ -31,7 +30,6 @@ export const directionIcons = {
     eye: 'fa-solid fa-eye',
     eyeSlash: 'fa-solid fa-eye-slash',
     gear: 'fa-solid fa-gear' as IconProp,
-    glassWater: 'fa-solid fa-glass-water' as IconProp,
     heart: 'fa-solid fa-heart',
     info: 'fa-solid fa-circle-info',
     key: 'fa-solid fa-key',
@@ -63,7 +61,6 @@ export const directionIcons = {
     home: 'fa-solid fa-house' as IconProp,
     stats: 'fa-solid fa-chart-line' as IconProp,
     log: 'fa-solid fa-circle-plus' as IconProp,
-    explore: 'fa-solid fa-magnifying-glass' as IconProp,
     social: 'fa-solid fa-face-smile' as IconProp,
     profile: 'fa-solid fa-user' as IconProp
   }

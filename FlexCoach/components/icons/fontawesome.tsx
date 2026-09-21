@@ -59,7 +59,6 @@ import {
     faScrewdriverWrench,
     faTrophy,
     faClockRotateLeft,
-    faAppleWhole,
     faDumbbell,
     faPersonRunning,
     faChartSimple,
@@ -74,8 +73,7 @@ import {
     faCircleXmark,
     faBellSlash,
     faThumbsUp as faThumbsUpFilled,
-    faThumbsDown as faThumbsDownFilled,
-    faGlassWater
+    faThumbsDown as faThumbsDownFilled
 } from '@fortawesome/free-solid-svg-icons';
 
 import {
@@ -143,7 +141,6 @@ library.add(
     faScrewdriverWrench,
     faTrophy,
     faClockRotateLeft,
-    faAppleWhole,
     faDumbbell,
     faPersonRunning,
     faChartSimple,
@@ -161,6 +158,5 @@ library.add(
     faThumbsUpFilled,
     faThumbsUpOutline,
     faThumbsDownFilled,
-    faThumbsDownOutline,
-    faGlassWater
+    faThumbsDownOutline
 );

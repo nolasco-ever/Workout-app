@@ -14,8 +14,6 @@ export const NotificationsScreen = () => {
     switch (type) {
       case 'pr':
         return generalIcons.trophy;
-      case 'diet':
-        return generalIcons.apple;
       case 'health':
         return generalIcons.heart;
       case 'workout':
@@ -31,8 +29,6 @@ export const NotificationsScreen = () => {
     switch (type) {
       case 'pr':
         return appColors.onWarning;
-      case 'diet':
-        return appColors.onSuccess;
       case 'health':
         return appColors.onError;
       case 'workout':

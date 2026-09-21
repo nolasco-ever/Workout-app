@@ -43,7 +43,7 @@ export const profileListMocks = [
       id: 'setYourGoals',
       icon: generalIcons.plus,
       title: 'Set Your Goals',
-      description: `Create a new training or nutrition plan`,
+      description: `Create a new training plan`,
       navigateTo: 'createYourCustomTrainingProgram'
     },
     {
@@ -72,14 +72,6 @@ export const statsScreenActivityLogListMock = [
         navigateTo: 'PlaceholderScreen',
         color: '#134162'
     },
-    {
-        id: 'todaysNutritionLog',
-        icon: generalIcons.apple,
-        title: `Nutrition`,
-        description: `View, add, or remove items`,
-        navigateTo: 'DietLogScreen',
-        color: '#D04242'
-    },
 ];
 
 export const mockNotificationMessages = [
@@ -90,14 +82,6 @@ export const mockNotificationMessages = [
       type: "pr",
       date: 'Today',
       timePassed: '2h'
-    },
-    {
-      id: 1,
-      title: 'Almost there',
-      message: "You have consumed 100g of protein today. You have 50g remaining before the end of the day.",
-      type: "diet",
-      date: 'Today',
-      timePassed: '9h'
     },
     {
       id: 2,
@@ -112,14 +96,6 @@ export const mockNotificationMessages = [
       title: 'Workout complete',
       message: "You have completed your scheduled workout for today. Great job!",
       type: "workout",
-      date: 'Yesterday',
-      timePassed: '1d'
-    },
-    {
-      id: 4,
-      title: 'Calorie limit exceeded',
-      message: "You have exceeded your daily calorie limit. Try to stick to your diet plan.",
-      type: "diet",
       date: 'Yesterday',
       timePassed: '1d'
     },

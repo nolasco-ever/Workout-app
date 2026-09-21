@@ -7,7 +7,7 @@ import { generalIcons, tabIcons } from '../../../../components/icons/icon-librar
 import { CustomText } from '../../../../components/text/customText';
 import { user1 } from '../../../../mocks/userMocks';
 import { TouchableOpacity } from 'react-native-gesture-handler';
-import { NavigationProp, useNavigation } from '@react-navigation/native';
+import { NavigationProp, StackActions, useNavigation } from '@react-navigation/native';
 import { ListItem } from '../../../../components/list-items/ListItem';
 import { Section } from '../../../../components/sections/Section';
 import { ProfileStackParams } from '../ProfileStack';
@@ -75,7 +75,7 @@ export const ProfileScreen = () => {
           <ListItem
               title="Set Your Goals"
               icon={generalIcons.plus}
-              description='Create a new training or nutrition plan'
+              description='Create a new training plan'
               onPress={() => (navigation as NavigationProp<AppStackParams>).navigate('CustomTrainingProgramStack')}
               topDivider={true}
           />
@@ -85,6 +85,45 @@ export const ProfileScreen = () => {
               description='View your previous workout programs'
               onPress={() => (navigation as NavigationProp<ProfileStackParams>).navigate('PlaceholderScreen', { title: 'History' })}
               topDivider={false}
+          />
+        </View>
+        <View style={{marginTop: 10}}>
+          <ListItem
+              icon={generalIcons.moon}
+              title='App Theme'
+              description='Switch between a light theme or a dark theme'
+              onPress={() => (navigation as NavigationProp<ProfileStackParams>).navigate('AppThemeScreen')}
+              topDivider={true}
+          />
+          <ListItem
+              icon={generalIcons.bell}
+              title='Notification Preferences'
+              description={`Choose what notifications you'd like to receive`}
+              onPress={() => (navigation as NavigationProp<ProfileStackParams>).navigate('PlaceholderScreen', { title: 'Notification Preferences' })}
+          />
+          <ListItem
+              icon={generalIcons.key}
+              title="Privacy and Permissions"
+              description="Access our Terms of Use and Privacy Policy"
+              onPress={() => (navigation as NavigationProp<ProfileStackParams>).navigate('PlaceholderScreen', { title: 'Privacy and Permissions' })}
+          />
+          <ListItem
+              icon={generalIcons.user}
+              title="Account"
+              description="Update, set, or remove information from your account"
+              onPress={() => (navigation as NavigationProp<ProfileStackParams>).navigate('PlaceholderScreen', { title: 'Account' })}
+          />
+          <ListItem
+              icon={generalIcons.envelope}
+              title="Contact Us"
+              description="Reach out with any questions, comments, or concerns"
+              onPress={() => (navigation as NavigationProp<ProfileStackParams>).navigate('PlaceholderScreen', { title: 'Contact Us' })}
+          />
+          <ListItem
+              icon={generalIcons.signOut}
+              title="Sign Out"
+              topDivider={true}
+              onPress={() => navigation.dispatch(StackActions.replace('SignInStack'))}
           />
         </View>
       </ScrollView>
