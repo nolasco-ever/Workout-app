@@ -9,6 +9,7 @@ import { colors } from '../colors';
 import { CustomTrainingProgramStack } from '../Flows/create-custom-training-program/CustomTrainingProgramStack';
 import { AuthStack } from '../screens/Auth/AuthStack';
 import { OnboardingStack } from '../screens/Onboarding/OnboardingStack';
+import { devFlags } from '../dev/flags';
 
 const Stack = createStackNavigator();
 
@@ -24,6 +25,7 @@ export const AppStack = () => {
     const appColors = colors();
     return (
         <Stack.Navigator
+            initialRouteName={__DEV__ && devFlags.startAtTabs ? 'TabNavigator' : 'SignInStack'}
             screenOptions={{
                 headerShown: false
             }}

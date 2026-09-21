@@ -7,11 +7,17 @@ export const sessionRepository = {
 
   listAll: (uid: Id) => listDocs<Session>(paths.sessions(uid), orderBy('startedAt', 'asc')),
 
-  listForCycle: (uid: Id, cycleId: Id) =>
-    listDocs<Session>(paths.sessions(uid), where('cycleId', '==', cycleId), orderBy('startedAt', 'asc')),
+  /**
+   * Filtered reads go through listAll and filter client-side. A `where` on
+   * one field combined with `orderBy` on another needs a composite index in
+   * Firestore; the session count per user is small enough that this is not
+   * worth the index management yet.
+   */
+  listForCycle: async (uid: Id, cycleId: Id) =>
+    (await listDocs<Session>(paths.sessions(uid), orderBy('startedAt', 'asc'))).filter(s => s.cycleId === cycleId),
 
-  listCompletedSince: (uid: Id, date: string) =>
-    listDocs<Session>(paths.sessions(uid), where('status', '==', 'completed'), where('date', '>=', date), orderBy('date', 'asc')),
+  listCompleted: async (uid: Id) =>
+    (await listDocs<Session>(paths.sessions(uid), orderBy('startedAt', 'asc'))).filter(s => s.status === 'completed'),
 
   watchInProgress: (uid: Id, onChange: (sessions: Session[]) => void): Unsubscribe =>
     watchDocs<Session>(paths.sessions(uid), onChange, where('status', '==', 'in_progress')),
@@ -43,11 +49,7 @@ export const sessionRepository = {
 
   /** Most recent completed session containing an exercise, for progression. */
   lastForExercise: async (uid: Id, exerciseId: Id): Promise<Session | null> => {
-    const sessions = await listDocs<Session>(
-      paths.sessions(uid),
-      where('status', '==', 'completed'),
-      orderBy('startedAt', 'desc'),
-    );
+    const sessions = (await listDocs<Session>(paths.sessions(uid), orderBy('startedAt', 'desc'))).filter(s => s.status === 'completed');
     return sessions.find(s => s.exercises.some(ex => ex.exerciseId === exerciseId)) ?? null;
   },
 };

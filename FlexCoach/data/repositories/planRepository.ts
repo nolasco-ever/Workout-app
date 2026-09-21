@@ -1,10 +1,13 @@
 import { paths } from '../firebase/paths';
 import { Id, Plan } from '../models';
-import { listDocs, orderBy, patchDoc, readDoc, touch, watchDocs, where, writeDoc, Unsubscribe } from './base';
+import { listDocs, orderBy, patchDoc, readDoc, touch, watchDoc, watchDocs, where, writeDoc, Unsubscribe } from './base';
 import { userRepository } from './userRepository';
 
 export const planRepository = {
   get: (uid: Id, planId: Id) => readDoc<Plan>(paths.plan(uid, planId)),
+
+  watch: (uid: Id, planId: Id, onChange: (plan: Plan | null) => void): Unsubscribe =>
+    watchDoc<Plan>(paths.plan(uid, planId), onChange),
 
   list: (uid: Id) => listDocs<Plan>(paths.plans(uid), orderBy('updatedAt', 'desc')),
 

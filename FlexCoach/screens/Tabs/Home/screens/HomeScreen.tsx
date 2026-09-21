@@ -39,7 +39,7 @@ export const HomeScreen = () => {
                   icon={generalIcons.dumbbell}
                   iconColor={appColors.accent}
                   label="Workouts"
-                  onPress={() => navigation.navigate("WorkoutOverviewScreen")}
+                  onPress={() => (navigation as any).navigate("WorkoutStack")}
               />
               <IconButton
                   icon={generalIcons.simpleChart}

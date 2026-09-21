@@ -123,6 +123,27 @@ export const pushOccurrence = (cycle: Cycle, plan: Plan, occurrenceId: Id, now: 
   return { ...cycle, occurrences: sorted, endDate, updatedAt: now };
 };
 
+/**
+ * Bring a scheduled workout forward (or back) to `targetDate`, typically
+ * today, because the user wants to do it now. If a scheduled workout or a
+ * rest day already sits on that date the two swap places, so the cycle keeps
+ * the same set of days. If that date already holds a completed or in-progress
+ * workout, the moved one simply shares the date.
+ */
+export const moveOccurrenceToDate = (cycle: Cycle, occurrenceId: Id, targetDate: LocalDate, now: number = Date.now()): Cycle => {
+  const occurrences = cycle.occurrences.map(o => ({ ...o }));
+  const moving = occurrences.find(o => o.id === occurrenceId);
+  if (!moving) throw new Error(`Occurrence ${occurrenceId} not found`);
+  if (moving.status !== 'scheduled') throw new Error(`Only scheduled workouts can be moved (status: ${moving.status})`);
+  if (moving.date === targetDate) return cycle;
+  const occupant = occurrences.find(o => o.id !== occurrenceId && o.date === targetDate && (o.status === 'scheduled' || o.status === 'rest'));
+  if (occupant) occupant.date = moving.date;
+  moving.date = targetDate;
+  const sorted = sortByDate(occurrences);
+  const endDate = cycle.endDate > sorted[sorted.length - 1].date ? cycle.endDate : sorted[sorted.length - 1].date;
+  return { ...cycle, occurrences: sorted, endDate, updatedAt: now };
+};
+
 export const skipOccurrence = (cycle: Cycle, occurrenceId: Id, now: number = Date.now()): Cycle => {
   const occurrences = cycle.occurrences.map(o =>
     o.id === occurrenceId && o.status === 'scheduled'

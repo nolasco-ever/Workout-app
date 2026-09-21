@@ -1,4 +1,4 @@
-import { closeCycle, generateCycle, getOverdueOccurrences, pushOccurrence, skipOccurrence, markOccurrence } from '../../data/engine/schedule';
+import { closeCycle, generateCycle, getOverdueOccurrences, moveOccurrenceToDate, pushOccurrence, skipOccurrence, markOccurrence } from '../../data/engine/schedule';
 import { summarizeCycle } from '../../data/engine/stats';
 import { rotationPlan, weeklyPlan } from './support/fixtures';
 
@@ -120,5 +120,38 @@ describe('overdue detection, skipping, and closing', () => {
     const summary = summarizeCycle(cycle, [], []);
     expect(summary).toMatchObject({ totalWorkouts: 3, completed: 2, completedOnTime: 1, pushed: 2, skipped: 1 });
     expect(summary.completionRate).toBeCloseTo(2 / 3);
+  });
+});
+
+describe('moveOccurrenceToDate', () => {
+  it('swaps a future workout with the rest day sitting on today', () => {
+    const plan = rotationPlan();
+    const cycle = generateCycle(plan, 'user-1', 1, '2026-09-21');
+    // Pretend today is the rest day (09-24) and the user wants to do Push (09-21 next pass) early.
+    plan.schedule = { mode: 'rotation', slots: ['push', 'pull', 'legs', null], passesPerCycle: 2 };
+    const two = generateCycle(plan, 'user-1', 1, '2026-09-21');
+    const secondPush = two.occurrences.filter(o => o.workoutId === 'push')[1];
+    const moved = moveOccurrenceToDate(two, secondPush.id, '2026-09-24');
+    expect(moved.occurrences.find(o => o.id === secondPush.id)?.date).toBe('2026-09-24');
+    expect(moved.occurrences.filter(o => o.status === 'rest')[0].date).toBe('2026-09-25');
+    expect(moved.occurrences).toHaveLength(8);
+    expect(moved.endDate).toBe(two.endDate);
+    expect(cycle.occurrences).toHaveLength(4);
+  });
+
+  it('swaps two scheduled workouts', () => {
+    const plan = rotationPlan();
+    const cycle = generateCycle(plan, 'user-1', 1, '2026-09-21');
+    const legs = cycle.occurrences.find(o => o.workoutId === 'legs')!;
+    const moved = moveOccurrenceToDate(cycle, legs.id, '2026-09-21');
+    expect(moved.occurrences.find(o => o.workoutId === 'legs')?.date).toBe('2026-09-21');
+    expect(moved.occurrences.find(o => o.workoutId === 'push')?.date).toBe('2026-09-23');
+  });
+
+  it('refuses to move a completed workout', () => {
+    const plan = rotationPlan();
+    const cycle = generateCycle(plan, 'user-1', 1, '2026-09-21');
+    const done = markOccurrence(cycle, cycle.occurrences[1].id, 'completed', 's1');
+    expect(() => moveOccurrenceToDate(done, cycle.occurrences[1].id, '2026-09-21')).toThrow(/Only scheduled/);
   });
 });

@@ -4,10 +4,13 @@ import { colors } from '../colors';
 import { Icon } from '../components/icons/Icon';
 import { tabIcons } from '../components/icons/icon-library';
 import { HomeStack } from '../screens/Tabs/Home/HomeStack';
+import { WorkoutStack } from '../screens/Tabs/Workout/WorkoutStack';
+import { devFlags } from '../dev/flags';
 import { ProfileStack } from '../screens/Tabs/Profile/ProfileStack';
 
 export type TabNavigatorParams = {
     HomeStack: undefined;
+    WorkoutStack: undefined;
     ProfileStack: undefined;
 }
 
@@ -17,7 +20,7 @@ export const TabNavigator = () => {
 
     return(
     <Tab.Navigator
-        initialRouteName='HomeStack'
+        initialRouteName={__DEV__ ? devFlags.startTab : 'HomeStack'}
         screenOptions={() => ({
             headerShown: false,
             tabBarStyle: {backgroundColor: appColors.background},
@@ -31,7 +34,20 @@ export const TabNavigator = () => {
                 tabBarIcon: ({focused}) => (
                     <Icon 
                         icon={tabIcons.home}
-                        color={focused ? appColors.text : appColors.inactive}
+                        color={focused ? appColors.accent : appColors.inactive}
+                        size={25}
+                    />
+                )
+            }}
+        />
+        <Tab.Screen
+            name='WorkoutStack'
+            component={WorkoutStack}
+            options={{
+                tabBarIcon: ({focused}) => (
+                    <Icon 
+                        icon={tabIcons.workout}
+                        color={focused ? appColors.accent : appColors.inactive}
                         size={25}
                     />
                 )
@@ -44,7 +60,7 @@ export const TabNavigator = () => {
                 tabBarIcon: ({focused}) => (
                     <Icon 
                         icon={tabIcons.profile}
-                        color={focused ? appColors.text : appColors.inactive}
+                        color={focused ? appColors.accent : appColors.inactive}
                         size={25}
                     />
                 )
