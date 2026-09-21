@@ -6,6 +6,8 @@ import { StackNavigationProp } from '@react-navigation/stack';
 import { useAuth } from '../../../../data/auth/AuthProvider';
 import { useInsights } from '../../../../data/hooks/useInsights';
 import { useWorkoutHome } from '../../../../data/hooks/useWorkoutHome';
+import { useSteps } from '../../../../data/hooks/useSteps';
+import { BarChart } from '../../../../components/charts/BarChart';
 import { formatWeight, kgToLb, toDisplayWeight } from '../../../../data/engine/units';
 import { findWorkout } from '../../../../data/engine/schedule';
 import { totalVolumeKg } from '../../../../data/engine/stats';
@@ -64,6 +66,7 @@ export const HomeScreen = () => {
   const unit = profile?.weightUnit ?? 'lb';
   const ins = useInsights();
   const home = useWorkoutHome();
+  const steps = useSteps();
   const scrollRef = useRef<React.ComponentRef<typeof ScrollView>>(null);
   useScrollToTop(scrollRef);
 
@@ -217,13 +220,35 @@ export const HomeScreen = () => {
           </SurfaceCard>
         )}
 
-        {/* Steps placeholder until health integration lands */}
+        {/* Steps */}
         <SurfaceCard>
           <CardHeader label="Steps" />
-          <CustomText variant="body" color={colors.inkMuted}>Connect Apple Health to see today's steps and your weekly average here.</CustomText>
-          <View style={{ marginTop: spacing.md }}>
-            <PrimaryButton label="Coming next" variant="quiet" disabled onPress={() => {}} />
-          </View>
+          {steps.available === false ? (
+            <CustomText variant="body" color={colors.inkMuted}>{steps.platformName === 'none' ? 'Step tracking needs a phone with a health app.' : `${steps.platformName} isn't available on this device.`}</CustomText>
+          ) : !steps.connected ? (
+            <>
+              <CustomText variant="body" color={colors.inkMuted}>Connect {steps.platformName} to see today's steps and your weekly average. Weigh-ins sync both ways.</CustomText>
+              <View style={{ marginTop: spacing.md }}>
+                <PrimaryButton label={`Connect ${steps.platformName}`} icon={generalIcons.personRunning} onPress={() => steps.connect()} />
+              </View>
+            </>
+          ) : (
+            <>
+              <View style={{ flexDirection: 'row', alignItems: 'baseline', gap: spacing.sm, marginBottom: spacing.sm }}>
+                <CustomText variant="display">{steps.today === null ? '—' : steps.today.toLocaleString()}</CustomText>
+                <CustomText variant="caption" color={colors.inkMuted}>today</CustomText>
+                {steps.weekAverage !== null && (
+                  <CustomText variant="caption" color={colors.inkMuted}>· {steps.weekAverage.toLocaleString()} avg over 7 days</CustomText>
+                )}
+              </View>
+              {steps.days.length > 0 && (
+                <BarChart bars={steps.days.map(d => ({ label: shortDate(d.date).replace(' ', '\u00a0'), value: d.steps }))} format={v => compactNumber(v)} height={120} />
+              )}
+              {steps.days.length === 0 && !steps.loading && (
+                <CustomText variant="caption" color={colors.inkMuted}>No step data yet. If you declined access, allow it in {steps.platformName} settings.</CustomText>
+              )}
+            </>
+          )}
         </SurfaceCard>
       </ScrollView>
     </SafeAreaView>

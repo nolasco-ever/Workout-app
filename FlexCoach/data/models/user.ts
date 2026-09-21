@@ -14,6 +14,8 @@ export interface UserProfile extends BaseDocument {
   activeCycleId: Id | null;
   /** Optional goal shown as a line on the body weight chart. */
   targetWeightKg: number | null;
+  /** When the user granted health-store access; null means not connected. */
+  healthConnectedAt: Timestamp | null;
   onboardingCompletedAt: Timestamp | null;
 }
 
@@ -52,6 +54,8 @@ export interface BodyWeightEntry extends BaseDocument {
   date: LocalDate;
   weightKg: number;
   source: 'manual' | 'healthkit' | 'health_connect';
+  /** Health-store sample id, for entries imported from or written to it. */
+  externalId?: string | null;
 }
 
 /** Stored at users/{uid}/achievements/{achievementId}. */

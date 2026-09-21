@@ -33,6 +33,10 @@
 		<key>NSAllowsLocalNetworking</key>
 		<true/>
 	</dict>
+	<key>NSHealthShareUsageDescription</key>
+	<string>FlexCoach reads your step count and body weight from Apple Health to show them on your Home tab.</string>
+	<key>NSHealthUpdateUsageDescription</key>
+	<string>FlexCoach writes the weigh-ins you log to Apple Health so your records stay in one place.</string>
 	<key>NSLocationWhenInUseUsageDescription</key>
 	<string/>
 	<key>RCTNewArchEnabled</key>

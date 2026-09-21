@@ -9,6 +9,7 @@ import { addDays, today } from '../../../../data/engine/dates';
 import { newId } from '../../../../data/engine/ids';
 import { bodyWeightRepository } from '../../../../data/repositories/bodyWeightRepository';
 import { userRepository } from '../../../../data/repositories/userRepository';
+import { pushWeightToHealth } from '../../../../data/services/healthSync';
 import { CustomText } from '../../../../components/text/customText';
 import { TextField } from '../../../../components/inputs/TextField';
 import { ChoiceChips } from '../../../../components/inputs/ChoiceChips';
@@ -37,7 +38,11 @@ export const LogWeightScreen = () => {
     setBusy(true);
     try {
       const now = Date.now();
-      await bodyWeightRepository.save(uid, { id: newId(), ownerId: uid, date, weightKg: fromDisplayWeight(value, unit)!, source: 'manual', createdAt: now, updatedAt: now });
+      // Timestamp the entry on the chosen day so the health store files it there.
+      const at = date === todayDate ? now : new Date(`${date}T12:00:00`).getTime();
+      const entry = { id: newId(), ownerId: uid, date, weightKg: fromDisplayWeight(value, unit)!, source: 'manual' as const, externalId: null, createdAt: at, updatedAt: now };
+      await bodyWeightRepository.save(uid, entry);
+      if (profile?.healthConnectedAt) pushWeightToHealth(uid, entry).catch(err => console.warn(err));
       const t = parseNumber(target);
       const targetKg = t === null ? null : fromDisplayWeight(t, unit);
       if (targetKg !== (profile?.targetWeightKg ?? null)) await userRepository.update(uid, { targetWeightKg: targetKg });

@@ -24,6 +24,7 @@ export const userRepository = {
       activePlanId: null,
       activeCycleId: null,
       targetWeightKg: null,
+      healthConnectedAt: null,
       onboardingCompletedAt: null,
       createdAt: now,
       updatedAt: now,
