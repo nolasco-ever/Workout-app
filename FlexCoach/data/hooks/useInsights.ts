@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useAuth } from '../auth/AuthProvider';
 import { BodyWeightEntry, PersonalRecord, Session } from '../models';
 import { addDays, today } from '../engine/dates';
@@ -26,6 +26,8 @@ export interface Insights {
   weight: WeightPoint[];
   weightChangeCycle: number | null;
   weightChange30d: number | null;
+  /** Re-read sessions from the store. */
+  refresh: () => Promise<void>;
 }
 
 /** Everything the Home tab shows, derived live from sessions and body weight. */
@@ -35,18 +37,16 @@ export const useInsights = (): Insights => {
   const [sessions, setSessions] = useState<Session[] | null>(null);
   const [weightEntries, setWeightEntries] = useState<BodyWeightEntry[] | null>(null);
 
-  useEffect(() => {
+  const refresh = useCallback(async () => {
     if (!uid) return;
-    // Sessions are read once per mount and refreshed when an in-progress
-    // session changes, which is when new data appears.
-    let cancelled = false;
-    sessionRepository.listAll(uid).then(list => {
-      if (!cancelled) setSessions(list);
-    });
-    return () => {
-      cancelled = true;
-    };
-  }, [uid, home.inProgressSession?.id, home.cycle?.updatedAt]);
+    setSessions(await sessionRepository.listAll(uid));
+  }, [uid]);
+
+  // Sessions are read on mount, when an in-progress session changes, when
+  // the cycle changes, and on pull-to-refresh.
+  useEffect(() => {
+    refresh();
+  }, [refresh, home.inProgressSession?.id, home.cycle?.updatedAt]);
 
   useEffect(() => {
     if (!uid) return;
@@ -86,6 +86,7 @@ export const useInsights = (): Insights => {
       weight,
       weightChangeCycle: home.cycle ? weightChangeSince(weight, home.cycle.startDate) : null,
       weightChange30d: weightChangeSince(weight, since30),
+      refresh,
     };
-  }, [sessions, weightEntries, todayDate, home.cycle, home.loading]);
+  }, [sessions, weightEntries, todayDate, home.cycle, home.loading, refresh]);
 };

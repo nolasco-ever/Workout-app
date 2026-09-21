@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Alert, ScrollView, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
-import { StackNavigationProp } from '@react-navigation/stack';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useAuth } from '../../../../data/auth/AuthProvider';
 import { useInsights } from '../../../../data/hooks/useInsights';
 import { formatWeight, kgToLb, toDisplayWeight } from '../../../../data/engine/units';
@@ -22,7 +22,7 @@ import { HomeStackParams } from '../HomeStack';
 type Range = '30' | '90' | 'all';
 
 export const WeightHistoryScreen = () => {
-  const navigation = useNavigation<StackNavigationProp<HomeStackParams>>();
+  const navigation = useNavigation<NativeStackNavigationProp<HomeStackParams>>();
   const { colors, spacing } = useTheme();
   const { uid, profile } = useAuth();
   const unit = profile?.weightUnit ?? 'lb';

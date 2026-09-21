@@ -5,7 +5,7 @@ import { SortableRows } from '../../../components/lists/SortableRows';
 import { Workout } from '../../../data/models';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { RouteProp, useNavigation, useRoute } from '@react-navigation/native';
-import { StackNavigationProp } from '@react-navigation/stack';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { newWorkout } from '../../../data/services/planService';
 import { CustomText } from '../../../components/text/customText';
 import { SurfaceCard } from '../../../components/cards/SurfaceCard';
@@ -22,7 +22,7 @@ import { StepFooter } from '../components/StepFooter';
 const SUGGESTIONS = ['Push', 'Pull', 'Legs', 'Upper', 'Lower', 'Full body', 'Arms', 'Core'];
 
 export const PlanWorkoutsScreen = () => {
-  const navigation = useNavigation<StackNavigationProp<PlansStackParams>>();
+  const navigation = useNavigation<NativeStackNavigationProp<PlansStackParams>>();
   const { params } = useRoute<RouteProp<PlansStackParams, 'PlanWorkoutsScreen'>>();
   const { colors, spacing } = useTheme();
   const { draft, update } = usePlanEditor();

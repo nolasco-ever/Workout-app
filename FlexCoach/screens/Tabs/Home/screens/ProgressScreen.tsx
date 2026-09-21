@@ -2,7 +2,7 @@ import React from 'react';
 import { ScrollView, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
-import { StackNavigationProp } from '@react-navigation/stack';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useAuth } from '../../../../data/auth/AuthProvider';
 import { useInsights } from '../../../../data/hooks/useInsights';
 import { kgToLb } from '../../../../data/engine/units';
@@ -22,7 +22,7 @@ import { HomeStackParams } from '../HomeStack';
 
 /** Every exercise with logged sets; tap one for its charts. */
 export const ProgressScreen = () => {
-  const navigation = useNavigation<StackNavigationProp<HomeStackParams>>();
+  const navigation = useNavigation<NativeStackNavigationProp<HomeStackParams>>();
   const { colors, spacing } = useTheme();
   const ins = useInsights();
   const { profile } = useAuth();

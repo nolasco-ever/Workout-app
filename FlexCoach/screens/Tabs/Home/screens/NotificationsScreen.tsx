@@ -1,123 +1,40 @@
 import React from 'react';
+import { ScrollView, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { StyleSheet, ScrollView } from 'react-native';
-import { colors } from '../../../../colors';
+import { CustomText } from '../../../../components/text/customText';
+import { SurfaceCard } from '../../../../components/cards/SurfaceCard';
+import { Row } from '../../../../components/list-items/Row';
 import { generalIcons } from '../../../../components/icons/icon-library';
-import { ListItem } from '../../../../components/list-items/ListItem';
-import { Section } from '../../../../components/sections/Section';
 import { mockNotificationMessages } from '../../../../mocks/listItemMocks';
+import { useTheme } from '../../../../theme';
 
-
+/** Sample notifications until a real source exists (buddies and reminders, later). */
 export const NotificationsScreen = () => {
-  const appColors = colors();
-
-  const getIcon = (type: string) => {
-    switch (type) {
-      case 'pr':
-        return generalIcons.trophy;
-      case 'health':
-        return generalIcons.heart;
-      case 'workout':
-        return generalIcons.dumbbell;
-      case 'news':
-        return generalIcons.book;
-      default:
-        return generalIcons.bell;
-    }
-  }
-
-  const getIconColor = (type: string) => {
-    switch (type) {
-      case 'pr':
-        return appColors.onWarning;
-      case 'health':
-        return appColors.onError;
-      case 'workout':
-        return appColors.onInfo;
-      case 'news':
-        return appColors.secondary;
-      default:
-        return appColors.primary;
-    }
-    // return appColors.primary
-  }
-
-  const optionsList = [
-    {
-      title: "Remove notification",
-      description: 'Remove this notification from the list',
-      icon: generalIcons.xMarkCircle
-    },
-    {
-      title: "Don't show me this type of notification",
-      description: 'Stop receiving these kinds of notifications',
-      icon: generalIcons.bellSlash
-    },
-    {
-      title: "Manage notifications",
-      description: 'Choose what kinds of notifications you receive',
-      icon: generalIcons.gear
-    }
-  ];
+  const { colors, spacing } = useTheme();
+  const iconFor = (type: string) =>
+    type === 'pr' ? generalIcons.trophy : type === 'health' ? generalIcons.heart : type === 'workout' ? generalIcons.dumbbell : type === 'news' ? generalIcons.book : generalIcons.bell;
+  const colorFor = (type: string) => (type === 'pr' ? colors.warning : type === 'health' ? colors.error : type === 'workout' ? colors.accent : colors.inkMuted);
+  const groups = ['Today', 'Yesterday', 'Last Week'];
 
   return (
-    <SafeAreaView edges={['bottom', 'left', 'right']} style={[styles.container, {backgroundColor: appColors.background}]}>
-      <ScrollView>
-        <Section title='Today' titleFontSize={16}>
-          {mockNotificationMessages.filter(item => item.date === 'Today').map(item => {
-            return (
-              <ListItem
-                key={item.id}
-                icon={getIcon(item.type)}
-                iconSize={30}
-                iconColor={getIconColor(item.type)}
-                title={item.title}
-                description={item.message}
-                rightText={item.timePassed}
-                options={optionsList}
-              />
-            );
-          })}
-        </Section>
-        <Section title='Yesterday' titleFontSize={16}>
-          {mockNotificationMessages.filter(item => item.date === 'Yesterday').map(item => {
-            return (
-              <ListItem
-                key={item.id}
-                icon={getIcon(item.type)}
-                iconSize={30}
-                iconColor={getIconColor(item.type)}
-                title={item.title}
-                description={item.message}
-                rightText={item.timePassed}
-                options={optionsList}
-              />
-            );
-          })}
-        </Section>
-        <Section title='Last Week' titleFontSize={16}>
-          {mockNotificationMessages.filter(item => item.date === 'Last Week').map(item => {
-            return (
-              <ListItem
-                key={item.id}
-                icon={getIcon(item.type)}
-                iconSize={30}
-                iconColor={getIconColor(item.type)}
-                title={item.title}
-                description={item.message}
-                rightText={item.timePassed}
-                options={optionsList}
-              />
-            );
-          })}
-        </Section>
+    <SafeAreaView edges={['bottom', 'left', 'right']} style={{ flex: 1, backgroundColor: colors.ground }}>
+      <ScrollView contentContainerStyle={{ padding: spacing.lg, gap: spacing.lg }}>
+        <CustomText variant="caption" color={colors.inkMuted}>These are sample notifications. Real ones arrive with reminders and buddies.</CustomText>
+        {groups.map(group => {
+          const items = mockNotificationMessages.filter(m => m.date === group);
+          if (items.length === 0) return null;
+          return (
+            <View key={group} style={{ gap: spacing.sm }}>
+              <CustomText variant="overline" color={colors.inkMuted}>{group}</CustomText>
+              <SurfaceCard style={{ padding: 0 }}>
+                {items.map((m, i) => (
+                  <Row key={m.id} icon={iconFor(m.type)} iconColor={colorFor(m.type)} title={m.title} description={m.message} right={m.timePassed} chevron={false} divider={i > 0} />
+                ))}
+              </SurfaceCard>
+            </View>
+          );
+        })}
       </ScrollView>
     </SafeAreaView>
   );
-}
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  }
-});
+};

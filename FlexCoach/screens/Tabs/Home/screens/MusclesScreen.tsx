@@ -2,7 +2,7 @@ import React from 'react';
 import { ScrollView, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
-import { StackNavigationProp } from '@react-navigation/stack';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useInsights } from '../../../../data/hooks/useInsights';
 import { MuscleGroup } from '../../../../data/models';
 import { MUSCLE_GROUPS } from '../../../../data/catalog/exerciseCatalog';
@@ -17,7 +17,7 @@ const title = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
 
 /** Every muscle group, trained ones first, untrained ones listed so gaps are obvious. */
 export const MusclesScreen = () => {
-  const navigation = useNavigation<StackNavigationProp<HomeStackParams>>();
+  const navigation = useNavigation<NativeStackNavigationProp<HomeStackParams>>();
   const { colors, spacing } = useTheme();
   const ins = useInsights();
   const trained = ins.muscles30d;

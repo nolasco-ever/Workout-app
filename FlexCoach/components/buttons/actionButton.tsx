@@ -4,10 +4,10 @@ import { colors } from '../../colors'
 import { Icon, IconSource } from '../icons/Icon';
 import { directionIcons } from '../icons/icon-library';
 import { ParamListBase } from '@react-navigation/native';
-import { StackNavigationProp } from '@react-navigation/stack';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
 interface ActionButtonProps {
-    navigation: StackNavigationProp<ParamListBase>;
+    navigation: NativeStackNavigationProp<ParamListBase>;
     icon: IconSource;
     message: string;
 }

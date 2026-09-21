@@ -47,67 +47,55 @@ export const WorkoutHomeScreen = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [uid, state.loading, state.plan]);
 
-  if (state.loading) {
-    return (
-      <SafeAreaView edges={['left', 'right']} style={{ flex: 1, backgroundColor: colors.ground, alignItems: 'center', justifyContent: 'center' }}>
-        <ActivityIndicator color={colors.accent} />
-      </SafeAreaView>
-    );
-  }
-
   const { plan, cycle } = state;
+  const loading = state.loading;
 
-  if (plan && !cycle) {
-    return (
-      <SafeAreaView edges={['left', 'right']} style={{ flex: 1, backgroundColor: colors.ground }}>
-        <View style={{ flex: 1, padding: spacing.xl, justifyContent: 'center', gap: spacing.lg }}>
-          <CustomText variant="overline" color={colors.inkMuted}>{plan.name}</CustomText>
-          <CustomText variant="title">Ready when you are</CustomText>
-          <CustomText variant="body" color={colors.inkMuted}>This plan is active but has no cycle running. Start one and today's workout appears here.</CustomText>
-          <PrimaryButton label="Start cycle" busy={busy === 'cycle'} onPress={() => run('cycle', async () => { if (uid) await startFreshCycle(uid, plan); })} />
-        </View>
-      </SafeAreaView>
-    );
-  }
+  const occurrences = cycle?.occurrences ?? [];
+  const workoutsTotal = occurrences.filter(o => o.status !== 'rest').length;
+  const workoutsDone = occurrences.filter(o => o.status === 'completed').length;
+  const dayIndex = occurrences.findIndex(o => o.date >= state.todayDate);
+  const dayLabel = dayIndex === -1 ? `${occurrences.length} days` : `Day ${dayIndex + 1} of ${occurrences.length}`;
 
-  if (!plan || !cycle) {
-    return (
-      <SafeAreaView edges={['left', 'right']} style={{ flex: 1, backgroundColor: colors.ground }}>
-        <View style={{ flex: 1, padding: spacing.xl, justifyContent: 'center', gap: spacing.lg }}>
-          <Icon icon={generalIcons.dumbbell} color={colors.accent} size={40} />
-          <CustomText variant="title">No active plan</CustomText>
-          <CustomText variant="body" color={colors.inkMuted}>
-            Build a plan with your splits and a schedule, and this tab will show you what to do each day.
-          </CustomText>
-          <PrimaryButton
-            label="Create a plan"
-            onPress={() => (navigation as unknown as NavigationProp<AppStackParams>).navigate('PlansStack')}
-          />
-        </View>
-      </SafeAreaView>
-    );
-  }
-
-  const workoutsTotal = cycle.occurrences.filter(o => o.status !== 'rest').length;
-  const workoutsDone = cycle.occurrences.filter(o => o.status === 'completed').length;
-  const dayIndex = cycle.occurrences.findIndex(o => o.date >= state.todayDate);
-  const dayLabel = dayIndex === -1 ? `${cycle.occurrences.length} days` : `Day ${dayIndex + 1} of ${cycle.occurrences.length}`;
-
-  const openPreview = (occurrence: Occurrence) => navigation.navigate('WorkoutPreviewScreen', { plan, cycle, occurrence });
+  const openPreview = (occurrence: Occurrence) => plan && cycle && navigation.navigate('WorkoutPreviewScreen', { plan, cycle, occurrence });
 
   const start = (occurrence: Occurrence) =>
     run(`start-${occurrence.id}`, async () => {
-      if (!uid) return;
+      if (!uid || !plan || !cycle) return;
       const { session, cycle: updated } = await startSession(uid, plan, cycle, occurrence);
       navigation.navigate('SessionScreen', { plan, cycle: updated, session });
     });
 
-  const todayWorkout = state.todayOccurrence ? findWorkout(plan, state.todayOccurrence.workoutId) : undefined;
+  const todayWorkout = plan && state.todayOccurrence ? findWorkout(plan, state.todayOccurrence.workoutId) : undefined;
   const resume = state.inProgressSession;
 
   return (
     <SafeAreaView edges={['left', 'right']} style={{ flex: 1, backgroundColor: colors.ground }}>
-      <ScrollView contentContainerStyle={{ padding: spacing.lg, gap: spacing.lg, paddingBottom: spacing.xxl }}>
+      <ScrollView contentInsetAdjustmentBehavior="automatic" contentContainerStyle={{ flexGrow: 1, padding: spacing.lg, gap: spacing.lg, paddingBottom: spacing.xxl }}>
+        {/* One scroll view for every state, with the inset the native large-title header needs. */}
+        {loading && <ActivityIndicator color={colors.accent} style={{ marginTop: spacing.xxl }} />}
+
+        {!loading && plan && !cycle && (
+          <View style={{ flex: 1, justifyContent: 'center', gap: spacing.lg, padding: spacing.sm }}>
+            <CustomText variant="overline" color={colors.inkMuted}>{plan.name}</CustomText>
+            <CustomText variant="title">Ready when you are</CustomText>
+            <CustomText variant="body" color={colors.inkMuted}>This plan is active but has no cycle running. Start one and today's workout appears here.</CustomText>
+            <PrimaryButton label="Start cycle" busy={busy === 'cycle'} onPress={() => run('cycle', async () => { if (uid) await startFreshCycle(uid, plan); })} />
+          </View>
+        )}
+
+        {!loading && !plan && (
+          <View style={{ flex: 1, justifyContent: 'center', gap: spacing.lg, padding: spacing.sm }}>
+            <Icon icon={generalIcons.dumbbell} color={colors.accent} size={40} />
+            <CustomText variant="title">No active plan</CustomText>
+            <CustomText variant="body" color={colors.inkMuted}>
+              Build a plan with your splits and a schedule, and this tab will show you what to do each day.
+            </CustomText>
+            <PrimaryButton label="Create a plan" onPress={() => (navigation as unknown as NavigationProp<AppStackParams>).navigate('PlansStack')} />
+          </View>
+        )}
+
+        {!loading && plan && cycle && (
+        <>
         {/* Cycle header */}
         <View style={{ gap: spacing.xs }}>
           <CustomText variant="overline" color={colors.inkMuted}>
@@ -210,6 +198,8 @@ export const WorkoutHomeScreen = () => {
             ))}
           </Card>
         </View>
+        </>
+        )}
       </ScrollView>
     </SafeAreaView>
   );

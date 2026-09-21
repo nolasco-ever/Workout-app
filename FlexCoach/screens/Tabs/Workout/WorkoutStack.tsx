@@ -1,12 +1,12 @@
 import React from 'react';
-import { createStackNavigator, TransitionPresets } from '@react-navigation/stack';
+import { createNativeStackNavigator } from '@react-navigation/native-stack';
+import { NavigationProp, useNavigation } from '@react-navigation/native';
 import { Cycle, Occurrence, Plan, Session } from '../../../data/models';
 import { SessionResult } from '../../../data/services/workoutService';
-import { useTheme } from '../../../theme';
-import { Icon } from '../../../components/icons/Icon';
-import { directionIcons, generalIcons } from '../../../components/icons/icon-library';
-import { NavigationHeader } from '../../../components/headers/NavigationHeader';
-import { PlansButton } from '../../../components/headers/HeaderActionButtons/PlansButton';
+import { generalIcons } from '../../../components/icons/icon-library';
+import { HeaderButton } from '../../../components/headers/HeaderButton';
+import { useStackOptions } from '../../../navigation/stackOptions';
+import { AppStackParams } from '../../../appNavigators/AppStack';
 import { WorkoutHomeScreen } from './screens/WorkoutHomeScreen';
 import { WorkoutPreviewScreen } from './screens/WorkoutPreviewScreen';
 import { SessionScreen } from './screens/SessionScreen';
@@ -23,45 +23,23 @@ export type WorkoutStackParams = {
   ExerciseDetailScreen: { exerciseId: string };
 };
 
-const Stack = createStackNavigator<WorkoutStackParams>();
+const Stack = createNativeStackNavigator<WorkoutStackParams>();
+
+const PlansButton = () => {
+  const navigation = useNavigation<NavigationProp<AppStackParams>>();
+  return <HeaderButton icon={generalIcons.list} accessibilityLabel="My plans" onPress={() => navigation.navigate('PlansStack')} />;
+};
 
 export const WorkoutStack = () => {
-  const { colors, fonts } = useTheme();
-  const back = () => <Icon icon={directionIcons.angleLeft} color={colors.ink} size={26} style={{ marginLeft: 10 }} />;
-  const close = () => <Icon icon={generalIcons.xMark} color={colors.ink} size={24} style={{ marginLeft: 10 }} />;
-  const header = (title: string) => ({
-    headerShown: true,
-    headerStyle: { backgroundColor: colors.ground, shadowColor: colors.transparent },
-    headerTitleStyle: { color: colors.ink, fontFamily: fonts.display.semibold, fontSize: 17 },
-    headerTitle: title,
-    headerBackTitle: '',
-    headerTintColor: colors.ink,
-  });
-
+  const opts = useStackOptions();
   return (
-    <Stack.Navigator>
-      <Stack.Screen name="WorkoutHomeScreen" component={WorkoutHomeScreen} options={{ header: () => <NavigationHeader title="Workout" navigationButtons={[<PlansButton key="plans" />]} /> }} />
-      <Stack.Screen
-        name="WorkoutPreviewScreen"
-        component={WorkoutPreviewScreen}
-        options={({ route }) => ({ ...header(route.params.occurrence.workoutName ?? 'Workout'), headerBackImage: back })}
-      />
-      <Stack.Screen
-        name="SessionScreen"
-        component={SessionScreen}
-        options={({ route }) => ({ ...header(route.params.session.workoutName), headerBackImage: back, gestureEnabled: false })}
-      />
-      <Stack.Screen
-        name="SessionCompleteScreen"
-        component={SessionCompleteScreen}
-        options={{ headerShown: false, gestureEnabled: false, ...TransitionPresets.ModalSlideFromBottomIOS }}
-      />
-      <Stack.Screen name="CycleReviewScreen" component={CycleReviewScreen} options={{ ...header('Cycle review'), headerBackImage: back }} />
-      <Stack.Screen
-        name="ExerciseDetailScreen"
-        component={ExerciseDetailScreen}
-        options={{ ...header('How to'), headerBackImage: close, ...TransitionPresets.ModalSlideFromBottomIOS }}
-      />
+    <Stack.Navigator screenOptions={opts.base}>
+      <Stack.Screen name="WorkoutHomeScreen" component={WorkoutHomeScreen} options={{ ...opts.root('Workout'), headerRight: () => <PlansButton /> }} />
+      <Stack.Screen name="WorkoutPreviewScreen" component={WorkoutPreviewScreen} options={({ route }) => opts.screen(route.params.occurrence.workoutName ?? 'Workout')} />
+      <Stack.Screen name="SessionScreen" component={SessionScreen} options={({ route }) => ({ ...opts.screen(route.params.session.workoutName), gestureEnabled: false })} />
+      <Stack.Screen name="SessionCompleteScreen" component={SessionCompleteScreen} options={{ ...opts.base, headerShown: false, presentation: 'fullScreenModal', gestureEnabled: false }} />
+      <Stack.Screen name="CycleReviewScreen" component={CycleReviewScreen} options={opts.screen('Cycle review')} />
+      <Stack.Screen name="ExerciseDetailScreen" component={ExerciseDetailScreen} options={({ navigation }) => opts.modal('How to', () => <HeaderButton icon={generalIcons.xMark} accessibilityLabel="Close" onPress={() => navigation.goBack()} />)} />
     </Stack.Navigator>
   );
 };

@@ -1,5 +1,4 @@
 import { useColorScheme } from 'react-native';
-import { useThemeContext } from '../packages/core-contexts/theme-context';
 import { ColorTokens, ironDark, ironLight } from './palette';
 import { fonts, typography } from './typography';
 import { iconSize, radius, spacing } from './spacing';
@@ -18,13 +17,8 @@ export interface Theme {
   isDark: boolean;
 }
 
-/** Resolve the active scheme from the user's choice or the system setting. */
-export const useIsDark = (): boolean => {
-  const { appTheme } = useThemeContext();
-  const system = useColorScheme();
-  const chosen = appTheme === 'system' ? system : appTheme;
-  return chosen !== 'light';
-};
+/** The app mirrors the phone's appearance setting. */
+export const useIsDark = (): boolean => useColorScheme() === 'dark';
 
 export const useTheme = (): Theme => {
   const isDark = useIsDark();

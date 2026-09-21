@@ -2,7 +2,7 @@ import React from 'react';
 import { ScrollView, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { RouteProp, useNavigation, useRoute } from '@react-navigation/native';
-import { StackNavigationProp } from '@react-navigation/stack';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useAuth } from '../../../../data/auth/AuthProvider';
 import { useInsights } from '../../../../data/hooks/useInsights';
 import { muscleWeeklySeries } from '../../../../data/engine/insights';
@@ -21,7 +21,7 @@ import { useTheme } from '../../../../theme';
 import { HomeStackParams } from '../HomeStack';
 
 export const MuscleDetailScreen = () => {
-  const navigation = useNavigation<StackNavigationProp<HomeStackParams>>();
+  const navigation = useNavigation<NativeStackNavigationProp<HomeStackParams>>();
   const { params } = useRoute<RouteProp<HomeStackParams, 'MuscleDetailScreen'>>();
   const { colors, spacing } = useTheme();
   const { profile } = useAuth();

@@ -1,7 +1,8 @@
 import { StyleSheet, Text, View } from 'react-native'
 import React from 'react'
 import { colors } from '../../colors'
-import { createStackNavigator } from '@react-navigation/stack'
+import { createNativeStackNavigator } from '@react-navigation/native-stack'
+import { useStackOptions } from '../../navigation/stackOptions'
 import { onboardingStack } from '../../config/onboardingStackConfig';
 import { Icon } from '../../components/icons/Icon';
 import { directionIcons } from '../../components/icons/icon-library';
@@ -33,14 +34,13 @@ export type OnboardingStackParams = {
     } | undefined;
 }
 
-const Stack = createStackNavigator<OnboardingStackParams>();
+const Stack = createNativeStackNavigator<OnboardingStackParams>();
 
 export const OnboardingStack = () => {
-    const appColors = colors();
-
+    const opts = useStackOptions();
 
     return (
-        <Stack.Navigator>
+        <Stack.Navigator screenOptions={opts.base}>
             <Stack.Screen
                 name='WelcomeScreen'
                 component={MessageScreen}
@@ -59,59 +59,17 @@ export const OnboardingStack = () => {
             <Stack.Screen
                 name='UserProfileInfoScreen'
                 component={UserProfileInfoScreen}
-                options={{
-                    headerShown: true,
-                    headerStyle: {backgroundColor: appColors.background},
-                    headerTitleStyle: {color: appColors.text},
-                    headerTitle: "Create Your Profile",
-                    headerBackTitle: '',
-                    headerBackImage: () => (
-                        <Icon
-                            icon={directionIcons.angleLeft}
-                            color={appColors.icon}
-                            size={25}
-                            style={{marginLeft: 10}}
-                        />
-                    )
-                }}
+                options={opts.screen('Create Your Profile')}
             />
             <Stack.Screen
                 name='SetProfilePhotoScreen'
                 component={SetProfilePhotoScreen}
-                options={{
-                    headerShown: true,
-                    headerStyle: {backgroundColor: appColors.background},
-                    headerTitleStyle: {color: appColors.text},
-                    headerTitle: "Set Your Photo",
-                    headerBackTitle: '',
-                    headerBackImage: () => (
-                        <Icon
-                            icon={directionIcons.angleLeft}
-                            color={appColors.icon}
-                            size={25}
-                            style={{marginLeft: 10}}
-                        />
-                    )
-                }}
+                options={opts.screen('Set Your Photo')}
             />
             <Stack.Screen
                 name='DesignYourPlanScreen'
                 component={DesignYourPlanScreen}
-                options={{
-                    headerShown: true,
-                    headerStyle: {backgroundColor: appColors.background},
-                    headerTitleStyle: {color: appColors.text},
-                    headerTitle: "Design Your Plan",
-                    headerBackTitle: '',
-                    headerBackImage: () => (
-                        <Icon
-                            icon={directionIcons.angleLeft}
-                            color={appColors.icon}
-                            size={25}
-                            style={{marginLeft: 10}}
-                        />
-                    )
-                }}
+                options={opts.screen('Design Your Plan')}
             />
             <Stack.Screen
                 name='SuccessScreen'

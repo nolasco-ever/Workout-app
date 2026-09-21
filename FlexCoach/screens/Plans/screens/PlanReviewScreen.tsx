@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Alert, ScrollView, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { RouteProp, useNavigation, useRoute } from '@react-navigation/native';
-import { StackNavigationProp } from '@react-navigation/stack';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useAuth } from '../../../data/auth/AuthProvider';
 import { usePlans } from '../../../data/hooks/usePlans';
 import { useWorkoutHome } from '../../../data/hooks/useWorkoutHome';
@@ -15,7 +15,7 @@ import { usePlanEditor } from '../PlanEditorContext';
 import { PlanSummaryCard } from '../components/PlanSummaryCard';
 
 export const PlanReviewScreen = () => {
-  const navigation = useNavigation<StackNavigationProp<PlansStackParams>>();
+  const navigation = useNavigation<NativeStackNavigationProp<PlansStackParams>>();
   const { params } = useRoute<RouteProp<PlansStackParams, 'PlanReviewScreen'>>();
   const { colors, spacing } = useTheme();
   const { uid } = useAuth();

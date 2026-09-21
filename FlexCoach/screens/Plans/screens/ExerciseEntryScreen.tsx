@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { KeyboardAvoidingView, Platform, ScrollView, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { RouteProp, useNavigation, useRoute } from '@react-navigation/native';
-import { StackNavigationProp } from '@react-navigation/stack';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useAuth } from '../../../data/auth/AuthProvider';
 import { WorkoutExercise } from '../../../data/models';
 import { fromDisplayDistance, fromDisplayWeight, parseNumber, toDisplayDistance, toDisplayWeight } from '../../../data/engine/units';
@@ -20,7 +20,7 @@ import { usePlanEditor } from '../PlanEditorContext';
 const str = (n: number | null) => (n === null ? '' : String(n));
 
 export const ExerciseEntryScreen = () => {
-  const navigation = useNavigation<StackNavigationProp<PlansStackParams>>();
+  const navigation = useNavigation<NativeStackNavigationProp<PlansStackParams>>();
   const { params } = useRoute<RouteProp<PlansStackParams, 'ExerciseEntryScreen'>>();
   const { colors, spacing } = useTheme();
   const { profile } = useAuth();

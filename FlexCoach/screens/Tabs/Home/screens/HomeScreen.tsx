@@ -1,8 +1,8 @@
-import React, { useEffect, useRef } from 'react';
-import { ActivityIndicator, ScrollView, TouchableOpacity, View } from 'react-native';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
+import { ActivityIndicator, RefreshControl, ScrollView, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation, useScrollToTop } from '@react-navigation/native';
-import { StackNavigationProp } from '@react-navigation/stack';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useAuth } from '../../../../data/auth/AuthProvider';
 import { useInsights } from '../../../../data/hooks/useInsights';
 import { useWorkoutHome } from '../../../../data/hooks/useWorkoutHome';
@@ -60,7 +60,7 @@ const LinkCard = ({ label, onPress, children }: { label: string; onPress: () => 
 };
 
 export const HomeScreen = () => {
-  const navigation = useNavigation<StackNavigationProp<HomeStackParams>>();
+  const navigation = useNavigation<NativeStackNavigationProp<HomeStackParams>>();
   const { colors, spacing } = useTheme();
   const { uid, profile } = useAuth();
   const unit = profile?.weightUnit ?? 'lb';
@@ -69,6 +69,15 @@ export const HomeScreen = () => {
   const steps = useSteps();
   const scrollRef = useRef<React.ComponentRef<typeof ScrollView>>(null);
   useScrollToTop(scrollRef);
+  const [refreshing, setRefreshing] = useState(false);
+  const onRefresh = useCallback(async () => {
+    setRefreshing(true);
+    try {
+      await Promise.all([ins.refresh(), steps.refresh()]);
+    } finally {
+      setRefreshing(false);
+    }
+  }, [ins.refresh, steps.refresh]);
 
   useEffect(() => {
     if (__DEV__ && devFlags.seedBodyWeightIfEmpty && uid && !ins.loading && ins.weightEntries.length === 0) {
@@ -79,14 +88,7 @@ export const HomeScreen = () => {
   const fmtVolume = (kg: number) => compactNumber(unit === 'lb' ? kgToLb(kg) : kg);
   const goWorkout = () => (navigation as any).navigate('WorkoutStack');
 
-  if (ins.loading) {
-    return (
-      <SafeAreaView edges={['left', 'right']} style={{ flex: 1, backgroundColor: colors.ground, alignItems: 'center', justifyContent: 'center' }}>
-        <ActivityIndicator color={colors.accent} />
-      </SafeAreaView>
-    );
-  }
-
+  const loading = ins.loading;
   const latestWeight = ins.weight[ins.weight.length - 1] ?? null;
   const weightDelta = ins.weightChangeCycle ?? ins.weightChange30d;
   const target = profile?.targetWeightKg ?? null;
@@ -110,7 +112,17 @@ export const HomeScreen = () => {
 
   return (
     <SafeAreaView edges={['left', 'right']} style={{ flex: 1, backgroundColor: colors.ground }}>
-      <ScrollView ref={scrollRef} contentContainerStyle={{ padding: spacing.lg, gap: spacing.lg, paddingBottom: spacing.xxl }} showsVerticalScrollIndicator={false}>
+      <ScrollView
+        ref={scrollRef}
+        contentInsetAdjustmentBehavior="automatic"
+        contentContainerStyle={{ padding: spacing.lg, gap: spacing.lg, paddingBottom: spacing.xxl }}
+        showsVerticalScrollIndicator={false}
+        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.accent} />}
+      >
+        {/* One scroll view for every state, with the inset the native large-title header needs. */}
+        {loading && <ActivityIndicator color={colors.accent} style={{ marginTop: spacing.xxl }} />}
+        {!loading && (
+        <>
         {/* Today */}
         <TouchableOpacity onPress={goWorkout} activeOpacity={0.7}>
           <SurfaceCard tone={todayStatus.tone === colors.accent ? 'accent' : 'surface'}>
@@ -250,6 +262,8 @@ export const HomeScreen = () => {
             </>
           )}
         </SurfaceCard>
+        </>
+        )}
       </ScrollView>
     </SafeAreaView>
   );

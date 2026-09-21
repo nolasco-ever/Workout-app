@@ -1,8 +1,8 @@
-import React from 'react';
-import { ActivityIndicator, ScrollView, TouchableOpacity, View } from 'react-native';
+import React, { useCallback, useState } from 'react';
+import { ActivityIndicator, RefreshControl, ScrollView, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
-import { StackNavigationProp } from '@react-navigation/stack';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useAuth } from '../../../data/auth/AuthProvider';
 import { usePlans } from '../../../data/hooks/usePlans';
 import { newPlan } from '../../../data/services/planService';
@@ -33,10 +33,19 @@ const PlanRow = ({ plan, onPress }: { plan: Plan; onPress: () => void }) => {
 };
 
 export const PlansScreen = () => {
-  const navigation = useNavigation<StackNavigationProp<PlansStackParams>>();
+  const navigation = useNavigation<NativeStackNavigationProp<PlansStackParams>>();
   const { colors, spacing } = useTheme();
   const { uid } = useAuth();
-  const { plans, loading } = usePlans();
+  const { plans, loading, refresh } = usePlans();
+  const [refreshing, setRefreshing] = useState(false);
+  const onRefresh = useCallback(async () => {
+    setRefreshing(true);
+    try {
+      await refresh();
+    } finally {
+      setRefreshing(false);
+    }
+  }, [refresh]);
   const editor = usePlanEditor();
 
   const active = plans.filter(p => p.status === 'active');
@@ -65,24 +74,23 @@ export const PlansScreen = () => {
 
   return (
     <SafeAreaView edges={['bottom', 'left', 'right']} style={{ flex: 1, backgroundColor: colors.ground }}>
-      {loading ? (
-        <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
-          <ActivityIndicator color={colors.accent} />
-        </View>
-      ) : (
-        <ScrollView contentContainerStyle={{ padding: spacing.lg, gap: spacing.xl }}>
-          {plans.length === 0 && (
-            <View style={{ gap: spacing.md, paddingVertical: spacing.xl }}>
-              <Icon icon={generalIcons.dumbbell} color={colors.accent} size={36} />
-              <CustomText variant="title">No plans yet</CustomText>
-              <CustomText variant="body" color={colors.inkMuted}>A plan is your workouts plus a schedule. Build one and the Workout tab takes it from there.</CustomText>
-            </View>
-          )}
-          {section('Active', active)}
-          {section('Inactive', inactive)}
-          {section('Archived', archived)}
-        </ScrollView>
-      )}
+      <ScrollView
+        contentInsetAdjustmentBehavior="automatic"
+        contentContainerStyle={{ padding: spacing.lg, gap: spacing.xl }}
+        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.accent} />}
+      >
+        {loading && <ActivityIndicator color={colors.accent} style={{ marginTop: spacing.xxl }} />}
+        {!loading && plans.length === 0 && (
+          <View style={{ gap: spacing.md, paddingVertical: spacing.xl }}>
+            <Icon icon={generalIcons.dumbbell} color={colors.accent} size={36} />
+            <CustomText variant="title">No plans yet</CustomText>
+            <CustomText variant="body" color={colors.inkMuted}>A plan is your workouts plus a schedule. Build one and the Workout tab takes it from there.</CustomText>
+          </View>
+        )}
+        {!loading && section('Active', active)}
+        {!loading && section('Inactive', inactive)}
+        {!loading && section('Archived', archived)}
+      </ScrollView>
       <View style={{ padding: spacing.lg }}>
         <PrimaryButton label="New plan" icon={generalIcons.plus} onPress={create} />
       </View>

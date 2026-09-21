@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { ScrollView, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { RouteProp, useNavigation, useRoute } from '@react-navigation/native';
-import { StackNavigationProp } from '@react-navigation/stack';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useAuth } from '../../../../data/auth/AuthProvider';
 import { SetTarget, WorkoutExercise } from '../../../../data/models';
 import { findWorkout } from '../../../../data/engine/schedule';
@@ -34,7 +34,7 @@ const describeTarget = (entry: WorkoutExercise, t: SetTarget, unit: 'kg' | 'lb',
 };
 
 export const WorkoutPreviewScreen = () => {
-  const navigation = useNavigation<StackNavigationProp<WorkoutStackParams>>();
+  const navigation = useNavigation<NativeStackNavigationProp<WorkoutStackParams>>();
   const { params } = useRoute<RouteProp<WorkoutStackParams, 'WorkoutPreviewScreen'>>();
   const { plan, cycle, occurrence } = params;
   const { colors, spacing } = useTheme();

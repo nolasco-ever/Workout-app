@@ -2,7 +2,6 @@ import React from 'react';
 import { LogBox } from 'react-native';
 import { DarkTheme, DefaultTheme, NavigationContainer } from '@react-navigation/native';
 import { AppStack } from './appNavigators/AppStack';
-import { ThemeProvider } from './packages/core-contexts/theme-context';
 import { ModalProvider } from './packages/core-contexts/modal-context';
 import { CustomModal } from './packages/core-components/Modal/CustomModal';
 import { AuthProvider } from './data/auth/AuthProvider';
@@ -14,7 +13,7 @@ import { useTheme } from './theme';
 // for web); Reanimated 4.7 warns about it on native. Harmless, and not ours.
 LogBox.ignoreLogs(['[Reanimated] Dependencies should only be used on the web']);
 
-/** Sits inside ThemeProvider so the navigation container can read the tokens. */
+/** Builds the navigation theme from the design tokens so every navigator paints the ground colour. */
 const Navigation = () => {
   const { colors, isDark } = useTheme();
   const base = isDark ? DarkTheme : DefaultTheme;
@@ -43,12 +42,10 @@ const App = () => {
     <GestureHandlerRootView style={{ flex: 1 }}>
     <SafeAreaProvider>
       <AuthProvider>
-      <ThemeProvider appTheme='system'>
         <ModalProvider>
           <Navigation/>
           <CustomModal/>
         </ModalProvider>
-      </ThemeProvider>
       </AuthProvider>
     </SafeAreaProvider>
     </GestureHandlerRootView>

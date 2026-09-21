@@ -2,7 +2,7 @@ import React, { useCallback, useMemo, useState } from 'react';
 import { FlatList, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { RouteProp, useNavigation, useRoute } from '@react-navigation/native';
-import { StackNavigationProp } from '@react-navigation/stack';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { Exercise, MuscleGroup } from '../../../data/models';
 import { MUSCLE_GROUPS, searchCatalog } from '../../../data/catalog/exerciseCatalog';
 import { newEntry } from '../../../data/services/planService';
@@ -54,7 +54,7 @@ const ExerciseRow = React.memo(({ item, inWorkout, onOpen, onAdd }: RowProps) =>
 });
 
 export const ExercisePickerScreen = () => {
-  const navigation = useNavigation<StackNavigationProp<PlansStackParams>>();
+  const navigation = useNavigation<NativeStackNavigationProp<PlansStackParams>>();
   const { params } = useRoute<RouteProp<PlansStackParams, 'ExercisePickerScreen'>>();
   const { colors, spacing } = useTheme();
   const { draft, update } = usePlanEditor();

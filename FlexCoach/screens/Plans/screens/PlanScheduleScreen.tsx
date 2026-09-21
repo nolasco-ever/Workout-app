@@ -5,7 +5,7 @@ import { SortableRows } from '../../../components/lists/SortableRows';
 import { newId } from '../../../data/engine/ids';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { RouteProp, useNavigation, useRoute } from '@react-navigation/native';
-import { StackNavigationProp } from '@react-navigation/stack';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { Id, RotationSchedule, WeeklySchedule, Weekday } from '../../../data/models';
 import { CustomText } from '../../../components/text/customText';
 import { SurfaceCard } from '../../../components/cards/SurfaceCard';
@@ -23,7 +23,7 @@ const DAY = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', '
 const DAY_SHORT = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
 export const PlanScheduleScreen = () => {
-  const navigation = useNavigation<StackNavigationProp<PlansStackParams>>();
+  const navigation = useNavigation<NativeStackNavigationProp<PlansStackParams>>();
   const { params } = useRoute<RouteProp<PlansStackParams, 'PlanScheduleScreen'>>();
   const { colors, spacing } = useTheme();
   const { draft, update } = usePlanEditor();

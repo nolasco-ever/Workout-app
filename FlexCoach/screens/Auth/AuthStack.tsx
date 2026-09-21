@@ -1,6 +1,7 @@
 import { StyleSheet, Text, View } from 'react-native'
 import React from 'react'
-import { TransitionPresets, createStackNavigator } from '@react-navigation/stack'
+import { createNativeStackNavigator } from '@react-navigation/native-stack'
+import { useStackOptions } from '../../navigation/stackOptions'
 import { colors } from '../../colors';
 import { authStack } from '../../config/authStackConfig';
 import { Icon } from '../../components/icons/Icon';
@@ -21,17 +22,17 @@ export type AuthStackParams = {
         message: string;
         image: any;
         buttonTitle: string;
-        buttonAction: () => void;
+        buttonAction?: () => void;
+        popToTop?: boolean;
     } | undefined;
 }
 
-const Stack = createStackNavigator<AuthStackParams>();
+const Stack = createNativeStackNavigator<AuthStackParams>();
 
 export const AuthStack = () => {
-    const appColors = colors();
-
+    const opts = useStackOptions();
     return (
-        <Stack.Navigator initialRouteName="SignInScreen">
+        <Stack.Navigator initialRouteName="SignInScreen" screenOptions={opts.base}>
             <Stack.Screen
                 name="SignInScreen"
                 component={SignInScreen}
@@ -40,40 +41,12 @@ export const AuthStack = () => {
             <Stack.Screen
                 name="SignUpScreen"
                 component={SignUpScreen}
-                options={{
-                    headerShown: true,
-                    headerStyle: {backgroundColor: appColors.background},
-                    headerTitleStyle: {color: appColors.text},
-                    headerTitle: 'Sign Up',
-                    headerBackTitle: '',
-                    headerBackImage: () => (
-                        <Icon
-                        icon={directionIcons.angleLeft}
-                        color={appColors.icon}
-                        size={25}
-                        style={{marginLeft: 10}}
-                        />
-                    )
-                }}
+                options={opts.screen('Sign Up')}
             />
             <Stack.Screen
                 name="ForgotPasswordScreen"
                 component={ForgotPasswordScreen}
-                options={{
-                    headerShown: true,
-                    headerStyle: {backgroundColor: appColors.background},
-                    headerTitleStyle: {color: appColors.text},
-                    headerTitle: 'Reset Your Password',
-                    headerBackTitle: '',
-                    headerBackImage: () => (
-                        <Icon
-                        icon={directionIcons.angleLeft}
-                        color={appColors.icon}
-                        size={25}
-                        style={{marginLeft: 10}}
-                        />
-                    )
-                }}
+                options={opts.screen('Reset Your Password')}
             />
             <Stack.Screen
                 name="EmailSentScreen"

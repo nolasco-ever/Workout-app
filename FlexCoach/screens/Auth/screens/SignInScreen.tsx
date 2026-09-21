@@ -4,7 +4,7 @@ import { NavigationProp, ParamListBase, StackActions, useNavigation } from '@rea
 import { StyleSheet, TouchableOpacity, Dimensions, Text, View, KeyboardAvoidingView, Platform, Keyboard } from 'react-native';
 import { colors } from '../../../colors';
 import { CustomText } from '../../../components/text/customText';
-import { StackNavigationProp } from '@react-navigation/stack';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { generalIcons } from '../../../components/icons/icon-library';
 import { CustomTextInput } from '../../../components/text-input/CustomTextInput';
 import { AnimatedImage } from '../../../components/utils/AnimatedImage';

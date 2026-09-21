@@ -2,7 +2,7 @@ import React from 'react';
 import { Image, ScrollView, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { RouteProp, useNavigation, useRoute } from '@react-navigation/native';
-import { StackNavigationProp } from '@react-navigation/stack';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { newEntry } from '../../../../data/services/planService';
 import { usePlanEditor } from '../../../Plans/PlanEditorContext';
 import { PrimaryButton } from '../../../../components/buttons/PrimaryButton';
@@ -30,7 +30,7 @@ const Chip = ({ label }: { label: string }) => {
  */
 export const ExerciseDetailScreen = () => {
   const { params } = useRoute<RouteProp<{ ExerciseDetailScreen: { exerciseId: string; addToWorkoutId?: string } }, 'ExerciseDetailScreen'>>();
-  const navigation = useNavigation<StackNavigationProp<Record<string, object | undefined>>>();
+  const navigation = useNavigation<NativeStackNavigationProp<Record<string, object | undefined>>>();
   const { colors, spacing, radius } = useTheme();
   const ex = getCatalogExercise(params.exerciseId);
   const editor = usePlanEditor();

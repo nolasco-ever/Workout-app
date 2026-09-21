@@ -2,7 +2,7 @@ import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Alert, KeyboardAvoidingView, Platform, ScrollView, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { RouteProp, useNavigation, useRoute } from '@react-navigation/native';
-import { StackNavigationProp } from '@react-navigation/stack';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useAuth } from '../../../../data/auth/AuthProvider';
 import { LoggedSet, Session, SessionExercise } from '../../../../data/models';
 import { findWorkout } from '../../../../data/engine/schedule';
@@ -65,7 +65,7 @@ const unitLabels = (ex: SessionExercise, u: Units) => {
 };
 
 export const SessionScreen = () => {
-  const navigation = useNavigation<StackNavigationProp<WorkoutStackParams>>();
+  const navigation = useNavigation<NativeStackNavigationProp<WorkoutStackParams>>();
   const { params } = useRoute<RouteProp<WorkoutStackParams, 'SessionScreen'>>();
   const { plan, cycle } = params;
   const { colors, spacing, radius } = useTheme();

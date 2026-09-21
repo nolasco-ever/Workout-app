@@ -4,7 +4,7 @@ import Animated, { useAnimatedRef } from 'react-native-reanimated';
 import { SortableRows } from '../../../components/lists/SortableRows';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { RouteProp, useNavigation, useRoute } from '@react-navigation/native';
-import { StackNavigationProp } from '@react-navigation/stack';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useAuth } from '../../../data/auth/AuthProvider';
 import { Workout, WorkoutExercise } from '../../../data/models';
 import { formatDistance, formatDuration, formatWeight } from '../../../data/engine/units';
@@ -35,7 +35,7 @@ export const describeEntry = (e: WorkoutExercise, unit: 'kg' | 'lb', dist: 'km' 
 };
 
 export const WorkoutEditorScreen = () => {
-  const navigation = useNavigation<StackNavigationProp<PlansStackParams>>();
+  const navigation = useNavigation<NativeStackNavigationProp<PlansStackParams>>();
   const { params } = useRoute<RouteProp<PlansStackParams, 'WorkoutEditorScreen'>>();
   const { colors, spacing } = useTheme();
   const { profile } = useAuth();

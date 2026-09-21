@@ -1,74 +1,22 @@
 import React from 'react';
-import { createStackNavigator } from '@react-navigation/stack';
-import { Icon } from '../../../components/icons/Icon';
-import { colors } from '../../../colors';
+import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { ProfileScreen } from './screens/ProfileScreen';
-import { directionIcons } from '../../../components/icons/icon-library';
-import { profileStack } from '../../../config/profileStackConfig';
 import { PlaceholderScreen } from '../../placeholderScreen';
-import { NavigationHeader } from '../../../components/headers/NavigationHeader';
-import { getScreenHeaderOptions } from '../../../config/getScreenHeader';
-import { AppThemeScreen } from './screens/AppThemeScreen';
+import { useStackOptions } from '../../../navigation/stackOptions';
 
 export type ProfileStackParams = {
     ProfileScreen: undefined;
-    AppThemeScreen: undefined;
     PlaceholderScreen: { title: string };
-}
+};
 
-const Stack = createStackNavigator<ProfileStackParams>();
+const Stack = createNativeStackNavigator<ProfileStackParams>();
 
 export const ProfileStack = () => {
-    const appColors = colors();
-
+    const opts = useStackOptions();
     return (
-        <Stack.Navigator>
-            <Stack.Screen
-                name='ProfileScreen'
-                component={ProfileScreen}
-                options={{
-                    header: () => (
-                        <NavigationHeader
-                            title='Profile'
-                            subtitle='Ever Nolasco'
-                        />
-                    )
-                }}
-            />
-            <Stack.Screen
-                name='AppThemeScreen'
-                component={AppThemeScreen}
-                options={{
-                    headerBackImage: () => (
-                        <Icon
-                            icon={directionIcons.angleLeft} 
-                            color={appColors.icon} 
-                            size={30} 
-                            style={{marginLeft: 10}}
-                        />
-                    ),
-                    ...getScreenHeaderOptions(appColors, 'App Theme')
-                }}
-            />
-            <Stack.Screen
-                name="PlaceholderScreen"
-                component={PlaceholderScreen}
-                options={({ route }) => ({
-                    headerShown: true,
-                    headerStyle: {backgroundColor: appColors.background},
-                    headerTitleStyle: {color: appColors.text},
-                    headerTitle: (route.params as { title: string }).title,
-                    headerBackTitle: '',
-                    headerBackImage: () => (
-                        <Icon
-                            icon={directionIcons.angleLeft} 
-                            color={appColors.icon} 
-                            size={30} 
-                            style={{marginLeft: 10}}
-                        />
-                    )
-                })}
-            />
+        <Stack.Navigator screenOptions={opts.base}>
+            <Stack.Screen name="ProfileScreen" component={ProfileScreen} options={opts.root('Profile')} />
+            <Stack.Screen name="PlaceholderScreen" component={PlaceholderScreen} options={({ route }) => opts.screen(route.params.title)} />
         </Stack.Navigator>
     );
-}
+};

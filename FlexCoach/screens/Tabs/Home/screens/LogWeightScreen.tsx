@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { KeyboardAvoidingView, Platform, ScrollView, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
-import { StackNavigationProp } from '@react-navigation/stack';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useAuth } from '../../../../data/auth/AuthProvider';
 import { fromDisplayWeight, parseNumber, toDisplayWeight } from '../../../../data/engine/units';
 import { addDays, today } from '../../../../data/engine/dates';
@@ -20,7 +20,7 @@ import { HomeStackParams } from '../HomeStack';
 import { shortDate } from '../../../../components/charts/scale';
 
 export const LogWeightScreen = () => {
-  const navigation = useNavigation<StackNavigationProp<HomeStackParams>>();
+  const navigation = useNavigation<NativeStackNavigationProp<HomeStackParams>>();
   const { colors, spacing } = useTheme();
   const { uid, profile } = useAuth();
   const unit = profile?.weightUnit ?? 'lb';

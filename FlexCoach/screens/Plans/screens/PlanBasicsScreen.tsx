@@ -2,7 +2,7 @@ import React from 'react';
 import { KeyboardAvoidingView, Platform, ScrollView, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { RouteProp, useNavigation, useRoute } from '@react-navigation/native';
-import { StackNavigationProp } from '@react-navigation/stack';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { GOAL_DEFAULTS, PlanGoal } from '../../../data/models';
 import { CustomText } from '../../../components/text/customText';
 import { TextField } from '../../../components/inputs/TextField';
@@ -14,7 +14,7 @@ import { StepFooter } from '../components/StepFooter';
 import { GOAL_LABEL } from '../components/planSummary';
 
 export const PlanBasicsScreen = () => {
-  const navigation = useNavigation<StackNavigationProp<PlansStackParams>>();
+  const navigation = useNavigation<NativeStackNavigationProp<PlansStackParams>>();
   const { params } = useRoute<RouteProp<PlansStackParams, 'PlanBasicsScreen'>>();
   const { colors, spacing } = useTheme();
   const { draft, update } = usePlanEditor();
