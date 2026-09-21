@@ -84,9 +84,22 @@ android {
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
         versionCode 1
-        versionName "1.0"
+        versionName "1.0.0"
     }
+    // Release signing comes from android/keystore.properties (git-ignored).
+    def keystoreProps = new Properties()
+    def keystoreFile = rootProject.file("keystore.properties")
+    if (keystoreFile.exists()) keystoreProps.load(new FileInputStream(keystoreFile))
+
     signingConfigs {
+        release {
+            if (keystoreFile.exists()) {
+                storeFile file(keystoreProps['FLEXCOACH_UPLOAD_STORE_FILE'])
+                storePassword keystoreProps['FLEXCOACH_UPLOAD_STORE_PASSWORD']
+                keyAlias keystoreProps['FLEXCOACH_UPLOAD_KEY_ALIAS']
+                keyPassword keystoreProps['FLEXCOACH_UPLOAD_KEY_PASSWORD']
+            }
+        }
         debug {
             storeFile file('debug.keystore')
             storePassword 'android'
@@ -99,9 +112,7 @@ android {
             signingConfig signingConfigs.debug
         }
         release {
-            // Caution! In production, you need to generate your own keystore file.
-            // see https://reactnative.dev/docs/signed-apk-android.
-            signingConfig signingConfigs.debug
+            signingConfig keystoreFile.exists() ? signingConfigs.release : signingConfigs.debug
             minifyEnabled enableProguardInReleaseBuilds
             proguardFiles getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro"
         }

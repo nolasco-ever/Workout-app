@@ -77,3 +77,7 @@ yarn-error.log
 # Firebase config (contains API keys; keep out of the repo)
 ios/GoogleService-Info.plist
 android/app/google-services.json
+
+# Android release signing (never commit)
+android/app/upload-keystore.jks
+android/keystore.properties

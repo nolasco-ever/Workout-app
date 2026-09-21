@@ -35,6 +35,8 @@
 	</array>
 	<key>CFBundleVersion</key>
 	<string>$(CURRENT_PROJECT_VERSION)</string>
+	<key>ITSAppUsesNonExemptEncryption</key>
+	<false/>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
 	<key>NSAppTransportSecurity</key>
@@ -50,8 +52,6 @@
 	<string>FlexCoach reads your step count and body weight from Apple Health to show them on your Home tab.</string>
 	<key>NSHealthUpdateUsageDescription</key>
 	<string>FlexCoach writes the weigh-ins you log to Apple Health so your records stay in one place.</string>
-	<key>NSLocationWhenInUseUsageDescription</key>
-	<string></string>
 	<key>NSPhotoLibraryUsageDescription</key>
 	<string>FlexCoach uses your photo library to set a profile photo.</string>
 	<key>RCTNewArchEnabled</key>
