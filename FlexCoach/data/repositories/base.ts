@@ -43,15 +43,26 @@ export const listDocs = async <T>(collectionPath: string, ...constraints: QueryC
   return snap.docs.map(d => d.data() as T);
 };
 
+/**
+ * Listener errors (for example permission-denied right after the account is
+ * deleted or signed out) are logged, never thrown: a single callback would be
+ * treated as the legacy `(snapshot, error)` signature and receive `null`.
+ */
+const onListenError = (path: string) => (err: unknown) => console.warn(`[firestore] listener on ${path} stopped:`, err);
+
 export const watchDoc = <T>(path: string, onChange: (value: T | null) => void): Unsubscribe =>
-  onSnapshot(doc(db, path), snap => onChange(snap.exists() ? (snap.data() as T) : null));
+  onSnapshot(doc(db, path), snap => onChange(snap && snap.exists() ? (snap.data() as T) : null), onListenError(path));
 
 export const watchDocs = <T>(
   collectionPath: string,
   onChange: (values: T[]) => void,
   ...constraints: QueryConstraint[]
 ): Unsubscribe =>
-  onSnapshot(query(collection(db, collectionPath), ...constraints), snap => onChange(snap.docs.map(d => d.data() as T)));
+  onSnapshot(
+    query(collection(db, collectionPath), ...constraints),
+    snap => onChange(snap ? snap.docs.map(d => d.data() as T) : []),
+    onListenError(collectionPath),
+  );
 
 /** Fill in the timestamps every persisted document carries. */
 export const stamp = <T extends Omit<BaseDocument, 'createdAt' | 'updatedAt'>>(

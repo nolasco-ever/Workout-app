@@ -36,34 +36,30 @@ export const AccountScreen = () => {
     }
   };
 
-  const deleteAccount = () => {
-    const proceed = (password?: string) =>
-      Alert.alert('Delete your account?', 'Your plans, sessions, weigh-ins, and profile are erased. This cannot be undone.', [
-        { text: 'Cancel', style: 'cancel' },
-        {
-          text: 'Delete everything',
-          style: 'destructive',
-          onPress: async () => {
-            setBusy('delete');
-            try {
-              await authService.deleteAccount(password);
-            } catch (err) {
-              Alert.alert("Couldn't delete the account", err instanceof Error ? err.message : 'Try again.');
-            } finally {
-              setBusy(null);
-            }
-          },
+  const [confirmingDelete, setConfirmingDelete] = useState(false);
+  const [deletePassword, setDeletePassword] = useState('');
+  const [deleteError, setDeleteError] = useState<string | null>(null);
+
+  // Alert.prompt is iOS-only, so the password check lives inline and works on both platforms.
+  const deleteAccount = () =>
+    Alert.alert('Delete your account?', 'Your plans, sessions, weigh-ins, and profile are erased. This cannot be undone.', [
+      { text: 'Cancel', style: 'cancel' },
+      {
+        text: 'Delete everything',
+        style: 'destructive',
+        onPress: async () => {
+          setBusy('delete');
+          setDeleteError(null);
+          try {
+            await authService.deleteAccount(provider === 'password' ? deletePassword : undefined);
+          } catch (err) {
+            setDeleteError(err instanceof Error ? err.message : 'Try again.');
+          } finally {
+            setBusy(null);
+          }
         },
-      ]);
-    if (provider === 'password') {
-      Alert.prompt('Confirm your password', 'For safety, enter your password to delete the account.', [
-        { text: 'Cancel', style: 'cancel' },
-        { text: 'Continue', onPress: pw => proceed(pw) },
-      ], 'secure-text');
-    } else {
-      proceed();
-    }
-  };
+      },
+    ]);
 
   return (
     <SafeAreaView edges={['bottom', 'left', 'right']} style={{ flex: 1, backgroundColor: colors.ground }}>
@@ -87,7 +83,13 @@ export const AccountScreen = () => {
           <View style={{ gap: spacing.sm }}>
             <CustomText variant="overline" color={colors.inkMuted}>Danger zone</CustomText>
             <SurfaceCard style={{ padding: 0 }}>
-              <Row title="Delete account" description="Erases your data permanently." tone="destructive" chevron={false} onPress={busy ? undefined : deleteAccount} />
+              <Row title="Delete account" description="Erases your data permanently." tone="destructive" chevron={false} onPress={busy ? undefined : () => (provider === 'password' ? setConfirmingDelete(v => !v) : deleteAccount())} />
+              {confirmingDelete && provider === 'password' && (
+                <View style={{ padding: spacing.lg, paddingTop: 0, gap: spacing.md }}>
+                  <TextField id="pw-delete" label="Confirm your password" value={deletePassword} onChangeText={setDeletePassword} secureTextEntry autoCapitalize="none" textContentType="password" error={deleteError} hint="For safety, enter your password to delete the account." />
+                  <PrimaryButton label="Delete everything" variant="outline" tone="destructive" disabled={deletePassword.length === 0} busy={busy === 'delete'} onPress={deleteAccount} />
+                </View>
+              )}
             </SurfaceCard>
           </View>
         </ScrollView>

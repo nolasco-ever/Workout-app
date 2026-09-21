@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { KeyboardAvoidingView, Platform, ScrollView, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
@@ -30,6 +30,12 @@ export const AboutYouScreen = () => {
   const [weight, setWeight] = useState('');
   const [goal, setGoal] = useState('');
   const [busy, setBusy] = useState(false);
+
+  // The profile document usually lands after mount; fill the name in once it does.
+  const knownName = profile?.displayName ?? user?.displayName ?? '';
+  useEffect(() => {
+    setName(current => (current.trim() ? current : knownName));
+  }, [knownName]);
 
   const save = async () => {
     if (!uid) return;

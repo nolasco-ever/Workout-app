@@ -7,15 +7,14 @@ import { appleAuth } from '@invertase/react-native-apple-authentication';
 import { authService, AuthError } from '../../../data/auth/authService';
 import { features } from '../../../config/features';
 import { CustomText } from '../../../components/text/customText';
-import { Icon } from '../../../components/icons/Icon';
-import { generalIcons } from '../../../components/icons/icon-library';
 import { useTheme } from '../../../theme';
+import { BrandMark } from '../../../components/brand/BrandMark';
 import { AuthStackParams } from '../AuthStack';
 import { ProviderButton } from '../components/ProviderButton';
 
 export const WelcomeScreen = () => {
   const navigation = useNavigation<NativeStackNavigationProp<AuthStackParams>>();
-  const { colors, spacing, radius } = useTheme();
+  const { colors, spacing } = useTheme();
   const [busy, setBusy] = useState<'apple' | 'google' | null>(null);
   const showApple = features.appleSignIn && appleAuth.isSupported;
 
@@ -35,9 +34,7 @@ export const WelcomeScreen = () => {
     <SafeAreaView style={{ flex: 1, backgroundColor: colors.ground }}>
       <View style={{ flex: 1, padding: spacing.xl, justifyContent: 'space-between' }}>
         <View style={{ flex: 1, justifyContent: 'center', gap: spacing.lg }}>
-          <View style={{ width: 72, height: 72, borderRadius: radius.lg, backgroundColor: colors.accent, alignItems: 'center', justifyContent: 'center' }}>
-            <Icon icon={generalIcons.dumbbell} color={colors.onAccent} size={36} strokeWidth={2.5} />
-          </View>
+          <BrandMark size={72} />
           <View style={{ gap: spacing.sm }}>
             <CustomText variant="display">FlexCoach</CustomText>
             <CustomText variant="body" color={colors.inkMuted}>

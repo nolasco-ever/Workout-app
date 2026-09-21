@@ -9,23 +9,26 @@ interface Props {
   onPress: () => void;
   icon?: IconSource;
   variant?: 'filled' | 'outline' | 'quiet';
+  /** Destructive swaps the accent for the error color. */
+  tone?: 'accent' | 'destructive';
   disabled?: boolean;
   busy?: boolean;
 }
 
 /** Token-driven button for the new screens. The legacy Button stays for old ones. */
-export const PrimaryButton = ({ label, onPress, icon, variant = 'filled', disabled = false, busy = false }: Props) => {
+export const PrimaryButton = ({ label, onPress, icon, variant = 'filled', tone = 'accent', disabled = false, busy = false }: Props) => {
   const { colors, radius, spacing } = useTheme();
   const filled = variant === 'filled';
-  const fg = filled ? colors.onAccent : variant === 'outline' ? colors.accent : colors.ink;
+  const accent = tone === 'destructive' ? colors.error : colors.accent;
+  const fg = filled ? colors.onAccent : variant === 'outline' ? accent : colors.ink;
   return (
     <TouchableOpacity
       onPress={onPress}
       disabled={disabled || busy}
       activeOpacity={0.8}
       style={{
-        backgroundColor: filled ? colors.accent : colors.transparent,
-        borderColor: variant === 'outline' ? colors.accent : colors.transparent,
+        backgroundColor: filled ? accent : colors.transparent,
+        borderColor: variant === 'outline' ? accent : colors.transparent,
         borderWidth: 1.5,
         borderRadius: radius.md,
         paddingVertical: spacing.md + 2,
