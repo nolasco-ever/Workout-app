@@ -15,8 +15,8 @@ export type TabNavigatorParams = {
 
 const Tab = createNativeBottomTabNavigator<TabNavigatorParams>();
 
-/** SF Symbols on iOS (Liquid Glass on iOS 26); bundled Lucide PNGs on Android. */
-const icon = (sfSymbol: 'house' | 'dumbbell' | 'person', png: number) => () => (Platform.OS === 'ios' ? { sfSymbol } : png);
+/** SF Symbols on iOS (Liquid Glass on iOS 26); Lucide vector drawables on Android. */
+const icon = (sfSymbol: 'house' | 'dumbbell' | 'person', drawable: string) => () => (Platform.OS === 'ios' ? { sfSymbol } : { uri: drawable });
 
 export const TabNavigator = () => {
     const { colors } = useTheme();
@@ -31,9 +31,9 @@ export const TabNavigator = () => {
             minimizeBehavior="never"
             labeled
         >
-            <Tab.Screen name="HomeStack" component={HomeStack} options={{ title: 'Home', tabBarIcon: icon('house', require('../assets/tabs/home.png')) }} />
-            <Tab.Screen name="WorkoutStack" component={WorkoutStack} options={{ title: 'Workout', tabBarIcon: icon('dumbbell', require('../assets/tabs/workout.png')) }} />
-            <Tab.Screen name="ProfileStack" component={ProfileStack} options={{ title: 'Profile', tabBarIcon: icon('person', require('../assets/tabs/profile.png')) }} />
+            <Tab.Screen name="HomeStack" component={HomeStack} options={{ title: 'Home', tabBarIcon: icon('house', 'ic_tab_home') }} />
+            <Tab.Screen name="WorkoutStack" component={WorkoutStack} options={{ title: 'Workout', tabBarIcon: icon('dumbbell', 'ic_tab_workout') }} />
+            <Tab.Screen name="ProfileStack" component={ProfileStack} options={{ title: 'Profile', tabBarIcon: icon('person', 'ic_tab_profile') }} />
         </Tab.Navigator>
     );
 };

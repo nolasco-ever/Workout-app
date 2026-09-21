@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
-import { onAuthStateChanged, signInAnonymously, type User } from '@react-native-firebase/auth';
+import { onAuthStateChanged, onIdTokenChanged, signInAnonymously, type User } from '@react-native-firebase/auth';
 import { auth } from '../firebase/firebase';
 import { userRepository } from '../repositories/userRepository';
 import { UserProfile } from '../models';
@@ -25,7 +25,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [state, setState] = useState<AuthState>({ uid: null, user: null, profile: null, ready: false, isAnonymous: true });
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, async user => {
+    const apply = async (user: User | null) => {
       if (!user) {
         try {
           await signInAnonymously(auth);
@@ -44,13 +44,21 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         });
         setState({ uid: user.uid, user, profile, ready: true, isAnonymous: user.isAnonymous });
       } catch (err) {
-        // Most likely a rules or connectivity problem. The app stays usable;
-        // the profile watcher below will fill in once access is restored.
         console.warn('Could not load user profile', err);
         setState({ uid: user.uid, user, profile: null, ready: true, isAnonymous: user.isAnonymous });
       }
+    };
+    // Linking an anonymous session to a credential keeps the same user, so
+    // onAuthStateChanged stays silent; the id token does change, so listen
+    // to both and re-derive isAnonymous each time.
+    const unsubAuth = onAuthStateChanged(auth, apply);
+    const unsubToken = onIdTokenChanged(auth, user => {
+      if (user) setState(s => (s.uid === user.uid && s.isAnonymous !== user.isAnonymous ? { ...s, user, isAnonymous: user.isAnonymous } : s));
     });
-    return unsubscribe;
+    return () => {
+      unsubAuth();
+      unsubToken();
+    };
   }, []);
 
   useEffect(() => {

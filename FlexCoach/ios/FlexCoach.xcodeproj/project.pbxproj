@@ -195,7 +195,7 @@
 			);
 			mainGroup = 83CBB9F61A601CBA00E9B192;
 			packageReferences = (
-				EB0D368530C2F3150564B6D1 /* XCRemoteSwiftPackageReference "firebase-ios-sdk.git" */,
+				EB0D368530C2F3150564B6D1 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */,
 			);
 			productRefGroup = 83CBBA001A601CBA00E9B192 /* Products */;
 			projectDirPath = "";
@@ -386,7 +386,7 @@
 				CLANG_ENABLE_EXPLICIT_MODULES = NO;
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_ENTITLEMENTS = FlexCoach/FlexCoach.entitlements;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 2;
 				DEVELOPMENT_TEAM = 6B5A67RAPC;
 				ENABLE_BITCODE = NO;
 				INFOPLIST_FILE = FlexCoach/Info.plist;
@@ -421,7 +421,7 @@
 				CLANG_ENABLE_EXPLICIT_MODULES = NO;
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_ENTITLEMENTS = FlexCoach/FlexCoach.entitlements;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 2;
 				DEVELOPMENT_TEAM = 6B5A67RAPC;
 				INFOPLIST_FILE = FlexCoach/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 15.1;
@@ -658,7 +658,7 @@
 /* End XCConfigurationList section */
 
 /* Begin XCRemoteSwiftPackageReference section */
-		EB0D368530C2F3150564B6D1 /* XCRemoteSwiftPackageReference "firebase-ios-sdk.git" */ = {
+		EB0D368530C2F3150564B6D1 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/firebase/firebase-ios-sdk.git";
 			requirement = {
@@ -671,7 +671,7 @@
 /* Begin XCSwiftPackageProductDependency section */
 		B440C06462D48E094AC631CE /* FirebaseCore */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = EB0D368530C2F3150564B6D1 /* XCRemoteSwiftPackageReference "firebase-ios-sdk.git" */;
+			package = EB0D368530C2F3150564B6D1 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
 			productName = FirebaseCore;
 		};
 /* End XCSwiftPackageProductDependency section */

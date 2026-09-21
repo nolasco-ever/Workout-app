@@ -68,7 +68,6 @@ export const EmailAuthScreen = () => {
               textContentType={create ? 'newPassword' : 'password'}
               returnKeyType="go"
               onSubmitEditing={() => canSubmit && submit()}
-              suffix={showPassword ? 'hide' : 'show'}
             />
             <TouchableOpacity onPress={() => setShowPassword(s => !s)} hitSlop={8} style={{ alignSelf: 'flex-start' }}>
               <CustomText variant="caption" color={colors.inkMuted}>{showPassword ? 'Hide password' : 'Show password'}</CustomText>
