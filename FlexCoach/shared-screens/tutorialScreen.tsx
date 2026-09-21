@@ -1,4 +1,5 @@
-import { Dimensions, Image, SafeAreaView, StyleSheet, Text, TouchableOpacity, View } from 'react-native'
+import { Dimensions, Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native'
+import { SafeAreaView } from 'react-native-safe-area-context';
 import React from 'react'
 import { colors } from '../colors'
 import { ScrollView } from 'react-native-gesture-handler';
@@ -7,7 +8,7 @@ import { YouTubeVideo } from '../components/utils/youtubeVideo';
 import { Section } from '../components/sections/Section';
 import { TransitionPresets, createStackNavigator } from '@react-navigation/stack';
 import { Button } from '../components/buttons/button';
-import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
+import { Icon } from '../components/icons/Icon';
 import { generalIcons } from '../components/icons/icon-library';
 import { InformationCardSmall } from '../components/cards/informationCardSmall';
 import { NavigationProp, StackActions, useNavigation } from '@react-navigation/native';
@@ -52,7 +53,7 @@ export const TutorialScreen = ({route}: {route: any}) => {
           headerTitle: 'Step-by-step',
           headerBackTitle: '',
           headerBackImage: () => (
-            <FontAwesomeIcon
+            <Icon
               icon={generalIcons.xMark}
               color={appColors.icon}
               size={25}
@@ -101,7 +102,7 @@ export const TutorialScreen = ({route}: {route: any}) => {
   }
 
   return (
-    <SafeAreaView style={{flex: 1, backgroundColor:  appColors.background}}>
+    <SafeAreaView edges={['bottom', 'left', 'right']} style={{flex: 1, backgroundColor:  appColors.background}}>
         <YouTubeVideo
             videoLink={videoLink}
         />

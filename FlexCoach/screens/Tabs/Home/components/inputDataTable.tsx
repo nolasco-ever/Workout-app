@@ -3,9 +3,8 @@ import React, { useState } from 'react'
 import { InputDataListItem } from './inputDataListItem'
 import { colors } from '../../../../colors';
 import { CustomText } from '../../../../components/text/customText';
-import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
+import { Icon } from '../../../../components/icons/Icon';
 import { generalIcons } from '../../../../components/icons/icon-library';
-import { IconProp } from '@fortawesome/fontawesome-svg-core';
 
 type Exercise = {
     set: number;
@@ -81,15 +80,15 @@ export const InputDataTable = ({data, navigation}: InputTableProps) => {
             ))}
             <View style={{flexDirection: 'row', justifyContent: 'flex-end', marginRight: 5}}>
                 <TouchableOpacity style={[styles.plusMinusContainer, {marginRight: 10, backgroundColor: isLastRowEmpty() ? appColors.inactive : appColors.onSuccess}]} onPress={handleAddRow} disabled={isLastRowEmpty()}>
-                    <FontAwesomeIcon
-                        icon={generalIcons.plus as IconProp}
+                    <Icon
+                        icon={generalIcons.plus}
                         color={appColors.background}
                         size={20}
                     />
                 </TouchableOpacity>
                 <TouchableOpacity style={[styles.plusMinusContainer, {backgroundColor: tableData.length === 1 ? appColors.inactive : appColors.onError}]} onPress={() => handleDeleteRow(tableData.length - 1)} disabled={tableData.length === 1}>
-                    <FontAwesomeIcon
-                        icon={generalIcons.minus as IconProp}
+                    <Icon
+                        icon={generalIcons.minus}
                         color={appColors.background}
                         size={20}
                     />

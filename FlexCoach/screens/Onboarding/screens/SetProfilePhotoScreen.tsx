@@ -1,10 +1,10 @@
-import { Dimensions, Image, SafeAreaView, StyleSheet, Text, TouchableOpacity, View } from 'react-native'
+import { Dimensions, Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native'
+import { SafeAreaView } from 'react-native-safe-area-context';
 import React, { useState } from 'react'
 import { colors } from '../../../colors'
 import { user1 } from '../../../mocks/userMocks';
-import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
+import { Icon } from '../../../components/icons/Icon';
 import { generalIcons } from '../../../components/icons/icon-library';
-import { IconProp } from '@fortawesome/fontawesome-svg-core';
 import { Button } from '../../../components/buttons/button';
 import { launchImageLibrary, launchCamera, Asset, ImageLibraryOptions, CameraOptions } from 'react-native-image-picker';
 import { CustomText } from '../../../components/text/customText';
@@ -43,7 +43,7 @@ export const SetProfilePhotoScreen = () => {
     }
 
     return (
-        <SafeAreaView style={[styles.container, {backgroundColor: appColors.background}]}>
+        <SafeAreaView edges={['bottom', 'left', 'right']} style={[styles.container, {backgroundColor: appColors.background}]}>
             <View style={{padding: 10}}>
                 <CustomText type='subheader'>Let's set a profile photo and start building connections within our fitness community</CustomText>
             </View>

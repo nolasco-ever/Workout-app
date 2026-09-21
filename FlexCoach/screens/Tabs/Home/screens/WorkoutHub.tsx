@@ -1,4 +1,5 @@
-import { Dimensions, SafeAreaView, ScrollView, StyleSheet, Text, View } from 'react-native'
+import { Dimensions, ScrollView, StyleSheet, Text, View } from 'react-native'
+import { SafeAreaView } from 'react-native-safe-area-context';
 import React, { useEffect, useState } from 'react'
 import { colors } from '../../../../colors'
 import { ListItem } from '../../../../components/list-items/ListItem'
@@ -8,9 +9,8 @@ import { progressBarAnimation, successCheckAnimation } from '../../../../animati
 import { ProgressBar } from '../../../../components/progress-indicators/progressBar'
 import { CustomText } from '../../../../components/text/customText'
 import { TouchableOpacity } from 'react-native-gesture-handler'
-import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome'
+import { Icon } from '../../../../components/icons/Icon';
 import { directionIcons } from '../../../../components/icons/icon-library'
-import { IconProp } from '@fortawesome/fontawesome-svg-core'
 import { mockExercises } from '../../../../mocks/trainingDataMocks'
 import { useNavigation, NavigationProp } from '@react-navigation/native'
 import { HomeStackParams } from '../HomeStack'
@@ -63,7 +63,7 @@ export const WorkoutHub = () => {
     }, [exercises])
 
     return (
-        <SafeAreaView style={[styles.container, {backgroundColor: appColors.background}]}>
+        <SafeAreaView edges={['left', 'right']} style={[styles.container, {backgroundColor: appColors.background}]}>
             {started ? (
                 <View style={{height:  screenHeight/10}}>
                     {!progressCompleted ? (
@@ -116,8 +116,8 @@ export const WorkoutHub = () => {
                                             loop={false}
                                         />
                                     ) : (
-                                        <FontAwesomeIcon
-                                            icon={directionIcons.angleRight as IconProp}
+                                        <Icon
+                                            icon={directionIcons.angleRight}
                                             size={25}
                                             color={appColors.icon}
                                         />

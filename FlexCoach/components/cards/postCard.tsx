@@ -1,7 +1,6 @@
 import { View, Text, Image, TouchableOpacity, StyleSheet, Dimensions } from 'react-native'
 import React, { useState } from 'react'
-import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome'
-import { IconProp } from '@fortawesome/fontawesome-svg-core'
+import { Icon } from '../icons/Icon';
 import { TouchableWithoutFeedback } from 'react-native-gesture-handler'
 import { CustomText } from '../text/customText'
 import { generalIcons } from '../icons/icon-library'
@@ -83,8 +82,8 @@ export default function PostCard({
 
         <View style={postCardStyle.actionsContainer}>
             <TouchableWithoutFeedback style={postCardStyle.actionItemContainer} onPress={() => handleLike()}>
-                <FontAwesomeIcon
-                    icon={generalIcons.heart as IconProp}
+                <Icon
+                    icon={generalIcons.heart}
                     color={liked ? 'red' : appColors.inactive}
                     size={20}
                     style={{marginRight: 10}}
@@ -93,8 +92,8 @@ export default function PostCard({
             </TouchableWithoutFeedback>
             <View style={{marginLeft: 20}}/>
             <TouchableWithoutFeedback style={postCardStyle.actionItemContainer}>
-                <FontAwesomeIcon
-                    icon={generalIcons.comment as IconProp}
+                <Icon
+                    icon={generalIcons.comment}
                     color={appColors.secondary}
                     size={20}
                     style={{marginRight: 10}}

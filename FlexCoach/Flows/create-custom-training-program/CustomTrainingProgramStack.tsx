@@ -2,9 +2,8 @@ import React from 'react'
 import { createStackNavigator } from "@react-navigation/stack";
 import { colors } from "../../colors";
 import { customTrainingProgramStack } from '../../config/customTrainingProgramStackConfig';
-import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
+import { Icon } from '../../components/icons/Icon';
 import { directionIcons, generalIcons } from '../../components/icons/icon-library';
-import { IconProp } from '@fortawesome/fontawesome-svg-core';
 import { TutorialScreen } from '../../shared-screens/tutorialScreen';
 import MessageScreen from '../../shared-screens/messageScreen';
 import { successCheckAnimation } from '../../animations/shared';
@@ -47,15 +46,15 @@ export const CustomTrainingProgramStack = () => {
                         headerTitle: screen.name,
                         headerBackTitle: '',
                         headerBackImage: () => index === 0 ? (
-                            <FontAwesomeIcon
+                            <Icon
                                 icon={generalIcons.xMark}
                                 color={appColors.icon}
                                 size={25}
                                 style={{marginLeft: 10}}
                             />
                         ) : (
-                            <FontAwesomeIcon
-                                icon={directionIcons.angleLeft as IconProp}
+                            <Icon
+                                icon={directionIcons.angleLeft}
                                 color={appColors.icon}
                                 size={25}
                                 style={{marginLeft: 10}}
@@ -75,8 +74,8 @@ export const CustomTrainingProgramStack = () => {
                     headerTitle: 'Tutorial Screen',
                     headerBackTitle: '',
                     headerBackImage: () => (
-                        <FontAwesomeIcon
-                            icon={generalIcons.xMark as IconProp}
+                        <Icon
+                            icon={generalIcons.xMark}
                             color={appColors.icon}
                             size={25}
                             style={{marginLeft: 10}}

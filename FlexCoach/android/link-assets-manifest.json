@@ -1,0 +1,33 @@
+{
+  "migIndex": 1,
+  "data": [
+    {
+      "path": "assets/fonts/Manrope-Bold.ttf",
+      "sha1": "a0e1e0e4f15c9061938a53638aefbdba4c448e03"
+    },
+    {
+      "path": "assets/fonts/Manrope-Medium.ttf",
+      "sha1": "d2f06fc78353f3aa4a54a660308bd4263099edb9"
+    },
+    {
+      "path": "assets/fonts/Manrope-Regular.ttf",
+      "sha1": "5a4a88d2fbd37d759f872613e1d6b12cbba2709f"
+    },
+    {
+      "path": "assets/fonts/Manrope-SemiBold.ttf",
+      "sha1": "d1476a93628babbe930028dd7ff2e6b622db28f8"
+    },
+    {
+      "path": "assets/fonts/Sora-Bold.ttf",
+      "sha1": "e318b706cfa57484569b628cf62581d23b4b0342"
+    },
+    {
+      "path": "assets/fonts/Sora-Medium.ttf",
+      "sha1": "d36d022b8c42196f36fa32387bfa98c6f90934a1"
+    },
+    {
+      "path": "assets/fonts/Sora-SemiBold.ttf",
+      "sha1": "cec80a0da0964780f59401fd215d857980d7dcbd"
+    }
+  ]
+}

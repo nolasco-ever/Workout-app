@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { StyleSheet, View, Text, TouchableOpacity, SafeAreaView } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { StyleSheet, View, Text, TouchableOpacity } from 'react-native';
 import { colors } from '../../../colors';
 import { CustomText } from '../../../components/text/customText';
 import { AlertBanner } from '../../../components/banners/alertBanner';
@@ -112,7 +113,7 @@ export const ScheduleTrainingProgramScreen = ({ route }: { route: any }) => {
     }
 
     return (
-        <SafeAreaView style={[styles.container, {backgroundColor: appColors.background}]}>
+        <SafeAreaView edges={['bottom', 'left', 'right']} style={[styles.container, {backgroundColor: appColors.background}]}>
             <View style={{margin: 10, flexDirection: 'row'}}>
                 <CustomText type='subheader'>Establish a consistent routine by scheduling your workouts throughout the week</CustomText>
             </View>

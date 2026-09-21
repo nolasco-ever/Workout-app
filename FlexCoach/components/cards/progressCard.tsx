@@ -5,15 +5,14 @@ import { CustomText } from '../text/customText';
 import ProgressCircle from '../progress-indicators/progressCircle';
 import { TouchableOpacity } from 'react-native-gesture-handler';
 import { ProgressBar } from '../progress-indicators/progressBar';
-import { IconProp } from '@fortawesome/fontawesome-svg-core';
-import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
+import { Icon, IconSource } from '../icons/Icon';
 
 interface ProgressCardProps {
   title: string;
   goalAmount: number;
   currentAmount: number;
   unit?: string;
-  icon?: IconProp;
+  icon?: IconSource;
   color?: string;
   type?: 'bar' | 'circle'
 }
@@ -53,7 +52,7 @@ export const ProgressCard: React.FC<ProgressCardProps> = ({
         >
           <View style={{flexDirection: 'row', alignItems: 'center'}}>
             {icon && (
-              <FontAwesomeIcon
+              <Icon
                 icon={icon}
                 color={color || appColors.icon}
                 size={30}

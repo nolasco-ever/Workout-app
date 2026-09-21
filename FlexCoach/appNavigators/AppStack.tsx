@@ -3,9 +3,8 @@ import { TransitionPresets, createStackNavigator } from '@react-navigation/stack
 import { SignInScreen } from '../screens/Auth/screens/SignInScreen';
 import { TabNavigator } from './TabNavigator';
 import { NotificationsScreen } from '../screens/Tabs/Home/screens/NotificationsScreen';
-import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
+import { Icon } from '../components/icons/Icon';
 import { directionIcons } from '../components/icons/icon-library';
-import { IconProp } from '@fortawesome/fontawesome-svg-core';
 import { colors } from '../colors';
 import { CustomTrainingProgramStack } from '../Flows/create-custom-training-program/CustomTrainingProgramStack';
 import { AuthStack } from '../screens/Auth/AuthStack';
@@ -51,8 +50,8 @@ export const AppStack = () => {
                     headerBackTitle: '',
                     headerTitle: 'Notifications',
                     headerBackImage: () => (
-                        <FontAwesomeIcon
-                            icon={directionIcons.angleLeft as IconProp} 
+                        <Icon
+                            icon={directionIcons.angleLeft} 
                             color={appColors.icon} 
                             size={25} 
                             style={{marginLeft: 10}}

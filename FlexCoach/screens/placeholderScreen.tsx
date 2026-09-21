@@ -1,7 +1,7 @@
-import { IconProp } from '@fortawesome/fontawesome-svg-core';
-import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
+import { Icon } from '../components/icons/Icon';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import React from 'react';
-import { View, Text, StyleSheet, SafeAreaView } from 'react-native';
+import { View, Text, StyleSheet } from 'react-native';
 import { colors } from '../colors';
 import { tabIcons } from '../components/icons/icon-library';
 import { CustomText } from '../components/text/customText';
@@ -13,7 +13,7 @@ export const PlaceholderScreen = ({ route }: {route: any}) => {
   const { title, icon } = route.params;
   const appColors = colors();
   return (
-    <SafeAreaView style={[styles.container, {backgroundColor: appColors.background}]}>
+    <SafeAreaView edges={['left', 'right']} style={[styles.container, {backgroundColor: appColors.background}]}>
       <View style={{justifyContent: 'center', alignItems: 'center'}}>
         <AnimatedImage
           source={underConstructionAnimation}

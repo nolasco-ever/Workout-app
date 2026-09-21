@@ -1,8 +1,7 @@
 import React, { useState } from 'react';
 import { TouchableOpacity, View, Text, StyleSheet, Dimensions } from 'react-native';
-import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
+import { Icon } from '../icons/Icon';
 import { generalIcons } from '../icons/icon-library';
-import { IconProp } from '@fortawesome/fontawesome-svg-core';
 import { colors } from '../../colors';
 
 interface NotificationButtonProps {
@@ -40,7 +39,7 @@ export const NotificationButton = ({ unseenNotifications, onPress }: Notificatio
         ]}
       >
         <View>
-          <FontAwesomeIcon icon={generalIcons.bell as IconProp} size={20} color={appColors.text} />
+          <Icon icon={generalIcons.bell} size={20} color={appColors.text} />
         </View>
         {showIndicator && <View style={[styles.notificationIndicator, {backgroundColor: appColors.accent}]} />}
       </View>

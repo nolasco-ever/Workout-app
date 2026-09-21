@@ -1,7 +1,6 @@
 import { StyleSheet, Text, TouchableOpacity, View, useColorScheme } from 'react-native'
 import React from 'react'
-import { IconProp } from '@fortawesome/fontawesome-svg-core';
-import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
+import { Icon } from '../icons/Icon';
 import { colors } from '../../colors';
 import { generalIcons } from '../icons/icon-library';
 
@@ -29,8 +28,8 @@ export const SelectionItem = ({selectedItems, title, onPressItem, onPressInfo}: 
             onPress={onPressItem}>
             <Text style={[styles.workoutTitle, {color: appColors.text}]}>{title}</Text>
             {onPressInfo && <TouchableOpacity onPress={onPressInfo}>
-                <FontAwesomeIcon
-                icon={generalIcons.info as IconProp}
+                <Icon
+                icon={generalIcons.info}
                 color={appColors.text}
                 size={15}
                 />

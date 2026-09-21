@@ -1,5 +1,4 @@
-import { IconProp } from '@fortawesome/fontawesome-svg-core';
-import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
+import { Icon, IconSource } from '../icons/Icon';
 import React, { FC } from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { colors } from '../../colors';
@@ -9,7 +8,7 @@ import { TouchableOpacity } from 'react-native-gesture-handler';
 interface SectionProps {
   title: string;
   titleFontSize?: number;
-  icon?: IconProp;
+  icon?: IconSource;
   iconColor?: string;
   children: React.ReactNode,
   centered?: boolean;
@@ -24,7 +23,7 @@ export const Section: FC<SectionProps> = ({ title, titleFontSize, icon, iconColo
             <View style={[styles.titleContainer, {justifyContent: centered ? 'center' : 'flex-start'}]}>
                 {icon && (
                     <View style={styles.iconContainer}>
-                        <FontAwesomeIcon 
+                        <Icon 
                             icon={icon}
                             color={iconColor ? iconColor : appColors.icon}
                             size={25}

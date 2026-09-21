@@ -1,7 +1,7 @@
-import { IconProp } from '@fortawesome/fontawesome-svg-core';
-import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
+import { Icon } from '../../../../components/icons/Icon';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, SafeAreaView, Image, Dimensions, ScrollView } from 'react-native';
+import { View, Text, StyleSheet, Image, Dimensions, ScrollView } from 'react-native';
 import { colors } from '../../../../colors';
 import { generalIcons, tabIcons } from '../../../../components/icons/icon-library';
 import { CustomText } from '../../../../components/text/customText';
@@ -49,7 +49,7 @@ export const AppThemeScreen = () => {
   }
 
   return (
-    <SafeAreaView style={[styles.container, {backgroundColor: appColors.background}]}>
+    <SafeAreaView edges={['left', 'right']} style={[styles.container, {backgroundColor: appColors.background}]}>
       <View style={{flex: 1, width: '100%'}}>
           <ListPicker
               listItems={listItems}

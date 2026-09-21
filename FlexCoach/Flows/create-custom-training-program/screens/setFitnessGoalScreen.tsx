@@ -1,4 +1,5 @@
-import { SafeAreaView, StyleSheet, Text, TouchableOpacity, View } from 'react-native'
+import { StyleSheet, Text, TouchableOpacity, View } from 'react-native'
+import { SafeAreaView } from 'react-native-safe-area-context';
 import React, { useState } from 'react'
 import { colors } from '../../../colors';
 import { CustomText } from '../../../components/text/customText';
@@ -56,7 +57,7 @@ export const SetFitnessGoalScreen = () => {
   }
 
   return (
-    <SafeAreaView style={[styles.container, {backgroundColor: appColors.background}]}>
+    <SafeAreaView edges={['bottom', 'left', 'right']} style={[styles.container, {backgroundColor: appColors.background}]}>
       <AnimatedImage source={getImage()} size={250}/>
       <View style={{flex: 1, alignItems: 'center', margin: 10}}>
         <CustomText type='header'>Select a goal</CustomText>

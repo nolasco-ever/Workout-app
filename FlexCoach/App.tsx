@@ -1,16 +1,17 @@
 import React from 'react';
 import { NavigationContainer } from '@react-navigation/native';
-import './components/icons/fontawesome';
 import { AppStack } from './appNavigators/AppStack';
 import { ThemeProvider } from './packages/core-contexts/theme-context';
 import { ModalProvider } from './packages/core-contexts/modal-context';
 import { CustomModal } from './packages/core-components/Modal/CustomModal';
 import { AuthProvider } from './data/auth/AuthProvider';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 const App = () => {
 
   return (
-    <AuthProvider>
+    <SafeAreaProvider>
+      <AuthProvider>
       <ThemeProvider appTheme='system'>
         <ModalProvider>
           <NavigationContainer>
@@ -19,7 +20,8 @@ const App = () => {
           <CustomModal/>
         </ModalProvider>
       </ThemeProvider>
-    </AuthProvider>
+      </AuthProvider>
+    </SafeAreaProvider>
   );
 };
 

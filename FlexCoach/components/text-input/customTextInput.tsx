@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { View, TextInput, StyleSheet, TouchableOpacity, Dimensions, useColorScheme, Text } from 'react-native';
-import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
-import { IconProp } from '@fortawesome/fontawesome-svg-core';
+import { Icon, IconSource } from '../icons/Icon';
 import { generalIcons } from '../icons/icon-library';
 import { colors } from '../../colors';
 
@@ -10,8 +9,8 @@ interface CustomTextInputProps {
   onChangeText?: (text: string) => void;
   placeholder?: string;
   helperText?: string;
-  leftIcon?: string;
-  rightIcon?: string;
+  leftIcon?: IconSource;
+  rightIcon?: IconSource;
   isSecure?: boolean;
   keyboardType?: 'email-address' | 'number-pad' | 'numeric' | 'default';
   returnKeyType?: 'default' | 'done';
@@ -76,8 +75,8 @@ export const CustomTextInput = ({
         ]}
       >
         {leftIcon && (
-          <FontAwesomeIcon
-              icon={leftIcon as IconProp}
+          <Icon
+              icon={leftIcon}
               color={error ? appColors.onError : isFocused ? appColors.primary : appColors.icon}
           />
         )}
@@ -101,8 +100,8 @@ export const CustomTextInput = ({
           <Text style={[styles.helperText, {color: getBorderColor()}]}>{suffix}</Text>
         )}
         {rightIcon && (
-          <FontAwesomeIcon
-              icon={rightIcon as IconProp}
+          <Icon
+              icon={rightIcon}
               color={error ? appColors.onError : isFocused ? appColors.primary : appColors.icon}
           />
         )}

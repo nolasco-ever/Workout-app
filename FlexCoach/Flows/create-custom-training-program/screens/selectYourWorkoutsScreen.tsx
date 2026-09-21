@@ -1,4 +1,5 @@
-import { SafeAreaView, ScrollView, StyleSheet, Text, TouchableOpacity, View, useColorScheme } from 'react-native'
+import { ScrollView, StyleSheet, Text, TouchableOpacity, View, useColorScheme } from 'react-native'
+import { SafeAreaView } from 'react-native-safe-area-context';
 import React, { useEffect, useState } from 'react'
 import { Section } from '../../../components/sections/Section'
 import { generalIcons } from '../../../components/icons/icon-library'
@@ -8,8 +9,7 @@ import { CustomText } from '../../../components/text/customText'
 import { AlertBanner } from '../../../components/banners/alertBanner'
 import { backSection, bicepsSection, chestSection, legsSection, shouldersSection, tricepsSection } from '../../../config/customize-training-program-flow/selectYourWorkouts'
 import { Button } from '../../../components/buttons/button'
-import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome'
-import { IconProp } from '@fortawesome/fontawesome-svg-core'
+import { Icon } from '../../../components/icons/Icon';
 import { SelectionItem } from '../../../components/list-items/selectionItem'
 import { NavigationProp, useNavigation } from '@react-navigation/native'
 import { CustomTrainingProgramStackParams } from '../CustomTrainingProgramStack'
@@ -51,7 +51,7 @@ export const SelectYourWorkoutsScreen = () => {
   };
 
   return (
-    <SafeAreaView style={[styles.container, {backgroundColor: appColors.background}]}>
+    <SafeAreaView edges={['bottom', 'left', 'right']} style={[styles.container, {backgroundColor: appColors.background}]}>
       <View style={{margin: 10, flexDirection: 'row'}}>
         <CustomText type='subheader'>Create a balanced program by selecting 6-20 workouts {`(${selectedWorkouts.length}/20)`}</CustomText>
       </View>

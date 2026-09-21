@@ -1,75 +1,40 @@
-import { useColorScheme } from "react-native";
-import { useThemeContext } from "./packages/core-contexts/theme-context";
+import { ColorTokens, ironDark, ironLight, useIsDark } from './theme';
 
-const darkModeColors = {
-    background: '#121212',
-    onBackground: '#2c2c2c',
-    iconButton: '#2c2c2c',
-    text: '#ffffff',
-    onPrimaryText: '#ffffff',
-    subtext: '#a2a2a2',
-    primary: '#326789',
-    secondary: '#e65c4f',
-    accent: '#ff5733',
-    inactive: '#a2a2a2',
-    icon: '#ffffff',
-    transparent: 'rgba(0, 0, 0, 0)',
-    onBanner: '#000000',
-    info: '#b1edef',
-    onInfo: '#42bdd1',
-    success: '#c5efdd',
-    onSuccess: '#6ad0a1',
-    warning: '#f9efd7',
-    onWarning: '#f4ba45',
-    error: '#f4d9d9',
-    onError: '#de5965',
-    lightGrey: '#DDDDDD',
-    googleRed: '#DB4437'
-}
+/**
+ * Legacy color hook. Existing screens call `colors()` and read the keys
+ * below; they are mapped onto the design tokens in `theme/palette.ts` so the
+ * whole app picks up the palette without touching every call site. New code
+ * should use `useTheme()` from `./theme` instead.
+ */
+const legacy = (t: ColorTokens) => ({
+  background: t.ground,
+  onBackground: t.surface,
+  iconButton: t.surfaceRaised,
+  text: t.ink,
+  onPrimaryText: t.onAccent,
+  subtext: t.inkMuted,
+  primary: t.accent,
+  secondary: t.accent,
+  accent: t.accent,
+  inactive: t.inactive,
+  icon: t.ink,
+  transparent: t.transparent,
+  onBanner: t.ink,
+  info: t.infoTint,
+  onInfo: t.info,
+  success: t.successTint,
+  onSuccess: t.success,
+  warning: t.warningTint,
+  onWarning: t.warning,
+  error: t.errorTint,
+  onError: t.error,
+  lightGrey: t.line,
+  googleRed: '#DB4437',
+  // Direct access to the full token set for screens mid-migration.
+  tokens: t,
+});
 
-const lightModeColors = {
-    background: '#fafafa',
-    onBackground: '#ffffff',
-    iconButton: '#F2F2F2',
-    text: '#262626',
-    onPrimaryText: '#ffffff',
-    subtext: '#6f6f6f',
-    primary: '#326789',
-    secondary: '#e65c4f',
-    accent: '#ff5733',
-    inactive: '#a2a2a2',
-    icon: '#001f54',
-    transparent: 'rgba(0, 0, 0, 0)',
-    onBanner: '#000000',
-    info: '#b1edef',
-    onInfo: '#42bdd1',
-    success: '#c5efdd',
-    onSuccess: '#6ad0a1',
-    warning: '#f9efd7',
-    onWarning: '#f4ba45',
-    error: '#f4d9d9',
-    onError: '#de5965',
-    lightGrey: '#DDDDDD',
-    googleRed: '#DB4437'
-}
+const legacyLight = legacy(ironLight);
+const legacyDark = legacy(ironDark);
 
-const getSystemTheme = () => {
-    return useColorScheme();
-}
-
-const getColors = (theme: string | null | undefined) => {
-    if (theme === 'light') {
-        return lightModeColors;
-    } else {
-        return darkModeColors;
-    }
-}
-
-export const colors = () => {
-    const { appTheme } = useThemeContext();
-    const systemTheme = getSystemTheme();
-
-    const chosenTheme = appTheme === 'system' ? systemTheme : appTheme
-    
-    return getColors(chosenTheme);
-}
+export const colors = () => (useIsDark() ? legacyDark : legacyLight);

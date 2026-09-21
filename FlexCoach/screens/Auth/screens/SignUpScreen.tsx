@@ -1,4 +1,5 @@
-import { Keyboard, KeyboardAvoidingView, Platform, SafeAreaView, StyleSheet, Text, TouchableOpacity, View } from 'react-native'
+import { Keyboard, KeyboardAvoidingView, Platform, StyleSheet, Text, TouchableOpacity, View } from 'react-native'
+import { SafeAreaView } from 'react-native-safe-area-context';
 import React from 'react'
 import { CustomText } from '../../../components/text/customText'
 import { signUpAnimation } from '../../../animations/auth-flow'
@@ -23,7 +24,7 @@ export const SignUpScreen = () => {
         keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 0}
         onTouchStart={() => Keyboard.dismiss}
         >
-            <SafeAreaView style={[styles.container, {backgroundColor: appColors.background}]} onTouchStart={() => Keyboard.dismiss()}>
+            <SafeAreaView edges={['bottom', 'left', 'right']} style={[styles.container, {backgroundColor: appColors.background}]} onTouchStart={() => Keyboard.dismiss()}>
                 <View style={{flex: 1, marginBottom: 30, alignItems: 'center'}}>
                     <View style={{flex: 1, justifyContent: 'center'}}>
                         <AnimatedImage

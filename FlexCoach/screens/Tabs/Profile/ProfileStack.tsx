@@ -1,7 +1,6 @@
 import React from 'react';
 import { createStackNavigator } from '@react-navigation/stack';
-import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
-import { IconProp } from '@fortawesome/fontawesome-svg-core';
+import { Icon } from '../../../components/icons/Icon';
 import { colors } from '../../../colors';
 import { ProfileScreen } from './screens/ProfileScreen';
 import { directionIcons } from '../../../components/icons/icon-library';
@@ -41,8 +40,8 @@ export const ProfileStack = () => {
                 component={AppThemeScreen}
                 options={{
                     headerBackImage: () => (
-                        <FontAwesomeIcon
-                            icon={directionIcons.angleLeft as IconProp} 
+                        <Icon
+                            icon={directionIcons.angleLeft} 
                             color={appColors.icon} 
                             size={30} 
                             style={{marginLeft: 10}}
@@ -61,8 +60,8 @@ export const ProfileStack = () => {
                     headerTitle: (route.params as { title: string }).title,
                     headerBackTitle: '',
                     headerBackImage: () => (
-                        <FontAwesomeIcon
-                            icon={directionIcons.angleLeft as IconProp} 
+                        <Icon
+                            icon={directionIcons.angleLeft} 
                             color={appColors.icon} 
                             size={30} 
                             style={{marginLeft: 10}}

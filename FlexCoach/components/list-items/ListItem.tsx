@@ -1,5 +1,4 @@
-import { IconProp } from '@fortawesome/fontawesome-svg-core';
-import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
+import { Icon, IconSource } from '../icons/Icon';
 import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, Dimensions, useColorScheme } from 'react-native';
 import { colors } from '../../colors';
@@ -8,11 +7,11 @@ import { useModalContext } from '../../packages/core-contexts/modal-context';
 import { CustomText } from '../text/customText';
 
 interface ListItemProps {
-  icon?: string | IconProp;
+  icon?: IconSource;
   iconSize?: number;
   iconPosition?: 'top' | 'middle' | 'bottom';
   iconColor?: string;
-  rightIcon?: string;
+  rightIcon?: IconSource;
   rightIconSize?: number;
   rightIconColor?: string;
   title: string;
@@ -59,7 +58,7 @@ export const ListItem = ({
         <View style={{ flexDirection: 'row', justifyContent: 'space-between', padding: 10 }}>
           <CustomText type="subheader">Options</CustomText>
           <TouchableOpacity onPress={() => setModalVisible(false)}>
-            <FontAwesomeIcon icon={generalIcons.xMark} color={appColors.icon} size={20} />
+            <Icon icon={generalIcons.xMark} color={appColors.icon} size={20} />
           </TouchableOpacity>
         </View>
         {options.map((item, index) => (
@@ -92,9 +91,9 @@ export const ListItem = ({
       ]}
     >
       {icon && (
-        <View style={[styles.iconContainer, { backgroundColor: '#fff', borderRadius: 20 }]}>
-          <FontAwesomeIcon
-            icon={icon as IconProp}
+        <View style={[styles.iconContainer, { backgroundColor: appColors.onBackground, borderRadius: 20 }]}>
+          <Icon
+            icon={icon}
             color={iconColor ? iconColor : appColors.icon}
             size={iconSize}
           />
@@ -112,8 +111,8 @@ export const ListItem = ({
         </View>
       )}
       {rightIcon && (
-        <FontAwesomeIcon
-          icon={rightIcon as IconProp}
+        <Icon
+          icon={rightIcon}
           color={rightIconColor ? rightIconColor : appColors.icon}
           size={rightIconSize}
           style={styles.iconContainer}
@@ -124,7 +123,7 @@ export const ListItem = ({
           onPress={() => openModal(ModalComponent(options))}
           style={styles.optionsButton}
         >
-          <FontAwesomeIcon icon={generalIcons.ellipsisVertical} color={appColors.icon} size={20} />
+          <Icon icon={generalIcons.ellipsisVertical} color={appColors.icon} size={20} />
         </TouchableOpacity>
       )}
     </TouchableOpacity>

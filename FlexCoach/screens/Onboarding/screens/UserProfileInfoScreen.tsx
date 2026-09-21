@@ -1,4 +1,5 @@
-import { Keyboard, KeyboardAvoidingView, Platform, SafeAreaView, StyleSheet, Text, View } from 'react-native'
+import { Keyboard, KeyboardAvoidingView, Platform, StyleSheet, Text, View } from 'react-native'
+import { SafeAreaView } from 'react-native-safe-area-context';
 import React from 'react'
 import { generalIcons } from '../../../components/icons/icon-library'
 import { CustomTextInput } from '../../../components/text-input/CustomTextInput'
@@ -24,7 +25,7 @@ export const UserProfileInfoScreen = () => {
             keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 0}
             onTouchStart={() => Keyboard.dismiss}
             >
-                <SafeAreaView style={[styles.container, {backgroundColor: appColors.background}]} onTouchStart={() => Keyboard.dismiss()}>
+                <SafeAreaView edges={['bottom', 'left', 'right']} style={[styles.container, {backgroundColor: appColors.background}]} onTouchStart={() => Keyboard.dismiss()}>
                     <View style={{flex: 1, marginBottom: 30, alignItems: 'center'}}>
                         <View style={{flex: 1, justifyContent: 'center'}}>
                             <AnimatedImage

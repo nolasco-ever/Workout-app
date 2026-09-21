@@ -1,7 +1,7 @@
 import React from 'react';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { colors } from '../colors';
-import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
+import { Icon } from '../components/icons/Icon';
 import { tabIcons } from '../components/icons/icon-library';
 import { HomeStack } from '../screens/Tabs/Home/HomeStack';
 import { ProfileStack } from '../screens/Tabs/Profile/ProfileStack';
@@ -29,7 +29,7 @@ export const TabNavigator = () => {
             component={HomeStack}
             options={{
                 tabBarIcon: ({focused}) => (
-                    <FontAwesomeIcon 
+                    <Icon 
                         icon={tabIcons.home}
                         color={focused ? appColors.text : appColors.inactive}
                         size={25}
@@ -42,7 +42,7 @@ export const TabNavigator = () => {
             component={ProfileStack}
             options={{
                 tabBarIcon: ({focused}) => (
-                    <FontAwesomeIcon 
+                    <Icon 
                         icon={tabIcons.profile}
                         color={focused ? appColors.text : appColors.inactive}
                         size={25}

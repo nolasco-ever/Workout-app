@@ -1,4 +1,5 @@
-import { Dimensions, SafeAreaView, StyleSheet, Text, View } from 'react-native'
+import { Dimensions, StyleSheet, Text, View } from 'react-native'
+import { SafeAreaView } from 'react-native-safe-area-context';
 import React from 'react'
 import { colors } from '../../../colors';
 import { CustomText } from '../../../components/text/customText';
@@ -16,7 +17,7 @@ export const DesignYourPlanScreen = () => {
     const screenWidth = Dimensions.get('window').width;
     
     return (
-        <SafeAreaView style={[styles.container, {backgroundColor: appColors.background}]}>
+        <SafeAreaView edges={['bottom', 'left', 'right']} style={[styles.container, {backgroundColor: appColors.background}]}>
             <View style={styles.textContainer}>
                 <CustomText type='subheader'>Tailor your fitness journey by creating a training program that caters to your unique needs</CustomText>
             </View>

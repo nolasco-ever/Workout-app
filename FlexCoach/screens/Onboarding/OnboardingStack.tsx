@@ -3,9 +3,8 @@ import React from 'react'
 import { colors } from '../../colors'
 import { createStackNavigator } from '@react-navigation/stack'
 import { onboardingStack } from '../../config/onboardingStackConfig';
-import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
+import { Icon } from '../../components/icons/Icon';
 import { directionIcons } from '../../components/icons/icon-library';
-import { IconProp } from '@fortawesome/fontawesome-svg-core';
 import MessageScreen from '../../shared-screens/messageScreen';
 import { introScreenAnimation } from '../../animations/onboarding-flow';
 import { successCheckAnimation } from '../../animations/shared';
@@ -67,8 +66,8 @@ export const OnboardingStack = () => {
                     headerTitle: "Create Your Profile",
                     headerBackTitle: '',
                     headerBackImage: () => (
-                        <FontAwesomeIcon
-                            icon={directionIcons.angleLeft as IconProp}
+                        <Icon
+                            icon={directionIcons.angleLeft}
                             color={appColors.icon}
                             size={25}
                             style={{marginLeft: 10}}
@@ -86,8 +85,8 @@ export const OnboardingStack = () => {
                     headerTitle: "Set Your Photo",
                     headerBackTitle: '',
                     headerBackImage: () => (
-                        <FontAwesomeIcon
-                            icon={directionIcons.angleLeft as IconProp}
+                        <Icon
+                            icon={directionIcons.angleLeft}
                             color={appColors.icon}
                             size={25}
                             style={{marginLeft: 10}}
@@ -105,8 +104,8 @@ export const OnboardingStack = () => {
                     headerTitle: "Design Your Plan",
                     headerBackTitle: '',
                     headerBackImage: () => (
-                        <FontAwesomeIcon
-                            icon={directionIcons.angleLeft as IconProp}
+                        <Icon
+                            icon={directionIcons.angleLeft}
                             color={appColors.icon}
                             size={25}
                             style={{marginLeft: 10}}

@@ -1,7 +1,7 @@
-import { IconProp } from '@fortawesome/fontawesome-svg-core';
-import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
+import { Icon } from '../../../components/icons/Icon';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import React from 'react';
-import { View, Text, StyleSheet, SafeAreaView, ScrollView } from 'react-native';
+import { View, Text, StyleSheet, ScrollView } from 'react-native';
 import { colors } from '../../../colors';
 import { tabIcons } from '../../../components/icons/icon-library';
 import { CustomText } from '../../../components/text/customText';
@@ -13,7 +13,7 @@ export const SocialScreen = () => {
   const appColors = colors();
   return (
     <SafeAreaView style={[styles.container, {backgroundColor: appColors.background}]}>
-        {/* <FontAwesomeIcon icon={tabIcons.social as IconProp} color={appColors.inactive} size={50}/>
+        {/* <Icon icon={tabIcons.social} color={appColors.inactive} size={50}/>
         <CustomText type='header' centered>Social</CustomText> */}
         <ScrollView>          
           <PostCard

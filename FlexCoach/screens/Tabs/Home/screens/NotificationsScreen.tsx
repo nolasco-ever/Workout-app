@@ -1,5 +1,6 @@
 import React from 'react';
-import { StyleSheet, SafeAreaView, ScrollView } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { StyleSheet, ScrollView } from 'react-native';
 import { colors } from '../../../../colors';
 import { generalIcons } from '../../../../components/icons/icon-library';
 import { ListItem } from '../../../../components/list-items/ListItem';
@@ -60,7 +61,7 @@ export const NotificationsScreen = () => {
   ];
 
   return (
-    <SafeAreaView style={[styles.container, {backgroundColor: appColors.background}]}>
+    <SafeAreaView edges={['bottom', 'left', 'right']} style={[styles.container, {backgroundColor: appColors.background}]}>
       <ScrollView>
         <Section title='Today' titleFontSize={16}>
           {mockNotificationMessages.filter(item => item.date === 'Today').map(item => {

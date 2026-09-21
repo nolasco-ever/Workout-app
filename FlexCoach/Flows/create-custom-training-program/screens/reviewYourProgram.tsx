@@ -1,4 +1,5 @@
-import { SafeAreaView, Dimensions, ScrollView, StyleSheet, Text, View, useColorScheme } from 'react-native'
+import { Dimensions, ScrollView, StyleSheet, Text, View, useColorScheme } from 'react-native'
+import { SafeAreaView } from 'react-native-safe-area-context';
 import React from 'react'
 import { colors } from '../../../colors'
 import { CustomText } from '../../../components/text/customText';
@@ -21,7 +22,7 @@ export const ReviewYourProgram = ({ route }: { route: any }) => {
     const daysOfWeek: Day[] = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
   return (
-    <SafeAreaView style={[styles.container, {backgroundColor: appColors.background}]}>
+    <SafeAreaView edges={['bottom', 'left', 'right']} style={[styles.container, {backgroundColor: appColors.background}]}>
         <ScrollView>
             <Section title='Week Breakdown'>                
                 <ScrollView horizontal style={{padding: 10, flexDirection: 'row'}}>

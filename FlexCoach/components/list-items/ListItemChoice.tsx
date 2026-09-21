@@ -1,12 +1,11 @@
-import { IconProp } from '@fortawesome/fontawesome-svg-core';
-import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
+import { Icon, IconSource } from '../icons/Icon';
 import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, Dimensions } from 'react-native';
 import { colors } from '../../colors';
 import { generalIcons } from '../icons/icon-library';
 
 interface ListItemChoiceProps {
-  icon?: string;
+  icon?: IconSource;
   title: string;
   description?: string;
   selected: boolean;
@@ -19,8 +18,8 @@ export const ListItemChoice: React.FC<ListItemChoiceProps> = ({ icon, title, des
   return (
     <TouchableOpacity onPress={onPress} style={[styles.container]}>
         {icon && 
-            <FontAwesomeIcon
-                icon={icon as IconProp}
+            <Icon
+                icon={icon}
                 color={appColors.icon}
                 size={20}
                 style={styles.iconContainer}
@@ -31,8 +30,8 @@ export const ListItemChoice: React.FC<ListItemChoiceProps> = ({ icon, title, des
             {description && <Text style={[styles.description, {color: appColors.subtext}]}>{description}</Text>}
         </View>
         {selected && 
-        <FontAwesomeIcon
-            icon={generalIcons.check as IconProp}
+        <Icon
+            icon={generalIcons.check}
             color='green'
             size={20}
             style={styles.iconContainer}

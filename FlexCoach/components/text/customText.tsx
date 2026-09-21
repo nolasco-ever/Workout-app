@@ -1,20 +1,34 @@
 import React from 'react';
-import { Text as RNText, TextStyle, TextProps as RNTextProps } from 'react-native';
-import { colors } from '../../colors';
+import { Text as RNText, TextStyle, TextProps as RNTextProps, StyleProp } from 'react-native';
+import { useTheme, TypographyToken } from '../../theme';
 
 type TextProps = RNTextProps & {
+  /** Legacy names kept for existing screens; prefer `variant`. */
   type?: 'header' | 'subheader' | 'body';
+  variant?: TypographyToken;
+  color?: string;
   centered?: boolean;
+  style?: StyleProp<TextStyle>;
 };
 
-export const CustomText: React.FC<TextProps> = ({ type='body', centered=false, children }) => {
-    const appColors = colors();
-    const textStyles: TextStyle = {
-      color: type === 'subheader' ? appColors.subtext : appColors.text,
-      fontSize: type === 'header' ? 22 : type === 'subheader' ? 18 : 16,
-      fontWeight: type === 'header' || 'subheader' ? 'bold' : 'normal',
-      textAlign: centered ? 'center' : 'left'
-    };
+const legacyVariant: Record<NonNullable<TextProps['type']>, TypographyToken> = {
+  header: 'title',
+  subheader: 'heading',
+  body: 'body',
+};
 
-  return <RNText style={textStyles}>{children}</RNText>;
+export const CustomText: React.FC<TextProps> = ({ type = 'body', variant, color, centered = false, style, children, ...rest }) => {
+  const theme = useTheme();
+  const token = theme.typography[variant ?? legacyVariant[type]];
+  const textStyles: TextStyle = {
+    ...token,
+    color: color ?? (type === 'subheader' && !variant ? theme.colors.inkMuted : theme.colors.ink),
+    textAlign: centered ? 'center' : 'left',
+  };
+
+  return (
+    <RNText {...rest} style={[textStyles, style]}>
+      {children}
+    </RNText>
+  );
 };

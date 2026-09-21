@@ -1,15 +1,14 @@
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native'
 import React from 'react'
 import { colors } from '../../colors'
-import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
+import { Icon, IconSource } from '../icons/Icon';
 import { directionIcons } from '../icons/icon-library';
-import { IconProp } from '@fortawesome/fontawesome-svg-core';
 import { ParamListBase } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
 
 interface ActionButtonProps {
     navigation: StackNavigationProp<ParamListBase>;
-    icon: string;
+    icon: IconSource;
     message: string;
 }
 
@@ -19,8 +18,8 @@ export const ActionButton = ({navigation, icon, message}: ActionButtonProps) => 
     return (
         <TouchableOpacity onPress={() => navigation.navigate('workoutHub')} style={[styles.container, {backgroundColor: appColors.primary}]}>
             <View style={styles.iconContainer}>
-                <FontAwesomeIcon
-                    icon={icon as IconProp}
+                <Icon
+                    icon={icon}
                     color={appColors.icon}
                     size={30}
                 />
@@ -31,8 +30,8 @@ export const ActionButton = ({navigation, icon, message}: ActionButtonProps) => 
             </View>
 
             <View>
-                <FontAwesomeIcon
-                    icon={directionIcons.rightArrow as IconProp}
+                <Icon
+                    icon={directionIcons.rightArrow}
                     color={appColors.icon}
                     size={30}
                 />

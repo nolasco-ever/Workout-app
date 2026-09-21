@@ -1,12 +1,11 @@
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import React from 'react';
 import { colors } from '../../colors';
-import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
+import { Icon, IconSource } from '../icons/Icon';
 import { generalIcons } from '../icons/icon-library';
-import { IconProp } from '@fortawesome/fontawesome-svg-core';
 
 interface IconButtonProps {
-    icon: IconProp;
+    icon: IconSource;
     iconColor?: string;
     label?: string;
     onPress: () => void;
@@ -22,7 +21,7 @@ export const IconButton = ({
 
     return (
         <TouchableOpacity onPress={onPress} style={[styles.container, {backgroundColor: appColors.iconButton}]}>
-            <FontAwesomeIcon
+            <Icon
                 icon={icon}
                 color={iconColor || appColors.icon}
                 size={35}

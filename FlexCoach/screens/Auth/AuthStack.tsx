@@ -3,9 +3,8 @@ import React from 'react'
 import { TransitionPresets, createStackNavigator } from '@react-navigation/stack'
 import { colors } from '../../colors';
 import { authStack } from '../../config/authStackConfig';
-import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
+import { Icon } from '../../components/icons/Icon';
 import { directionIcons, generalIcons } from '../../components/icons/icon-library';
-import { IconProp } from '@fortawesome/fontawesome-svg-core';
 import MessageScreen from '../../shared-screens/messageScreen';
 import { emailSentAniamtion } from '../../animations/auth-flow';
 import { NavigationProp } from '@react-navigation/native';
@@ -48,8 +47,8 @@ export const AuthStack = () => {
                     headerTitle: 'Sign Up',
                     headerBackTitle: '',
                     headerBackImage: () => (
-                        <FontAwesomeIcon
-                        icon={directionIcons.angleLeft as IconProp}
+                        <Icon
+                        icon={directionIcons.angleLeft}
                         color={appColors.icon}
                         size={25}
                         style={{marginLeft: 10}}
@@ -67,8 +66,8 @@ export const AuthStack = () => {
                     headerTitle: 'Reset Your Password',
                     headerBackTitle: '',
                     headerBackImage: () => (
-                        <FontAwesomeIcon
-                        icon={directionIcons.angleLeft as IconProp}
+                        <Icon
+                        icon={directionIcons.angleLeft}
                         color={appColors.icon}
                         size={25}
                         style={{marginLeft: 10}}

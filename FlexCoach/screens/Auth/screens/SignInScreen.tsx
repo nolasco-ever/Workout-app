@@ -1,6 +1,7 @@
 import React from 'react';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { NavigationProp, ParamListBase, StackActions, useNavigation } from '@react-navigation/native';
-import { StyleSheet, TouchableOpacity, SafeAreaView, Dimensions, Text, View, KeyboardAvoidingView, Platform, Keyboard } from 'react-native';
+import { StyleSheet, TouchableOpacity, Dimensions, Text, View, KeyboardAvoidingView, Platform, Keyboard } from 'react-native';
 import { colors } from '../../../colors';
 import { CustomText } from '../../../components/text/customText';
 import { StackNavigationProp } from '@react-navigation/stack';

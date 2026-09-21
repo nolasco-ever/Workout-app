@@ -1,8 +1,8 @@
-import { SafeAreaView, StyleSheet, Text, TouchableOpacity, View } from 'react-native'
+import { StyleSheet, Text, TouchableOpacity, View } from 'react-native'
+import { SafeAreaView } from 'react-native-safe-area-context';
 import React, { ReactNode } from 'react'
 import { colors } from '../../colors'
-import { IconProp } from '@fortawesome/fontawesome-svg-core';
-import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
+import { Icon } from '../icons/Icon';
 
 interface NavigationHeaderProps {
     title: string;
@@ -18,7 +18,7 @@ export const NavigationHeader = ({
     const appColors = colors();
 
     return (
-        <SafeAreaView style={{backgroundColor: appColors.background}}>
+        <SafeAreaView edges={['top', 'left', 'right']} style={{backgroundColor: appColors.background}}>
             <View style={styles.container}>
                 <View>
                     <Text style={[styles.titleText, {color: appColors.text}]}>{title}</Text>

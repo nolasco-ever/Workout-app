@@ -1,8 +1,7 @@
 import { StyleSheet, Text, View, useColorScheme } from 'react-native'
 import React, { useState } from 'react'
-import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome'
+import { Icon, IconSource } from '../icons/Icon';
 import { generalIcons } from '../icons/icon-library'
-import { IconProp } from '@fortawesome/fontawesome-svg-core'
 import { colors } from '../../colors'
 import { TouchableOpacity, TouchableWithoutFeedback } from 'react-native-gesture-handler'
 import { CustomText } from '../text/customText'
@@ -18,7 +17,7 @@ export const AlertBanner = ({message, type, isClosable=false}: AlertBannerProps)
   const colorScheme = useColorScheme();
 
   const [visible, setVisible] = useState(true);
-  let icon: string;
+  let icon: IconSource;
 
   switch (type) {
     case 'success':
@@ -81,15 +80,15 @@ export const AlertBanner = ({message, type, isClosable=false}: AlertBannerProps)
             }
           ]}
         >
-          <FontAwesomeIcon
-            icon={icon as IconProp}
+          <Icon
+            icon={icon}
             color={getIconColor(type)}
             style={{marginRight: 10}}
           />
           <Text style={[styles.text, {color: appColors.onBanner}]}>{message}</Text>
           
-          {isClosable && <FontAwesomeIcon
-            icon={generalIcons.xMark as IconProp}
+          {isClosable && <Icon
+            icon={generalIcons.xMark}
             color={getIconColor(type)}
             style={{marginRight: 10}}
           />}

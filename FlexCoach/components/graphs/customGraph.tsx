@@ -2,9 +2,8 @@ import { Dimensions, ScrollView, StyleSheet, Text, TouchableWithoutFeedback, Vie
 import React, { useRef, useState } from 'react'
 import { colors } from '../../colors';
 import { useSpring,animated } from "@react-spring/native";
-import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
+import { Icon } from '../icons/Icon';
 import { generalIcons } from '../icons/icon-library';
-import { IconProp } from '@fortawesome/fontawesome-svg-core';
 import { TouchableOpacity } from 'react-native-gesture-handler';
 import { CustomText } from '../text/customText';
 
@@ -121,7 +120,7 @@ export const CustomGraph = ({yAxisData, xAxisLabels, type, title}: CustomGraphPr
                                     }
                                 ]}
                             >
-                                {type === 'line' && <FontAwesomeIcon icon={generalIcons.bulletPoint as IconProp} color={appColors.primary} size={10} style={{alignSelf: 'center'}}/>}
+                                {type === 'line' && <Icon icon={generalIcons.bulletPoint} color={appColors.primary} size={10} style={{alignSelf: 'center'}}/>}
                                 {popUpState.visible && popUpState.index === index &&
                                     <View style={{width: 50, height: 40, bottom: 55, backgroundColor: appColors.secondary, padding: 10, borderRadius: 5, alignItems: 'center', justifyContent: 'center'}}>
                                         <Text style={{color: appColors.onPrimaryText, fontWeight: 'bold'}}>{item}</Text>

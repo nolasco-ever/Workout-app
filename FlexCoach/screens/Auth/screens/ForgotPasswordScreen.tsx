@@ -1,4 +1,5 @@
-import { Keyboard, SafeAreaView, StyleSheet, Text, View } from 'react-native'
+import { Keyboard, StyleSheet, Text, View } from 'react-native'
+import { SafeAreaView } from 'react-native-safe-area-context';
 import React, { useState } from 'react'
 import { CustomText } from '../../../components/text/customText'
 import { colors } from '../../../colors'
@@ -18,7 +19,7 @@ export const ForgotPasswordScreen = () => {
     const emailRegex = /^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$/;
 
   return (
-    <SafeAreaView onTouchStart={() => Keyboard.dismiss()} style={{flex: 1, backgroundColor: appColors.background, alignItems: 'center'}}>
+    <SafeAreaView edges={['bottom', 'left', 'right']} onTouchStart={() => Keyboard.dismiss()} style={{flex: 1, backgroundColor: appColors.background, alignItems: 'center'}}>
         <View style={{flex: 1, margin: 10, justifyContent: 'space-around', alignItems: 'center'}}>
             <AnimatedImage
                 source={forgotPasswordAnimation}

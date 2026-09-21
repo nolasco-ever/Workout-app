@@ -1,9 +1,8 @@
 import React, { useEffect, useState } from 'react'
 import { createStackNavigator } from '@react-navigation/stack'
 import { colors } from '../../../colors';
-import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
+import { Icon } from '../../../components/icons/Icon';
 import { directionIcons } from '../../../components/icons/icon-library';
-import { IconProp } from '@fortawesome/fontawesome-svg-core';
 import { PlaceholderScreen } from '../../placeholderScreen';
 import { getScreenHeaderOptions } from '../../../config/getScreenHeader';
 import { NavigationHeader } from '../../../components/headers/NavigationHeader';
@@ -52,8 +51,8 @@ export const HomeStack = () => {
                 component={WorkoutOverviewScreen}
                 options={{
                     headerBackImage: () => (
-                        <FontAwesomeIcon
-                            icon={directionIcons.angleLeft as IconProp}
+                        <Icon
+                            icon={directionIcons.angleLeft}
                             color={appColors.icon}
                             size={25}
                             style={{marginLeft: 10}}
@@ -67,8 +66,8 @@ export const HomeStack = () => {
                 component={WorkoutProgressScreen}
                 options={{
                     headerBackImage: () => (
-                        <FontAwesomeIcon
-                            icon={directionIcons.angleLeft as IconProp}
+                        <Icon
+                            icon={directionIcons.angleLeft}
                             color={appColors.icon}
                             size={25}
                             style={{marginLeft: 10}}
@@ -82,8 +81,8 @@ export const HomeStack = () => {
                 component={WorkoutLoggerScreen}
                 options={{
                     headerBackImage: () => (
-                        <FontAwesomeIcon
-                            icon={directionIcons.angleLeft as IconProp}
+                        <Icon
+                            icon={directionIcons.angleLeft}
                             color={appColors.icon}
                             size={25}
                             style={{marginLeft: 10}}
@@ -102,8 +101,8 @@ export const HomeStack = () => {
                     headerTitle: (route.params as { title: string }).title,
                     headerBackTitle: '',
                     headerBackImage: () => (
-                        <FontAwesomeIcon
-                            icon={directionIcons.angleLeft as IconProp}
+                        <Icon
+                            icon={directionIcons.angleLeft}
                             color={appColors.icon}
                             size={25}
                             style={{marginLeft: 10}}

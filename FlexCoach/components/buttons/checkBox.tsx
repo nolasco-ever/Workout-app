@@ -2,9 +2,8 @@ import { StyleSheet, Text, View } from 'react-native'
 import React from 'react'
 import { colors } from '../../colors'
 import { CustomText } from '../text/customText';
-import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
+import { Icon } from '../icons/Icon';
 import { generalIcons } from '../icons/icon-library';
-import { IconProp } from '@fortawesome/fontawesome-svg-core';
 import { TouchableOpacity } from 'react-native-gesture-handler';
 
 interface CheckBoxProps {
@@ -19,8 +18,8 @@ export const CheckBox = ({label, checked, onPress}: CheckBoxProps) => {
     <TouchableOpacity onPress={onPress} style={styles.container}>
         <View style={[styles.checkBox, {borderColor: appColors.inactive}]}>
             {checked && (
-                <FontAwesomeIcon
-                    icon={generalIcons.check as IconProp}
+                <Icon
+                    icon={generalIcons.check}
                     color='green'
                 />
             )}

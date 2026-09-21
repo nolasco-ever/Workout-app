@@ -1,5 +1,6 @@
 import React, { useRef, useState } from 'react';
-import { StyleSheet, ScrollView, SafeAreaView, View, RefreshControl } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { StyleSheet, ScrollView, View, RefreshControl } from 'react-native';
 import { colors } from '../../../../colors';
 import { ProgressCard } from '../../../../components/cards/progressCard';
 import { Section } from '../../../../components/sections/Section';
@@ -19,7 +20,7 @@ export const HomeScreen = () => {
     useScrollToTop(scrollViewRef);
 
     return (
-      <SafeAreaView style={[styles.container, {backgroundColor: appColors.background}]}>
+      <SafeAreaView edges={['left', 'right']} style={[styles.container, {backgroundColor: appColors.background}]}>
           <ScrollView
             ref={scrollViewRef}
             scrollEventThrottle={16}
@@ -36,13 +37,12 @@ export const HomeScreen = () => {
             <View style={{flexDirection: 'row', justifyContent: 'space-between', padding: 10}}>
               <IconButton
                   icon={generalIcons.dumbbell}
-                  iconColor='#001f54'
+                  iconColor={appColors.accent}
                   label="Workouts"
                   onPress={() => navigation.navigate("WorkoutOverviewScreen")}
               />
               <IconButton
                   icon={generalIcons.simpleChart}
-                  iconColor='#134162'
                   label="Progress"
                   onPress={() => navigation.navigate("PlaceholderScreen", { title: 'Progress' })}
               />
