@@ -12,6 +12,8 @@ export interface UserProfile extends BaseDocument {
   distanceUnit: DistanceUnit;
   activePlanId: Id | null;
   activeCycleId: Id | null;
+  /** Optional goal shown as a line on the body weight chart. */
+  targetWeightKg: number | null;
   onboardingCompletedAt: Timestamp | null;
 }
 

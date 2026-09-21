@@ -23,6 +23,7 @@ export const userRepository = {
       distanceUnit: 'mi',
       activePlanId: null,
       activeCycleId: null,
+      targetWeightKg: null,
       onboardingCompletedAt: null,
       createdAt: now,
       updatedAt: now,
