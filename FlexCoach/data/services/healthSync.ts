@@ -25,10 +25,9 @@ export const disconnectHealth = (uid: Id) => userRepository.update(uid, { health
 export const importHealthWeights = async (uid: Id, existing: BodyWeightEntry[], daysBack = 365): Promise<number> => {
   const samples = await healthService.getWeightSamples(addDays(today(), -daysBack));
   const known = new Set(existing.map(e => e.externalId).filter(Boolean));
-  let imported = 0;
-  for (const s of samples) {
-    if (known.has(s.externalId)) continue;
-    await bodyWeightRepository.save(uid, {
+  const entries: BodyWeightEntry[] = samples
+    .filter(s => !known.has(s.externalId))
+    .map(s => ({
       id: newId(),
       ownerId: uid,
       date: s.date,
@@ -37,10 +36,11 @@ export const importHealthWeights = async (uid: Id, existing: BodyWeightEntry[], 
       externalId: s.externalId,
       createdAt: s.at,
       updatedAt: s.at,
-    });
-    imported++;
-  }
-  return imported;
+    }));
+  // A single batched write: saving one entry at a time made every live
+  // listener (the Home tile, the history list) re-render per sample.
+  if (entries.length) await bodyWeightRepository.saveMany(uid, entries);
+  return entries.length;
 };
 
 /** Write an app weigh-in to the health store and record the sample id on the entry. */

@@ -10,6 +10,7 @@ import {
   updateDoc,
   deleteDoc,
   where,
+  writeBatch,
   QueryConstraint,
 } from '@react-native-firebase/firestore';
 import { db } from '../firebase/firebase';
@@ -28,6 +29,19 @@ export const readDoc = async <T>(path: string): Promise<T | null> => {
 
 export const writeDoc = async <T extends object>(path: string, data: T): Promise<void> => {
   await setDoc(doc(db, path), data);
+};
+
+/**
+ * Write many documents as one commit so listeners fire once, not once per
+ * document. Firestore caps a batch at 500 writes, so larger sets are split.
+ */
+export const writeDocs = async <T extends object>(items: { path: string; data: T }[]): Promise<void> => {
+  const LIMIT = 500;
+  for (let i = 0; i < items.length; i += LIMIT) {
+    const batch = writeBatch(db);
+    for (const { path, data } of items.slice(i, i + LIMIT)) batch.set(doc(db, path), data);
+    await batch.commit();
+  }
 };
 
 export const patchDoc = async <T extends object>(path: string, data: Partial<T>): Promise<void> => {
