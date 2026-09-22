@@ -1,14 +1,15 @@
 import React, { useEffect, useState } from 'react';
-import { ActivityIndicator, ScrollView, View } from 'react-native';
+import { ActivityIndicator, ScrollView, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { NavigationProp, useNavigation } from '@react-navigation/native';
 import { useWorkoutHome } from '../../../../data/hooks/useWorkoutHome';
+import { usePlans } from '../../../../data/hooks/usePlans';
 import { useAuth } from '../../../../data/auth/AuthProvider';
-import { Occurrence } from '../../../../data/models';
+import { Occurrence, Plan } from '../../../../data/models';
 import { findWorkout } from '../../../../data/engine/schedule';
 import { fromLocalDate } from '../../../../data/engine/dates';
 import { pushWorkoutTo, seedSamplePlan, skipWorkout, startSession } from '../../../../data/services/workoutService';
-import { startFreshCycle } from '../../../../data/services/planService';
+import { activatePlan, startFreshCycle, validatePlan } from '../../../../data/services/planService';
 import { CustomText } from '../../../../components/text/customText';
 import { Icon } from '../../../../components/icons/Icon';
 import { generalIcons } from '../../../../components/icons/icon-library';
@@ -19,14 +20,17 @@ import { PrimaryButton } from '../../../../components/buttons/PrimaryButton';
 import { OccurrenceRow } from '../components/OccurrenceRow';
 import { AppStackParams } from '../../../../appNavigators/AppStack';
 import { devFlags } from '../../../../dev/flags';
+import { describeSchedule } from '../../../../screens/Plans/components/planSummary';
 
 const longDate = (d: string) => fromLocalDate(d).toLocaleDateString(undefined, { weekday: 'long', month: 'short', day: 'numeric' });
 
 export const WorkoutHomeScreen = () => {
   const navigation = useNavigation<NavigationProp<WorkoutStackParams>>();
-  const { colors, spacing } = useTheme();
-  const { uid, profile } = useAuth();
+  const { colors, spacing, radius } = useTheme();
+  const { uid } = useAuth();
   const state = useWorkoutHome();
+  const { plans } = usePlans();
+  const drafts = plans.filter(p => p.status === 'draft');
   const [busy, setBusy] = useState<string | null>(null);
 
   const run = async (key: string, fn: () => Promise<void>) => {
@@ -65,17 +69,30 @@ export const WorkoutHomeScreen = () => {
       navigation.navigate('SessionScreen', { plan, cycle: updated, session });
     });
 
+  const openPlans = (planId?: string) =>
+    (navigation as unknown as NavigationProp<AppStackParams>).navigate('PlansStack', planId ? { screen: 'PlanOverviewScreen', initial: false, params: { planId } } : undefined);
+
+  const activate = (draft: Plan) =>
+    run(`activate-${draft.id}`, async () => {
+      if (uid) await activatePlan(uid, draft);
+    });
+
   const todayWorkout = plan && state.todayOccurrence ? findWorkout(plan, state.todayOccurrence.workoutId) : undefined;
   const resume = state.inProgressSession;
 
   return (
     <SafeAreaView edges={['left', 'right']} style={{ flex: 1, backgroundColor: colors.ground }}>
-      <ScrollView contentInsetAdjustmentBehavior="automatic" contentContainerStyle={{ flexGrow: 1, padding: spacing.lg, gap: spacing.lg, paddingBottom: spacing.xxl }}>
-        {/* One scroll view for every state, with the inset the native large-title header needs. */}
+      <ScrollView
+        contentInsetAdjustmentBehavior="automatic"
+        alwaysBounceVertical={false}
+        contentContainerStyle={{ padding: spacing.lg, gap: spacing.lg, paddingBottom: spacing.xxl }}
+      >
+        {/* One scroll view for every state, with the inset the native large-title header needs.
+            The content is never stretched to fill the screen, so short states don't scroll. */}
         {loading && <ActivityIndicator color={colors.accent} style={{ marginTop: spacing.xxl }} />}
 
         {!loading && plan && !cycle && (
-          <View style={{ flex: 1, justifyContent: 'center', gap: spacing.lg, padding: spacing.sm }}>
+          <View style={{ gap: spacing.lg, padding: spacing.sm, paddingTop: spacing.xl }}>
             <CustomText variant="overline" color={colors.inkMuted}>{plan.name}</CustomText>
             <CustomText variant="title">Ready when you are</CustomText>
             <CustomText variant="body" color={colors.inkMuted}>This plan is active but has no cycle running. Start one and today's workout appears here.</CustomText>
@@ -84,13 +101,56 @@ export const WorkoutHomeScreen = () => {
         )}
 
         {!loading && !plan && (
-          <View style={{ flex: 1, justifyContent: 'center', gap: spacing.lg, padding: spacing.sm }}>
+          <View style={{ gap: spacing.lg, padding: spacing.sm, paddingTop: spacing.xl }}>
             <Icon icon={generalIcons.dumbbell} color={colors.accent} size={40} />
             <CustomText variant="title">No active plan</CustomText>
             <CustomText variant="body" color={colors.inkMuted}>
-              Build a plan with your splits and a schedule, and this tab will show you what to do each day.
+              {drafts.length
+                ? 'Activate one of your plans and this tab will show you what to do each day.'
+                : 'Build a plan with your splits and a schedule, and this tab will show you what to do each day.'}
             </CustomText>
-            <PrimaryButton label="Create a plan" onPress={() => (navigation as unknown as NavigationProp<AppStackParams>).navigate('PlansStack')} />
+            {drafts.length > 0 && (
+              <Card style={{ padding: 0 }}>
+                {drafts.map((draft, i) => {
+                  const complete = validatePlan(draft).length === 0;
+                  const key = `activate-${draft.id}`;
+                  return (
+                    <TouchableOpacity
+                      key={draft.id}
+                      onPress={() => openPlans(draft.id)}
+                      style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.md, padding: spacing.lg, borderTopWidth: i ? 1 : 0, borderTopColor: colors.line }}
+                    >
+                      <View style={{ flex: 1 }}>
+                        <CustomText variant="bodyStrong">{draft.name || 'Untitled plan'}</CustomText>
+                        <CustomText variant="caption" color={colors.inkMuted}>
+                          {complete ? `${draft.workouts.length} workout${draft.workouts.length === 1 ? '' : 's'} · ${describeSchedule(draft)}` : 'Not finished yet'}
+                        </CustomText>
+                      </View>
+                      <TouchableOpacity
+                        accessibilityRole="button"
+                        accessibilityLabel={complete ? `Activate ${draft.name}` : `Finish ${draft.name}`}
+                        disabled={busy !== null}
+                        onPress={() => (complete ? activate(draft) : openPlans(draft.id))}
+                        style={{
+                          paddingVertical: spacing.xs,
+                          paddingHorizontal: spacing.md,
+                          borderRadius: radius.pill,
+                          backgroundColor: complete ? colors.accent : colors.surfaceRaised,
+                          opacity: busy !== null && busy !== key ? 0.5 : 1,
+                        }}
+                      >
+                        {busy === key ? (
+                          <ActivityIndicator color={colors.onAccent} />
+                        ) : (
+                          <CustomText variant="label" color={complete ? colors.onAccent : colors.ink}>{complete ? 'Activate' : 'Finish'}</CustomText>
+                        )}
+                      </TouchableOpacity>
+                    </TouchableOpacity>
+                  );
+                })}
+              </Card>
+            )}
+            <PrimaryButton label="Create a plan" variant={drafts.length ? 'outline' : 'filled'} onPress={() => openPlans()} />
           </View>
         )}
 

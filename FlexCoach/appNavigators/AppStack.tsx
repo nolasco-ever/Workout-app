@@ -1,9 +1,10 @@
 import React from 'react';
 import { ActivityIndicator, View } from 'react-native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
+import type { NavigatorScreenParams } from '@react-navigation/native';
 import { TabNavigator } from './TabNavigator';
 import { NotificationsScreen } from '../screens/Tabs/Home/screens/NotificationsScreen';
-import { PlansStack } from '../screens/Plans/PlansStack';
+import { PlansStack, type PlansStackParams } from '../screens/Plans/PlansStack';
 import { AuthStack } from '../screens/Auth/AuthStack';
 import { OnboardingStack } from '../screens/Onboarding/OnboardingStack';
 import { AccountScreen } from '../screens/Tabs/Profile/screens/AccountScreen';
@@ -17,7 +18,7 @@ export type AppStackParams = {
     OnboardingStack: undefined;
     TabNavigator: undefined;
     NotificationsScreen: undefined;
-    PlansStack: undefined;
+    PlansStack: NavigatorScreenParams<PlansStackParams> | undefined;
     AccountScreen: undefined;
 };
 
