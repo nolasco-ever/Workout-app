@@ -1,11 +1,9 @@
 import React, { useState } from 'react';
-import { Alert, Image, View } from 'react-native';
+import { Image, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { launchCamera, launchImageLibrary } from 'react-native-image-picker';
-import { useAuth } from '../../../data/auth/AuthProvider';
-import { saveProfilePhoto } from '../../../data/services/profileService';
+import { useProfilePhoto } from '../../../data/hooks/useProfilePhoto';
 import { CustomText } from '../../../components/text/customText';
 import { PrimaryButton } from '../../../components/buttons/PrimaryButton';
 import { Icon } from '../../../components/icons/Icon';
@@ -13,29 +11,16 @@ import { generalIcons } from '../../../components/icons/icon-library';
 import { useTheme } from '../../../theme';
 import { OnboardingStackParams } from '../OnboardingStack';
 
-const pickerOptions = { mediaType: 'photo' as const, quality: 0.6 as const, maxWidth: 400, maxHeight: 400, selectionLimit: 1, includeBase64: true };
-
 export const ProfilePhotoScreen = () => {
   const navigation = useNavigation<NativeStackNavigationProp<OnboardingStackParams>>();
   const { colors, spacing } = useTheme();
-  const { uid, profile } = useAuth();
-  const [uri, setUri] = useState<string | null>(profile?.photoUrl ?? null);
-  const [busy, setBusy] = useState(false);
+  const photo = useProfilePhoto();
+  const [uri, setUri] = useState<string | null>(photo.photoUrl);
+  const busy = photo.busy;
 
   const pick = async (source: 'library' | 'camera') => {
-    const res = source === 'library' ? await launchImageLibrary(pickerOptions) : await launchCamera({ ...pickerOptions, saveToPhotos: false });
-    const asset = res.assets?.[0];
-    if (!asset?.uri || !uid) return;
-    setUri(asset.uri);
-    setBusy(true);
-    try {
-      await saveProfilePhoto(uid, { uri: asset.uri, base64: asset.base64 });
-    } catch (err) {
-      console.warn(err);
-      Alert.alert("Couldn't save the photo", 'Try again, or skip for now.');
-    } finally {
-      setBusy(false);
-    }
+    const saved = await photo.pick(source);
+    if (saved) setUri(saved);
   };
 
   return (

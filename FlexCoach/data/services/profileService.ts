@@ -1,4 +1,4 @@
-import { getDownloadURL, getStorage, putFile, ref } from '@react-native-firebase/storage';
+import { deleteObject, getDownloadURL, getStorage, putFile, ref } from '@react-native-firebase/storage';
 import { updateProfile } from '@react-native-firebase/auth';
 import { Id } from '../models';
 import { auth, firebaseApp } from '../firebase/firebase';
@@ -29,6 +29,15 @@ export const saveProfilePhoto = async (uid: Id, photo: { uri: string; base64?: s
   // The auth profile only accepts real URLs; skip it for inline photos.
   if (features.cloudStorage && auth.currentUser) await updateProfile(auth.currentUser, { photoURL: url }).catch(() => undefined);
   return url;
+};
+
+/** Clear the profile photo and delete the stored file, if there is one. */
+export const removeProfilePhoto = async (uid: Id): Promise<void> => {
+  if (features.cloudStorage) {
+    await deleteObject(ref(getStorage(firebaseApp), `users/${uid}/profile.jpg`)).catch(() => undefined);
+  }
+  await userRepository.update(uid, { photoUrl: null });
+  if (auth.currentUser) await updateProfile(auth.currentUser, { photoURL: null }).catch(() => undefined);
 };
 
 export const completeOnboarding = (uid: Id) => userRepository.update(uid, { onboardingCompletedAt: Date.now() });

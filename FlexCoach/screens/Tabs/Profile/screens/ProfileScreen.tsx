@@ -1,10 +1,11 @@
 import React from 'react';
-import { Alert, Image, ScrollView, View } from 'react-native';
+import { ActivityIndicator, Alert, Image, ScrollView, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { NavigationProp, useNavigation } from '@react-navigation/native';
 import { useAuth } from '../../../../data/auth/AuthProvider';
 import { authService } from '../../../../data/auth/authService';
 import { usePlans } from '../../../../data/hooks/usePlans';
+import { useProfilePhoto } from '../../../../data/hooks/useProfilePhoto';
 import { CustomText } from '../../../../components/text/customText';
 import { SurfaceCard } from '../../../../components/cards/SurfaceCard';
 import { Row } from '../../../../components/list-items/Row';
@@ -21,6 +22,7 @@ export const ProfileScreen = () => {
   const { colors, spacing } = useTheme();
   const { profile, user } = useAuth();
   const { plans } = usePlans();
+  const photo = useProfilePhoto();
   const active = plans.find(p => p.status === 'active');
   const joined = profile ? shortDate(toLocalDate(new Date(profile.createdAt))) : null;
   const placeholder = (title: string) => () => navigation.navigate('PlaceholderScreen', { title });
@@ -35,13 +37,19 @@ export const ProfileScreen = () => {
     <SafeAreaView edges={['left', 'right']} style={{ flex: 1, backgroundColor: colors.ground }}>
       <ScrollView contentInsetAdjustmentBehavior="automatic" contentContainerStyle={{ padding: spacing.lg, gap: spacing.lg, paddingBottom: spacing.xxl }}>
         <View style={{ alignItems: 'center', gap: spacing.sm }}>
-          {profile?.photoUrl ? (
-            <Image source={{ uri: profile.photoUrl }} resizeMode="cover" style={{ width: 96, height: 96, borderRadius: 48, backgroundColor: colors.surfaceRaised }} />
-          ) : (
-            <View style={{ width: 96, height: 96, borderRadius: 48, backgroundColor: colors.surfaceRaised, alignItems: 'center', justifyContent: 'center' }}>
-              <Icon icon={generalIcons.user} size={40} color={colors.inactive} />
+          <TouchableOpacity onPress={photo.choose} disabled={photo.busy} accessibilityRole="button" accessibilityLabel="Change profile photo" style={{ width: 96, height: 96 }}>
+            {profile?.photoUrl ? (
+              <Image source={{ uri: profile.photoUrl }} resizeMode="cover" style={{ width: 96, height: 96, borderRadius: 48, backgroundColor: colors.surfaceRaised }} />
+            ) : (
+              <View style={{ width: 96, height: 96, borderRadius: 48, backgroundColor: colors.surfaceRaised, alignItems: 'center', justifyContent: 'center' }}>
+                <Icon icon={generalIcons.user} size={40} color={colors.inactive} />
+              </View>
+            )}
+            {/* Edit badge so the avatar reads as tappable. */}
+            <View style={{ position: 'absolute', right: -2, bottom: -2, width: 32, height: 32, borderRadius: 16, backgroundColor: colors.accent, borderWidth: 3, borderColor: colors.ground, alignItems: 'center', justifyContent: 'center' }}>
+              {photo.busy ? <ActivityIndicator size="small" color={colors.onAccent} /> : <Icon icon={generalIcons.camera} size={16} color={colors.onAccent} strokeWidth={2.5} />}
             </View>
-          )}
+          </TouchableOpacity>
           <CustomText variant="heading">{profile?.displayName ?? 'Your name'}</CustomText>
           <CustomText variant="caption" color={colors.inkMuted}>{joined ? `Training since ${joined}` : ' '}</CustomText>
         </View>
