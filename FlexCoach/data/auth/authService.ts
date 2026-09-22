@@ -38,7 +38,7 @@ const friendly = (err: unknown): AuthError => {
     'auth/invalid-credential': 'Email or password is incorrect.',
     'auth/email-already-in-use': 'An account already uses that email. Sign in instead.',
     'auth/credential-already-in-use': 'That account already exists. Sign in instead.',
-    'auth/weak-password': 'Use at least 6 characters for the password.',
+    'auth/weak-password': 'Use at least 8 characters with a letter and a number.',
     'auth/too-many-requests': 'Too many attempts. Try again in a few minutes.',
     'auth/network-request-failed': "You're offline. Check your connection and try again.",
     'auth/requires-recent-login': 'For safety, sign in again before doing that.',
@@ -47,6 +47,14 @@ const friendly = (err: unknown): AuthError => {
   };
   return new AuthError(map[code] ?? `Something went wrong. Try again. (${code})`, code);
 };
+
+/** Password rules shown on the create-account and change-password forms. */
+export const passwordRules = [
+  { label: 'At least 8 characters', test: (p: string) => p.length >= 8 },
+  { label: 'A letter', test: (p: string) => /[A-Za-z]/.test(p) },
+  { label: 'A number', test: (p: string) => /\d/.test(p) },
+] as const;
+export const passwordOk = (p: string): boolean => passwordRules.every(r => r.test(p));
 
 let googleConfigured = false;
 const ensureGoogle = () => {

@@ -3,7 +3,9 @@ import { KeyboardAvoidingView, Platform, ScrollView, TouchableOpacity, View } fr
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { RouteProp, useNavigation, useRoute } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { authService } from '../../../data/auth/authService';
+import { authService, passwordOk, passwordRules } from '../../../data/auth/authService';
+import { Icon } from '../../../components/icons/Icon';
+import { generalIcons } from '../../../components/icons/icon-library';
 import { CustomText } from '../../../components/text/customText';
 import { TextField } from '../../../components/inputs/TextField';
 import { PrimaryButton } from '../../../components/buttons/PrimaryButton';
@@ -11,6 +13,7 @@ import { useTheme } from '../../../theme';
 import { AuthStackParams } from '../AuthStack';
 
 const validEmail = (s: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(s.trim());
+
 
 /** One screen for both sign in and create account; the mode toggles at the bottom. */
 export const EmailAuthScreen = () => {
@@ -21,12 +24,13 @@ export const EmailAuthScreen = () => {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [confirm, setConfirm] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
 
   const create = mode === 'create';
-  const canSubmit = validEmail(email) && password.length >= 6 && (!create || name.trim().length > 0);
+  const canSubmit = validEmail(email) && (create ? passwordOk(password) && confirm === password && name.trim().length > 0 : password.length > 0);
 
   const submit = async () => {
     setBusy(true);
@@ -46,6 +50,7 @@ export const EmailAuthScreen = () => {
     const next = create ? 'signin' : 'create';
     setMode(next);
     setError(null);
+    setConfirm('');
     navigation.setOptions({ title: next === 'create' ? 'Create account' : 'Sign in' });
   };
 
@@ -53,26 +58,54 @@ export const EmailAuthScreen = () => {
     <SafeAreaView edges={['bottom', 'left', 'right']} style={{ flex: 1, backgroundColor: colors.ground }}>
       <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={{ flex: 1 }} keyboardVerticalOffset={100}>
         <ScrollView contentContainerStyle={{ padding: spacing.lg, gap: spacing.lg }} keyboardShouldPersistTaps="handled" keyboardDismissMode="on-drag">
-          {create && <TextField id="auth-name" label="Your name" placeholder="What should we call you?" value={name} onChangeText={setName} autoCapitalize="words" autoComplete="name" textContentType="name" returnKeyType="next" autoFocus />}
+          {create && <TextField id="auth-name" label="Your name" placeholder="Full Name" value={name} onChangeText={setName} autoCapitalize="words" autoComplete="name" textContentType="name" returnKeyType="next" autoFocus />}
           <TextField id="auth-email" label="Email" placeholder="you@example.com" value={email} onChangeText={setEmail} autoCapitalize="none" autoCorrect={false} keyboardType="email-address" autoComplete="email" textContentType="emailAddress" returnKeyType="next" autoFocus={!create} />
           <View style={{ gap: spacing.xs }}>
             <TextField
               id="auth-password"
               label="Password"
-              placeholder={create ? 'At least 6 characters' : 'Your password'}
+              placeholder={create ? undefined : 'Your password'}
               value={password}
               onChangeText={setPassword}
               secureTextEntry={!showPassword}
               autoCapitalize="none"
               autoComplete={create ? 'new-password' : 'current-password'}
               textContentType={create ? 'newPassword' : 'password'}
-              returnKeyType="go"
-              onSubmitEditing={() => canSubmit && submit()}
+              returnKeyType={create ? 'next' : 'go'}
+              onSubmitEditing={() => !create && canSubmit && submit()}
             />
             <TouchableOpacity onPress={() => setShowPassword(s => !s)} hitSlop={8} style={{ alignSelf: 'flex-start' }}>
               <CustomText variant="caption" color={colors.inkMuted}>{showPassword ? 'Hide password' : 'Show password'}</CustomText>
             </TouchableOpacity>
           </View>
+          {create && (
+            <View style={{ gap: spacing.sm }}>
+              <TextField
+                id="auth-confirm"
+                label="Confirm password"
+                value={confirm}
+                onChangeText={setConfirm}
+                secureTextEntry={!showPassword}
+                autoCapitalize="none"
+                autoComplete="new-password"
+                textContentType="newPassword"
+                returnKeyType="go"
+                onSubmitEditing={() => canSubmit && submit()}
+                error={confirm.length > 0 && confirm !== password ? "Passwords don't match." : null}
+              />
+              <View style={{ gap: spacing.xs }}>
+                {passwordRules.map(rule => {
+                  const met = rule.test(password);
+                  return (
+                    <View key={rule.label} style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.xs }}>
+                      <Icon icon={met ? generalIcons.success : generalIcons.bulletPoint} size={16} color={met ? colors.success : colors.inactive} />
+                      <CustomText variant="caption" color={met ? colors.ink : colors.inkMuted}>{rule.label}</CustomText>
+                    </View>
+                  );
+                })}
+              </View>
+            </View>
+          )}
           {error && <CustomText variant="caption" color={colors.error}>{error}</CustomText>}
           <PrimaryButton label={create ? 'Create account' : 'Sign in'} disabled={!canSubmit} busy={busy} onPress={submit} />
           {!create && (

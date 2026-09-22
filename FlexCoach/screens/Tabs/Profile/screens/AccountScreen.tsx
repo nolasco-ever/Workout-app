@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Alert, KeyboardAvoidingView, Platform, ScrollView, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useAuth } from '../../../../data/auth/AuthProvider';
-import { authService } from '../../../../data/auth/authService';
+import { authService, passwordOk } from '../../../../data/auth/authService';
 import { CustomText } from '../../../../components/text/customText';
 import { SurfaceCard } from '../../../../components/cards/SurfaceCard';
 import { Row } from '../../../../components/list-items/Row';
@@ -74,9 +74,9 @@ export const AccountScreen = () => {
             <SurfaceCard style={{ gap: spacing.md }}>
               <CustomText variant="heading">Change password</CustomText>
               <TextField id="pw-current" label="Current password" value={current} onChangeText={setCurrent} secureTextEntry autoCapitalize="none" textContentType="password" />
-              <TextField id="pw-next" label="New password" value={next} onChangeText={setNext} secureTextEntry autoCapitalize="none" textContentType="newPassword" hint="At least 6 characters." />
+              <TextField id="pw-next" label="New password" value={next} onChangeText={setNext} secureTextEntry autoCapitalize="none" textContentType="newPassword" hint="At least 8 characters with a letter and a number." />
               {message && <CustomText variant="caption" color={message.tone === 'ok' ? colors.success : colors.error}>{message.text}</CustomText>}
-              <PrimaryButton label="Update password" variant="outline" disabled={current.length === 0 || next.length < 6} busy={busy === 'password'} onPress={changePassword} />
+              <PrimaryButton label="Update password" variant="outline" disabled={current.length === 0 || !passwordOk(next)} busy={busy === 'password'} onPress={changePassword} />
             </SurfaceCard>
           )}
 
