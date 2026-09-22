@@ -8,7 +8,7 @@ export const userRepository = {
   watch: (uid: Id, onChange: (profile: UserProfile | null) => void): Unsubscribe =>
     watchDoc<UserProfile>(paths.user(uid), onChange),
 
-  /** Create the profile document on first launch if it doesn't exist yet. */
+  /** Create the profile document on first sign-in if it doesn't exist yet. */
   ensure: async (uid: Id, defaults: Partial<UserProfile> = {}): Promise<UserProfile> => {
     const existing = await readDoc<UserProfile>(paths.user(uid));
     if (existing) return existing;
@@ -18,7 +18,7 @@ export const userRepository = {
       displayName: null,
       email: null,
       photoUrl: null,
-      authProvider: 'anonymous',
+      authProvider: 'password',
       weightUnit: 'lb',
       distanceUnit: 'mi',
       activePlanId: null,

@@ -24,17 +24,16 @@ export type AppStackParams = {
 const Stack = createNativeStackNavigator<AppStackParams>();
 
 /**
- * Routes by account state. An anonymous session sees the welcome screen;
- * a signed-in user without onboarding sees onboarding; everyone else the
- * tabs. React Navigation swaps the route set, so there's nothing to
+ * Routes by account state. No session sees the welcome screen; a signed-in
+ * user without onboarding sees onboarding; everyone else the tabs. React Navigation swaps the route set, so there's nothing to
  * navigate to manually after signing in or out.
  */
 export const AppStack = () => {
     const opts = useStackOptions();
     const { colors } = useTheme();
-    const { ready, isAnonymous, profile } = useAuth();
+    const { ready, uid, profile } = useAuth();
     const bypass = __DEV__ && devFlags.startAtTabs;
-    const signedIn = bypass || !isAnonymous;
+    const signedIn = bypass || !!uid;
     const onboarded = bypass || !!profile?.onboardingCompletedAt;
 
     if (!ready) {

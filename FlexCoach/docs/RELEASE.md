@@ -61,8 +61,9 @@ After adding fingerprints, download the new `google-services.json` into
 ## Firebase housekeeping
 
 - Auth users can be listed with `npx firebase auth:export users.json --format=json`.
-- Anonymous sessions that never sign in accumulate; Firebase Authentication >
-  Settings > "Automatically delete anonymous users" (30 days) keeps them tidy.
+- The app no longer uses anonymous sessions. Disable the Anonymous provider in
+  Firebase Authentication > Sign-in method, and delete any leftover anonymous
+  users from earlier builds.
 
 ## App icon
 

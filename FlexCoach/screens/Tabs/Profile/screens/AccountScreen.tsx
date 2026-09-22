@@ -10,12 +10,12 @@ import { TextField } from '../../../../components/inputs/TextField';
 import { PrimaryButton } from '../../../../components/buttons/PrimaryButton';
 import { useTheme } from '../../../../theme';
 
-const providerLabel = { password: 'Email and password', google: 'Google', apple: 'Apple', anonymous: 'No account' } as const;
+const providerLabel = { password: 'Email and password', google: 'Google', apple: 'Apple' } as const;
 
 export const AccountScreen = () => {
   const { colors, spacing } = useTheme();
   const { user, profile } = useAuth();
-  const provider = profile?.authProvider ?? 'anonymous';
+  const provider = profile?.authProvider ?? 'password';
   const [current, setCurrent] = useState('');
   const [next, setNext] = useState('');
   const [busy, setBusy] = useState<string | null>(null);

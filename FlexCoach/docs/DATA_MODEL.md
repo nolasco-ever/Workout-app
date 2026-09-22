@@ -11,7 +11,7 @@ data/
   engine/        schedule, progression, stats, date helpers (pure)
   firebase/      Firebase app, auth, Firestore instances and path helpers
   repositories/  typed read/write wrappers per collection
-  auth/          AuthProvider: anonymous sign-in on first launch
+  auth/          AuthProvider: mirrors the Firebase session (account required)
 ```
 
 ## Vocabulary

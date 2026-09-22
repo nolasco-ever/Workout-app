@@ -4,7 +4,6 @@ import {
   GoogleAuthProvider,
   createUserWithEmailAndPassword,
   deleteUser,
-  linkWithCredential,
   reauthenticateWithCredential,
   sendPasswordResetEmail,
   signInWithCredential,
@@ -13,6 +12,7 @@ import {
   updatePassword,
   updateProfile,
   type AuthCredential,
+  type User,
 } from '@react-native-firebase/auth';
 import { GoogleSignin, isSuccessResponse } from '@react-native-google-signin/google-signin';
 import { appleAuth } from '@invertase/react-native-apple-authentication';
@@ -45,7 +45,7 @@ const friendly = (err: unknown): AuthError => {
     'auth/user-cancelled': 'Sign-in was cancelled.',
     'auth/operation-not-allowed': "This sign-in method isn't enabled yet.",
   };
-  return new AuthError(map[code] ?? 'Something went wrong. Try again.', code);
+  return new AuthError(map[code] ?? `Something went wrong. Try again. (${code})`, code);
 };
 
 let googleConfigured = false;
@@ -56,44 +56,37 @@ const ensureGoogle = () => {
   googleConfigured = true;
 };
 
+/** Keep the profile document in step with the Firebase user after any sign-in. */
+const syncProfile = async (user: User, provider: ProviderKind): Promise<void> => {
+  const existing = await userRepository.ensure(user.uid, { authProvider: provider, email: user.email, displayName: user.displayName, photoUrl: user.photoURL });
+  await userRepository.update(user.uid, {
+    authProvider: provider,
+    email: user.email ?? existing.email ?? null,
+    displayName: user.displayName ?? existing.displayName ?? null,
+    photoUrl: existing.photoUrl ?? user.photoURL ?? null,
+  });
+};
+
 /**
- * Attach a credential to the current (anonymous) user so everything they
- * logged stays with them. If the credential already belongs to an existing
- * account, sign into that account instead.
+ * Sign in with an Apple or Google credential. Firebase creates the account
+ * on first use and signs into the existing one after that, so one call
+ * covers both "create" and "sign in". The credential is used exactly once:
+ * Apple identity tokens are single-use, so there is no retry with it.
  */
-const linkOrSignIn = async (credential: AuthCredential, provider: ProviderKind): Promise<void> => {
-  const current = auth.currentUser;
+const signInWith = async (credential: AuthCredential, provider: ProviderKind): Promise<void> => {
   try {
-    if (current?.isAnonymous) {
-      await linkWithCredential(current, credential);
-    } else {
-      await signInWithCredential(auth, credential);
-    }
+    await signInWithCredential(auth, credential);
   } catch (err) {
-    const code = (err as { code?: string })?.code;
-    if (code === 'auth/credential-already-in-use' || code === 'auth/email-already-in-use') {
-      await signInWithCredential(auth, credential);
-    } else {
-      throw friendly(err);
-    }
+    throw friendly(err);
   }
   const user = auth.currentUser;
-  if (user) {
-    await userRepository.ensure(user.uid);
-    const existing = await userRepository.get(user.uid);
-    await userRepository.update(user.uid, { authProvider: provider, email: user.email ?? null, displayName: user.displayName ?? existing?.displayName ?? null, photoUrl: existing?.photoUrl ?? user.photoURL ?? null });
-  }
+  if (user) await syncProfile(user, provider);
 };
 
 export const authService = {
   createWithEmail: async (email: string, password: string, displayName: string): Promise<void> => {
-    const current = auth.currentUser;
     try {
-      if (current?.isAnonymous) {
-        await linkWithCredential(current, EmailAuthProvider.credential(email.trim(), password));
-      } else {
-        await createUserWithEmailAndPassword(auth, email.trim(), password);
-      }
+      await createUserWithEmailAndPassword(auth, email.trim(), password);
       const user = auth.currentUser!;
       await updateProfile(user, { displayName: displayName.trim() });
       await userRepository.ensure(user.uid);
@@ -121,7 +114,7 @@ export const authService = {
       const res = await GoogleSignin.signIn();
       if (!isSuccessResponse(res)) throw new AuthError('Sign-in was cancelled.', 'auth/user-cancelled');
       if (!res.data.idToken) throw new AuthError('Google did not return a token.', 'auth/invalid-credential');
-      await linkOrSignIn(GoogleAuthProvider.credential(res.data.idToken), 'google');
+      await signInWith(GoogleAuthProvider.credential(res.data.idToken), 'google');
     } catch (err) {
       if (err instanceof AuthError) throw err;
       throw friendly(err);
@@ -135,7 +128,7 @@ export const authService = {
         requestedScopes: [appleAuth.Scope.FULL_NAME, appleAuth.Scope.EMAIL],
       });
       if (!res.identityToken) throw new AuthError('Apple did not return a token.', 'auth/invalid-credential');
-      await linkOrSignIn(AppleAuthProvider.credential(res.identityToken, res.nonce), 'apple');
+      await signInWith(AppleAuthProvider.credential(res.identityToken, res.nonce), 'apple');
       // Apple only sends the name on the first authorisation; keep it.
       const name = [res.fullName?.givenName, res.fullName?.familyName].filter(Boolean).join(' ');
       const user = auth.currentUser;
@@ -168,7 +161,7 @@ export const authService = {
     }
   },
 
-  /** Sign out. AuthProvider then creates a fresh anonymous session and the welcome screen shows. */
+  /** Sign out. AuthProvider sees the null user and the welcome screen shows. */
   signOut: async (): Promise<void> => {
     try {
       if (googleConfigured) await GoogleSignin.signOut().catch(() => undefined);

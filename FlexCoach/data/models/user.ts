@@ -1,6 +1,6 @@
 import { BaseDocument, DistanceUnit, Id, LocalDate, Timestamp, WeightUnit } from './common';
 
-export type AuthProvider = 'anonymous' | 'password' | 'apple' | 'google';
+export type AuthProvider = 'password' | 'apple' | 'google';
 
 /** Stored at users/{uid}. Private to the owner. */
 export interface UserProfile extends BaseDocument {

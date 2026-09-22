@@ -1,64 +1,56 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
-import { onAuthStateChanged, onIdTokenChanged, signInAnonymously, type User } from '@react-native-firebase/auth';
+import { onAuthStateChanged, type User } from '@react-native-firebase/auth';
 import { auth } from '../firebase/firebase';
 import { userRepository } from '../repositories/userRepository';
-import { UserProfile } from '../models';
+import { AuthProvider as ProviderKind, UserProfile } from '../models';
 
 interface AuthState {
-  /** Null until Firebase has restored or created a session. */
+  /** Null until Firebase has restored a session, and while nobody is signed in. */
   uid: string | null;
   user: User | null;
   profile: UserProfile | null;
+  /** True once Firebase has reported the persisted session (or the lack of one). */
   ready: boolean;
-  /** True while the session is the automatic anonymous one, i.e. no account yet. */
-  isAnonymous: boolean;
 }
 
-const AuthContext = createContext<AuthState>({ uid: null, user: null, profile: null, ready: false, isAnonymous: true });
+const AuthContext = createContext<AuthState>({ uid: null, user: null, profile: null, ready: false });
+
+/** Which provider a Firebase user signed in with, for the profile document. */
+const providerOf = (user: User): ProviderKind => {
+  const id = user.providerData[0]?.providerId;
+  if (id === 'apple.com') return 'apple';
+  if (id === 'google.com') return 'google';
+  return 'password';
+};
 
 /**
- * Signs the device in anonymously on first launch so every write has an
- * owner from day one. When real sign-in arrives, the anonymous account is
- * linked to the Apple, Google, or email credential and keeps all its data.
+ * Mirrors the Firebase session. The app requires an account, so with no
+ * user the navigator shows the welcome screen; with one it loads (or
+ * creates) the profile document and shows onboarding or the tabs.
  */
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
-  const [state, setState] = useState<AuthState>({ uid: null, user: null, profile: null, ready: false, isAnonymous: true });
+  const [state, setState] = useState<AuthState>({ uid: null, user: null, profile: null, ready: false });
 
   useEffect(() => {
     const apply = async (user: User | null) => {
       if (!user) {
-        try {
-          await signInAnonymously(auth);
-        } catch (err) {
-          console.warn('Anonymous sign-in failed', err);
-          setState({ uid: null, user: null, profile: null, ready: true, isAnonymous: true });
-        }
+        setState({ uid: null, user: null, profile: null, ready: true });
         return;
       }
       try {
         const profile = await userRepository.ensure(user.uid, {
-          authProvider: user.isAnonymous ? 'anonymous' : 'password',
+          authProvider: providerOf(user),
           email: user.email,
           displayName: user.displayName,
           photoUrl: user.photoURL,
         });
-        setState({ uid: user.uid, user, profile, ready: true, isAnonymous: user.isAnonymous });
+        setState({ uid: user.uid, user, profile, ready: true });
       } catch (err) {
         console.warn('Could not load user profile', err);
-        setState({ uid: user.uid, user, profile: null, ready: true, isAnonymous: user.isAnonymous });
+        setState({ uid: user.uid, user, profile: null, ready: true });
       }
     };
-    // Linking an anonymous session to a credential keeps the same user, so
-    // onAuthStateChanged stays silent; the id token does change, so listen
-    // to both and re-derive isAnonymous each time.
-    const unsubAuth = onAuthStateChanged(auth, apply);
-    const unsubToken = onIdTokenChanged(auth, user => {
-      if (user) setState(s => (s.uid === user.uid && s.isAnonymous !== user.isAnonymous ? { ...s, user, isAnonymous: user.isAnonymous } : s));
-    });
-    return () => {
-      unsubAuth();
-      unsubToken();
-    };
+    return onAuthStateChanged(auth, apply);
   }, []);
 
   useEffect(() => {
