@@ -55,7 +55,7 @@ export const LogWeightScreen = () => {
   return (
     <SafeAreaView edges={['bottom', 'left', 'right']} style={{ flex: 1, backgroundColor: colors.ground }}>
       <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={{ flex: 1 }} keyboardVerticalOffset={100}>
-        <ScrollView contentContainerStyle={{ padding: spacing.lg, gap: spacing.lg }} keyboardShouldPersistTaps="handled">
+        <ScrollView contentContainerStyle={{ padding: spacing.lg, gap: spacing.lg }} keyboardShouldPersistTaps="handled" keyboardDismissMode="on-drag">
           <TextField id="weight" label="Weight" placeholder={unit === 'lb' ? '178.4' : '81.2'} value={weight} onChangeText={setWeight} keyboardType="decimal-pad" suffix={unit} autoFocus />
           <View style={{ gap: spacing.sm }}>
             <CustomText variant="overline" color={colors.inkMuted}>Day</CustomText>

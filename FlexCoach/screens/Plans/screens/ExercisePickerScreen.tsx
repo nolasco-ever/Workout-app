@@ -101,7 +101,7 @@ export const ExercisePickerScreen = () => {
       <FlatList
         data={results}
         keyExtractor={e => e.id}
-        keyboardShouldPersistTaps="handled"
+        keyboardShouldPersistTaps="handled" keyboardDismissMode="on-drag"
         contentContainerStyle={{ paddingHorizontal: spacing.lg, paddingBottom: spacing.xl }}
         ItemSeparatorComponent={() => <View style={{ height: 1, backgroundColor: colors.line }} />}
         ListEmptyComponent={<CustomText variant="body" color={colors.inkMuted} centered style={{ padding: spacing.xl }}>No exercises match.</CustomText>}

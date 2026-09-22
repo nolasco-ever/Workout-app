@@ -59,7 +59,7 @@ export const AboutYouScreen = () => {
   return (
     <SafeAreaView edges={['bottom', 'left', 'right']} style={{ flex: 1, backgroundColor: colors.ground }}>
       <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={{ flex: 1 }} keyboardVerticalOffset={100}>
-        <ScrollView contentContainerStyle={{ padding: spacing.lg, gap: spacing.lg }} keyboardShouldPersistTaps="handled">
+        <ScrollView contentContainerStyle={{ padding: spacing.lg, gap: spacing.lg }} keyboardShouldPersistTaps="handled" keyboardDismissMode="on-drag">
           <CustomText variant="body" color={colors.inkMuted}>A few basics so the app speaks your units. You can change any of this later.</CustomText>
           <TextField id="ob-name" label="Your name" placeholder="How you'd like to be addressed" value={name} onChangeText={setName} autoCapitalize="words" autoFocus />
           <SurfaceCard style={{ gap: spacing.md }}>

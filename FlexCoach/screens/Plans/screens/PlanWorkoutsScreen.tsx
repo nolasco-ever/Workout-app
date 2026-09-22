@@ -55,7 +55,7 @@ export const PlanWorkoutsScreen = () => {
 
   return (
     <SafeAreaView edges={['bottom', 'left', 'right']} style={{ flex: 1, backgroundColor: colors.ground }}>
-      <Animated.ScrollView ref={scrollRef} contentContainerStyle={{ padding: spacing.lg, gap: spacing.lg }} keyboardShouldPersistTaps="handled">
+      <Animated.ScrollView ref={scrollRef} contentContainerStyle={{ padding: spacing.lg, gap: spacing.lg }} keyboardShouldPersistTaps="handled" keyboardDismissMode="on-drag">
         <CustomText variant="body" color={colors.inkMuted}>
           Each workout is one training day, like Push or Legs. Add the days you rotate through, then fill each with exercises.
         </CustomText>

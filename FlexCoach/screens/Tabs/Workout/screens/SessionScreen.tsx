@@ -174,7 +174,7 @@ export const SessionScreen = () => {
           </CustomText>
         </View>
 
-        <ScrollView contentContainerStyle={{ padding: spacing.lg, gap: spacing.lg }} keyboardShouldPersistTaps="handled">
+        <ScrollView contentContainerStyle={{ padding: spacing.lg, gap: spacing.lg }} keyboardShouldPersistTaps="handled" keyboardDismissMode="on-drag">
           <TouchableOpacity
             disabled={!catalog}
             activeOpacity={0.7}
