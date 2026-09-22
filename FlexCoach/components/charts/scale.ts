@@ -52,3 +52,13 @@ export const shortDate = (iso: string): string => {
   const [, m, d] = iso.split('-').map(Number);
   return `${['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'][m - 1]} ${d}`;
 };
+
+/**
+ * "Jul 5" for dates in the current year, "Jul 5, 2025" otherwise, so a list
+ * spanning years never shows two identical labels. Use in lists and labels;
+ * chart axes keep shortDate.
+ */
+export const dateLabel = (iso: string, now: Date = new Date()): string => {
+  const year = Number(iso.slice(0, 4));
+  return year === now.getFullYear() ? shortDate(iso) : `${shortDate(iso)}, ${year}`;
+};

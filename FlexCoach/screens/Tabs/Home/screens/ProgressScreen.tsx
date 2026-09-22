@@ -7,7 +7,7 @@ import { useAuth } from '../../../../data/auth/AuthProvider';
 import { useInsights } from '../../../../data/hooks/useInsights';
 import { kgToLb } from '../../../../data/engine/units';
 import { BarChart } from '../../../../components/charts/BarChart';
-import { compactNumber } from '../../../../components/charts/scale';
+import { compactNumber, dateLabel } from '../../../../components/charts/scale';
 import { loggedExercises } from '../../../../data/engine/insights';
 import { getCatalogExercise } from '../../../../data/catalog/exerciseCatalog';
 import { CustomText } from '../../../../components/text/customText';
@@ -54,7 +54,7 @@ export const ProgressScreen = () => {
                 {cat && <MuscleMap primary={cat.primaryMuscles} secondary={cat.secondaryMuscles} height={56} views="auto" />}
                 <View style={{ flex: 1 }}>
                   <CustomText variant="bodyStrong">{it.exerciseName}</CustomText>
-                  <CustomText variant="caption" color={colors.inkMuted}>{it.sessions} session{it.sessions === 1 ? '' : 's'} · last {shortDate(it.lastDate)}</CustomText>
+                  <CustomText variant="caption" color={colors.inkMuted}>{it.sessions} session{it.sessions === 1 ? '' : 's'} · last {dateLabel(it.lastDate)}</CustomText>
                 </View>
                 <Icon icon={directionIcons.angleRight} size={20} color={colors.inactive} />
               </TouchableOpacity>

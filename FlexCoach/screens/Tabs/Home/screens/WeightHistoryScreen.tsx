@@ -15,7 +15,7 @@ import { ChoiceChips } from '../../../../components/inputs/ChoiceChips';
 import { Icon } from '../../../../components/icons/Icon';
 import { generalIcons } from '../../../../components/icons/icon-library';
 import { LineChart } from '../../../../components/charts/LineChart';
-import { shortDate } from '../../../../components/charts/scale';
+import { dateLabel } from '../../../../components/charts/scale';
 import { useTheme } from '../../../../theme';
 import { HomeStackParams } from '../HomeStack';
 
@@ -71,9 +71,9 @@ export const WeightHistoryScreen = () => {
             <View key={e.id} style={{ flexDirection: 'row', alignItems: 'center', padding: spacing.lg, gap: spacing.md, borderTopWidth: i ? 1 : 0, borderTopColor: colors.line }}>
               <View style={{ flex: 1 }}>
                 <CustomText variant="bodyStrong">{formatWeight(e.weightKg, unit)}</CustomText>
-                <CustomText variant="caption" color={colors.inkMuted}>{shortDate(e.date)} · {e.source === 'manual' ? 'logged' : 'from Health'}</CustomText>
+                <CustomText variant="caption" color={colors.inkMuted}>{dateLabel(e.date)} · {e.source === 'manual' ? 'logged' : 'from Health'}</CustomText>
               </View>
-              <TouchableOpacity onPress={() => remove(e.id, `${formatWeight(e.weightKg, unit)} on ${shortDate(e.date)}`)} hitSlop={8}>
+              <TouchableOpacity onPress={() => remove(e.id, `${formatWeight(e.weightKg, unit)} on ${dateLabel(e.date)}`)} hitSlop={8}>
                 <Icon icon={generalIcons.xMark} size={20} color={colors.inkMuted} />
               </TouchableOpacity>
             </View>

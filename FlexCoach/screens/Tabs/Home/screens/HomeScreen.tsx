@@ -17,7 +17,7 @@ import { PrimaryButton } from '../../../../components/buttons/PrimaryButton';
 import { Icon } from '../../../../components/icons/Icon';
 import { directionIcons, generalIcons } from '../../../../components/icons/icon-library';
 import { StatTile } from '../../../../components/charts/StatTile';
-import { compactNumber, shortDate } from '../../../../components/charts/scale';
+import { compactNumber, dateLabel, shortDate } from '../../../../components/charts/scale';
 import { MuscleMap } from '../../../../components/anatomy/MuscleMap';
 import { MuscleRow } from '../components/MuscleRow';
 import { MuscleGroup } from '../../../../data/models';
@@ -194,7 +194,7 @@ export const HomeScreen = () => {
           {latestWeight ? (
             <View style={{ gap: 2 }}>
               <CustomText variant="display">{formatWeight(latestWeight.weightKg, unit)}</CustomText>
-              <CustomText variant="caption" color={colors.inkMuted}>as of {shortDate(latestWeight.date)}</CustomText>
+              <CustomText variant="caption" color={colors.inkMuted}>as of {dateLabel(latestWeight.date)}</CustomText>
               {weightDelta !== null && (
                 <CustomText variant="caption" color={weightDelta <= 0 ? colors.success : colors.warning}>
                   {weightDelta > 0 ? '+' : ''}{toDisplayWeight(weightDelta, unit)} {unit} {ins.weightChangeCycle !== null ? 'this cycle' : 'in 30 days'}
@@ -224,7 +224,7 @@ export const HomeScreen = () => {
                 <Icon icon={generalIcons.trophy} size={18} color={colors.warning} />
                 <View style={{ flex: 1 }}>
                   <CustomText variant="bodyStrong">{pr.exerciseName}</CustomText>
-                  <CustomText variant="caption" color={colors.inkMuted}>{shortDate(pr.date)}{pr.previousValue !== null ? ` · up from ${pr.kind === 'weight' ? formatWeight(pr.previousValue, unit) : pr.previousValue}` : ' · first record'}</CustomText>
+                  <CustomText variant="caption" color={colors.inkMuted}>{dateLabel(pr.date)}{pr.previousValue !== null ? ` · up from ${pr.kind === 'weight' ? formatWeight(pr.previousValue, unit) : pr.previousValue}` : ' · first record'}</CustomText>
                 </View>
                 <CustomText variant="bodyStrong" color={colors.accent}>{pr.kind === 'weight' ? formatWeight(pr.value, unit) : pr.kind === 'reps' ? `${pr.value} reps` : `${pr.value}`}</CustomText>
               </TouchableOpacity>

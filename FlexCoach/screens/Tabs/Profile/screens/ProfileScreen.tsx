@@ -14,7 +14,7 @@ import { generalIcons } from '../../../../components/icons/icon-library';
 import { useTheme } from '../../../../theme';
 import { ProfileStackParams } from '../ProfileStack';
 import { AppStackParams } from '../../../../appNavigators/AppStack';
-import { shortDate } from '../../../../components/charts/scale';
+import { dateLabel } from '../../../../components/charts/scale';
 import { toLocalDate } from '../../../../data/engine/dates';
 
 export const ProfileScreen = () => {
@@ -24,7 +24,7 @@ export const ProfileScreen = () => {
   const { plans } = usePlans();
   const photo = useProfilePhoto();
   const active = plans.find(p => p.status === 'active');
-  const joined = profile ? shortDate(toLocalDate(new Date(profile.createdAt))) : null;
+  const joined = profile ? dateLabel(toLocalDate(new Date(profile.createdAt))) : null;
   const placeholder = (title: string) => () => navigation.navigate('PlaceholderScreen', { title });
 
   const signOut = () =>
