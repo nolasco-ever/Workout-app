@@ -19,11 +19,13 @@ import { shortDate as sd } from '../../../../components/charts/scale';
 const shortDate = sd;
 import { useTheme } from '../../../../theme';
 import { HomeStackParams } from '../HomeStack';
+import { useTabBarInset } from '../../../../navigation/useTabBarInset';
 
 /** Every exercise with logged sets; tap one for its charts. */
 export const ProgressScreen = () => {
   const navigation = useNavigation<NativeStackNavigationProp<HomeStackParams>>();
   const { colors, spacing } = useTheme();
+  const tabBarInset = useTabBarInset();
   const ins = useInsights();
   const { profile } = useAuth();
   const unit = profile?.weightUnit ?? 'lb';
@@ -32,7 +34,7 @@ export const ProgressScreen = () => {
 
   return (
     <SafeAreaView edges={['bottom', 'left', 'right']} style={{ flex: 1, backgroundColor: colors.ground }}>
-      <ScrollView contentContainerStyle={{ padding: spacing.lg, gap: spacing.md }}>
+      <ScrollView contentContainerStyle={{ padding: spacing.lg, gap: spacing.md, paddingBottom: spacing.lg + tabBarInset }}>
         <SurfaceCard>
           <CustomText variant="heading" style={{ marginBottom: spacing.sm }}>Weekly volume</CustomText>
           <BarChart

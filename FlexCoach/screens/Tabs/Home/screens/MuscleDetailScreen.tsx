@@ -19,11 +19,13 @@ import { Icon } from '../../../../components/icons/Icon';
 import { directionIcons } from '../../../../components/icons/icon-library';
 import { useTheme } from '../../../../theme';
 import { HomeStackParams } from '../HomeStack';
+import { useTabBarInset } from '../../../../navigation/useTabBarInset';
 
 export const MuscleDetailScreen = () => {
   const navigation = useNavigation<NativeStackNavigationProp<HomeStackParams>>();
   const { params } = useRoute<RouteProp<HomeStackParams, 'MuscleDetailScreen'>>();
   const { colors, spacing } = useTheme();
+  const tabBarInset = useTabBarInset();
   const { profile } = useAuth();
   const unit = profile?.weightUnit ?? 'lb';
   const ins = useInsights();
@@ -34,7 +36,7 @@ export const MuscleDetailScreen = () => {
 
   return (
     <SafeAreaView edges={['bottom', 'left', 'right']} style={{ flex: 1, backgroundColor: colors.ground }}>
-      <ScrollView contentContainerStyle={{ padding: spacing.lg, gap: spacing.lg }}>
+      <ScrollView contentContainerStyle={{ padding: spacing.lg, gap: spacing.lg, paddingBottom: spacing.lg + tabBarInset }}>
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.md }}>
           <MuscleMap primary={[params.muscle as MuscleGroup]} height={90} views="auto" />
           <View style={{ flex: 1, flexDirection: 'row', gap: spacing.sm }}>

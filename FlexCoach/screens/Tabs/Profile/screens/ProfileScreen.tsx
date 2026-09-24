@@ -13,6 +13,7 @@ import { Icon } from '../../../../components/icons/Icon';
 import { generalIcons } from '../../../../components/icons/icon-library';
 import { useTheme } from '../../../../theme';
 import { ProfileStackParams } from '../ProfileStack';
+import { useTabBarInset } from '../../../../navigation/useTabBarInset';
 import { AppStackParams } from '../../../../appNavigators/AppStack';
 import { dateLabel } from '../../../../components/charts/scale';
 import { toLocalDate } from '../../../../data/engine/dates';
@@ -20,6 +21,7 @@ import { toLocalDate } from '../../../../data/engine/dates';
 export const ProfileScreen = () => {
   const navigation = useNavigation<NavigationProp<ProfileStackParams & AppStackParams>>();
   const { colors, spacing } = useTheme();
+  const tabBarInset = useTabBarInset();
   const { profile, user } = useAuth();
   const { plans } = usePlans();
   const photo = useProfilePhoto();
@@ -35,7 +37,7 @@ export const ProfileScreen = () => {
 
   return (
     <SafeAreaView edges={['left', 'right']} style={{ flex: 1, backgroundColor: colors.ground }}>
-      <ScrollView contentInsetAdjustmentBehavior="automatic" contentContainerStyle={{ padding: spacing.lg, gap: spacing.lg, paddingBottom: spacing.xxl }}>
+      <ScrollView contentInsetAdjustmentBehavior="automatic" contentContainerStyle={{ padding: spacing.lg, gap: spacing.lg, paddingBottom: spacing.xxl + tabBarInset }}>
         <View style={{ alignItems: 'center', gap: spacing.sm }}>
           <TouchableOpacity onPress={photo.choose} disabled={photo.busy} accessibilityRole="button" accessibilityLabel="Change profile photo" style={{ width: 96, height: 96 }}>
             {profile?.photoUrl ? (

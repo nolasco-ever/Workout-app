@@ -9,6 +9,7 @@ import { Icon } from '../../../../components/icons/Icon';
 import { generalIcons } from '../../../../components/icons/icon-library';
 import { useTheme } from '../../../../theme';
 import { WorkoutStackParams } from '../WorkoutStack';
+import { useTabBarInset } from '../../../../navigation/useTabBarInset';
 import { SurfaceCard as Card } from '../../../../components/cards/SurfaceCard';
 import { PrimaryButton } from '../../../../components/buttons/PrimaryButton';
 
@@ -27,6 +28,7 @@ export const SessionCompleteScreen = () => {
   const { params } = useRoute<RouteProp<WorkoutStackParams, 'SessionCompleteScreen'>>();
   const { result } = params;
   const { colors, spacing } = useTheme();
+  const tabBarInset = useTabBarInset();
   const { profile } = useAuth();
   const unit = profile?.weightUnit ?? 'lb';
   const dist = profile?.distanceUnit ?? 'mi';
@@ -34,7 +36,7 @@ export const SessionCompleteScreen = () => {
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: colors.ground }}>
-      <ScrollView contentContainerStyle={{ padding: spacing.xl, gap: spacing.xl, flexGrow: 1, justifyContent: 'center' }}>
+      <ScrollView contentContainerStyle={{ padding: spacing.xl, gap: spacing.xl, paddingBottom: spacing.xl + tabBarInset, flexGrow: 1, justifyContent: 'center' }}>
         <View style={{ alignItems: 'center', gap: spacing.md }}>
           <View style={{ width: 72, height: 72, borderRadius: 36, backgroundColor: colors.successTint, alignItems: 'center', justifyContent: 'center' }}>
             <Icon icon={generalIcons.check} color={colors.success} size={36} strokeWidth={3} />

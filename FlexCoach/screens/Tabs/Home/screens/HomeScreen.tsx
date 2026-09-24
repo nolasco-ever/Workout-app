@@ -23,6 +23,7 @@ import { MuscleRow } from '../components/MuscleRow';
 import { MuscleGroup } from '../../../../data/models';
 import { useTheme } from '../../../../theme';
 import { HomeStackParams } from '../HomeStack';
+import { useTabBarInset } from '../../../../navigation/useTabBarInset';
 import { devFlags } from '../../../../dev/flags';
 import { seedSampleWeights } from '../../../../data/services/devSeeds';
 
@@ -62,6 +63,7 @@ const LinkCard = ({ label, onPress, children }: { label: string; onPress: () => 
 export const HomeScreen = () => {
   const navigation = useNavigation<NativeStackNavigationProp<HomeStackParams>>();
   const { colors, spacing } = useTheme();
+  const tabBarInset = useTabBarInset();
   const { uid, profile } = useAuth();
   const unit = profile?.weightUnit ?? 'lb';
   const ins = useInsights();
@@ -115,7 +117,7 @@ export const HomeScreen = () => {
       <ScrollView
         ref={scrollRef}
         contentInsetAdjustmentBehavior="automatic"
-        contentContainerStyle={{ padding: spacing.lg, gap: spacing.lg, paddingBottom: spacing.xxl }}
+        contentContainerStyle={{ padding: spacing.lg, gap: spacing.lg, paddingBottom: spacing.xxl + tabBarInset }}
         showsVerticalScrollIndicator={false}
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.accent} />}
       >

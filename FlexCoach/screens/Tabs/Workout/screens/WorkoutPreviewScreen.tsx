@@ -17,6 +17,7 @@ import { Icon } from '../../../../components/icons/Icon';
 import { generalIcons } from '../../../../components/icons/icon-library';
 import { useTheme } from '../../../../theme';
 import { WorkoutStackParams } from '../WorkoutStack';
+import { useTabBarInset } from '../../../../navigation/useTabBarInset';
 import { SurfaceCard as Card } from '../../../../components/cards/SurfaceCard';
 import { PrimaryButton } from '../../../../components/buttons/PrimaryButton';
 
@@ -38,6 +39,7 @@ export const WorkoutPreviewScreen = () => {
   const { params } = useRoute<RouteProp<WorkoutStackParams, 'WorkoutPreviewScreen'>>();
   const { plan, cycle, occurrence } = params;
   const { colors, spacing } = useTheme();
+  const tabBarInset = useTabBarInset();
   const { uid, profile } = useAuth();
   const workout = findWorkout(plan, occurrence.workoutId);
   const [targets, setTargets] = useState<Record<string, SetTarget>>({});
@@ -72,7 +74,7 @@ export const WorkoutPreviewScreen = () => {
 
   return (
     <SafeAreaView edges={['bottom', 'left', 'right']} style={{ flex: 1, backgroundColor: colors.ground }}>
-      <ScrollView contentContainerStyle={{ padding: spacing.lg, gap: spacing.md }}>
+      <ScrollView contentContainerStyle={{ padding: spacing.lg, gap: spacing.md, paddingBottom: canStart ? spacing.lg : spacing.lg + tabBarInset }}>
         <CustomText variant="caption" color={colors.inkMuted}>
           Suggested targets come from your last session of each exercise. You can change them as you go.
         </CustomText>
@@ -102,7 +104,7 @@ export const WorkoutPreviewScreen = () => {
         </Card>
       </ScrollView>
       {canStart && (
-        <View style={{ padding: spacing.lg, gap: spacing.sm }}>
+        <View style={{ padding: spacing.lg, paddingBottom: spacing.lg + tabBarInset, gap: spacing.sm }}>
           {occurrence.date > todayDate && (
             <CustomText variant="caption" color={colors.inkMuted} centered>
               This swaps places with today's slot, so the rest of the cycle stays as planned.

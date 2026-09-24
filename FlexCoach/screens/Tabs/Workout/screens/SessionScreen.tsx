@@ -15,6 +15,7 @@ import { Icon } from '../../../../components/icons/Icon';
 import { directionIcons, generalIcons } from '../../../../components/icons/icon-library';
 import { useTheme } from '../../../../theme';
 import { WorkoutStackParams } from '../WorkoutStack';
+import { useTabBarInset } from '../../../../navigation/useTabBarInset';
 import { PrimaryButton } from '../../../../components/buttons/PrimaryButton';
 import { MuscleMap } from '../../../../components/anatomy/MuscleMap';
 import { RestTimer } from '../components/RestTimer';
@@ -69,6 +70,7 @@ export const SessionScreen = () => {
   const { params } = useRoute<RouteProp<WorkoutStackParams, 'SessionScreen'>>();
   const { plan, cycle } = params;
   const { colors, spacing, radius } = useTheme();
+  const tabBarInset = useTabBarInset();
   const { uid, profile } = useAuth();
   const units: Units = { weight: profile?.weightUnit ?? 'lb', distance: profile?.distanceUnit ?? 'mi' };
 
@@ -217,7 +219,7 @@ export const SessionScreen = () => {
           </View>
         </ScrollView>
 
-        <View style={{ padding: spacing.lg, gap: spacing.sm, borderTopWidth: 1, borderTopColor: colors.line, backgroundColor: colors.ground }}>
+        <View style={{ padding: spacing.lg, paddingBottom: spacing.lg + tabBarInset, gap: spacing.sm, borderTopWidth: 1, borderTopColor: colors.line, backgroundColor: colors.ground }}>
           <RestTimer startedAt={restStartedAt} durationSec={restSec} onDismiss={() => setRestStartedAt(null)} />
           <View style={{ flexDirection: 'row', gap: spacing.sm }}>
             <TouchableOpacity

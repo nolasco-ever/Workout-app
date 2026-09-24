@@ -9,6 +9,7 @@ import { getCycleReview, startNextCycle } from '../../../../data/services/workou
 import { CustomText } from '../../../../components/text/customText';
 import { useTheme } from '../../../../theme';
 import { WorkoutStackParams } from '../WorkoutStack';
+import { useTabBarInset } from '../../../../navigation/useTabBarInset';
 import { SurfaceCard as Card } from '../../../../components/cards/SurfaceCard';
 import { PrimaryButton } from '../../../../components/buttons/PrimaryButton';
 
@@ -27,6 +28,7 @@ export const CycleReviewScreen = () => {
   const { params } = useRoute<RouteProp<WorkoutStackParams, 'CycleReviewScreen'>>();
   const { plan, cycle } = params;
   const { colors, spacing } = useTheme();
+  const tabBarInset = useTabBarInset();
   const { uid, profile } = useAuth();
   const [summary, setSummary] = useState<CycleSummary | null>(null);
   const [busy, setBusy] = useState(false);
@@ -56,7 +58,7 @@ export const CycleReviewScreen = () => {
 
   return (
     <SafeAreaView edges={['bottom', 'left', 'right']} style={{ flex: 1, backgroundColor: colors.ground }}>
-      <ScrollView contentContainerStyle={{ padding: spacing.lg, gap: spacing.lg }}>
+      <ScrollView contentContainerStyle={{ padding: spacing.lg, gap: spacing.lg, paddingBottom: spacing.lg + tabBarInset }}>
         <View>
           <CustomText variant="overline" color={colors.inkMuted}>{plan.name} · Cycle {cycle.number}</CustomText>
           <CustomText variant="title">{headline}</CustomText>

@@ -18,12 +18,14 @@ import { LineChart } from '../../../../components/charts/LineChart';
 import { dateLabel } from '../../../../components/charts/scale';
 import { useTheme } from '../../../../theme';
 import { HomeStackParams } from '../HomeStack';
+import { useTabBarInset } from '../../../../navigation/useTabBarInset';
 
 type Range = '30' | '90' | 'all';
 
 export const WeightHistoryScreen = () => {
   const navigation = useNavigation<NativeStackNavigationProp<HomeStackParams>>();
   const { colors, spacing } = useTheme();
+  const tabBarInset = useTabBarInset();
   const { uid, profile } = useAuth();
   const unit = profile?.weightUnit ?? 'lb';
   const ins = useInsights();
@@ -44,7 +46,7 @@ export const WeightHistoryScreen = () => {
 
   return (
     <SafeAreaView edges={['bottom', 'left', 'right']} style={{ flex: 1, backgroundColor: colors.ground }}>
-      <ScrollView contentContainerStyle={{ padding: spacing.lg, gap: spacing.lg }}>
+      <ScrollView contentContainerStyle={{ padding: spacing.lg, gap: spacing.lg, paddingBottom: spacing.lg + tabBarInset }}>
         {latest && (
           <SurfaceCard>
             <View style={{ flexDirection: 'row', alignItems: 'baseline', gap: spacing.sm, marginBottom: spacing.sm, flexWrap: 'wrap' }}>

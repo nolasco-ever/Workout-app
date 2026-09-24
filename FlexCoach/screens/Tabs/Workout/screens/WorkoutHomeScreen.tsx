@@ -15,6 +15,7 @@ import { Icon } from '../../../../components/icons/Icon';
 import { generalIcons } from '../../../../components/icons/icon-library';
 import { useTheme } from '../../../../theme';
 import { WorkoutStackParams } from '../WorkoutStack';
+import { useTabBarInset } from '../../../../navigation/useTabBarInset';
 import { SurfaceCard as Card } from '../../../../components/cards/SurfaceCard';
 import { PrimaryButton } from '../../../../components/buttons/PrimaryButton';
 import { OccurrenceRow } from '../components/OccurrenceRow';
@@ -27,6 +28,7 @@ const longDate = (d: string) => fromLocalDate(d).toLocaleDateString(undefined, {
 export const WorkoutHomeScreen = () => {
   const navigation = useNavigation<NavigationProp<WorkoutStackParams>>();
   const { colors, spacing, radius } = useTheme();
+  const tabBarInset = useTabBarInset();
   const { uid } = useAuth();
   const state = useWorkoutHome();
   const { plans } = usePlans();
@@ -85,7 +87,7 @@ export const WorkoutHomeScreen = () => {
       <ScrollView
         contentInsetAdjustmentBehavior="automatic"
         alwaysBounceVertical={false}
-        contentContainerStyle={{ padding: spacing.lg, gap: spacing.lg, paddingBottom: spacing.xxl }}
+        contentContainerStyle={{ padding: spacing.lg, gap: spacing.lg, paddingBottom: spacing.xxl + tabBarInset }}
       >
         {/* One scroll view for every state, with the inset the native large-title header needs.
             The content is never stretched to fill the screen, so short states don't scroll. */}
