@@ -1,4 +1,4 @@
-import { Exercise, MuscleGroup, MeasurementType } from '../models';
+import { Equipment, Exercise, ExerciseCategory, MuscleGroup, MeasurementType } from '../models';
 import catalogJson from './exercises.json';
 
 /**
@@ -18,7 +18,12 @@ export interface CatalogFilter {
   query?: string;
   muscle?: MuscleGroup;
   measurement?: MeasurementType;
-  equipment?: string;
+  equipment?: Equipment;
+  /**
+   * Exercise type. When unset, stretches are left out so they don't mix with
+   * training movements; pick 'stretching' to see them.
+   */
+  category?: ExerciseCategory;
 }
 
 /** Lower-case words, with punctuation such as "Sit-Up" or "90/90" split apart. */
@@ -91,7 +96,7 @@ const searchRank = (item: Indexed, terms: string[]): number | null => {
  * primary muscle come before the ones that only hit it as a secondary
  * muscle. The catalog's alphabetical order holds within each group.
  */
-export const searchCatalog = ({ query, muscle, measurement, equipment }: CatalogFilter): Exercise[] => {
+export const searchCatalog = ({ query, muscle, measurement, equipment, category }: CatalogFilter): Exercise[] => {
   const terms = queryWords(query ?? '');
   const ranked: { exercise: Exercise; rank: number }[] = [];
   for (const item of index) {
@@ -99,12 +104,40 @@ export const searchCatalog = ({ query, muscle, measurement, equipment }: Catalog
     if (muscle && !e.primaryMuscles.includes(muscle) && !e.secondaryMuscles.includes(muscle)) continue;
     if (measurement && e.measurement !== measurement) continue;
     if (equipment && e.equipment !== equipment) continue;
+    if (category ? e.category !== category : e.category === 'stretching') continue;
     const rank = terms.length ? searchRank(item, terms) : 0;
     if (rank === null) continue;
     ranked.push({ exercise: e, rank: rank * 2 + (muscle && !e.primaryMuscles.includes(muscle) ? 1 : 0) });
   }
   return ranked.sort((a, b) => a.rank - b.rank).map(r => r.exercise);
 };
+
+/** Equipment values in the catalog, with display labels, for filters. */
+export const EQUIPMENT_OPTIONS: { value: Equipment; label: string }[] = [
+  { value: 'body only', label: 'Body only' },
+  { value: 'dumbbell', label: 'Dumbbell' },
+  { value: 'barbell', label: 'Barbell' },
+  { value: 'kettlebells', label: 'Kettlebell' },
+  { value: 'cable', label: 'Cable' },
+  { value: 'machine', label: 'Machine' },
+  { value: 'bands', label: 'Bands' },
+  { value: 'e-z curl bar', label: 'EZ curl bar' },
+  { value: 'medicine ball', label: 'Medicine ball' },
+  { value: 'exercise ball', label: 'Exercise ball' },
+  { value: 'foam roll', label: 'Foam roll' },
+  { value: 'other', label: 'Other' },
+];
+
+/** Exercise types in the catalog, with display labels, for filters. */
+export const CATEGORY_OPTIONS: { value: ExerciseCategory; label: string }[] = [
+  { value: 'strength', label: 'Strength' },
+  { value: 'stretching', label: 'Stretching' },
+  { value: 'cardio', label: 'Cardio' },
+  { value: 'plyometrics', label: 'Plyometrics' },
+  { value: 'powerlifting', label: 'Powerlifting' },
+  { value: 'olympic weightlifting', label: 'Olympic lifting' },
+  { value: 'strongman', label: 'Strongman' },
+];
 
 /** Muscle groups in display order, for filters and the muscle diagram. */
 export const MUSCLE_GROUPS: MuscleGroup[] = [
