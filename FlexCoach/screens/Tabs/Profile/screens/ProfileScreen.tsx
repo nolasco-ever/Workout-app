@@ -72,7 +72,7 @@ export const ProfileScreen = () => {
           <CustomText variant="overline" color={colors.inkMuted}>Training</CustomText>
           <SurfaceCard style={{ padding: 0 }}>
             <Row icon={generalIcons.dumbbell} iconColor={colors.accent} title="My plans" description={active ? `Active: ${active.name}` : 'No active plan'} onPress={() => navigation.navigate('PlansStack')} />
-            <Row icon={generalIcons.clock} title="History" description="Past cycles and sessions" divider onPress={placeholder('History')} />
+            <Row icon={generalIcons.clock} title="History" description="Every workout you've logged" divider onPress={() => navigation.navigate('HistoryScreen')} />
           </SurfaceCard>
         </View>
 

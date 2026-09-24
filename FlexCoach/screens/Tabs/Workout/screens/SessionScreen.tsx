@@ -6,7 +6,6 @@ import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useAuth } from '../../../../data/auth/AuthProvider';
 import { LoggedSet, Session, SessionExercise } from '../../../../data/models';
 import { findWorkout } from '../../../../data/engine/schedule';
-import { fromDisplayDistance, fromDisplayWeight, parseNumber, toDisplayDistance, toDisplayWeight } from '../../../../data/engine/units';
 import { newId } from '../../../../data/engine/ids';
 import { getCatalogExercise } from '../../../../data/catalog/exerciseCatalog';
 import { abandonSession, finishSession, logSet } from '../../../../data/services/workoutService';
@@ -20,50 +19,7 @@ import { PrimaryButton } from '../../../../components/buttons/PrimaryButton';
 import { MuscleMap } from '../../../../components/anatomy/MuscleMap';
 import { RestTimer } from '../components/RestTimer';
 import { SetDraft, SetRow } from '../components/SetRow';
-
-type Units = { weight: 'kg' | 'lb'; distance: 'km' | 'mi' };
-
-const fmt = (n: number | null) => (n === null ? '' : String(n));
-
-/** Field A/B mapping per measurement type (see SetRow). */
-const toDraft = (ex: SessionExercise, s: LoggedSet, u: Units): SetDraft => {
-  switch (ex.measurement) {
-    case 'weight_reps':
-    case 'reps':
-      return { a: fmt(toDisplayWeight(s.weightKg, u.weight)), b: fmt(s.reps) };
-    case 'time':
-      return { a: fmt(toDisplayWeight(s.weightKg, u.weight)), b: fmt(s.durationSec) };
-    case 'distance_time':
-      return { a: fmt(toDisplayDistance(s.distanceM, u.distance)), b: fmt(s.durationSec) };
-  }
-};
-
-const fromDraft = (ex: SessionExercise, s: LoggedSet, d: SetDraft, u: Units): LoggedSet => {
-  const a = parseNumber(d.a);
-  const b = parseNumber(d.b);
-  switch (ex.measurement) {
-    case 'weight_reps':
-    case 'reps':
-      return { ...s, weightKg: fromDisplayWeight(a, u.weight), reps: b === null ? null : Math.round(b) };
-    case 'time':
-      return { ...s, weightKg: fromDisplayWeight(a, u.weight), durationSec: b === null ? null : Math.round(b) };
-    case 'distance_time':
-      return { ...s, distanceM: fromDisplayDistance(a, u.distance), durationSec: b === null ? null : Math.round(b) };
-  }
-};
-
-const unitLabels = (ex: SessionExercise, u: Units) => {
-  switch (ex.measurement) {
-    case 'weight_reps':
-      return { a: u.weight, b: 'reps' };
-    case 'reps':
-      return { a: `+${u.weight}`, b: 'reps' };
-    case 'time':
-      return { a: u.weight, b: 'sec' };
-    case 'distance_time':
-      return { a: u.distance, b: 'sec' };
-  }
-};
+import { fromDraft, toDraft, Units, unitLabels } from '../components/setDrafts';
 
 export const SessionScreen = () => {
   const navigation = useNavigation<NativeStackNavigationProp<WorkoutStackParams>>();

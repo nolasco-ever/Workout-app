@@ -18,15 +18,18 @@ interface Props {
   unitLabels: { a: string; b: string };
   onChange: (draft: SetDraft) => void;
   onToggleDone: () => void;
+  /** Keep the fields editable even for completed sets, for fixing a logged session afterwards. */
+  alwaysEditable?: boolean;
 }
 
 /**
  * One editable set. Field A and B mean different things by measurement:
  * weight/reps, added weight/reps, weight/seconds, or distance/seconds.
  */
-export const SetRow = ({ set, measurement, draft, unitLabels, onChange, onToggleDone }: Props) => {
+export const SetRow = ({ set, measurement, draft, unitLabels, onChange, onToggleDone, alwaysEditable = false }: Props) => {
   const { colors, radius, spacing, fonts } = useTheme();
   const done = set.completed;
+  const editable = alwaysEditable || !done;
   // Each input has a unit caption under it, so the input's centre sits half a
   // caption above the row's. The set number and the check take the same
   // offset so they line up with the boxes rather than the column.
@@ -36,7 +39,7 @@ export const SetRow = ({ set, measurement, draft, unitLabels, onChange, onToggle
     fontFamily: fonts.body.semibold,
     fontSize: 18,
     color: colors.ink,
-    backgroundColor: done ? colors.transparent : colors.surfaceRaised,
+    backgroundColor: editable ? colors.surfaceRaised : colors.transparent,
     borderRadius: radius.sm,
     paddingVertical: spacing.sm,
     paddingHorizontal: spacing.md,
@@ -50,7 +53,7 @@ export const SetRow = ({ set, measurement, draft, unitLabels, onChange, onToggle
         alignItems: 'center',
         gap: spacing.md,
         paddingVertical: spacing.sm,
-        opacity: done ? 0.75 : 1,
+        opacity: done && !alwaysEditable ? 0.75 : 1,
       }}
     >
       <View style={{ width: 28, marginBottom: captionHeight }}>
@@ -65,7 +68,7 @@ export const SetRow = ({ set, measurement, draft, unitLabels, onChange, onToggle
             value={draft.a}
             onChangeText={a => onChange({ ...draft, a })}
             keyboardType="decimal-pad"
-            editable={!done}
+            editable={editable}
             placeholder={measurement === 'reps' ? '+0' : '—'}
             placeholderTextColor={colors.inactive}
             style={inputStyle}
@@ -82,7 +85,7 @@ export const SetRow = ({ set, measurement, draft, unitLabels, onChange, onToggle
           value={draft.b}
           onChangeText={b => onChange({ ...draft, b })}
           keyboardType="number-pad"
-          editable={!done}
+          editable={editable}
           placeholder="—"
           placeholderTextColor={colors.inactive}
           style={inputStyle}

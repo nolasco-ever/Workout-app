@@ -13,6 +13,7 @@ import { SessionScreen } from './screens/SessionScreen';
 import { SessionCompleteScreen } from './screens/SessionCompleteScreen';
 import { CycleReviewScreen } from './screens/CycleReviewScreen';
 import { ExerciseDetailScreen } from './screens/ExerciseDetailScreen';
+import { SessionDetailScreen } from './screens/SessionDetailScreen';
 
 export type WorkoutStackParams = {
   WorkoutHomeScreen: undefined;
@@ -20,6 +21,7 @@ export type WorkoutStackParams = {
   SessionScreen: { plan: Plan; cycle: Cycle; session: Session };
   SessionCompleteScreen: { result: SessionResult };
   CycleReviewScreen: { plan: Plan; cycle: Cycle };
+  SessionDetailScreen: { sessionId: string };
   ExerciseDetailScreen: { exerciseId: string };
 };
 
@@ -40,6 +42,7 @@ export const WorkoutStack = () => {
       {/* A plain push, not a modal: popping a modal presented over the tab bar left the Workout home rendered as a sheet with no tabs. */}
       <Stack.Screen name="SessionCompleteScreen" component={SessionCompleteScreen} options={{ ...opts.base, headerShown: false, animation: 'fade', gestureEnabled: false }} />
       <Stack.Screen name="CycleReviewScreen" component={CycleReviewScreen} options={opts.screen('Cycle review')} />
+      <Stack.Screen name="SessionDetailScreen" component={SessionDetailScreen} options={opts.screen('Workout')} />
       <Stack.Screen name="ExerciseDetailScreen" component={ExerciseDetailScreen} options={({ navigation }) => opts.modal('How to', () => <HeaderButton icon={generalIcons.xMark} accessibilityLabel="Close" onPress={() => navigation.goBack()} />)} />
     </Stack.Navigator>
   );

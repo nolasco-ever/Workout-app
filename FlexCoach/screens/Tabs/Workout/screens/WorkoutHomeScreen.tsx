@@ -65,6 +65,8 @@ export const WorkoutHomeScreen = () => {
   const dayLabel = notStarted ? `Starts ${longDate(cycle!.startDate)}` : dayIndex === -1 ? `${occurrences.length} days` : `Day ${dayIndex + 1} of ${occurrences.length}`;
 
   const openPreview = (occurrence: Occurrence) => plan && cycle && navigation.navigate('WorkoutPreviewScreen', { plan, cycle, occurrence });
+  /** A finished day opens what was logged; anything else opens the preview. */
+  const openOccurrence = (o: Occurrence) => (o.status === 'completed' && o.sessionId ? navigation.navigate('SessionDetailScreen', { sessionId: o.sessionId }) : openPreview(o));
 
   const start = (occurrence: Occurrence) =>
     run(`start-${occurrence.id}`, async () => {
@@ -237,7 +239,12 @@ export const WorkoutHomeScreen = () => {
                   {todayWorkout.exercises.length} exercises · about {Math.round(todayWorkout.exercises.reduce((s, e) => s + e.sets * (e.restSec + 45), 0) / 60)} min
                 </CustomText>
                 {state.todayOccurrence.status === 'completed' ? (
-                  <PrimaryButton label="Completed" variant="quiet" disabled onPress={() => {}} />
+                  <PrimaryButton
+                    label="Completed · see workout"
+                    variant="quiet"
+                    icon={generalIcons.check}
+                    onPress={() => state.todayOccurrence?.sessionId && navigation.navigate('SessionDetailScreen', { sessionId: state.todayOccurrence.sessionId })}
+                  />
                 ) : state.todayOccurrence.status === 'skipped' ? (
                   <PrimaryButton label="Skipped" variant="quiet" disabled onPress={() => {}} />
                 ) : (
@@ -276,7 +283,7 @@ export const WorkoutHomeScreen = () => {
           <Card style={{ padding: 0 }}>
             {cycle.occurrences.map((o, i) => (
               <View key={o.id} style={{ borderTopWidth: i === 0 ? 0 : 1, borderTopColor: colors.line }}>
-                <OccurrenceRow occurrence={o} isToday={o.date === state.todayDate} onPress={o.workoutId ? () => openPreview(o) : undefined} />
+                <OccurrenceRow occurrence={o} isToday={o.date === state.todayDate} onPress={o.workoutId ? () => openOccurrence(o) : undefined} />
               </View>
             ))}
           </Card>
