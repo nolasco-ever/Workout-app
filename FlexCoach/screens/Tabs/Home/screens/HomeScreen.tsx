@@ -110,6 +110,8 @@ export const HomeScreen = () => {
     ? { tone: colors.inkMuted, kicker: 'Today', headline: 'No plan yet', detail: 'Set up a plan and your daily workout shows here.', action: 'Set up a plan' }
     : home.inProgressSession
       ? { tone: colors.accent, kicker: 'In progress', headline: home.inProgressSession.workoutName, detail: 'Pick up where you left off.', action: 'Resume' }
+      : home.cycle && home.todayDate < home.cycle.startDate
+        ? { tone: colors.inkMuted, kicker: 'Plan starts', headline: dateLabel(home.cycle.startDate), detail: home.upcoming[0] ? `First up: ${home.upcoming[0].workoutName}` : 'The cycle begins then.', action: 'Open' }
       : ins.todaySession
         ? { tone: colors.success, kicker: 'Done today', headline: ins.todaySession.workoutName, detail: `${ins.todaySession.exercises.reduce((n, e) => n + e.sets.filter(s => s.completed).length, 0)} sets · ${fmtVolume(totalVolumeKg([ins.todaySession]))} ${unit} moved`, action: 'See workout' }
         : todayOcc && todayWorkout && todayOcc.status === 'scheduled'

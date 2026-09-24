@@ -13,6 +13,8 @@ import { useTheme } from '../../../theme';
 import { PlansStackParams } from '../PlansStack';
 import { usePlanEditor } from '../PlanEditorContext';
 import { PlanSummaryCard } from '../components/PlanSummaryCard';
+import { StartDateSheet } from '../components/StartDateSheet';
+import { LocalDate } from '../../../data/models';
 
 export const PlanReviewScreen = () => {
   const navigation = useNavigation<NativeStackNavigationProp<PlansStackParams>>();
@@ -23,6 +25,7 @@ export const PlanReviewScreen = () => {
   const home = useWorkoutHome();
   const { draft, original, clear } = usePlanEditor();
   const [busy, setBusy] = useState<string | null>(null);
+  const [pickingStart, setPickingStart] = useState(false);
   if (!draft || !uid) return null;
 
   const problems = validatePlan(draft);
@@ -49,7 +52,7 @@ export const PlanReviewScreen = () => {
   };
 
   const saveDraft = run('draft', () => savePlan(uid, draft));
-  const activate = run('activate', async () => { await activatePlan(uid, draft); });
+  const activate = (startDate: LocalDate) => run('activate', async () => { await activatePlan(uid, draft, startDate); });
   const saveChanges = run('save', async () => {
     if (isActive && original) {
       await saveActivePlan(uid, original, draft, home.cycle);
@@ -58,13 +61,17 @@ export const PlanReviewScreen = () => {
     }
   });
 
-  const confirmActivate = () =>
-    otherActive
-      ? Alert.alert('Switch plans?', `${otherActive.name} will become inactive and its current cycle will close.`, [
-          { text: 'Cancel', style: 'cancel' },
-          { text: 'Activate', onPress: activate },
-        ])
-      : activate();
+  const confirmActivate = (startDate: LocalDate) => {
+    setPickingStart(false);
+    if (otherActive) {
+      Alert.alert('Switch plans?', `${otherActive.name} will become inactive and its current cycle will close.`, [
+        { text: 'Cancel', style: 'cancel' },
+        { text: 'Activate', onPress: activate(startDate) },
+      ]);
+    } else {
+      activate(startDate)();
+    }
+  };
 
   const confirmSave = () =>
     restart
@@ -100,13 +107,14 @@ export const PlanReviewScreen = () => {
       <View style={{ padding: spacing.lg, gap: spacing.sm, borderTopWidth: 1, borderTopColor: colors.line }}>
         {params.mode === 'create' || !isActive ? (
           <>
-            <PrimaryButton label="Activate plan" disabled={problems.length > 0} busy={busy === 'activate'} onPress={confirmActivate} />
+            <PrimaryButton label="Activate plan" disabled={problems.length > 0} busy={busy === 'activate'} onPress={() => setPickingStart(true)} />
             <PrimaryButton label={params.mode === 'create' ? 'Save as draft' : 'Save changes'} variant="outline" disabled={problems.length > 0} busy={busy === 'draft' || busy === 'save'} onPress={params.mode === 'create' ? saveDraft : saveChanges} />
           </>
         ) : (
           <PrimaryButton label={restart ? 'Save and restart cycle' : 'Save changes'} disabled={problems.length > 0} busy={busy === 'save'} onPress={confirmSave} />
         )}
       </View>
+      <StartDateSheet open={pickingStart} plan={draft} busy={busy === 'activate'} onClose={() => setPickingStart(false)} onConfirm={confirmActivate} />
     </SafeAreaView>
   );
 };

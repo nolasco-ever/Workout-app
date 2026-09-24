@@ -1,4 +1,4 @@
-import { Cycle, DEFAULT_PROGRESSION, Exercise, GOAL_DEFAULTS, Id, Plan, PlanGoal, Schedule, Workout, WorkoutExercise } from '../models';
+import { Cycle, DEFAULT_PROGRESSION, Exercise, GOAL_DEFAULTS, Id, LocalDate, Plan, PlanGoal, Schedule, Workout, WorkoutExercise } from '../models';
 import { newId } from '../engine/ids';
 import { today } from '../engine/dates';
 import { closeCycle, generateCycle } from '../engine/schedule';
@@ -107,25 +107,27 @@ export const saveActivePlan = async (uid: Id, before: Plan, after: Plan, activeC
 /**
  * Generate a fresh cycle for a plan, closing any of its cycles still open.
  * Also the repair path when a profile points at a plan with no live cycle.
+ * `startDate` is the earliest day the cycle may begin; today by default.
  */
-export const startFreshCycle = async (uid: Id, plan: Plan): Promise<Cycle> => {
+export const startFreshCycle = async (uid: Id, plan: Plan, startDate: LocalDate = today()): Promise<Cycle> => {
   const previous = await cycleRepository.listForPlan(uid, plan.id);
   const number = previous.length ? Math.max(...previous.map(c => c.number)) + 1 : 1;
   for (const c of previous.filter(c => c.status === 'active')) {
     await cycleRepository.save(uid, closeCycle(c).cycle);
   }
-  const cycle = generateCycle(plan, uid, number, today());
+  const cycle = generateCycle(plan, uid, number, startDate);
   await cycleRepository.save(uid, cycle);
   await userRepository.update(uid, { activePlanId: plan.id, activeCycleId: cycle.id });
   return cycle;
 };
 
-export const activatePlan = async (uid: Id, plan: Plan): Promise<Cycle> => {
+/** Activate a plan with its first cycle starting no earlier than `startDate` (today by default). */
+export const activatePlan = async (uid: Id, plan: Plan, startDate: LocalDate = today()): Promise<Cycle> => {
   const pruned = pruneSchedule(plan);
   await planRepository.save(uid, pruned);
   // Cycle first, then the status flip, so a failure never leaves an active
   // plan without a cycle.
-  const cycle = await startFreshCycle(uid, pruned);
+  const cycle = await startFreshCycle(uid, pruned, startDate);
   await planRepository.activate(uid, plan.id);
   return cycle;
 };

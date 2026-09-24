@@ -14,6 +14,7 @@ import { useTheme } from '../../../theme';
 import { PlansStackParams } from '../PlansStack';
 import { usePlanEditor } from '../PlanEditorContext';
 import { PlanSummaryCard } from '../components/PlanSummaryCard';
+import { StartDateSheet } from '../components/StartDateSheet';
 
 export const PlanOverviewScreen = () => {
   const navigation = useNavigation<NativeStackNavigationProp<PlansStackParams>>();
@@ -24,6 +25,7 @@ export const PlanOverviewScreen = () => {
   const home = useWorkoutHome();
   const editor = usePlanEditor();
   const [busy, setBusy] = useState<string | null>(null);
+  const [pickingStart, setPickingStart] = useState(false);
   const plan = plans.find(p => p.id === params.planId);
 
   if (!plan || !uid) return <SafeAreaView edges={['bottom']} style={{ flex: 1, backgroundColor: colors.ground }} />;
@@ -66,24 +68,7 @@ export const PlanOverviewScreen = () => {
         <PlanSummaryCard plan={plan} />
         <View style={{ gap: spacing.sm }}>
           {!isActive && plan.status !== 'archived' && (
-            <PrimaryButton
-              label="Activate"
-              busy={busy === 'Activate'}
-              onPress={() => {
-                const other = plans.find(p => p.status === 'active');
-                if (other) {
-                  confirm('Switch plans?', `${other.name} will become inactive and its current cycle will close. You can reactivate it any time.`, 'Activate', async () => {
-                    await activatePlan(uid, plan);
-                    navigation.popToTop();
-                  });
-                } else {
-                  run('Activate', async () => {
-                    await activatePlan(uid, plan);
-                    navigation.popToTop();
-                  })();
-                }
-              }}
-            />
+            <PrimaryButton label="Activate" busy={busy === 'Activate'} onPress={() => setPickingStart(true)} />
           )}
           {plan.status !== 'archived' && <PrimaryButton label="Edit" variant="outline" onPress={edit} />}
           {isActive && (
@@ -115,6 +100,25 @@ export const PlanOverviewScreen = () => {
           )}
         </View>
       </ScrollView>
+      <StartDateSheet
+        open={pickingStart}
+        plan={plan}
+        busy={busy === 'Activate'}
+        onClose={() => setPickingStart(false)}
+        onConfirm={startDate => {
+          setPickingStart(false);
+          const activate = async () => {
+            await activatePlan(uid, plan, startDate);
+            navigation.popToTop();
+          };
+          const other = plans.find(p => p.status === 'active');
+          if (other) {
+            confirm('Switch plans?', `${other.name} will become inactive and its current cycle will close. You can reactivate it any time.`, 'Activate', activate);
+          } else {
+            run('Activate', activate)();
+          }
+        }}
+      />
     </SafeAreaView>
   );
 };

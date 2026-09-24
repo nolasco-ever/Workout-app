@@ -60,8 +60,9 @@ export const WorkoutHomeScreen = () => {
   const occurrences = cycle?.occurrences ?? [];
   const workoutsTotal = occurrences.filter(o => o.status !== 'rest').length;
   const workoutsDone = occurrences.filter(o => o.status === 'completed').length;
+  const notStarted = !!cycle && state.todayDate < cycle.startDate;
   const dayIndex = occurrences.findIndex(o => o.date >= state.todayDate);
-  const dayLabel = dayIndex === -1 ? `${occurrences.length} days` : `Day ${dayIndex + 1} of ${occurrences.length}`;
+  const dayLabel = notStarted ? `Starts ${longDate(cycle!.startDate)}` : dayIndex === -1 ? `${occurrences.length} days` : `Day ${dayIndex + 1} of ${occurrences.length}`;
 
   const openPreview = (occurrence: Occurrence) => plan && cycle && navigation.navigate('WorkoutPreviewScreen', { plan, cycle, occurrence });
 
@@ -222,7 +223,14 @@ export const WorkoutHomeScreen = () => {
         {!state.cycleFinished && !resume && (
           <Card>
             <CustomText variant="overline" color={colors.inkMuted}>Today · {longDate(state.todayDate)}</CustomText>
-            {state.todayOccurrence && todayWorkout ? (
+            {notStarted ? (
+              <>
+                <CustomText variant="heading" style={{ marginTop: spacing.xs }}>Not started yet</CustomText>
+                <CustomText variant="body" color={colors.inkMuted}>
+                  {state.upcoming[0] ? `First up: ${state.upcoming[0].workoutName} on ${longDate(state.upcoming[0].date)}.` : `The cycle begins ${longDate(cycle.startDate)}.`}
+                </CustomText>
+              </>
+            ) : state.todayOccurrence && todayWorkout ? (
               <>
                 <CustomText variant="heading" style={{ marginTop: spacing.xs }}>{todayWorkout.name}</CustomText>
                 <CustomText variant="caption" color={colors.inkMuted} style={{ marginBottom: spacing.md }}>
