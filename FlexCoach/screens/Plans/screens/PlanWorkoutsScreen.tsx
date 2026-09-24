@@ -57,7 +57,7 @@ export const PlanWorkoutsScreen = () => {
     <SafeAreaView edges={['bottom', 'left', 'right']} style={{ flex: 1, backgroundColor: colors.ground }}>
       <Animated.ScrollView ref={scrollRef} contentContainerStyle={{ padding: spacing.lg, gap: spacing.lg }} keyboardShouldPersistTaps="handled" keyboardDismissMode="on-drag">
         <CustomText variant="body" color={colors.inkMuted}>
-          Each workout is one training day, like Push or Legs. Add the days you rotate through, then fill each with exercises.
+          Name each day you train, like Push, Pull or Legs. Next you'll pick the exercises for each one, then set which days they land on.
         </CustomText>
         {draft.workouts.length > 0 && (
           <SurfaceCard style={{ padding: 0, overflow: 'hidden' }}>
@@ -84,7 +84,7 @@ export const PlanWorkoutsScreen = () => {
         )}
         {adding ? (
           <SurfaceCard style={{ gap: spacing.md }}>
-            <TextField id="workout-name" label="Workout name" placeholder="Push" value={name} onChangeText={setName} autoFocus returnKeyType="done" onSubmitEditing={() => add(name)} />
+            <TextField id="workout-name" label="Workout name" placeholder="Push" hint="Type a name or pick one below. You'll add its exercises next." value={name} onChangeText={setName} autoFocus returnKeyType="done" onSubmitEditing={() => add(name)} />
             <ChoiceChips options={SUGGESTIONS.filter(s => !taken.has(s.toLowerCase())).map(s => ({ value: s, label: s }))} value={null} onChange={add} />
             <View style={{ flexDirection: 'row', gap: spacing.sm }}>
               <View style={{ flex: 1 }}><PrimaryButton label="Cancel" variant="quiet" onPress={() => { setAdding(false); setName(''); }} /></View>
