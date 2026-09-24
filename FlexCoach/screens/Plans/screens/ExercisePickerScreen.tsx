@@ -23,13 +23,16 @@ const ROW_HEIGHT = 84;
 interface RowProps {
   item: Exercise;
   inWorkout: boolean;
+  /** The muscle filter in effect, so a row can say when it only hits it as a secondary muscle. */
+  muscle: MuscleGroup | 'all';
   onOpen: (ex: Exercise) => void;
   onAdd: (ex: Exercise) => void;
 }
 
 /** Memoised so the long list only re-renders rows whose data changed. */
-const ExerciseRow = React.memo(({ item, inWorkout, onOpen, onAdd }: RowProps) => {
+const ExerciseRow = React.memo(({ item, inWorkout, muscle, onOpen, onAdd }: RowProps) => {
   const { colors, spacing, radius } = useTheme();
+  const alsoHits = muscle !== 'all' && !item.primaryMuscles.includes(muscle);
   return (
     <View style={{ height: ROW_HEIGHT, flexDirection: 'row', alignItems: 'center', gap: spacing.md }}>
       <TouchableOpacity onPress={() => onOpen(item)} style={{ flex: 1, flexDirection: 'row', alignItems: 'center', gap: spacing.md }}>
@@ -37,7 +40,7 @@ const ExerciseRow = React.memo(({ item, inWorkout, onOpen, onAdd }: RowProps) =>
         <View style={{ flex: 1 }}>
           <CustomText variant="bodyStrong" numberOfLines={1}>{item.name}</CustomText>
           <CustomText variant="caption" color={colors.inkMuted} numberOfLines={2}>
-            {item.primaryMuscles.map(title).join(', ')}{item.equipment ? ` · ${title(item.equipment)}` : ''}{inWorkout ? ' · added' : ''}
+            {item.primaryMuscles.map(title).join(', ')}{alsoHits ? ` · also ${muscle}` : ''}{item.equipment ? ` · ${title(item.equipment)}` : ''}{inWorkout ? ' · added' : ''}
           </CustomText>
         </View>
       </TouchableOpacity>
@@ -110,7 +113,7 @@ export const ExercisePickerScreen = () => {
         maxToRenderPerBatch={8}
         windowSize={7}
         removeClippedSubviews
-        renderItem={({ item }) => <ExerciseRow item={item} inWorkout={already.has(item.id)} onOpen={open} onAdd={add} />}
+        renderItem={({ item }) => <ExerciseRow item={item} inWorkout={already.has(item.id)} muscle={muscle} onOpen={open} onAdd={add} />}
       />
     </SafeAreaView>
   );

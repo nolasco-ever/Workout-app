@@ -21,15 +21,23 @@ export interface CatalogFilter {
   equipment?: string;
 }
 
+/**
+ * Filter the catalog. With a muscle selected, exercises that target it as a
+ * primary muscle come first and the ones that only hit it as a secondary
+ * muscle follow; the catalog's alphabetical order holds within each group.
+ */
 export const searchCatalog = ({ query, muscle, measurement, equipment }: CatalogFilter): Exercise[] => {
   const q = query?.trim().toLowerCase();
-  return catalog.filter(e => {
+  const matches = catalog.filter(e => {
     if (q && !e.name.toLowerCase().includes(q)) return false;
     if (muscle && !e.primaryMuscles.includes(muscle) && !e.secondaryMuscles.includes(muscle)) return false;
     if (measurement && e.measurement !== measurement) return false;
     if (equipment && e.equipment !== equipment) return false;
     return true;
   });
+  if (!muscle) return matches;
+  const rank = (e: Exercise) => (e.primaryMuscles.includes(muscle) ? 0 : 1);
+  return matches.sort((a, b) => rank(a) - rank(b));
 };
 
 /** Muscle groups in display order, for filters and the muscle diagram. */
