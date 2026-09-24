@@ -19,6 +19,7 @@ import { useTabBarInset } from '../../../../navigation/useTabBarInset';
 import { SurfaceCard as Card } from '../../../../components/cards/SurfaceCard';
 import { PrimaryButton } from '../../../../components/buttons/PrimaryButton';
 import { OccurrenceRow } from '../components/OccurrenceRow';
+import { askNotToday } from '../components/notToday';
 import { AppStackParams } from '../../../../appNavigators/AppStack';
 import { devFlags } from '../../../../dev/flags';
 import { describeSchedule } from '../../../../screens/Plans/components/planSummary';
@@ -234,7 +235,19 @@ export const WorkoutHomeScreen = () => {
                 ) : (
                   <View style={{ gap: spacing.sm }}>
                     <PrimaryButton label="Start workout" icon={generalIcons.play} busy={busy === `start-${state.todayOccurrence.id}`} onPress={() => start(state.todayOccurrence!)} />
-                    <PrimaryButton label="Preview exercises" variant="quiet" onPress={() => openPreview(state.todayOccurrence!)} />
+                    <View style={{ flexDirection: 'row' }}>
+                      <View style={{ flex: 1 }}>
+                        <PrimaryButton label="Preview exercises" variant="quiet" onPress={() => openPreview(state.todayOccurrence!)} />
+                      </View>
+                      <View style={{ flex: 1 }}>
+                        <PrimaryButton
+                          label="Not today"
+                          variant="quiet"
+                          busy={busy === `not-today-${state.todayOccurrence.id}`}
+                          onPress={() => uid && askNotToday(uid, plan, cycle, state.todayOccurrence!, state.todayDate, fn => run(`not-today-${state.todayOccurrence!.id}`, fn))}
+                        />
+                      </View>
+                    </View>
                   </View>
                 )}
               </>

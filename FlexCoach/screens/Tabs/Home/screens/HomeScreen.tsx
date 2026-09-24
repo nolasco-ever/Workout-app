@@ -26,6 +26,7 @@ import { HomeStackParams } from '../HomeStack';
 import { useTabBarInset } from '../../../../navigation/useTabBarInset';
 import { devFlags } from '../../../../dev/flags';
 import { seedSampleWeights } from '../../../../data/services/devSeeds';
+import { askNotToday } from '../../Workout/components/notToday';
 
 const title = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
 
@@ -100,6 +101,11 @@ export const HomeScreen = () => {
   // Today's workout status
   const todayOcc = home.todayOccurrence;
   const todayWorkout = home.plan && todayOcc ? findWorkout(home.plan, todayOcc.workoutId) : undefined;
+  const canDefer = !!uid && !!home.plan && !!home.cycle && !!todayOcc && todayOcc.status === 'scheduled' && !home.inProgressSession;
+  const notToday = () => {
+    if (!uid || !home.plan || !home.cycle || !todayOcc) return;
+    askNotToday(uid, home.plan, home.cycle, todayOcc, home.todayDate, fn => { fn().catch(err => console.warn(err)); });
+  };
   const todayStatus = !home.plan
     ? { tone: colors.inkMuted, kicker: 'Today', headline: 'No plan yet', detail: 'Set up a plan and your daily workout shows here.', action: 'Set up a plan' }
     : home.inProgressSession
@@ -109,7 +115,7 @@ export const HomeScreen = () => {
         : todayOcc && todayWorkout && todayOcc.status === 'scheduled'
           ? { tone: colors.accent, kicker: 'Today', headline: todayWorkout.name, detail: `${todayWorkout.exercises.length} exercises · not started`, action: 'Start' }
           : todayOcc && todayOcc.status === 'skipped'
-            ? { tone: colors.error, kicker: 'Today', headline: `${todayOcc.workoutName} skipped`, detail: 'You can still do it from the Workout tab.', action: 'Open' }
+            ? { tone: colors.error, kicker: 'Today', headline: `${todayOcc.workoutName} skipped`, detail: 'Skipped for this cycle.', action: 'Open' }
             : { tone: colors.inkMuted, kicker: 'Today', headline: 'Rest day', detail: home.upcoming[0] ? `Next: ${home.upcoming[0].workoutName} on ${shortDate(home.upcoming[0].date)}` : 'Nothing scheduled.', action: 'Open' };
 
   return (
@@ -133,6 +139,11 @@ export const HomeScreen = () => {
                 <CustomText variant="overline" color={todayStatus.tone}>{todayStatus.kicker}</CustomText>
                 <CustomText variant="title">{todayStatus.headline}</CustomText>
                 <CustomText variant="caption" color={colors.inkMuted}>{todayStatus.detail}</CustomText>
+                {canDefer && (
+                  <TouchableOpacity onPress={notToday} hitSlop={8} style={{ alignSelf: 'flex-start', marginTop: spacing.sm }}>
+                    <CustomText variant="label" color={colors.inkMuted}>Not today? Move or skip</CustomText>
+                  </TouchableOpacity>
+                )}
               </View>
               {ins.todaySession && !home.inProgressSession ? (
                 <View style={{ width: 40, height: 40, borderRadius: 20, backgroundColor: colors.successTint, alignItems: 'center', justifyContent: 'center' }}>
