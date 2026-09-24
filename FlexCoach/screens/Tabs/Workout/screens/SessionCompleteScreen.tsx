@@ -1,7 +1,8 @@
 import React from 'react';
 import { ScrollView, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { NavigationProp, RouteProp, useNavigation, useRoute } from '@react-navigation/native';
+import { RouteProp, useNavigation, useRoute } from '@react-navigation/native';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useAuth } from '../../../../data/auth/AuthProvider';
 import { formatDistance, formatDuration, formatWeight, toDisplayWeight } from '../../../../data/engine/units';
 import { CustomText } from '../../../../components/text/customText';
@@ -24,7 +25,7 @@ const Stat = ({ label, value }: { label: string; value: string }) => {
 };
 
 export const SessionCompleteScreen = () => {
-  const navigation = useNavigation<NavigationProp<WorkoutStackParams>>();
+  const navigation = useNavigation<NativeStackNavigationProp<WorkoutStackParams>>();
   const { params } = useRoute<RouteProp<WorkoutStackParams, 'SessionCompleteScreen'>>();
   const { result } = params;
   const { colors, spacing } = useTheme();
@@ -69,7 +70,7 @@ export const SessionCompleteScreen = () => {
           </Card>
         )}
 
-        <PrimaryButton label="Done" onPress={() => navigation.navigate('WorkoutHomeScreen')} />
+        <PrimaryButton label="Done" onPress={() => navigation.popToTop()} />
       </ScrollView>
     </SafeAreaView>
   );
