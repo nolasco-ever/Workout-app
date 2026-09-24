@@ -1,5 +1,5 @@
-import React from 'react';
-import { Image, ScrollView, View } from 'react-native';
+import React, { useState } from 'react';
+import { Image, ScrollView, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { RouteProp, useNavigation, useRoute } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
@@ -12,6 +12,7 @@ import { MuscleMap } from '../../../../components/anatomy/MuscleMap';
 import { CustomText } from '../../../../components/text/customText';
 import { useTheme } from '../../../../theme';
 import { SurfaceCard as Card } from '../../../../components/cards/SurfaceCard';
+import { PhotoViewer } from '../../../../components/media/PhotoViewer';
 
 const title = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
 
@@ -34,6 +35,7 @@ export const ExerciseDetailScreen = () => {
   const { colors, spacing, radius } = useTheme();
   const ex = getCatalogExercise(params.exerciseId);
   const editor = usePlanEditor();
+  const [viewing, setViewing] = useState<number | null>(null);
   const targetWorkout = params.addToWorkoutId ? editor.draft?.workouts.find(w => w.id === params.addToWorkoutId) : undefined;
   const alreadyAdded = !!targetWorkout && !!ex && targetWorkout.exercises.some(e => e.exerciseId === ex.id);
 
@@ -87,10 +89,10 @@ export const ExerciseDetailScreen = () => {
         {ex.images.length > 0 && (
           <View style={{ flexDirection: 'row', gap: spacing.sm }}>
             {ex.images.slice(0, 2).map((uri, i) => (
-              <View key={uri} style={{ flex: 1, gap: spacing.xs }}>
+              <TouchableOpacity key={uri} activeOpacity={0.8} onPress={() => setViewing(i)} accessibilityRole="imagebutton" accessibilityLabel={`Expand ${i === 0 ? 'start' : 'finish'} photo`} style={{ flex: 1, gap: spacing.xs }}>
                 <Image source={{ uri }} resizeMode="cover" style={{ width: '100%', aspectRatio: 4 / 3, borderRadius: radius.md, backgroundColor: colors.surfaceRaised }} />
-                <CustomText variant="caption" color={colors.inkMuted} centered>{i === 0 ? 'Start' : 'Finish'}</CustomText>
-              </View>
+                <CustomText variant="caption" color={colors.inkMuted} centered>{i === 0 ? 'Start' : 'Finish'} · tap to expand</CustomText>
+              </TouchableOpacity>
             ))}
           </View>
         )}
@@ -112,6 +114,7 @@ export const ExerciseDetailScreen = () => {
           </Card>
         </View>
       </ScrollView>
+      <PhotoViewer images={ex.images.slice(0, 2)} captions={['Start', 'Finish']} index={viewing} onClose={() => setViewing(null)} />
       {targetWorkout && (
         <View style={{ padding: spacing.lg, borderTopWidth: 1, borderTopColor: colors.line }}>
           <PrimaryButton label={alreadyAdded ? `Already in ${targetWorkout.name}` : `Add to ${targetWorkout.name}`} icon={generalIcons.plus} disabled={alreadyAdded} onPress={addToWorkout} />
