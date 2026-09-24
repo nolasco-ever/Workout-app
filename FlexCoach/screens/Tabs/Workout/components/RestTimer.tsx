@@ -37,7 +37,7 @@ export const RestTimer = ({ startedAt, durationSec, onDismiss }: { startedAt: nu
           </CustomText>
         </View>
         <CustomText variant="caption" color={colors.inkMuted}>
-          Tap to skip
+          {done ? 'Tap to dismiss' : 'Tap to skip'}
         </CustomText>
       </View>
     </TouchableOpacity>
