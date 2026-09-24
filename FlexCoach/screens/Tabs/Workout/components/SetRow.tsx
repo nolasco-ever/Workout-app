@@ -27,6 +27,10 @@ interface Props {
 export const SetRow = ({ set, measurement, draft, unitLabels, onChange, onToggleDone }: Props) => {
   const { colors, radius, spacing, fonts } = useTheme();
   const done = set.completed;
+  // Each input has a unit caption under it, so the input's centre sits half a
+  // caption above the row's. The set number and the check take the same
+  // offset so they line up with the boxes rather than the column.
+  const captionHeight = 16;
   const showA = measurement !== 'reps' || true; // reps-only still allows added weight
   const inputStyle = {
     fontFamily: fonts.body.semibold,
@@ -49,7 +53,7 @@ export const SetRow = ({ set, measurement, draft, unitLabels, onChange, onToggle
         opacity: done ? 0.75 : 1,
       }}
     >
-      <View style={{ width: 28 }}>
+      <View style={{ width: 28, marginBottom: captionHeight }}>
         <CustomText variant="label" color={colors.inkMuted}>
           {set.setNumber}
         </CustomText>
@@ -94,6 +98,7 @@ export const SetRow = ({ set, measurement, draft, unitLabels, onChange, onToggle
         style={{
           width: 44,
           height: 44,
+          marginBottom: captionHeight,
           borderRadius: radius.md,
           alignItems: 'center',
           justifyContent: 'center',
