@@ -7,7 +7,6 @@ import { RouteProp, useNavigation, useRoute } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useAuth } from '../../../data/auth/AuthProvider';
 import { Workout, WorkoutExercise } from '../../../data/models';
-import { formatDistance, formatDuration, formatWeight } from '../../../data/engine/units';
 import { getCatalogExercise } from '../../../data/catalog/exerciseCatalog';
 import { CustomText } from '../../../components/text/customText';
 import { SurfaceCard } from '../../../components/cards/SurfaceCard';
@@ -19,20 +18,7 @@ import { MuscleMap } from '../../../components/anatomy/MuscleMap';
 import { useTheme } from '../../../theme';
 import { PlansStackParams } from '../PlansStack';
 import { usePlanEditor } from '../PlanEditorContext';
-
-export const describeEntry = (e: WorkoutExercise, unit: 'kg' | 'lb', dist: 'km' | 'mi'): string => {
-  const w = e.startingWeightKg !== null ? ` @ ${formatWeight(e.startingWeightKg, unit)}` : '';
-  switch (e.measurement) {
-    case 'weight_reps':
-      return `${e.sets} × ${e.repRangeMin}–${e.repRangeMax}${w}`;
-    case 'reps':
-      return `${e.sets} × ${e.repRangeMin}–${e.repRangeMax}${e.startingWeightKg ? ` +${formatWeight(e.startingWeightKg, unit)}` : ' bodyweight'}`;
-    case 'time':
-      return `${e.sets} × ${formatDuration(e.startingDurationSec)}${w}`;
-    case 'distance_time':
-      return `${formatDistance(e.startingDistanceM, dist)} in ${formatDuration(e.startingDurationSec)}`;
-  }
-};
+import { describeEntry } from '../components/planSummary';
 
 export const WorkoutEditorScreen = () => {
   const navigation = useNavigation<NativeStackNavigationProp<PlansStackParams>>();

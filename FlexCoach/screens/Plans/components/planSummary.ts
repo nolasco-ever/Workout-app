@@ -1,5 +1,6 @@
-import { MuscleGroup, Plan } from '../../../data/models';
+import { MuscleGroup, Plan, WorkoutExercise } from '../../../data/models';
 import { getCatalogExercise } from '../../../data/catalog/exerciseCatalog';
+import { formatDistance, formatDuration, formatWeight } from '../../../data/engine/units';
 
 const DAY = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
@@ -35,3 +36,18 @@ export const muscleCoverage = (plan: Plan): { primary: MuscleGroup[]; secondary:
 };
 
 export const GOAL_LABEL = { strength: 'Strength', hypertrophy: 'Build muscle', endurance: 'Endurance' } as const;
+
+/** One line for an exercise prescription, e.g. "3 × 8–12 @ 50 lb". */
+export const describeEntry = (e: WorkoutExercise, unit: 'kg' | 'lb', dist: 'km' | 'mi'): string => {
+  const w = e.startingWeightKg !== null ? ` @ ${formatWeight(e.startingWeightKg, unit)}` : '';
+  switch (e.measurement) {
+    case 'weight_reps':
+      return `${e.sets} × ${e.repRangeMin}–${e.repRangeMax}${w}`;
+    case 'reps':
+      return `${e.sets} × ${e.repRangeMin}–${e.repRangeMax}${e.startingWeightKg ? ` +${formatWeight(e.startingWeightKg, unit)}` : ' bodyweight'}`;
+    case 'time':
+      return `${e.sets} × ${formatDuration(e.startingDurationSec)}${w}`;
+    case 'distance_time':
+      return `${formatDistance(e.startingDistanceM, dist)} in ${formatDuration(e.startingDurationSec)}`;
+  }
+};
