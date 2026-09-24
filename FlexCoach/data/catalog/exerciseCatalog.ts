@@ -21,23 +21,89 @@ export interface CatalogFilter {
   equipment?: string;
 }
 
+/** Lower-case words, with punctuation such as "Sit-Up" or "90/90" split apart. */
+const words = (s: string): string[] => s.toLowerCase().split(/[^a-z0-9]+/).filter(Boolean);
+
+interface Indexed {
+  exercise: Exercise;
+  nameWords: string[];
+  /** Muscles, equipment and category, for matching words that aren't in the name. */
+  tagWords: string[];
+}
+
+/** Common gym shorthand, expanded before matching. */
+const ALIASES: Record<string, string[]> = {
+  db: ['dumbbell'],
+  bb: ['barbell'],
+  kb: ['kettlebell'],
+  ez: ['e', 'z'],
+  ohp: ['overhead', 'press'],
+  rdl: ['romanian', 'deadlift'],
+  pullup: ['pull', 'up'],
+  pullups: ['pull', 'up'],
+  chinup: ['chin', 'up'],
+  chinups: ['chin', 'up'],
+  pushup: ['push', 'up'],
+  pushups: ['push', 'up'],
+  situp: ['sit', 'up'],
+  situps: ['sit', 'up'],
+};
+
+const queryWords = (q: string): string[] => words(q).flatMap(w => ALIASES[w] ?? [w]);
+
+const index: Indexed[] = catalog.map(exercise => ({
+  exercise,
+  nameWords: words(exercise.name),
+  tagWords: words([...exercise.primaryMuscles, ...exercise.secondaryMuscles, exercise.equipment ?? '', exercise.category].join(' ')),
+}));
+
 /**
- * Filter the catalog. With a muscle selected, exercises that target it as a
- * primary muscle come first and the ones that only hit it as a secondary
- * muscle follow; the catalog's alphabetical order holds within each group.
+ * How well an exercise matches the typed words, lower is better, or null
+ * when a word matches nothing. Every word has to match somewhere: as a
+ * prefix of a word in the name (best), inside a word in the name, or as a
+ * prefix of a muscle, equipment or category word.
+ */
+const searchRank = (item: Indexed, terms: string[]): number | null => {
+  let rank = 0;
+  for (const term of terms) {
+    if (item.nameWords.some(w => w.startsWith(term))) continue;
+    if (item.nameWords.some(w => w.includes(term))) {
+      rank += 1;
+      continue;
+    }
+    if (item.tagWords.some(w => w.startsWith(term))) {
+      rank += 2;
+      continue;
+    }
+    return null;
+  }
+  // A name that starts with the whole query beats one that merely contains the words.
+  return item.exercise.name.toLowerCase().startsWith(terms.join(' ')) ? rank - 1 : rank;
+};
+
+/**
+ * Filter the catalog.
+ *
+ * Search matches every typed word in any order, against the name first and
+ * then muscles, equipment and category, so "db press" finds dumbbell presses
+ * and "hamstring curl" finds curls tagged with hamstrings. Better name
+ * matches sort first. With a muscle selected, exercises that target it as a
+ * primary muscle come before the ones that only hit it as a secondary
+ * muscle. The catalog's alphabetical order holds within each group.
  */
 export const searchCatalog = ({ query, muscle, measurement, equipment }: CatalogFilter): Exercise[] => {
-  const q = query?.trim().toLowerCase();
-  const matches = catalog.filter(e => {
-    if (q && !e.name.toLowerCase().includes(q)) return false;
-    if (muscle && !e.primaryMuscles.includes(muscle) && !e.secondaryMuscles.includes(muscle)) return false;
-    if (measurement && e.measurement !== measurement) return false;
-    if (equipment && e.equipment !== equipment) return false;
-    return true;
-  });
-  if (!muscle) return matches;
-  const rank = (e: Exercise) => (e.primaryMuscles.includes(muscle) ? 0 : 1);
-  return matches.sort((a, b) => rank(a) - rank(b));
+  const terms = queryWords(query ?? '');
+  const ranked: { exercise: Exercise; rank: number }[] = [];
+  for (const item of index) {
+    const e = item.exercise;
+    if (muscle && !e.primaryMuscles.includes(muscle) && !e.secondaryMuscles.includes(muscle)) continue;
+    if (measurement && e.measurement !== measurement) continue;
+    if (equipment && e.equipment !== equipment) continue;
+    const rank = terms.length ? searchRank(item, terms) : 0;
+    if (rank === null) continue;
+    ranked.push({ exercise: e, rank: rank * 2 + (muscle && !e.primaryMuscles.includes(muscle) ? 1 : 0) });
+  }
+  return ranked.sort((a, b) => a.rank - b.rank).map(r => r.exercise);
 };
 
 /** Muscle groups in display order, for filters and the muscle diagram. */
