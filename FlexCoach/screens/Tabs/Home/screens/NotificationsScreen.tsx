@@ -1,5 +1,5 @@
-import React, { useLayoutEffect } from 'react';
-import { ActivityIndicator, Alert, ScrollView, TouchableOpacity, View } from 'react-native';
+import React, { useCallback, useLayoutEffect, useState } from 'react';
+import { ActivityIndicator, Alert, RefreshControl, ScrollView, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { NavigationProp, useNavigation } from '@react-navigation/native';
 import { FeedNotification, FeedNotificationKind } from '../../../../data/models';
@@ -57,6 +57,18 @@ export const NotificationsScreen = () => {
   const navigation = useNavigation<NavigationProp<AppStackParams>>();
   const { colors, spacing, radius } = useTheme();
   const feed = useNotificationFeed();
+  const [refreshing, setRefreshing] = useState(false);
+  const onRefresh = useCallback(async () => {
+    setRefreshing(true);
+    try {
+      await feed.refresh();
+    } catch {
+      // The live watch still has the last known feed; nothing to show.
+    } finally {
+      setRefreshing(false);
+    }
+  }, [feed.refresh]);
+  const refreshControl = <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.accent} />;
 
   useLayoutEffect(() => {
     navigation.setOptions({
@@ -93,7 +105,7 @@ export const NotificationsScreen = () => {
       {feed.loading ? (
         <ActivityIndicator color={colors.accent} style={{ marginTop: spacing.xxl }} />
       ) : feed.items.length === 0 ? (
-        <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', padding: spacing.xl, gap: spacing.md }}>
+        <ScrollView refreshControl={refreshControl} contentContainerStyle={{ flexGrow: 1, alignItems: 'center', justifyContent: 'center', padding: spacing.xl, gap: spacing.md }}>
           <View style={{ width: 72, height: 72, borderRadius: 36, backgroundColor: colors.surfaceRaised, alignItems: 'center', justifyContent: 'center' }}>
             <Icon icon={generalIcons.bell} color={colors.inkMuted} size={32} />
           </View>
@@ -101,9 +113,9 @@ export const NotificationsScreen = () => {
           <CustomText variant="body" color={colors.inkMuted} centered>
             Missed workouts, finished cycles and buddy activity show up here. Daily reminders come as notifications only.
           </CustomText>
-        </View>
+        </ScrollView>
       ) : (
-        <ScrollView contentContainerStyle={{ padding: spacing.lg, gap: spacing.lg, paddingBottom: spacing.xxl }}>
+        <ScrollView refreshControl={refreshControl} contentContainerStyle={{ padding: spacing.lg, gap: spacing.lg, paddingBottom: spacing.xxl }}>
           {groups.map(group => (
             <View key={group.label} style={{ gap: spacing.sm }}>
               <CustomText variant="overline" color={colors.inkMuted}>{group.label}</CustomText>

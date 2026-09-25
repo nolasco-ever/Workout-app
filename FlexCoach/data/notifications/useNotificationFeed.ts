@@ -10,6 +10,8 @@ export interface NotificationFeed {
   markRead: (id: string) => Promise<void>;
   markAllRead: () => Promise<void>;
   remove: (id: string) => Promise<void>;
+  /** Re-list the feed on demand (pull to refresh). The live watch keeps it current otherwise. */
+  refresh: () => Promise<void>;
 }
 
 /** Live feed of durable notifications for the signed-in user. */
@@ -38,6 +40,9 @@ export const useNotificationFeed = (): NotificationFeed => {
       },
       remove: async id => {
         if (uid) await notificationRepository.remove(uid, id);
+      },
+      refresh: async () => {
+        if (uid) setItems(await notificationRepository.list(uid));
       },
     }),
     [uid, items],
