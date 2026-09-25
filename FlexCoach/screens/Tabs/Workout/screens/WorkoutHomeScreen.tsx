@@ -18,6 +18,7 @@ import { WorkoutStackParams } from '../WorkoutStack';
 import { useTabBarInset } from '../../../../navigation/useTabBarInset';
 import { SurfaceCard as Card } from '../../../../components/cards/SurfaceCard';
 import { PrimaryButton } from '../../../../components/buttons/PrimaryButton';
+import { NotificationPermissionCard } from '../../../../components/cards/NotificationPermissionCard';
 import { OccurrenceRow } from '../components/OccurrenceRow';
 import { askNotToday } from '../components/notToday';
 import { AppStackParams } from '../../../../appNavigators/AppStack';
@@ -220,6 +221,9 @@ export const WorkoutHomeScreen = () => {
               </View>
             </Card>
           ))}
+
+        {/* Notification permission, asked here rather than at launch. */}
+        {!!cycle && <NotificationPermissionCard />}
 
         {/* Today */}
         {!state.cycleFinished && !resume && (

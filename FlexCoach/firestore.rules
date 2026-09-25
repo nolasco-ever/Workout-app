@@ -45,6 +45,16 @@ service cloud.firestore {
       match /customExercises/{exerciseId} {
         allow read, write: if isOwner(uid);
       }
+      // In-app notification feed. The owner reads, marks read and deletes;
+      // the device also creates its own items (missed workout, cycle done).
+      // Buddy events are written by Cloud Functions with the Admin SDK.
+      match /notifications/{notificationId} {
+        allow read, write: if isOwner(uid);
+      }
+      // Push tokens, one per install. Only the owner and the server touch them.
+      match /devices/{token} {
+        allow read, write: if isOwner(uid);
+      }
 
       // Buddy relationships are mirrored on both sides. The owner manages
       // their own list; another signed-in user may only create a pending

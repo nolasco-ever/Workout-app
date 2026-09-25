@@ -12,6 +12,7 @@ import { ProgressScreen } from './screens/ProgressScreen';
 import { ExerciseProgressScreen } from './screens/ExerciseProgressScreen';
 import { MusclesScreen } from './screens/MusclesScreen';
 import { MuscleDetailScreen } from './screens/MuscleDetailScreen';
+import { useNotificationFeed } from '../../../data/notifications/useNotificationFeed';
 
 export type HomeStackParams = {
   HomeScreen: undefined;
@@ -27,7 +28,8 @@ const Stack = createNativeStackNavigator<HomeStackParams>();
 
 const NotificationsButton = () => {
   const navigation = useNavigation<NavigationProp<AppStackParams>>();
-  return <HeaderButton icon={generalIcons.bell} accessibilityLabel="Notifications" onPress={() => navigation.navigate('NotificationsScreen')} />;
+  const { unreadCount } = useNotificationFeed();
+  return <HeaderButton icon={generalIcons.bell} badge={unreadCount > 0} accessibilityLabel="Notifications" onPress={() => navigation.navigate('NotificationsScreen')} />;
 };
 
 export const HomeStack = () => {

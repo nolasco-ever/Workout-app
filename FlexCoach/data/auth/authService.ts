@@ -21,6 +21,7 @@ import { auth } from '../firebase/firebase';
 import { userRepository } from '../repositories/userRepository';
 import { oauthConfig } from './oauthConfig';
 import { AuthProvider as ProviderKind } from '../models';
+import { unregisterDevice } from '../notifications/pushService';
 
 /** A message a person can act on, mapped from Firebase error codes. */
 export class AuthError extends Error {
@@ -172,6 +173,8 @@ export const authService = {
   /** Sign out. AuthProvider sees the null user and the welcome screen shows. */
   signOut: async (): Promise<void> => {
     try {
+      const uid = auth.currentUser?.uid;
+      if (uid) await unregisterDevice(uid);
       if (googleConfigured) await GoogleSignin.signOut().catch(() => undefined);
       await signOut(auth);
     } catch (err) {

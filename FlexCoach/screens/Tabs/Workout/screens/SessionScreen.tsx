@@ -9,6 +9,8 @@ import { findWorkout } from '../../../../data/engine/schedule';
 import { newId } from '../../../../data/engine/ids';
 import { getCatalogExercise } from '../../../../data/catalog/exerciseCatalog';
 import { abandonSession, finishSession, logSet } from '../../../../data/services/workoutService';
+import { planRestOverNotification, withPrefDefaults } from '../../../../data/engine/notifications';
+import { cancelRestOver, scheduleRestOver } from '../../../../data/notifications/notificationService';
 import { CustomText } from '../../../../components/text/customText';
 import { Icon } from '../../../../components/icons/Icon';
 import { directionIcons, generalIcons } from '../../../../components/icons/icon-library';
@@ -115,6 +117,23 @@ export const SessionScreen = () => {
   };
 
   const isLast = index === total - 1;
+
+  // The OS fires "Rest over" at the exact second, with sound and vibration,
+  // whether the app is in the background or open on another screen. Any
+  // change to the timer replaces the pending one; leaving the screen clears it.
+  const restOverWanted = withPrefDefaults(profile?.notifications);
+  useEffect(() => {
+    if (restStartedAt === null || !restOverWanted.enabled || !restOverWanted.restOver) {
+      cancelRestOver().catch(() => undefined);
+      return;
+    }
+    scheduleRestOver(planRestOverNotification(restStartedAt, restSec, session.id, exercise.exerciseName)).catch(err => console.warn('rest timer notification failed', err));
+    // exercise.exerciseName only changes with `index`, which also resets the timer.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [restStartedAt, restSec, session.id, restOverWanted.enabled, restOverWanted.restOver]);
+  useEffect(() => () => {
+    cancelRestOver().catch(() => undefined);
+  }, []);
 
   return (
     <SafeAreaView edges={['bottom', 'left', 'right']} style={{ flex: 1, backgroundColor: colors.ground }}>

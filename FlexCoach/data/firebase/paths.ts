@@ -17,5 +17,9 @@ export const paths = {
   buddy: (uid: Id, otherUid: Id) => `users/${uid}/buddies/${otherUid}`,
   customExercises: (uid: Id) => `users/${uid}/customExercises`,
   customExercise: (uid: Id, exerciseId: Id) => `users/${uid}/customExercises/${exerciseId}`,
+  notifications: (uid: Id) => `users/${uid}/notifications`,
+  notification: (uid: Id, notificationId: Id) => `users/${uid}/notifications/${notificationId}`,
+  devices: (uid: Id) => `users/${uid}/devices`,
+  device: (uid: Id, token: string) => `users/${uid}/devices/${token}`,
   publicProfile: (uid: Id) => `publicProfiles/${uid}`,
 };

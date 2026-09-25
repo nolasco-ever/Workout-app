@@ -5,3 +5,4 @@ export * from './progression';
 export * from './stats';
 export * from './units';
 export * from './insights';
+export * from './notifications';

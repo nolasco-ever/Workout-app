@@ -8,6 +8,9 @@ import { AuthProvider } from './data/auth/AuthProvider';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { useTheme } from './theme';
+import { navigationRef } from './navigation/navigationRef';
+import { NotificationBridge } from './data/notifications/NotificationBridge';
+import { useAuth } from './data/auth/AuthProvider';
 
 // react-native-sortables passes dependency arrays to Reanimated hooks (meant
 // for web); Reanimated 4.7 warns about it on native. Harmless, and not ours.
@@ -30,10 +33,16 @@ const Navigation = () => {
     },
   };
   return (
-    <NavigationContainer theme={navTheme}>
+    <NavigationContainer ref={navigationRef} theme={navTheme}>
       <AppStack/>
     </NavigationContainer>
   );
+};
+
+/** Notification sync only runs for a signed-in, onboarded account. */
+const Notifications = () => {
+  const { uid, profile } = useAuth();
+  return uid && profile?.onboardingCompletedAt ? <NotificationBridge /> : null;
 };
 
 const App = () => {
@@ -44,6 +53,7 @@ const App = () => {
       <AuthProvider>
         <ModalProvider>
           <Navigation/>
+          <Notifications/>
           <CustomModal/>
         </ModalProvider>
       </AuthProvider>

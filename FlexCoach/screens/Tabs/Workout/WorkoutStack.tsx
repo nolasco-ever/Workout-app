@@ -20,7 +20,8 @@ export type WorkoutStackParams = {
   WorkoutPreviewScreen: { plan: Plan; cycle: Cycle; occurrence: Occurrence };
   SessionScreen: { plan: Plan; cycle: Cycle; session: Session };
   SessionCompleteScreen: { result: SessionResult };
-  CycleReviewScreen: { plan: Plan; cycle: Cycle };
+  /** Either the live objects, or just an id (from a notification or the feed). */
+  CycleReviewScreen: { plan: Plan; cycle: Cycle; cycleId?: undefined } | { cycleId: string; plan?: undefined; cycle?: undefined };
   SessionDetailScreen: { sessionId: string };
   ExerciseDetailScreen: { exerciseId: string };
 };

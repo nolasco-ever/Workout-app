@@ -26,6 +26,7 @@ import {
 import { buildPlannedSets, suggestTarget } from '../engine/progression';
 import { currentStreakDays, findPersonalRecords, summarizeCycle, totalVolumeKg } from '../engine/stats';
 import { cycleRepository } from '../repositories/cycleRepository';
+import { planRepository } from '../repositories/planRepository';
 import { sessionRepository } from '../repositories/sessionRepository';
 import { userRepository } from '../repositories/userRepository';
 import { achievementRepository } from '../repositories/achievementRepository';
@@ -202,11 +203,34 @@ export const abandonSession = async (uid: Id, session: Session, cycle: Cycle): P
   return updated;
 };
 
-export const getCycleReview = async (uid: Id, cycle: Cycle): Promise<CycleSummary> => {
+export interface CycleReview {
+  summary: CycleSummary;
+  /** Completed sessions logged in the cycle, oldest first. */
+  sessions: Session[];
+  volumeKg: number;
+  durationSec: number;
+  setsCompleted: number;
+}
+
+export const getCycleReview = async (uid: Id, cycle: Cycle): Promise<CycleReview> => {
   const all = await sessionRepository.listCompleted(uid);
   const inCycle = all.filter(s => s.cycleId === cycle.id);
   const before = all.filter(s => s.cycleId !== cycle.id && s.date < cycle.startDate);
-  return summarizeCycle(cycle, inCycle, before);
+  return {
+    summary: summarizeCycle(cycle, inCycle, before),
+    sessions: inCycle,
+    volumeKg: totalVolumeKg(inCycle),
+    durationSec: inCycle.reduce((n, s) => n + Math.max(0, Math.round(((s.finishedAt ?? s.startedAt) - s.startedAt) / 1000)), 0),
+    setsCompleted: inCycle.reduce((n, s) => n + s.exercises.reduce((m, ex) => m + ex.sets.filter(x => x.completed).length, 0), 0),
+  };
+};
+
+/** The cycle and its plan by id, for a review opened from a notification or the feed. */
+export const loadCycleForReview = async (uid: Id, cycleId: Id): Promise<{ plan: Plan; cycle: Cycle } | null> => {
+  const cycle = await cycleRepository.get(uid, cycleId);
+  if (!cycle) return null;
+  const plan = await planRepository.get(uid, cycle.planId);
+  return plan ? { plan, cycle } : null;
 };
 
 /** Close the finished cycle and generate the next one, starting no earlier than today. */

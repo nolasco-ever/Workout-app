@@ -1,4 +1,5 @@
 import { BaseDocument, DistanceUnit, Id, LocalDate, Timestamp, WeightUnit } from './common';
+import { NotificationPrefs } from './notification';
 
 export type AuthProvider = 'password' | 'apple' | 'google';
 
@@ -17,6 +18,8 @@ export interface UserProfile extends BaseDocument {
   /** When the user granted health-store access; null means not connected. */
   healthConnectedAt: Timestamp | null;
   onboardingCompletedAt: Timestamp | null;
+  /** Missing on profiles created before notifications existed; see withPrefDefaults. */
+  notifications?: Partial<NotificationPrefs> | null;
 }
 
 /**

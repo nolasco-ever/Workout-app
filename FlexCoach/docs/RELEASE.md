@@ -80,3 +80,45 @@ else derives from it and must be regenerated together when it changes:
 
 PNGs were rasterised with headless Chrome (`--screenshot`) and cropped with
 `sips`; no ImageMagick or librsvg is installed on this Mac.
+
+## Push notifications (Firebase Cloud Messaging)
+
+Local reminders and the rest timer work without any of this. Push is only
+needed for feed items another user or the server creates (buddy activity).
+
+One-time setup:
+
+1. **APNs key** (iOS). Apple Developer > Certificates, Identifiers & Profiles >
+   Keys > "+" > enable Apple Push Notifications service (APNs) > download the
+   `.p8` (it can only be downloaded once; keep it with the Android keystore).
+   Firebase console > Project settings > Cloud Messaging > Apple app
+   configuration > upload the key with its Key ID and the Team ID.
+2. **Push capability** (iOS). In Xcode select the FlexCoach target > Signing &
+   Capabilities > "+ Capability" > Push Notifications. Do this through Xcode
+   so the App ID is updated too, exactly as with Sign in with Apple; do not
+   hand-edit `aps-environment` into the entitlements file. Commit the
+   resulting entitlements change. `remote-notification` is already in
+   `UIBackgroundModes`.
+3. **Android** needs nothing beyond the existing `google-services.json`;
+   the manifest already declares `POST_NOTIFICATIONS`, `SCHEDULE_EXACT_ALARM`
+   and the status-bar icon `ic_notification`.
+4. **Cloud Function**. Requires the Blaze plan (already on it) and the
+   Firebase CLI signed in as the project owner:
+
+   ```sh
+   cd functions && npm install && cd ..
+   firebase deploy --only functions
+   ```
+
+   The first deploy enables Cloud Functions, Cloud Build, Artifact Registry
+   and Eventarc on the project and can take a few minutes. Re-run the same
+   command after changing `functions/src`. Logs: `firebase functions:log`.
+
+To test end to end, sign in on a device, allow notifications, then create a
+document by hand in Firestore at `users/<uid>/notifications/<anyId>` with
+`{ ownerId, kind: "buddy_request", title, body, target: { screen: "feed" },
+readAt: null, push: true, createdAt, updatedAt }`. The phone should show it
+within a few seconds and the document gains `pushedAt`.
+
+Firestore rules changed with this feature (`notifications` and `devices`
+subcollections); deploy them with `firebase deploy --only firestore:rules`.

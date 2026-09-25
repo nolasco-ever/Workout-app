@@ -36,6 +36,8 @@ users/{uid}/bodyWeight/{entryId}      BodyWeightEntry
 users/{uid}/achievements/{id}         AchievementUnlock
 users/{uid}/buddies/{otherUid}        Buddy
 users/{uid}/customExercises/{id}      CustomExercise
+users/{uid}/notifications/{id}        FeedNotification     owner; server writes buddy items
+users/{uid}/devices/{token}           DeviceToken          push tokens, one per install
 publicProfiles/{uid}                  PublicProfile        owner + accepted buddies
 ```
 
@@ -83,3 +85,35 @@ has an accepted row in the owner's `buddies` subcollection. Deploy rules with:
 ```
 npx firebase-tools deploy --only firestore:rules
 ```
+
+## Notifications
+
+Two layers, decided in September 2026:
+
+- **Local reminders** are planned as pure data by `engine/notifications.ts`
+  (`planLocalNotifications`) from the active cycle, completed sessions and
+  `UserProfile.notifications`, then reconciled against the OS by
+  `data/notifications/notificationService.ts` (Notifee). The plan is rebuilt
+  whenever the cycle, the prefs or the app's foreground state change, so a
+  reminder only exists while the workout it is about is still waiting.
+  Kinds: workout today (morning), evening nudge or streak-at-risk, missed
+  workout (next morning), plan starts tomorrow, cycle finished, weekly
+  weigh-in, and the rest timer (`planRestOverNotification`, scheduled from
+  the session screen with an exact alarm). Ids are `flex:<kind>:<date>` so
+  re-planning replaces rather than duplicates.
+- **The feed** (`users/{uid}/notifications`) holds only durable items worth
+  revisiting or acting on: a missed workout, a finished cycle, and later
+  achievements and buddy events. Time-based nudges are never stored. The
+  device creates its own items with `push: false`; anything created with
+  `push: true` is delivered to the user's registered devices by the
+  `sendFeedPush` Cloud Function in `functions/`, which also prunes stale
+  tokens. Writing a feed document is therefore the single way to notify
+  someone, in-app and on their phone at once.
+
+Preferences default on (weigh-in off) with 9:00 and 18:00 reminder times.
+The OS permission is requested when a cycle becomes active during a session,
+from the card on the Workout tab, or from Profile > Notifications; never on
+cold launch. `useNotificationSync` (mounted in `App.tsx` for signed-in,
+onboarded accounts) owns all of this plus FCM token registration; a tap on
+any notification routes through `openTarget` using a `NotificationTarget`
+stored in the payload.

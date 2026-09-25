@@ -43,7 +43,7 @@ export const userRepository = {
 
   /** Remove every document under the user, then the profile documents. */
   deleteAllData: async (uid: Id): Promise<void> => {
-    const collections = [paths.plans(uid), paths.cycles(uid), paths.sessions(uid), paths.bodyWeight(uid), paths.achievements(uid), paths.buddies(uid), paths.customExercises(uid)];
+    const collections = [paths.plans(uid), paths.cycles(uid), paths.sessions(uid), paths.bodyWeight(uid), paths.achievements(uid), paths.buddies(uid), paths.customExercises(uid), paths.notifications(uid), paths.devices(uid)];
     for (const c of collections) {
       const docs = await listDocs<{ id: string }>(c);
       for (const d of docs) await removeDoc(`${c}/${d.id}`);

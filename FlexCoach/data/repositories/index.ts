@@ -6,4 +6,5 @@ export * from './bodyWeightRepository';
 export * from './achievementRepository';
 export * from './buddyRepository';
 export * from './customExerciseRepository';
+export * from './notificationRepository';
 export type { Unsubscribe } from './base';
