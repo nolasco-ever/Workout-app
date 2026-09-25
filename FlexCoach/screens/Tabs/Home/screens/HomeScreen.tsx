@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { ActivityIndicator, RefreshControl, ScrollView, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useNavigation, useScrollToTop } from '@react-navigation/native';
+import { NavigationProp, useNavigation, useScrollToTop } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useAuth } from '../../../../data/auth/AuthProvider';
 import { useInsights } from '../../../../data/hooks/useInsights';
@@ -24,6 +24,9 @@ import { MuscleGroup } from '../../../../data/models';
 import { useTheme } from '../../../../theme';
 import { HomeStackParams } from '../HomeStack';
 import { useTabBarInset } from '../../../../navigation/useTabBarInset';
+import { TabHeader } from '../../../../components/headers/TabHeader';
+import { useNotificationFeed } from '../../../../data/notifications/useNotificationFeed';
+import { AppStackParams } from '../../../../appNavigators/AppStack';
 import { devFlags } from '../../../../dev/flags';
 import { seedSampleWeights } from '../../../../data/services/devSeeds';
 import { askNotToday } from '../../Workout/components/notToday';
@@ -68,6 +71,8 @@ export const HomeScreen = () => {
   const { uid, profile } = useAuth();
   const unit = profile?.weightUnit ?? 'lb';
   const ins = useInsights();
+  const { unreadCount } = useNotificationFeed();
+  const openNotifications = () => (navigation as unknown as NavigationProp<AppStackParams>).navigate('NotificationsScreen');
   const home = useWorkoutHome();
   const steps = useSteps();
   const scrollRef = useRef<React.ComponentRef<typeof ScrollView>>(null);
@@ -123,15 +128,15 @@ export const HomeScreen = () => {
             : { tone: colors.inkMuted, kicker: 'Today', headline: 'Rest day', detail: home.upcoming[0] ? `Next: ${home.upcoming[0].workoutName} on ${shortDate(home.upcoming[0].date)}` : 'Nothing scheduled.', action: 'Open' };
 
   return (
-    <SafeAreaView edges={['left', 'right']} style={{ flex: 1, backgroundColor: colors.ground }}>
+    <SafeAreaView edges={['top', 'left', 'right']} style={{ flex: 1, backgroundColor: colors.ground }}>
       <ScrollView
         ref={scrollRef}
-        contentInsetAdjustmentBehavior="automatic"
         contentContainerStyle={{ padding: spacing.lg, gap: spacing.lg, paddingBottom: spacing.xxl + tabBarInset }}
         showsVerticalScrollIndicator={false}
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.accent} />}
       >
-        {/* One scroll view for every state, with the inset the native large-title header needs. */}
+        {/* One scroll view for every state; the title row scrolls with the content. */}
+        <TabHeader title="Home" action={{ icon: generalIcons.bell, badge: unreadCount > 0, accessibilityLabel: 'Notifications', onPress: openNotifications }} />
         {loading && <ActivityIndicator color={colors.accent} style={{ marginTop: spacing.xxl }} />}
         {!loading && (
         <>

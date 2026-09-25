@@ -1,12 +1,10 @@
 import React from 'react';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import { NavigationProp, useNavigation } from '@react-navigation/native';
 import { Cycle, Occurrence, Plan, Session } from '../../../data/models';
 import { SessionResult } from '../../../data/services/workoutService';
 import { generalIcons } from '../../../components/icons/icon-library';
 import { HeaderButton } from '../../../components/headers/HeaderButton';
 import { useStackOptions } from '../../../navigation/stackOptions';
-import { AppStackParams } from '../../../appNavigators/AppStack';
 import { WorkoutHomeScreen } from './screens/WorkoutHomeScreen';
 import { WorkoutPreviewScreen } from './screens/WorkoutPreviewScreen';
 import { SessionScreen } from './screens/SessionScreen';
@@ -28,16 +26,11 @@ export type WorkoutStackParams = {
 
 const Stack = createNativeStackNavigator<WorkoutStackParams>();
 
-const PlansButton = () => {
-  const navigation = useNavigation<NavigationProp<AppStackParams>>();
-  return <HeaderButton icon={generalIcons.list} accessibilityLabel="My plans" onPress={() => navigation.navigate('PlansStack')} />;
-};
-
 export const WorkoutStack = () => {
   const opts = useStackOptions();
   return (
     <Stack.Navigator screenOptions={opts.base}>
-      <Stack.Screen name="WorkoutHomeScreen" component={WorkoutHomeScreen} options={{ ...opts.root('Workout'), headerRight: () => <PlansButton /> }} />
+      <Stack.Screen name="WorkoutHomeScreen" component={WorkoutHomeScreen} options={opts.tabRoot('Workout')} />
       <Stack.Screen name="WorkoutPreviewScreen" component={WorkoutPreviewScreen} options={({ route }) => opts.screen(route.params.occurrence.workoutName ?? 'Workout')} />
       <Stack.Screen name="SessionScreen" component={SessionScreen} options={({ route }) => ({ ...opts.screen(route.params.session.workoutName), gestureEnabled: false })} />
       {/* A plain push, not a modal: popping a modal presented over the tab bar left the Workout home rendered as a sheet with no tabs. */}

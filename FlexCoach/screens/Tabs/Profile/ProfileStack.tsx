@@ -21,7 +21,7 @@ export const ProfileStack = () => {
     const opts = useStackOptions();
     return (
         <Stack.Navigator screenOptions={opts.base}>
-            <Stack.Screen name="ProfileScreen" component={ProfileScreen} options={opts.root('Profile')} />
+            <Stack.Screen name="ProfileScreen" component={ProfileScreen} options={opts.tabRoot('Profile')} />
             <Stack.Screen name="HistoryScreen" component={HistoryScreen} options={opts.screen('History')} />
             <Stack.Screen name="NotificationSettingsScreen" component={NotificationSettingsScreen} options={opts.screen('Notifications')} />
             <Stack.Screen name="SessionDetailScreen" component={SessionDetailScreen} options={opts.screen('Workout')} />

@@ -22,6 +22,8 @@ export const useStackOptions = () => {
   const screen = (title: string): NativeStackNavigationOptions => ({ ...base, headerShown: true, title });
   /** A tab root with a large collapsing title. */
   const root = (title: string): NativeStackNavigationOptions => ({ ...base, headerShown: true, title, headerLargeTitle: true });
+  /** A tab root that draws its own title row (see TabHeader) and no native header. */
+  const tabRoot = (title: string): NativeStackNavigationOptions => ({ ...base, headerShown: false, title });
   /** A sheet-style modal with a close button. */
   const modal = (title: string, headerLeft: NativeStackNavigationOptions['headerLeft']): NativeStackNavigationOptions => ({
     ...base,
@@ -30,5 +32,5 @@ export const useStackOptions = () => {
     presentation: 'modal',
     headerLeft,
   });
-  return { base, screen, root, modal };
+  return { base, screen, root, tabRoot, modal };
 };
