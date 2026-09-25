@@ -13,7 +13,7 @@ import { Row } from '../../../../components/list-items/Row';
 import { SwitchRow } from '../../../../components/inputs/SwitchRow';
 import { PrimaryButton } from '../../../../components/buttons/PrimaryButton';
 import { BottomSheet } from '../../../../components/overlays/BottomSheet';
-import { Stepper } from '../../../../components/inputs/Stepper';
+import { WheelPicker } from '../../../../components/inputs/WheelPicker';
 import { ChoiceChips } from '../../../../components/inputs/ChoiceChips';
 import { Icon } from '../../../../components/icons/Icon';
 import { generalIcons } from '../../../../components/icons/icon-library';
@@ -35,12 +35,23 @@ const weekdays: { value: `${Weekday}`; label: string }[] = [
   { value: '0', label: 'Sun' },
 ];
 
-/** Picks an hour and a minute in five-minute steps. */
+const hourOptions = Array.from({ length: 12 }, (_, i) => ({ value: i + 1, label: String(i + 1) }));
+const minuteOptions = Array.from({ length: 12 }, (_, i) => ({ value: i * 5, label: String(i * 5).padStart(2, '0') }));
+const periodOptions = [
+  { value: 'AM' as const, label: 'AM' },
+  { value: 'PM' as const, label: 'PM' },
+];
+
+/** Picks an hour and a minute in five-minute steps on scroll wheels. */
 const TimeSheet = ({ open, title, value, onClose, onChange }: { open: boolean; title: string; value: ClockTime; onClose: () => void; onChange: (t: ClockTime) => void }) => {
+  const { spacing } = useTheme();
   const [draft, setDraft] = useState(value);
   useEffect(() => {
     if (open) setDraft(value);
   }, [open, value]);
+  const hour12 = draft.hour % 12 === 0 ? 12 : draft.hour % 12;
+  const period = draft.hour < 12 ? 'AM' : 'PM';
+  const setHour = (h12: number, p: 'AM' | 'PM') => setDraft(d => ({ ...d, hour: (h12 % 12) + (p === 'PM' ? 12 : 0) }));
   return (
     <BottomSheet
       open={open}
@@ -56,8 +67,11 @@ const TimeSheet = ({ open, title, value, onClose, onChange }: { open: boolean; t
         />
       }
     >
-      <Stepper label="Hour" value={draft.hour} min={0} max={23} onChange={hour => setDraft(d => ({ ...d, hour }))} format={h => `${h % 12 === 0 ? 12 : h % 12} ${h < 12 ? 'AM' : 'PM'}`} />
-      <Stepper label="Minute" value={draft.minute} min={0} max={55} step={5} onChange={minute => setDraft(d => ({ ...d, minute }))} format={m => `:${String(m).padStart(2, '0')}`} />
+      <View style={{ flexDirection: 'row', gap: spacing.sm }}>
+        <WheelPicker options={hourOptions} value={hour12} onChange={h => setHour(h, period)} accessibilityLabel="Hour" />
+        <WheelPicker options={minuteOptions} value={draft.minute} onChange={minute => setDraft(d => ({ ...d, minute }))} accessibilityLabel="Minute" />
+        <WheelPicker options={periodOptions} value={period} onChange={p => setHour(hour12, p)} accessibilityLabel="AM or PM" />
+      </View>
     </BottomSheet>
   );
 };
