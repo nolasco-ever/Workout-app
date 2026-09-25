@@ -4,6 +4,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useProfilePhoto } from '../../../data/hooks/useProfilePhoto';
+import { getPermission } from '../../../data/notifications/notificationService';
 import { CustomText } from '../../../components/text/customText';
 import { PrimaryButton } from '../../../components/buttons/PrimaryButton';
 import { Icon } from '../../../components/icons/Icon';
@@ -17,6 +18,12 @@ export const ProfilePhotoScreen = () => {
   const photo = useProfilePhoto();
   const [uri, setUri] = useState<string | null>(photo.photoUrl);
   const busy = photo.busy;
+
+  // The reminders step only makes sense while the OS permission is still undecided.
+  const next = async () => {
+    const permission = await getPermission().catch(() => 'undetermined' as const);
+    navigation.navigate(permission === 'undetermined' ? 'NotificationsOnboardingScreen' : 'FirstPlanScreen');
+  };
 
   const pick = async (source: 'library' | 'camera') => {
     const saved = await photo.pick(source);
@@ -40,7 +47,7 @@ export const ProfilePhotoScreen = () => {
         <PrimaryButton label="Take a photo" variant="outline" busy={busy} onPress={() => pick('camera')} />
       </View>
       <View style={{ padding: spacing.lg, borderTopWidth: 1, borderTopColor: colors.line }}>
-        <PrimaryButton label={uri ? 'Next' : 'Skip for now'} disabled={busy} onPress={() => navigation.navigate('FirstPlanScreen')} />
+        <PrimaryButton label={uri ? 'Next' : 'Skip for now'} disabled={busy} onPress={next} />
       </View>
     </SafeAreaView>
   );
