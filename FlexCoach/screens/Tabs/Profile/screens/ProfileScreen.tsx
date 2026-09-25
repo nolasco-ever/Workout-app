@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { ActivityIndicator, Alert, Image, ScrollView, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { NavigationProp, useNavigation } from '@react-navigation/native';
@@ -15,6 +15,7 @@ import { useTheme } from '../../../../theme';
 import { ProfileStackParams } from '../ProfileStack';
 import { useTabBarInset } from '../../../../navigation/useTabBarInset';
 import { TabHeader } from '../../../../components/headers/TabHeader';
+import { ProfilePhotoModal } from '../../../../components/media/ProfilePhotoModal';
 import { AppStackParams } from '../../../../appNavigators/AppStack';
 import { dateLabel } from '../../../../components/charts/scale';
 import { toLocalDate } from '../../../../data/engine/dates';
@@ -26,6 +27,7 @@ export const ProfileScreen = () => {
   const { profile, user } = useAuth();
   const { plans } = usePlans();
   const photo = useProfilePhoto();
+  const [photoOpen, setPhotoOpen] = useState(false);
   const active = plans.find(p => p.status === 'active');
   const joined = profile ? dateLabel(toLocalDate(new Date(profile.createdAt))) : null;
   const placeholder = (title: string) => () => navigation.navigate('PlaceholderScreen', { title });
@@ -41,7 +43,7 @@ export const ProfileScreen = () => {
       <ScrollView contentContainerStyle={{ padding: spacing.lg, gap: spacing.lg, paddingBottom: spacing.xxl + tabBarInset }}>
         <TabHeader title="Profile" />
         <View style={{ alignItems: 'center', gap: spacing.sm }}>
-          <TouchableOpacity onPress={photo.choose} disabled={photo.busy} accessibilityRole="button" accessibilityLabel="Change profile photo" style={{ width: 96, height: 96 }}>
+          <TouchableOpacity onPress={() => setPhotoOpen(true)} disabled={photo.busy} accessibilityRole="button" accessibilityLabel="View or change profile photo" style={{ width: 96, height: 96 }}>
             {profile?.photoUrl ? (
               <Image source={{ uri: profile.photoUrl }} resizeMode="cover" style={{ width: 96, height: 96, borderRadius: 48, backgroundColor: colors.surfaceRaised }} />
             ) : (
@@ -51,7 +53,7 @@ export const ProfileScreen = () => {
             )}
             {/* Edit badge so the avatar reads as tappable. */}
             <View style={{ position: 'absolute', right: -2, bottom: -2, width: 32, height: 32, borderRadius: 16, backgroundColor: colors.accent, borderWidth: 3, borderColor: colors.ground, alignItems: 'center', justifyContent: 'center' }}>
-              {photo.busy ? <ActivityIndicator size="small" color={colors.onAccent} /> : <Icon icon={generalIcons.camera} size={16} color={colors.onAccent} strokeWidth={2.5} />}
+              {photo.busy ? <ActivityIndicator size="small" color={colors.onAccent} /> : <Icon icon={generalIcons.pencil} size={16} color={colors.onAccent} strokeWidth={2.5} />}
             </View>
           </TouchableOpacity>
           <CustomText variant="heading">{profile?.displayName ?? 'Your name'}</CustomText>
@@ -92,6 +94,15 @@ export const ProfileScreen = () => {
           <Row icon={generalIcons.signOut} title="Sign out" tone="destructive" chevron={false} onPress={signOut} />
         </SurfaceCard>
       </ScrollView>
+      <ProfilePhotoModal
+        open={photoOpen}
+        uri={profile?.photoUrl ?? null}
+        busy={photo.busy}
+        onClose={() => setPhotoOpen(false)}
+        onChooseLibrary={() => photo.pick('library')}
+        onTakePhoto={() => photo.pick('camera')}
+        onRemove={() => photo.remove().then(() => setPhotoOpen(false))}
+      />
     </SafeAreaView>
   );
 };

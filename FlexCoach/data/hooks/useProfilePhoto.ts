@@ -1,5 +1,5 @@
 import { useCallback, useState } from 'react';
-import { ActionSheetIOS, Alert, Platform } from 'react-native';
+import { Alert } from 'react-native';
 import { launchCamera, launchImageLibrary } from 'react-native-image-picker';
 import { useAuth } from '../auth/AuthProvider';
 import { removeProfilePhoto, saveProfilePhoto } from '../services/profileService';
@@ -11,6 +11,7 @@ export type PhotoSource = 'library' | 'camera';
 /**
  * Pick, save, and remove the profile photo. Shared by onboarding and the
  * Profile tab so both go through the same picker settings and storage path.
+ * The Profile tab presents the choices in ProfilePhotoModal.
  */
 export const useProfilePhoto = () => {
   const { uid, profile } = useAuth();
@@ -50,33 +51,5 @@ export const useProfilePhoto = () => {
     }
   }, [uid]);
 
-  /** Native chooser: library, camera, and (when there is one) remove. */
-  const choose = useCallback(() => {
-    const hasPhoto = !!profile?.photoUrl;
-    if (Platform.OS === 'ios') {
-      const options = ['Cancel', 'Choose from library', 'Take a photo', ...(hasPhoto ? ['Remove photo'] : [])];
-      ActionSheetIOS.showActionSheetWithOptions(
-        { options, cancelButtonIndex: 0, destructiveButtonIndex: hasPhoto ? 3 : undefined, title: 'Profile photo' },
-        index => {
-          if (index === 1) pick('library');
-          else if (index === 2) pick('camera');
-          else if (index === 3) remove();
-        },
-      );
-      return;
-    }
-    // Android alerts take at most three buttons; tapping outside dismisses.
-    Alert.alert(
-      'Profile photo',
-      undefined,
-      [
-        { text: 'Choose from library', onPress: () => pick('library') },
-        { text: 'Take a photo', onPress: () => pick('camera') },
-        hasPhoto ? { text: 'Remove photo', style: 'destructive', onPress: remove } : { text: 'Cancel', style: 'cancel' },
-      ],
-      { cancelable: true },
-    );
-  }, [pick, remove, profile?.photoUrl]);
-
-  return { busy, pick, remove, choose, photoUrl: profile?.photoUrl ?? null };
+  return { busy, pick, remove, photoUrl: profile?.photoUrl ?? null };
 };
