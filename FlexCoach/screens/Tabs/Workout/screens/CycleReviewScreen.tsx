@@ -13,7 +13,7 @@ import { directionIcons, generalIcons } from '../../../../components/icons/icon-
 import { dateLabel } from '../../../../components/charts/scale';
 import { useTheme } from '../../../../theme';
 import { WorkoutStackParams } from '../WorkoutStack';
-import { useTabBarInset } from '../../../../navigation/useTabBarInset';
+import { useTabScrollInset } from '../../../../navigation/useTabBarInset';
 import { SurfaceCard as Card } from '../../../../components/cards/SurfaceCard';
 import { PrimaryButton } from '../../../../components/buttons/PrimaryButton';
 
@@ -37,7 +37,7 @@ export const CycleReviewScreen = () => {
   const navigation = useNavigation<NavigationProp<WorkoutStackParams>>();
   const { params } = useRoute<RouteProp<WorkoutStackParams, 'CycleReviewScreen'>>();
   const { colors, spacing } = useTheme();
-  const tabBarInset = useTabBarInset();
+  const bottomInset = useTabScrollInset();
   const { uid, profile } = useAuth();
   const [loaded, setLoaded] = useState<{ plan: Plan; cycle: Cycle } | null>(params.cycle ? { plan: params.plan, cycle: params.cycle } : null);
   const [missing, setMissing] = useState(false);
@@ -95,8 +95,8 @@ export const CycleReviewScreen = () => {
   const sessions = [...review.sessions].sort((a, b) => b.startedAt - a.startedAt);
 
   return (
-    <SafeAreaView edges={['bottom', 'left', 'right']} style={{ flex: 1, backgroundColor: colors.ground }}>
-      <ScrollView contentContainerStyle={{ padding: spacing.lg, gap: spacing.lg, paddingBottom: spacing.lg + tabBarInset }}>
+    <SafeAreaView edges={['left', 'right']} style={{ flex: 1, backgroundColor: colors.ground }}>
+      <ScrollView contentContainerStyle={{ padding: spacing.lg, gap: spacing.lg, paddingBottom: spacing.lg + bottomInset }}>
         <View>
           <CustomText variant="overline" color={colors.inkMuted}>
             {plan.name} · Cycle {cycle.number} · {dateLabel(cycle.startDate)} to {dateLabel(cycle.endDate)}

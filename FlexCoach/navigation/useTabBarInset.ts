@@ -21,3 +21,17 @@ export const useTabBarInset = (): number => {
   if (Platform.OS !== 'ios') return 0;
   return Math.max(0, tabBar - bottom);
 };
+
+/**
+ * Bottom padding for content that runs all the way under the tab bar: the
+ * bar plus the home indicator. Use it on a scroll view (or a footer) inside
+ * a SafeAreaView that does NOT pad the bottom edge. Padding the safe-area
+ * edge instead stops the content at a hard line above the screen bottom,
+ * which shows through the translucent bar as a clipped edge.
+ */
+export const useTabScrollInset = (): number => {
+  const tabBar = useContext(BottomTabBarHeightContext) ?? 0;
+  const { bottom } = useSafeAreaInsets();
+  if (Platform.OS !== 'ios') return bottom;
+  return Math.max(tabBar, bottom);
+};

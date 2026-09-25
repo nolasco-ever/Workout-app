@@ -15,12 +15,12 @@ import { compactNumber } from '../../../../components/charts/scale';
 import { MuscleMap } from '../../../../components/anatomy/MuscleMap';
 import { useTheme } from '../../../../theme';
 import { HomeStackParams } from '../HomeStack';
-import { useTabBarInset } from '../../../../navigation/useTabBarInset';
+import { useTabScrollInset } from '../../../../navigation/useTabBarInset';
 
 export const ExerciseProgressScreen = () => {
   const { params } = useRoute<RouteProp<HomeStackParams, 'ExerciseProgressScreen'>>();
   const { colors, spacing } = useTheme();
-  const tabBarInset = useTabBarInset();
+  const bottomInset = useTabScrollInset();
   const { profile } = useAuth();
   const unit = profile?.weightUnit ?? 'lb';
   const ins = useInsights();
@@ -42,8 +42,8 @@ export const ExerciseProgressScreen = () => {
     ) : null;
 
   return (
-    <SafeAreaView edges={['bottom', 'left', 'right']} style={{ flex: 1, backgroundColor: colors.ground }}>
-      <ScrollView contentContainerStyle={{ padding: spacing.lg, gap: spacing.lg, paddingBottom: spacing.lg + tabBarInset }}>
+    <SafeAreaView edges={['left', 'right']} style={{ flex: 1, backgroundColor: colors.ground }}>
+      <ScrollView contentContainerStyle={{ padding: spacing.lg, gap: spacing.lg, paddingBottom: spacing.lg + bottomInset }}>
         {cat && (
           <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.md }}>
             <MuscleMap primary={cat.primaryMuscles} secondary={cat.secondaryMuscles} height={80} views="auto" />

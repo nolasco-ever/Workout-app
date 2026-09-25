@@ -18,7 +18,7 @@ import { ChoiceChips } from '../../../../components/inputs/ChoiceChips';
 import { Icon } from '../../../../components/icons/Icon';
 import { generalIcons } from '../../../../components/icons/icon-library';
 import { useTheme } from '../../../../theme';
-import { useTabBarInset } from '../../../../navigation/useTabBarInset';
+import { useTabScrollInset } from '../../../../navigation/useTabBarInset';
 
 const formatTime = ({ hour, minute }: ClockTime): string => {
   const h12 = hour % 12 === 0 ? 12 : hour % 12;
@@ -64,7 +64,7 @@ const TimeSheet = ({ open, title, value, onClose, onChange }: { open: boolean; t
 
 export const NotificationSettingsScreen = () => {
   const { colors, spacing } = useTheme();
-  const tabBarInset = useTabBarInset();
+  const bottomInset = useTabScrollInset();
   const { uid, profile } = useAuth();
   const prefs = withPrefDefaults(profile?.notifications);
   const [permission, setPermission] = useState<PermissionState>('undetermined');
@@ -100,8 +100,8 @@ export const NotificationSettingsScreen = () => {
   const off = !prefs.enabled || blocked;
 
   return (
-    <SafeAreaView edges={['bottom', 'left', 'right']} style={{ flex: 1, backgroundColor: colors.ground }}>
-      <ScrollView contentContainerStyle={{ padding: spacing.lg, gap: spacing.lg, paddingBottom: spacing.xxl + tabBarInset }}>
+    <SafeAreaView edges={['left', 'right']} style={{ flex: 1, backgroundColor: colors.ground }}>
+      <ScrollView contentContainerStyle={{ padding: spacing.lg, gap: spacing.lg, paddingBottom: spacing.xxl + bottomInset }}>
         {blocked && (
           <SurfaceCard tone="accent">
             <View style={{ flexDirection: 'row', gap: spacing.md, alignItems: 'flex-start' }}>

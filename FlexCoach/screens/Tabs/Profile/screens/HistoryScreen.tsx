@@ -15,7 +15,7 @@ import { SurfaceCard } from '../../../../components/cards/SurfaceCard';
 import { Icon } from '../../../../components/icons/Icon';
 import { directionIcons, generalIcons } from '../../../../components/icons/icon-library';
 import { useTheme } from '../../../../theme';
-import { useTabBarInset } from '../../../../navigation/useTabBarInset';
+import { useTabScrollInset } from '../../../../navigation/useTabBarInset';
 import { ProfileStackParams } from '../ProfileStack';
 
 const monthOf = (d: string) => fromLocalDate(d).toLocaleDateString(undefined, { month: 'long', year: 'numeric' });
@@ -24,7 +24,7 @@ const monthOf = (d: string) => fromLocalDate(d).toLocaleDateString(undefined, { 
 export const HistoryScreen = () => {
   const navigation = useNavigation<NativeStackNavigationProp<ProfileStackParams>>();
   const { colors, spacing } = useTheme();
-  const tabBarInset = useTabBarInset();
+  const bottomInset = useTabScrollInset();
   const { uid, profile } = useAuth();
   const unit = profile?.weightUnit ?? 'lb';
   const [sessions, setSessions] = useState<Session[] | null>(null);
@@ -52,8 +52,8 @@ export const HistoryScreen = () => {
   }
 
   return (
-    <SafeAreaView edges={['bottom', 'left', 'right']} style={{ flex: 1, backgroundColor: colors.ground }}>
-      <ScrollView contentContainerStyle={{ padding: spacing.lg, gap: spacing.lg, paddingBottom: spacing.lg + tabBarInset }}>
+    <SafeAreaView edges={['left', 'right']} style={{ flex: 1, backgroundColor: colors.ground }}>
+      <ScrollView contentContainerStyle={{ padding: spacing.lg, gap: spacing.lg, paddingBottom: spacing.lg + bottomInset }}>
         {sessions === null && <ActivityIndicator color={colors.accent} style={{ marginTop: spacing.xxl }} />}
         {sessions !== null && sessions.length === 0 && (
           <View style={{ alignItems: 'center', gap: spacing.md, paddingTop: spacing.xxl }}>

@@ -18,7 +18,7 @@ import { Icon } from '../../../../components/icons/Icon';
 import { HeaderButton } from '../../../../components/headers/HeaderButton';
 import { generalIcons } from '../../../../components/icons/icon-library';
 import { useTheme } from '../../../../theme';
-import { useTabBarInset } from '../../../../navigation/useTabBarInset';
+import { useTabScrollInset } from '../../../../navigation/useTabBarInset';
 import { SetDraft, SetRow } from '../components/SetRow';
 import { fromDraft, toDraft, Units, unitLabels } from '../components/setDrafts';
 
@@ -73,7 +73,7 @@ export const SessionDetailScreen = () => {
   const navigation = useNavigation<NativeStackNavigationProp<Params>>();
   const { params } = useRoute<RouteProp<Params, 'SessionDetailScreen'>>();
   const { colors, spacing, radius } = useTheme();
-  const tabBarInset = useTabBarInset();
+  const bottomInset = useTabScrollInset();
   const { uid, profile } = useAuth();
   const units: Units = { weight: profile?.weightUnit ?? 'lb', distance: profile?.distanceUnit ?? 'mi' };
 
@@ -173,16 +173,16 @@ export const SessionDetailScreen = () => {
 
   if (!loaded || !shown || !stats) {
     return (
-      <SafeAreaView edges={['bottom', 'left', 'right']} style={{ flex: 1, backgroundColor: colors.ground, alignItems: 'center', justifyContent: 'center', padding: spacing.xl }}>
+      <SafeAreaView edges={['left', 'right']} style={{ flex: 1, backgroundColor: colors.ground, alignItems: 'center', justifyContent: 'center', padding: spacing.xl }}>
         {loaded ? <CustomText variant="body" color={colors.inkMuted} centered>This workout is no longer in your history.</CustomText> : <ActivityIndicator color={colors.accent} />}
       </SafeAreaView>
     );
   }
 
   return (
-    <SafeAreaView edges={['bottom', 'left', 'right']} style={{ flex: 1, backgroundColor: colors.ground }}>
+    <SafeAreaView edges={['left', 'right']} style={{ flex: 1, backgroundColor: colors.ground }}>
       <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={{ flex: 1 }} keyboardVerticalOffset={100}>
-        <ScrollView contentContainerStyle={{ padding: spacing.lg, gap: spacing.lg, paddingBottom: (editing ? spacing.lg : spacing.lg + tabBarInset) }} keyboardShouldPersistTaps="handled" keyboardDismissMode="on-drag">
+        <ScrollView contentContainerStyle={{ padding: spacing.lg, gap: spacing.lg, paddingBottom: (editing ? spacing.lg : spacing.lg + bottomInset) }} keyboardShouldPersistTaps="handled" keyboardDismissMode="on-drag">
           <View>
             <CustomText variant="overline" color={colors.inkMuted}>{longDate(shown.date)}</CustomText>
             <View style={{ flexDirection: 'row', gap: spacing.lg, marginTop: spacing.sm }}>
@@ -251,7 +251,7 @@ export const SessionDetailScreen = () => {
             })}
         </ScrollView>
         {editing && (
-          <View style={{ padding: spacing.lg, paddingBottom: spacing.lg + tabBarInset, borderTopWidth: 1, borderTopColor: colors.line, backgroundColor: colors.ground }}>
+          <View style={{ padding: spacing.lg, paddingBottom: spacing.lg + bottomInset, borderTopWidth: 1, borderTopColor: colors.line, backgroundColor: colors.ground }}>
             <PrimaryButton label="Save changes" icon={generalIcons.check} busy={saving} onPress={save} />
           </View>
         )}

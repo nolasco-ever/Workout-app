@@ -11,7 +11,7 @@ import { SurfaceCard } from '../../../../components/cards/SurfaceCard';
 import { MuscleMap } from '../../../../components/anatomy/MuscleMap';
 import { useTheme } from '../../../../theme';
 import { HomeStackParams } from '../HomeStack';
-import { useTabBarInset } from '../../../../navigation/useTabBarInset';
+import { useTabScrollInset } from '../../../../navigation/useTabBarInset';
 import { MuscleRow } from '../components/MuscleRow';
 
 const title = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
@@ -20,15 +20,15 @@ const title = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
 export const MusclesScreen = () => {
   const navigation = useNavigation<NativeStackNavigationProp<HomeStackParams>>();
   const { colors, spacing } = useTheme();
-  const tabBarInset = useTabBarInset();
+  const bottomInset = useTabScrollInset();
   const ins = useInsights();
   const trained = ins.muscles30d;
   const max = Math.max(1, ...trained.map(m => m.sets));
   const untrained = MUSCLE_GROUPS.filter(m => !trained.some(t => t.muscle === m));
 
   return (
-    <SafeAreaView edges={['bottom', 'left', 'right']} style={{ flex: 1, backgroundColor: colors.ground }}>
-      <ScrollView contentContainerStyle={{ padding: spacing.lg, gap: spacing.lg, paddingBottom: spacing.lg + tabBarInset }}>
+    <SafeAreaView edges={['left', 'right']} style={{ flex: 1, backgroundColor: colors.ground }}>
+      <ScrollView contentContainerStyle={{ padding: spacing.lg, gap: spacing.lg, paddingBottom: spacing.lg + bottomInset }}>
         <SurfaceCard>
           <View style={{ alignItems: 'center', marginBottom: spacing.sm }}>
             <MuscleMap primary={trained.slice(0, 6).map(m => m.muscle as MuscleGroup)} secondary={trained.slice(6).map(m => m.muscle as MuscleGroup)} height={190} />
