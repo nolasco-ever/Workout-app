@@ -1,5 +1,5 @@
 import React, { useEffect, useLayoutEffect, useMemo, useState } from 'react';
-import { ActivityIndicator, Alert, KeyboardAvoidingView, Platform, ScrollView, TouchableOpacity, View } from 'react-native';
+import { ActivityIndicator, Alert, KeyboardAvoidingView, Platform, ScrollView, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { RouteProp, useNavigation, useRoute } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
@@ -15,6 +15,7 @@ import { SurfaceCard as Card } from '../../../../components/cards/SurfaceCard';
 import { PrimaryButton } from '../../../../components/buttons/PrimaryButton';
 import { MuscleMap } from '../../../../components/anatomy/MuscleMap';
 import { Icon } from '../../../../components/icons/Icon';
+import { HeaderButton } from '../../../../components/headers/HeaderButton';
 import { generalIcons } from '../../../../components/icons/icon-library';
 import { useTheme } from '../../../../theme';
 import { useTabBarInset } from '../../../../navigation/useTabBarInset';
@@ -110,19 +111,24 @@ export const SessionDetailScreen = () => {
     setDraftSession(null);
   };
 
+  // While editing the only ways out are Save or Cancel: the back button and
+  // the swipe-back gesture are removed so a half-edited draft can't be dropped.
   useLayoutEffect(() => {
     navigation.setOptions({
       title: session?.workoutName ?? 'Workout',
+      headerBackVisible: !editing,
+      gestureEnabled: !editing,
       headerRight: session
-        ? () => (
-            <TouchableOpacity onPress={editing ? cancelEditing : startEditing} hitSlop={10} accessibilityRole="button">
-              <CustomText variant="label" color={colors.accent}>{editing ? 'Cancel' : 'Edit'}</CustomText>
-            </TouchableOpacity>
-          )
+        ? () =>
+            editing ? (
+              <HeaderButton icon={generalIcons.xMark} accessibilityLabel="Cancel editing" onPress={cancelEditing} />
+            ) : (
+              <HeaderButton icon={generalIcons.penToSquare} accessibilityLabel="Edit workout" onPress={startEditing} />
+            )
         : undefined,
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [navigation, session, editing, colors.accent]);
+  }, [navigation, session, editing]);
 
   const toggleDone = (ex: SessionExercise, set: LoggedSet) => {
     setDraftSession(s =>
