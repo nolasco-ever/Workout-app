@@ -83,7 +83,7 @@ android {
         applicationId "com.flexcoach"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 11
+        versionCode 12
         versionName "1.0.0"
     }
     // Release signing comes from android/keystore.properties (git-ignored).
