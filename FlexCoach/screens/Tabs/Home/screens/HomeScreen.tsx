@@ -96,7 +96,7 @@ export const HomeScreen = () => {
   const fmtVolume = (kg: number) => compactNumber(unit === 'lb' ? kgToLb(kg) : kg);
   const goWorkout = () => (navigation as any).navigate('WorkoutStack');
   /** Opens a logged workout on the Workout tab, above its home screen. */
-  const goSession = (sessionId: string) => (navigation as any).navigate('WorkoutStack', { screen: 'SessionDetailScreen', params: { sessionId }, initial: false });
+  const goSession = (sessionId: string, workoutName?: string) => (navigation as any).navigate('WorkoutStack', { screen: 'SessionDetailScreen', params: { sessionId, workoutName }, initial: false });
 
   const loading = ins.loading;
   const latestWeight = ins.weight[ins.weight.length - 1] ?? null;
@@ -141,7 +141,7 @@ export const HomeScreen = () => {
         {!loading && (
         <>
         {/* Today */}
-        <TouchableOpacity onPress={ins.todaySession && !home.inProgressSession ? () => goSession(ins.todaySession!.id) : goWorkout} activeOpacity={0.7}>
+        <TouchableOpacity onPress={ins.todaySession && !home.inProgressSession ? () => goSession(ins.todaySession!.id, ins.todaySession!.workoutName) : goWorkout} activeOpacity={0.7}>
           <SurfaceCard tone={todayStatus.tone === colors.accent ? 'accent' : 'surface'}>
             <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.md }}>
               <View style={{ flex: 1 }}>

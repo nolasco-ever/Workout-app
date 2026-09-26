@@ -20,7 +20,7 @@ export type WorkoutStackParams = {
   SessionCompleteScreen: { result: SessionResult };
   /** Either the live objects, or just an id (from a notification or the feed). */
   CycleReviewScreen: { plan: Plan; cycle: Cycle; cycleId?: undefined } | { cycleId: string; plan?: undefined; cycle?: undefined };
-  SessionDetailScreen: { sessionId: string };
+  SessionDetailScreen: { sessionId: string; workoutName?: string };
   ExerciseDetailScreen: { exerciseId: string };
 };
 
@@ -36,7 +36,8 @@ export const WorkoutStack = () => {
       {/* A plain push, not a modal: popping a modal presented over the tab bar left the Workout home rendered as a sheet with no tabs. */}
       <Stack.Screen name="SessionCompleteScreen" component={SessionCompleteScreen} options={{ ...opts.base, headerShown: false, animation: 'fade', gestureEnabled: false }} />
       <Stack.Screen name="CycleReviewScreen" component={CycleReviewScreen} options={opts.screen('Cycle review')} />
-      <Stack.Screen name="SessionDetailScreen" component={SessionDetailScreen} options={opts.screen('Workout')} />
+      {/* The title comes from the route so the header doesn't flash "Workout" before the session loads. */}
+      <Stack.Screen name="SessionDetailScreen" component={SessionDetailScreen} options={({ route }) => opts.screen(route.params.workoutName ?? 'Workout')} />
       <Stack.Screen name="ExerciseDetailScreen" component={ExerciseDetailScreen} options={({ navigation }) => opts.modal('How to', () => <HeaderButton icon={generalIcons.xMark} accessibilityLabel="Close" onPress={() => navigation.goBack()} />)} />
     </Stack.Navigator>
   );

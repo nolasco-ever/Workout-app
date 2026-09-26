@@ -69,7 +69,7 @@ export const WorkoutHomeScreen = () => {
 
   const openPreview = (occurrence: Occurrence) => plan && cycle && navigation.navigate('WorkoutPreviewScreen', { plan, cycle, occurrence });
   /** A finished day opens what was logged; anything else opens the preview. */
-  const openOccurrence = (o: Occurrence) => (o.status === 'completed' && o.sessionId ? navigation.navigate('SessionDetailScreen', { sessionId: o.sessionId }) : openPreview(o));
+  const openOccurrence = (o: Occurrence) => (o.status === 'completed' && o.sessionId ? navigation.navigate('SessionDetailScreen', { sessionId: o.sessionId, workoutName: o.workoutName ?? undefined }) : openPreview(o));
 
   const start = (occurrence: Occurrence) =>
     run(`start-${occurrence.id}`, async () => {
@@ -250,7 +250,7 @@ export const WorkoutHomeScreen = () => {
                     label="Completed · see workout"
                     variant="quiet"
                     icon={generalIcons.check}
-                    onPress={() => state.todayOccurrence?.sessionId && navigation.navigate('SessionDetailScreen', { sessionId: state.todayOccurrence.sessionId })}
+                    onPress={() => state.todayOccurrence?.sessionId && navigation.navigate('SessionDetailScreen', { sessionId: state.todayOccurrence.sessionId, workoutName: todayWorkout.name })}
                   />
                 ) : state.todayOccurrence.status === 'skipped' ? (
                   <PrimaryButton label="Skipped" variant="quiet" disabled onPress={() => {}} />

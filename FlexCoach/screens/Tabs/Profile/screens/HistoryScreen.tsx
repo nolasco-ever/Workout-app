@@ -73,7 +73,7 @@ export const HistoryScreen = () => {
                 return (
                   <TouchableOpacity
                     key={s.id}
-                    onPress={() => navigation.navigate('SessionDetailScreen', { sessionId: s.id })}
+                    onPress={() => navigation.navigate('SessionDetailScreen', { sessionId: s.id, workoutName: s.workoutName })}
                     style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.md, padding: spacing.lg, borderTopWidth: i ? 1 : 0, borderTopColor: colors.line }}
                   >
                     <View style={{ flex: 1 }}>

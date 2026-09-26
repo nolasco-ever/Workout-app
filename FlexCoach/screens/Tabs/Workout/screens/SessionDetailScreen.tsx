@@ -23,7 +23,7 @@ import { useTabScrollInset } from '../../../../navigation/useTabBarInset';
 import { SetDraft, SetRow, setLabel } from '../components/SetRow';
 import { fromDraft, toDraft, Units, unitLabels } from '../components/setDrafts';
 
-type Params = { SessionDetailScreen: { sessionId: string } };
+type Params = { SessionDetailScreen: { sessionId: string; workoutName?: string } };
 
 const longDate = (d: string) => fromLocalDate(d).toLocaleDateString(undefined, { weekday: 'long', month: 'short', day: 'numeric', year: 'numeric' });
 
@@ -114,22 +114,22 @@ export const SessionDetailScreen = () => {
 
   // While editing the only ways out are Save or Cancel: the back button and
   // the swipe-back gesture are removed so a half-edited draft can't be dropped.
+  // The edit button is there from the first frame (it just waits for the
+  // session to load) so the header doesn't visibly change after navigation.
   useLayoutEffect(() => {
     navigation.setOptions({
-      title: session?.workoutName ?? 'Workout',
+      title: session?.workoutName ?? params.workoutName ?? 'Workout',
       headerBackVisible: !editing,
       gestureEnabled: !editing,
-      headerRight: session
-        ? () =>
-            editing ? (
-              <HeaderButton icon={generalIcons.xMark} accessibilityLabel="Cancel editing" onPress={cancelEditing} />
-            ) : (
-              <HeaderButton icon={generalIcons.penToSquare} accessibilityLabel="Edit workout" onPress={startEditing} />
-            )
-        : undefined,
+      headerRight: () =>
+        editing ? (
+          <HeaderButton icon={generalIcons.xMark} accessibilityLabel="Cancel editing" onPress={cancelEditing} />
+        ) : (
+          <HeaderButton icon={generalIcons.penToSquare} accessibilityLabel="Edit workout" onPress={startEditing} />
+        ),
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [navigation, session, editing]);
+  }, [navigation, session, editing, params.workoutName]);
 
   const toggleDone = (ex: SessionExercise, set: LoggedSet) => {
     setDraftSession(s =>
