@@ -70,13 +70,17 @@ export const WorkoutEditorScreen = () => {
         )}
 
         {workout.exercises.length > 0 && (
-          <SurfaceCard style={{ padding: 0, overflow: 'hidden' }}>
+          <View style={{ gap: spacing.sm }}>
+            <CustomText variant="caption" color={colors.inkMuted}>
+              You'll do the exercises in this order, top to bottom. Hold the grip on the right to reorder.
+            </CustomText>
+            <SurfaceCard style={{ padding: 0, overflow: 'hidden' }}>
             <SortableRows
               items={[...workout.exercises].sort((a, b) => a.order - b.order)}
               keyOf={e => e.id}
               onReorder={reorder}
               scrollableRef={scrollRef}
-              renderRow={e => {
+              renderRow={(e, i) => {
                 const cat = getCatalogExercise(e.exerciseId);
                 return (
                   <View style={{ flexDirection: 'row', alignItems: 'center' }}>
@@ -84,6 +88,9 @@ export const WorkoutEditorScreen = () => {
                       onPress={() => navigation.navigate('ExerciseEntryScreen', { workoutId: workout.id, entryId: e.id })}
                       style={{ flex: 1, flexDirection: 'row', alignItems: 'center', gap: spacing.md, paddingVertical: spacing.md, paddingLeft: spacing.md }}
                     >
+                      <View style={{ width: 26, height: 26, borderRadius: 13, backgroundColor: colors.accentTint, alignItems: 'center', justifyContent: 'center' }}>
+                        <CustomText variant="label" color={colors.accent}>{i + 1}</CustomText>
+                      </View>
                       {cat && <MuscleMap primary={cat.primaryMuscles} secondary={cat.secondaryMuscles} height={56} views="auto" />}
                       <View style={{ flex: 1 }}>
                         <CustomText variant="bodyStrong" numberOfLines={1}>{e.exerciseName}</CustomText>
@@ -100,7 +107,8 @@ export const WorkoutEditorScreen = () => {
                 );
               }}
             />
-          </SurfaceCard>
+            </SurfaceCard>
+          </View>
         )}
 
         <PrimaryButton label="Add exercise" icon={generalIcons.plus} variant={workout.exercises.length ? 'outline' : 'filled'} onPress={() => navigation.navigate('ExercisePickerScreen', { workoutId: workout.id })} />
