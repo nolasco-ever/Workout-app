@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { Image, Modal, ScrollView, StatusBar, TouchableOpacity, useWindowDimensions, View } from 'react-native';
+import { Image, Modal, Platform, ScrollView, StatusBar, TouchableOpacity, useWindowDimensions, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { CustomText } from '../text/customText';
 import { Icon } from '../icons/Icon';
@@ -40,7 +40,10 @@ export const PhotoViewer = ({ images, captions = [], index, onClose }: Props) =>
   const onPageChange = (x: number) => {
     const next = Math.round(x / width);
     if (next !== page) {
-      zoomers.current[page]?.scrollResponderZoomTo?.({ x: 0, y: 0, width, height, animated: false });
+      // Pinch-zoom is an iOS-only ScrollView feature. The method exists on
+      // Android too, but throws "zoomToRect is not implemented", which
+      // crashed the app on the first swipe between photos.
+      if (Platform.OS === 'ios') zoomers.current[page]?.scrollResponderZoomTo?.({ x: 0, y: 0, width, height, animated: false });
       setPage(next);
     }
   };
