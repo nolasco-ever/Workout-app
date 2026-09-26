@@ -45,8 +45,8 @@ export const unitLabels = (ex: SessionExercise, u: Units) => {
     case 'reps':
       return { a: `+${u.weight}`, b: 'reps' };
     case 'time':
-      return { a: u.weight, b: 'sec' };
+      return { a: u.weight, b: 'min : sec' };
     case 'distance_time':
-      return { a: u.distance, b: 'sec' };
+      return { a: u.distance, b: 'min : sec' };
   }
 };

@@ -12,6 +12,7 @@ import { CustomText } from '../../../components/text/customText';
 import { SurfaceCard } from '../../../components/cards/SurfaceCard';
 import { TextField } from '../../../components/inputs/TextField';
 import { Stepper } from '../../../components/inputs/Stepper';
+import { DurationField } from '../../../components/inputs/DurationInput';
 import { PrimaryButton } from '../../../components/buttons/PrimaryButton';
 import { MuscleMap } from '../../../components/anatomy/MuscleMap';
 import { useTheme } from '../../../theme';
@@ -94,7 +95,7 @@ export const ExerciseEntryScreen = () => {
               />
             )}
             {(entry.measurement === 'time' || entry.measurement === 'distance_time') && (
-              <TextField id="entry-duration" label="Starting duration" value={duration} onChangeText={setDuration} keyboardType="number-pad" suffix="sec" />
+              <DurationField id="entry-duration" label="Starting duration" seconds={duration} onChange={setDuration} />
             )}
             {entry.measurement === 'distance_time' && (
               <TextField id="entry-distance" label="Starting distance" value={distance} onChangeText={setDistance} keyboardType="decimal-pad" suffix={dist} />
@@ -111,6 +112,7 @@ export const ExerciseEntryScreen = () => {
               />
             )}
           </SurfaceCard>
+
         </ScrollView>
         <View style={{ padding: spacing.lg, borderTopWidth: 1, borderTopColor: colors.line }}>
           <PrimaryButton label="Save" onPress={save} />

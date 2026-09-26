@@ -5,6 +5,7 @@ import { CustomText } from '../../../../components/text/customText';
 import { Icon } from '../../../../components/icons/Icon';
 import { generalIcons } from '../../../../components/icons/icon-library';
 import { useTheme } from '../../../../theme';
+import { DurationInput } from '../../../../components/inputs/DurationInput';
 
 export interface SetDraft {
   a: string;
@@ -35,6 +36,7 @@ export const SetRow = ({ set, measurement, draft, unitLabels, onChange, onToggle
   // offset so they line up with the boxes rather than the column.
   const captionHeight = 16;
   const showA = measurement !== 'reps' || true; // reps-only still allows added weight
+  const timed = measurement === 'time' || measurement === 'distance_time';
   const inputStyle = {
     fontFamily: fonts.body.semibold,
     fontSize: 18,
@@ -79,22 +81,28 @@ export const SetRow = ({ set, measurement, draft, unitLabels, onChange, onToggle
           </CustomText>
         </View>
       )}
-      <View style={{ flex: 1 }}>
-        <TextInput
-          id={`set-${set.id}-b`}
-          value={draft.b}
-          onChangeText={b => onChange({ ...draft, b })}
-          keyboardType="number-pad"
-          editable={editable}
-          placeholder="—"
-          placeholderTextColor={colors.inactive}
-          style={inputStyle}
-          selectTextOnFocus
-        />
-        <CustomText variant="caption" color={colors.inkMuted} centered>
-          {unitLabels.b}
-        </CustomText>
-      </View>
+      {timed ? (
+        <View style={{ flex: 1.5 }}>
+          <DurationInput id={`set-${set.id}-b`} seconds={draft.b} onChange={b => onChange({ ...draft, b })} editable={editable} inputStyle={{ ...inputStyle, minWidth: 0, paddingHorizontal: spacing.sm }} />
+        </View>
+      ) : (
+        <View style={{ flex: 1 }}>
+          <TextInput
+            id={`set-${set.id}-b`}
+            value={draft.b}
+            onChangeText={b => onChange({ ...draft, b })}
+            keyboardType="number-pad"
+            editable={editable}
+            placeholder="—"
+            placeholderTextColor={colors.inactive}
+            style={inputStyle}
+            selectTextOnFocus
+          />
+          <CustomText variant="caption" color={colors.inkMuted} centered>
+            {unitLabels.b}
+          </CustomText>
+        </View>
+      )}
       <TouchableOpacity
         onPress={onToggleDone}
         hitSlop={8}

@@ -45,9 +45,9 @@ const setValues = (ex: SessionExercise, s: LoggedSet, u: Units): [string, string
     case 'reps':
       return [s.weightKg ? `+${toDisplayWeight(s.weightKg, u.weight)}` : 'BW', s.reps === null ? '—' : String(s.reps)];
     case 'time':
-      return [s.weightKg === null ? '—' : String(toDisplayWeight(s.weightKg, u.weight)), s.durationSec === null ? '—' : String(s.durationSec)];
+      return [s.weightKg === null ? '—' : String(toDisplayWeight(s.weightKg, u.weight)), formatDuration(s.durationSec)];
     case 'distance_time':
-      return [s.distanceM === null ? '—' : String(toDisplayDistance(s.distanceM, u.distance)), s.durationSec === null ? '—' : String(s.durationSec)];
+      return [s.distanceM === null ? '—' : String(toDisplayDistance(s.distanceM, u.distance)), formatDuration(s.durationSec)];
   }
 };
 
