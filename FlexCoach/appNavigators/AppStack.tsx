@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { ActivityIndicator, View } from 'react-native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import type { NavigatorScreenParams } from '@react-navigation/native';
@@ -21,6 +21,7 @@ import { generalIcons } from '../components/icons/icon-library';
 import { devFlags } from '../dev/flags';
 import { useStackOptions } from '../navigation/stackOptions';
 import { useAuth } from '../data/auth/AuthProvider';
+import { ensurePhotoCacheable } from '../data/services/profileService';
 import { useTheme } from '../theme';
 
 export type AppStackParams = BuddyRoutes & {
@@ -48,6 +49,12 @@ export const AppStack = () => {
     const bypass = __DEV__ && devFlags.startAtTabs;
     const signedIn = bypass || !!uid;
     const onboarded = bypass || !!profile?.onboardingCompletedAt;
+
+    // The profile photo is shown on several screens; make sure it caches and is already fetched.
+    const photoUrl = profile?.photoUrl ?? null;
+    useEffect(() => {
+        if (uid && photoUrl) ensurePhotoCacheable(uid, photoUrl).catch(() => undefined);
+    }, [uid, photoUrl]);
 
     if (!ready) {
         return (
