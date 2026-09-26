@@ -59,8 +59,8 @@ export const BuddiesScreen = () => {
             <CustomText variant="body" color={colors.inkMuted} centered>
               Buddies see each other's streaks, finished workouts and shared plans. Never your sets or your weight. Show your Iron Card, or scan or tap a buddy's, and you're buddies.
             </CustomText>
-            <PrimaryButton label="Show my Iron Card" icon={generalIcons.idCard} onPress={() => navigation.navigate('MyCardScreen')} />
-            <CustomText variant="caption" color={colors.inkMuted} centered>It's also behind the card button at the top of Profile.</CustomText>
+            <PrimaryButton label="Show my Iron Card" icon={generalIcons.users} onPress={() => navigation.navigate('CardStack')} />
+            <CustomText variant="caption" color={colors.inkMuted} centered>It's also behind the buddies button at the top of Profile.</CustomText>
           </View>
         )}
 

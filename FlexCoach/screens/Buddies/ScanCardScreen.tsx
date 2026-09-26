@@ -9,7 +9,7 @@ import { TextField } from '../../components/inputs/TextField';
 import { PrimaryButton } from '../../components/buttons/PrimaryButton';
 import { KeyboardAvoiding } from '../../components/layout/KeyboardAvoiding';
 import { useTheme } from '../../theme';
-import { BuddyRoutes } from './routes';
+import { CardStackParams } from './routes';
 
 type Permission = 'unknown' | 'granted' | 'denied';
 
@@ -18,7 +18,7 @@ type Permission = 'unknown' | 'granted' | 'denied';
  * their code; the code can also be typed for anyone who can't scan.
  */
 export const ScanCardScreen = () => {
-  const navigation = useNavigation<NavigationProp<BuddyRoutes>>();
+  const navigation = useNavigation<NavigationProp<CardStackParams>>();
   const { colors, spacing, radius } = useTheme();
   const [permission, setPermission] = useState<Permission>('unknown');
   const [typed, setTyped] = useState('');
