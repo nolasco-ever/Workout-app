@@ -32,6 +32,16 @@
 				<string>com.googleusercontent.apps.499315426030-nmkbm3orugbapskateq3vo1moe3njg9h</string>
 			</array>
 		</dict>
+		<dict>
+			<key>CFBundleTypeRole</key>
+			<string>Viewer</string>
+			<key>CFBundleURLName</key>
+			<string>com.flexcoach.links</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>flexcoach</string>
+			</array>
+		</dict>
 	</array>
 	<key>CFBundleVersion</key>
 	<string>$(CURRENT_PROJECT_VERSION)</string>

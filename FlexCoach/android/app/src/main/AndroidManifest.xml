@@ -31,6 +31,20 @@
             <action android:name="android.intent.action.MAIN" />
             <category android:name="android.intent.category.LAUNCHER" />
         </intent-filter>
+        <!-- Buddy Iron Card links: https://flexcoach-a372d.web.app/b/CODE (verified app link) -->
+        <intent-filter android:autoVerify="true">
+            <action android:name="android.intent.action.VIEW" />
+            <category android:name="android.intent.category.DEFAULT" />
+            <category android:name="android.intent.category.BROWSABLE" />
+            <data android:scheme="https" android:host="flexcoach-a372d.web.app" android:pathPrefix="/b/" />
+        </intent-filter>
+        <!-- Fallback the landing page uses when the https link opened the browser instead -->
+        <intent-filter>
+            <action android:name="android.intent.action.VIEW" />
+            <category android:name="android.intent.category.DEFAULT" />
+            <category android:name="android.intent.category.BROWSABLE" />
+            <data android:scheme="flexcoach" android:host="b" />
+        </intent-filter>
       </activity>
       <!-- Health Connect permission rationale, Android 13 and below -->
       <activity

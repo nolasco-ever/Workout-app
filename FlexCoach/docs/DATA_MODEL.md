@@ -89,8 +89,26 @@ progression and every insight.
 Decided 2026-09-26 with the user. People add each other by scanning an
 **Iron Card** (a QR code, `react-native-camera-kit` for scanning,
 `react-native-qrcode-svg` for showing) or typing its code (`FLX-K7MP2X`).
-The QR encodes `https://flexcoach.app/buddy/<code>`; `parseInviteCode`
-accepts the link, the formatted code, or the bare code.
+The QR and the share sheet carry `https://flexcoach-a372d.web.app/b/<code>`
+(`inviteUrl`); `parseInviteCode` accepts that, the `flexcoach://b/<code>`
+fallback, the formatted code, or the bare code.
+
+**Links.** `hosting/` is deployed to Firebase Hosting at that domain: a
+landing page with an "Open in FlexCoach" button (the `flexcoach://`
+scheme) and the association files that make the https link open the app
+directly: `.well-known/apple-app-site-association` (team 6B5A67RAPC, paths
+`/b/*`; the app has the `applinks:` associated-domains entitlement) and
+`.well-known/assetlinks.json` (package `com.flexcoach`, upload-key and
+debug-key SHA-256s; the Play App Signing SHA-256 must be added there once
+Play issues it, or Play-installed builds fall back to the landing page).
+Deploy with `npx firebase-tools deploy --only hosting`. In the app,
+`data/links/inviteLinks.ts` turns any such URL (cold start included; the
+iOS SceneDelegate repackages a launch URL into launch options) into
+`openTarget({ screen: 'card', code })`, which waits for the signed-in
+routes if needed, then opens `BuddyCardScreen`: one sheet with an X that
+shows the card and a single button (Add buddy, Accept, Request sent, or
+Remove buddy). There is no decline; unwanted requests can be left. Buddy
+rows keep each other's `inviteCode` so a card can be reopened any time.
 
 - **Card** = `PublicProfile` at `publicProfiles/{uid}`: name, photo,
   workouts done, current/longest streak, best lift, total weight moved,

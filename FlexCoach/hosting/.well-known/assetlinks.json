@@ -1,0 +1,13 @@
+[
+  {
+    "relation": ["delegate_permission/common.handle_all_urls"],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "com.flexcoach",
+      "sha256_cert_fingerprints": [
+        "14:17:A6:D1:19:A3:12:DA:F8:1D:A8:66:CC:CE:1A:AD:68:F4:5A:44:92:A6:53:F3:AF:C7:DD:C7:B9:87:24:F7",
+        "E7:27:D7:BD:4A:DB:D3:92:77:EA:26:E1:38:41:54:70:E7:36:32:0C:74:C3:FD:53:EF:7C:6B:4F:79:88:0A:69"
+      ]
+    }
+  }
+]

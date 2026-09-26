@@ -36,6 +36,7 @@ export type NotificationTarget =
   | { screen: 'feed' }
   | { screen: 'buddies' }
   | { screen: 'buddy'; uid: Id; displayName?: string | null }
+  | { screen: 'card'; code: string }
   | { screen: 'buddy_activity' };
 
 export type FeedNotificationKind =

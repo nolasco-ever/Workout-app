@@ -1,0 +1,13 @@
+{
+  "applinks": {
+    "apps": [],
+    "details": [
+      {
+        "appIDs": ["6B5A67RAPC.com.flexcoach"],
+        "components": [
+          { "/": "/b/*", "comment": "Buddy Iron Card links" }
+        ]
+      }
+    ]
+  }
+}

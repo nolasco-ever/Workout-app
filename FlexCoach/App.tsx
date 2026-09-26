@@ -11,6 +11,7 @@ import { useTheme } from './theme';
 import { navigationRef } from './navigation/navigationRef';
 import { NotificationBridge } from './data/notifications/NotificationBridge';
 import { useAuth } from './data/auth/AuthProvider';
+import { startInviteLinkListener } from './data/links/inviteLinks';
 
 // react-native-sortables passes dependency arrays to Reanimated hooks (meant
 // for web); Reanimated 4.7 warns about it on native. Harmless, and not ours.
@@ -46,6 +47,8 @@ const Notifications = () => {
 };
 
 const App = () => {
+  // Buddy links (QR, share sheet, landing page) open the person's card.
+  React.useEffect(startInviteLinkListener, []);
 
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>

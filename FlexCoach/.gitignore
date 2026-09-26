@@ -81,3 +81,6 @@ android/app/google-services.json
 # Android release signing (never commit)
 android/app/upload-keystore.jks
 android/keystore.properties
+
+# Firebase Hosting deploy cache
+.firebase/

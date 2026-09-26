@@ -44,7 +44,10 @@ export const openTarget = (target: NotificationTarget): void => {
       nav.navigate('BuddiesScreen');
       return;
     case 'buddy':
-      nav.navigate('BuddyDetailScreen', { uid: target.uid, displayName: target.displayName ?? null });
+      nav.navigate('BuddyCardScreen', { uid: target.uid, displayName: target.displayName ?? null });
+      return;
+    case 'card':
+      nav.navigate('BuddyCardScreen', { code: target.code });
       return;
     case 'buddy_activity':
       nav.navigate('BuddyActivityScreen');

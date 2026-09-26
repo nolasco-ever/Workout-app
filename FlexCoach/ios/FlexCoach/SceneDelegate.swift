@@ -28,8 +28,39 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
     factory.startReactNative(
       withModuleName: "FlexCoach",
       in: window,
-      launchOptions: nil
+      launchOptions: launchOptions(from: connectionOptions)
     )
+  }
+
+  // MARK: Links (buddy Iron Card links: https://flexcoach-a372d.web.app/b/CODE and flexcoach://b/CODE)
+
+  /// A cold launch from a link arrives in the scene's connection options, not
+  /// the app delegate's launch options. Repackage it the way React Native's
+  /// Linking.getInitialURL() expects.
+  private func launchOptions(from options: UIScene.ConnectionOptions) -> [UIApplication.LaunchOptionsKey: Any]? {
+    if let url = options.urlContexts.first?.url {
+      return [.url: url]
+    }
+    if let activity = options.userActivities.first(where: { $0.activityType == NSUserActivityTypeBrowsingWeb }) {
+      return [
+        .userActivityDictionary: [
+          "UIApplicationLaunchOptionsUserActivityTypeKey": activity.activityType,
+          "UIApplicationLaunchOptionsUserActivityKey": activity,
+        ],
+      ]
+    }
+    return nil
+  }
+
+  /// The flexcoach:// scheme while the app is running.
+  func scene(_ scene: UIScene, openURLContexts URLContexts: Set<UIOpenURLContext>) {
+    guard let url = URLContexts.first?.url else { return }
+    _ = RCTLinkingManager.application(UIApplication.shared, open: url, options: [:])
+  }
+
+  /// A universal link while the app is running.
+  func scene(_ scene: UIScene, continue userActivity: NSUserActivity) {
+    _ = RCTLinkingManager.application(UIApplication.shared, continue: userActivity) { _ in }
   }
 }
 

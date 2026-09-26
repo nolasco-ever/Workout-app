@@ -26,7 +26,9 @@ describe('invite codes', () => {
   });
 
   it('parses the QR link, the formatted code, and sloppy typing', () => {
+    expect(inviteUrl('K7MP2X')).toBe('https://flexcoach-a372d.web.app/b/K7MP2X');
     expect(parseInviteCode(inviteUrl('K7MP2X'))).toBe('K7MP2X');
+    expect(parseInviteCode('flexcoach://b/K7MP2X')).toBe('K7MP2X');
     expect(parseInviteCode(formatInviteCode('K7MP2X'))).toBe('K7MP2X');
     expect(parseInviteCode(' flx k7mp2x ')).toBe('K7MP2X');
     expect(parseInviteCode('k7mp2x')).toBe('K7MP2X');

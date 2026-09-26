@@ -104,16 +104,20 @@ export const generateInviteCode = (random: () => number = Math.random): string =
 /** "K7MP2X" as people see it: "FLX-K7MP2X". */
 export const formatInviteCode = (code: string): string => `FLX-${code}`;
 
-/** The link encoded in the QR code. Scanning in the app understands both this and the bare code. */
-export const inviteUrl = (code: string): string => `https://flexcoach.app/buddy/${code}`;
+/** Where buddy links live: Firebase Hosting for this project, which also serves the app-link association files. */
+export const INVITE_HOST = 'flexcoach-a372d.web.app';
+
+/** The link in the QR code and the share sheet. Opens the app to the card; the page behind it is a fallback. */
+export const inviteUrl = (code: string): string => `https://${INVITE_HOST}/b/${code}`;
 
 /**
- * Pull a code out of whatever was scanned or typed: the QR link, "FLX-K7MP2X",
- * "flx k7mp2x", or the bare code. Null when nothing usable is there.
+ * Pull a code out of whatever was scanned, tapped or typed: the link
+ * (https or the flexcoach:// fallback), "FLX-K7MP2X", "flx k7mp2x", or
+ * the bare code. Null when nothing usable is there.
  */
 export const parseInviteCode = (raw: string): string | null => {
   const text = raw.trim();
-  const fromUrl = text.match(/\/buddy\/([A-Za-z0-9]+)/);
+  const fromUrl = text.match(/(?:\/b|\/buddy|^flexcoach:\/\/b)\/([A-Za-z0-9]+)/i);
   const candidate = (fromUrl ? fromUrl[1] : text).toUpperCase().replace(/^FLX[\s-]*/, '').replace(/[^A-Z0-9]/g, '');
   if (candidate.length !== CODE_LENGTH) return null;
   for (const ch of candidate) if (!CODE_ALPHABET.includes(ch)) return null;

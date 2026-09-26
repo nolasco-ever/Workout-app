@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>FlexCoach</title>
+<style>
+  :root { color-scheme: light dark; --accent: #E2602A; --ink: #1A1A1C; --ground: #F6F4F1; --muted: #6B6864; }
+  @media (prefers-color-scheme: dark) { :root { --accent: #FF7A3D; --ink: #F4F1EC; --ground: #151517; --muted: #A09C96; } }
+  body { margin: 0; font-family: -apple-system, system-ui, "Segoe UI", sans-serif; background: var(--ground); color: var(--ink); }
+  main { max-width: 420px; margin: 0 auto; padding: 48px 20px; text-align: center; }
+  .mark { width: 88px; height: 88px; border-radius: 22px; background: var(--accent); margin: 0 auto 24px; display: flex; align-items: center; justify-content: center; }
+  .mark span { display: block; background: #FBE7DD; border-radius: 6px; }
+  h1 { font-size: 26px; margin: 0 0 8px; }
+  p { color: var(--muted); line-height: 1.45; margin: 0 0 24px; }
+  code { font-size: 20px; letter-spacing: 2px; font-weight: 700; color: var(--ink); }
+  a.btn { display: block; padding: 14px 18px; border-radius: 14px; background: var(--accent); color: #fff; text-decoration: none; font-weight: 600; margin: 8px 0; }
+  a.quiet { background: transparent; color: var(--accent); }
+</style>
+</head>
+<body>
+<main>
+  <div class="mark" aria-hidden="true"><span style="width:52px;height:12px;margin-bottom:6px"></span><span style="width:40px;height:12px;margin-bottom:6px"></span><span style="width:28px;height:12px"></span></div>
+  <h1 id="title">Someone wants to be your buddy on FlexCoach</h1>
+  <p id="body">Open this link on your phone with FlexCoach installed and their Iron Card comes up with an Add button.</p>
+  <p id="codeLine" hidden>Or enter the code under Profile › Buddies › Scan a card:<br><code id="code"></code></p>
+  <a class="btn" id="open" href="#">Open in FlexCoach</a>
+  <a class="btn quiet" id="store" href="#" hidden>Get FlexCoach</a>
+</main>
+<script>
+  // /b/K7MP2X -> the app's own scheme, for phones where the https link
+  // didn't open the app directly (unverified app links, older Android).
+  var m = location.pathname.match(/\/b\/([A-Za-z0-9]+)/);
+  var code = m ? m[1].toUpperCase() : null;
+  var open = document.getElementById('open');
+  if (code) {
+    document.getElementById('code').textContent = 'FLX-' + code;
+    document.getElementById('codeLine').hidden = false;
+    open.href = 'flexcoach://b/' + code;
+  } else {
+    document.getElementById('title').textContent = 'FlexCoach';
+    document.getElementById('body').textContent = 'Plans, progress, and buddies who keep you honest.';
+    open.hidden = true;
+  }
+</script>
+</body>
+</html>
