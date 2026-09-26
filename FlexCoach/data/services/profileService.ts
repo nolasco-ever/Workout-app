@@ -1,4 +1,4 @@
-import { deleteObject, getDownloadURL, getStorage, putFile, ref, updateMetadata } from '@react-native-firebase/storage';
+import { deleteObject, getDownloadURL, getStorage, putFile, ref, uploadString } from '@react-native-firebase/storage';
 import { Image } from 'react-native';
 import { updateProfile } from '@react-native-firebase/auth';
 import { Id } from '../models';
@@ -51,11 +51,27 @@ const deleteStoredPhoto = async (uid: Id): Promise<void> => {
 
 const migrated = new Set<Id>();
 
+/** The photo's bytes as base64, for a re-upload. */
+const fetchBase64 = async (url: string): Promise<{ base64: string; type: string }> => {
+  const res = await fetch(url);
+  const blob = await res.blob();
+  const dataUrl = await new Promise<string>((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onerror = () => reject(reader.error);
+    reader.onload = () => resolve(String(reader.result));
+    reader.readAsDataURL(blob);
+  });
+  return { base64: dataUrl.slice(dataUrl.indexOf(',') + 1), type: blob.type || 'image/jpeg' };
+};
+
 /**
- * Photos uploaded before cache headers existed are patched once: the
- * object gets the cache metadata and the profile URL gets a `v=`, which
- * also marks it as done. Then the photo is prefetched so the first screen
- * that shows it already has it. Safe to call on every profile load.
+ * Photos uploaded before cache headers existed are patched once. A
+ * metadata-only update is refused by the storage rules (it carries no
+ * size or content type), so the same bytes are re-uploaded with the cache
+ * setting, which the upload rule accepts. The profile URL then gets a
+ * `v=`, which also marks it as done, and the photo is prefetched so the
+ * first screen that shows it already has it. Safe to call on every
+ * profile load.
  */
 export const ensurePhotoCacheable = async (uid: Id, photoUrl: string | null | undefined): Promise<void> => {
   if (!features.cloudStorage || !isPhotoUri(photoUrl) || !photoUrl.startsWith('http')) return;
@@ -66,8 +82,9 @@ export const ensurePhotoCacheable = async (uid: Id, photoUrl: string | null | un
   if (migrated.has(uid)) return;
   migrated.add(uid);
   try {
-    await updateMetadata(photoRef(uid), { cacheControl: PHOTO_CACHE_CONTROL });
-    const url = withVersion(photoUrl);
+    const { base64, type } = await fetchBase64(photoUrl);
+    await uploadString(photoRef(uid), base64, 'base64', { contentType: type, cacheControl: PHOTO_CACHE_CONTROL });
+    const url = withVersion(await getDownloadURL(photoRef(uid)));
     await userRepository.update(uid, { photoUrl: url });
     if (auth.currentUser) await updateProfile(auth.currentUser, { photoURL: url }).catch(() => undefined);
     Image.prefetch(url).catch(() => undefined);
