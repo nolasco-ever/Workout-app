@@ -80,13 +80,34 @@ describe('planLocalNotifications', () => {
     expect(kinds(plan({ cycle: c, now: EVENING }))).toEqual(['missed_workout@2026-09-26']);
   });
 
-  it('plans nothing for a day once its workout is completed', () => {
+  it('congratulates an early finish in the morning slot instead of reminding', () => {
     const c = cycle([occ(TODAY, 'Push', 'completed'), occ('2026-09-26', 'Pull')]);
-    expect(kinds(plan({ cycle: c, sessions: [session(TODAY)] }))).toEqual([
+    const list = plan({ cycle: c, sessions: [session(TODAY)] });
+    expect(kinds(list)).toEqual([
+      `early_finish@${TODAY}`,
       'workout_today@2026-09-26',
       'streak_risk@2026-09-26',
       'missed_workout@2026-09-27',
     ]);
+    expect(new Date(list[0].fireAt).getHours()).toBe(9);
+    expect(`${list[0].title} ${list[0].body}`).toContain('Push');
+    expect(list.some(n => n.kind === 'workout_today' && n.id.endsWith(TODAY))).toBe(false);
+  });
+
+  it('plans nothing more for a day once its workout is completed and the morning has passed', () => {
+    const c = cycle([occ(TODAY, 'Push', 'completed'), occ('2026-09-26', 'Pull')]);
+    const noon = new Date(2026, 8, 25, 12, 0).getTime();
+    expect(kinds(plan({ cycle: c, sessions: [session(TODAY)], now: noon }))).toEqual([
+      'workout_today@2026-09-26',
+      'streak_risk@2026-09-26',
+      'missed_workout@2026-09-27',
+    ]);
+  });
+
+  it('lets a missed-workout morning win over the early-finish message', () => {
+    const c = cycle([occ('2026-09-24', 'Pull'), occ(TODAY, 'Push', 'completed')]);
+    const morning = plan({ cycle: c, sessions: [session(TODAY)] }).filter(n => n.id.endsWith(TODAY));
+    expect(morning.map(n => n.kind)).toEqual(['missed_workout']);
   });
 
   it('skips the evening nudge while a session is in progress', () => {

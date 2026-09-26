@@ -149,7 +149,7 @@ export const NotificationSettingsScreen = () => {
         <View style={{ gap: spacing.sm }}>
           <CustomText variant="overline" color={colors.inkMuted}>Workout days</CustomText>
           <SurfaceCard style={{ padding: 0 }}>
-            <SwitchRow title="Morning reminder" description="On days with a workout, if it isn't done yet." value={prefs.workoutToday} onChange={workoutToday => save({ workoutToday })} disabled={off} />
+            <SwitchRow title="Morning reminder" description="On days with a workout. Finish before it fires and it says well done instead." value={prefs.workoutToday} onChange={workoutToday => save({ workoutToday })} disabled={off} />
             <Row title="Morning time" right={formatTime(prefs.morningTime)} divider onPress={off ? undefined : () => setEditing('morning')} chevron={!off} />
             <SwitchRow title="Evening nudge" description="If the day's workout is still waiting." value={prefs.eveningNudge} onChange={eveningNudge => save({ eveningNudge })} disabled={off} divider />
             <SwitchRow title="Streak at risk" description="Replaces the evening nudge when a streak is on the line." value={prefs.streakRisk} onChange={streakRisk => save({ streakRisk })} disabled={off} divider />
@@ -190,7 +190,7 @@ export const NotificationSettingsScreen = () => {
         </View>
 
         <CustomText variant="caption" color={colors.inkMuted} centered>
-          Reminders only fire while a workout is still waiting. Finish early and the day's reminders disappear.
+          Reminders only fire while a workout is still waiting. Finish early and they turn into a well done.
         </CustomText>
       </ScrollView>
 

@@ -1,18 +1,19 @@
 import { ClockTime, Cycle, LocalDate, NotificationPrefs, NotificationTarget, Occurrence, Session } from '../models';
 import { addDays, fromLocalDate, weekdayOf } from './dates';
 import { currentStreakDays } from './stats';
-import { cycleFinishedCopy, missedWorkoutCopy, planStartsCopy, restOverCopy, streakRiskCopy, weighInCopy, workoutNudgeCopy, workoutTodayCopy } from './notificationCopy';
+import { cycleFinishedCopy, earlyFinishCopy, missedWorkoutCopy, planStartsCopy, restOverCopy, streakRiskCopy, weighInCopy, workoutNudgeCopy, workoutTodayCopy } from './notificationCopy';
 
 /**
  * Local (on-device) notifications are planned as pure data from the active
  * cycle, the user's sessions and their preferences. The app reconciles this
  * plan against the OS whenever any of those inputs change, so a notification
  * only exists while it is still relevant: complete the workout at 8am and the
- * 9am reminder is gone before it fires.
+ * 9am reminder is replaced by a well-done message before it fires.
  */
 
 export type NotificationKind =
   | 'workout_today'
+  | 'early_finish'
   | 'workout_nudge'
   | 'streak_risk'
   | 'missed_workout'
@@ -99,7 +100,8 @@ export const planLocalNotifications = (input: PlanInput): PlannedNotification[] 
   };
 
   const completedSessions = sessions.filter(s => s.status === 'completed');
-  const doneToday = completedSessions.some(s => s.date === todayDate);
+  const todaysSession = completedSessions.find(s => s.date === todayDate) ?? null;
+  const doneToday = todaysSession !== null;
   // Streak as it stands this morning, before today's workout.
   const streak = currentStreakDays(completedSessions, todayDate, addDays);
 
@@ -142,6 +144,16 @@ export const planLocalNotifications = (input: PlanInput): PlannedNotification[] 
           kind: 'workout_today',
           fireAt: at(date, prefs.morningTime),
           ...workoutTodayCopy(todaysWorkout.workoutName ?? 'Workout', date),
+          target: { screen: 'workout' },
+        });
+      } else if (offset === 0 && todaysSession && prefs.workoutToday) {
+        // Finished before the morning reminder: the same slot says well done
+        // instead of going quiet. `push` drops it once the time has passed.
+        push({
+          id: idFor('early_finish', date),
+          kind: 'early_finish',
+          fireAt: at(date, prefs.morningTime),
+          ...earlyFinishCopy(todaysSession.workoutName, date),
           target: { screen: 'workout' },
         });
       }
