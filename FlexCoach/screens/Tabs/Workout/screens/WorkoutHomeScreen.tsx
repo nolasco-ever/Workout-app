@@ -27,6 +27,7 @@ import { devFlags } from '../../../../dev/flags';
 import { describeSchedule } from '../../../../screens/Plans/components/planSummary';
 
 const longDate = (d: string) => fromLocalDate(d).toLocaleDateString(undefined, { weekday: 'long', month: 'short', day: 'numeric' });
+const shortDate = (d: string) => fromLocalDate(d).toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric' });
 
 export const WorkoutHomeScreen = () => {
   const navigation = useNavigation<NavigationProp<WorkoutStackParams>>();
@@ -64,7 +65,7 @@ export const WorkoutHomeScreen = () => {
   const workoutsDone = occurrences.filter(o => o.status === 'completed').length;
   const notStarted = !!cycle && state.todayDate < cycle.startDate;
   const dayIndex = occurrences.findIndex(o => o.date >= state.todayDate);
-  const dayLabel = notStarted ? `Starts ${longDate(cycle!.startDate)}` : dayIndex === -1 ? `${occurrences.length} days` : `Day ${dayIndex + 1} of ${occurrences.length}`;
+  const dayLabel = notStarted ? `Starts ${shortDate(cycle!.startDate)}` : dayIndex === -1 ? `${occurrences.length} days` : `Day ${dayIndex + 1} of ${occurrences.length}`;
 
   const openPreview = (occurrence: Occurrence) => plan && cycle && navigation.navigate('WorkoutPreviewScreen', { plan, cycle, occurrence });
   /** A finished day opens what was logged; anything else opens the preview. */
@@ -169,9 +170,10 @@ export const WorkoutHomeScreen = () => {
           <CustomText variant="overline" color={colors.inkMuted}>
             {plan.name} · Cycle {cycle.number}
           </CustomText>
-          <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'baseline' }}>
-            <CustomText variant="title">{dayLabel}</CustomText>
-            <CustomText variant="caption" color={colors.inkMuted}>
+          {/* The title shrinks and wraps before the count does, so "Starts Mon, Sep 28" can't run into it. */}
+          <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-end', gap: spacing.md }}>
+            <CustomText variant="title" style={{ flex: 1, flexShrink: 1 }}>{dayLabel}</CustomText>
+            <CustomText variant="caption" color={colors.inkMuted} style={{ flexShrink: 0, paddingBottom: 4 }}>
               {workoutsDone} of {workoutsTotal} workouts done
             </CustomText>
           </View>
