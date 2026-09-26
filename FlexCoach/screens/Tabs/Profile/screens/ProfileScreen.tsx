@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { ActivityIndicator, Alert, Image, ScrollView, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { NavigationProp, useNavigation } from '@react-navigation/native';
@@ -15,7 +15,7 @@ import { useTheme } from '../../../../theme';
 import { ProfileStackParams } from '../ProfileStack';
 import { useTabBarInset } from '../../../../navigation/useTabBarInset';
 import { TabHeader } from '../../../../components/headers/TabHeader';
-import { ProfilePhotoModal } from '../../../../components/media/ProfilePhotoModal';
+import { PhotoOrigin, ProfilePhotoModal } from '../../../../components/media/ProfilePhotoModal';
 import { AppStackParams } from '../../../../appNavigators/AppStack';
 import { dateLabel } from '../../../../components/charts/scale';
 import { toLocalDate } from '../../../../data/engine/dates';
@@ -28,6 +28,17 @@ export const ProfileScreen = () => {
   const { plans } = usePlans();
   const photo = useProfilePhoto();
   const [photoOpen, setPhotoOpen] = useState(false);
+  const [photoOrigin, setPhotoOrigin] = useState<PhotoOrigin | null>(null);
+  const avatarRef = useRef<React.ComponentRef<typeof View>>(null);
+  /** Measure the avatar first so the big photo can grow out of it. */
+  const openPhoto = () => {
+    const show = () => setPhotoOpen(true);
+    if (!avatarRef.current) return show();
+    avatarRef.current.measureInWindow((x: number, y: number, w: number) => {
+      setPhotoOrigin(Number.isFinite(x) && Number.isFinite(y) && w > 0 ? { x, y, size: w } : null);
+      show();
+    });
+  };
   const active = plans.find(p => p.status === 'active');
   const joined = profile ? dateLabel(toLocalDate(new Date(profile.createdAt))) : null;
   const placeholder = (title: string) => () => navigation.navigate('PlaceholderScreen', { title });
@@ -43,7 +54,7 @@ export const ProfileScreen = () => {
       <ScrollView contentContainerStyle={{ padding: spacing.lg, gap: spacing.lg, paddingBottom: spacing.xxl + tabBarInset }}>
         <TabHeader title="Profile" />
         <View style={{ alignItems: 'center', gap: spacing.sm }}>
-          <TouchableOpacity onPress={() => setPhotoOpen(true)} disabled={photo.busy} accessibilityRole="button" accessibilityLabel="View or change profile photo" style={{ width: 96, height: 96 }}>
+          <TouchableOpacity ref={avatarRef} onPress={openPhoto} disabled={photo.busy} accessibilityRole="button" accessibilityLabel="View or change profile photo" style={{ width: 96, height: 96 }}>
             {profile?.photoUrl ? (
               <Image source={{ uri: profile.photoUrl }} resizeMode="cover" style={{ width: 96, height: 96, borderRadius: 48, backgroundColor: colors.surfaceRaised }} />
             ) : (
@@ -96,6 +107,7 @@ export const ProfileScreen = () => {
       </ScrollView>
       <ProfilePhotoModal
         open={photoOpen}
+        origin={photoOrigin}
         uri={profile?.photoUrl ?? null}
         busy={photo.busy}
         onClose={() => setPhotoOpen(false)}

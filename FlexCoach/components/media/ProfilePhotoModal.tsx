@@ -1,15 +1,25 @@
-import React from 'react';
-import { ActivityIndicator, Image, Modal, TouchableOpacity, useWindowDimensions, View } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { ActivityIndicator, Image, Modal, Pressable, useWindowDimensions, View } from 'react-native';
+import { Gesture, GestureDetector } from 'react-native-gesture-handler';
+import Animated, { Easing, interpolate, runOnJS, useAnimatedStyle, useSharedValue, withSpring, withTiming } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { CustomText } from '../text/customText';
 import { SurfaceCard } from '../cards/SurfaceCard';
 import { Row } from '../list-items/Row';
 import { Icon } from '../icons/Icon';
 import { generalIcons } from '../icons/icon-library';
 import { useTheme } from '../../theme';
 
+/** Where the small avatar sits on screen, in window coordinates, so the big one can grow out of it. */
+export interface PhotoOrigin {
+  x: number;
+  y: number;
+  size: number;
+}
+
 interface Props {
   open: boolean;
+  /** The avatar's position when it was tapped. Null falls back to growing from the centre. */
+  origin: PhotoOrigin | null;
   /** The current photo, or null for the placeholder. */
   uri: string | null;
   /** A save or removal is in flight: the options are disabled and the photo shows a spinner. */
@@ -20,50 +30,125 @@ interface Props {
   onRemove: () => void;
 }
 
+const OPEN_MS = 320;
+const CLOSE_MS = 260;
+/** Drag distance or fling speed that counts as "throw it away". */
+const DISMISS_DISTANCE = 110;
+const DISMISS_VELOCITY = 900;
+
 /**
- * The profile photo expanded to fill the width, with the ways to change it
- * listed underneath: pick from the library, take a new one, or remove it.
+ * The profile photo, grown from the avatar into a large circle over a
+ * dimmed screen, with the ways to change it underneath. Tap anywhere or
+ * flick the photo to put it back; while dragging, the photo follows the
+ * finger and the screen brightens as it moves.
  */
-export const ProfilePhotoModal = ({ open, uri, busy, onClose, onChooseLibrary, onTakePhoto, onRemove }: Props) => {
-  const { colors, spacing, radius } = useTheme();
+export const ProfilePhotoModal = ({ open, origin, uri, busy, onClose, onChooseLibrary, onTakePhoto, onRemove }: Props) => {
+  const { colors, spacing } = useTheme();
   const insets = useSafeAreaInsets();
-  const { width } = useWindowDimensions();
-  const size = Math.min(width - spacing.lg * 2, 360);
+  const { width, height } = useWindowDimensions();
+
+  const big = Math.min(width - spacing.lg * 2, 340);
+  // Room for the options card at the bottom; the photo centres in what's left.
+  const cardHeight = 3 * 60 + spacing.lg * 2 + insets.bottom;
+  const target = { x: (width - big) / 2, y: Math.max(insets.top + spacing.lg, (height - cardHeight - big) / 2), size: big };
+  const from = origin ?? { x: width / 2 - 48, y: height / 2 - 48, size: 96 };
+
+  // Modal stays mounted while the close animation plays.
+  const [mounted, setMounted] = useState(open);
+  const progress = useSharedValue(0);
+  const dragX = useSharedValue(0);
+  const dragY = useSharedValue(0);
+
+  const finishClose = () => {
+    setMounted(false);
+    onClose();
+  };
+
+  const close = () => {
+    'worklet';
+    dragX.value = withTiming(0, { duration: CLOSE_MS });
+    dragY.value = withTiming(0, { duration: CLOSE_MS });
+    progress.value = withTiming(0, { duration: CLOSE_MS, easing: Easing.inOut(Easing.cubic) }, done => {
+      if (done) runOnJS(finishClose)();
+    });
+  };
+
+  useEffect(() => {
+    if (open) {
+      setMounted(true);
+      dragX.value = 0;
+      dragY.value = 0;
+      progress.value = withTiming(1, { duration: OPEN_MS, easing: Easing.out(Easing.cubic) });
+    } else if (mounted) {
+      close();
+    }
+    // `close` and `mounted` are stable enough; the effect is about `open` flipping.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open]);
+
+  const pan = Gesture.Pan()
+    .onUpdate(e => {
+      dragX.value = e.translationX;
+      dragY.value = e.translationY;
+    })
+    .onEnd(e => {
+      const thrown = Math.hypot(e.translationX, e.translationY) > DISMISS_DISTANCE || Math.hypot(e.velocityX, e.velocityY) > DISMISS_VELOCITY;
+      if (thrown) close();
+      else {
+        dragX.value = withSpring(0, { damping: 18, stiffness: 220 });
+        dragY.value = withSpring(0, { damping: 18, stiffness: 220 });
+      }
+    });
+  const tap = Gesture.Tap().onEnd(() => close());
+  const gesture = Gesture.Exclusive(pan, tap);
+
+  const photoStyle = useAnimatedStyle(() => {
+    const size = interpolate(progress.value, [0, 1], [from.size, target.size]);
+    return {
+      position: 'absolute',
+      left: interpolate(progress.value, [0, 1], [from.x, target.x]),
+      top: interpolate(progress.value, [0, 1], [from.y, target.y]),
+      width: size,
+      height: size,
+      borderRadius: size / 2,
+      transform: [{ translateX: dragX.value }, { translateY: dragY.value }],
+    };
+  });
+  const scrimStyle = useAnimatedStyle(() => {
+    const drag = Math.min(1, Math.hypot(dragX.value, dragY.value) / (DISMISS_DISTANCE * 2));
+    return { opacity: progress.value * (1 - drag * 0.6) };
+  });
+  const cardStyle = useAnimatedStyle(() => ({
+    opacity: interpolate(progress.value, [0, 0.6, 1], [0, 0, 1]),
+    transform: [{ translateY: interpolate(progress.value, [0, 1], [40, 0]) }],
+  }));
 
   return (
-    <Modal visible={open} animationType="fade" onRequestClose={onClose} statusBarTranslucent presentationStyle="overFullScreen" transparent>
-      <View style={{ flex: 1, backgroundColor: colors.ground, paddingTop: insets.top, paddingBottom: insets.bottom + spacing.lg }}>
-        <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: spacing.lg, paddingVertical: spacing.md }}>
-          <CustomText variant="heading">Profile photo</CustomText>
-          <TouchableOpacity
-            onPress={onClose}
-            hitSlop={10}
-            accessibilityRole="button"
-            accessibilityLabel="Close"
-            style={{ width: 36, height: 36, borderRadius: 18, backgroundColor: colors.surfaceRaised, alignItems: 'center', justifyContent: 'center' }}
-          >
-            <Icon icon={generalIcons.xMark} size={20} color={colors.ink} />
-          </TouchableOpacity>
-        </View>
+    <Modal visible={mounted} animationType="none" onRequestClose={() => close()} statusBarTranslucent navigationBarTranslucent presentationStyle="overFullScreen" transparent>
+      <View style={{ flex: 1 }}>
+        {/* Dimmed screen; tapping it anywhere closes. */}
+        <Animated.View style={[{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: colors.ground }, scrimStyle]}>
+          <Pressable onPress={() => close()} accessibilityRole="button" accessibilityLabel="Close" style={{ flex: 1 }} />
+        </Animated.View>
 
-        <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', padding: spacing.lg }}>
-          <View style={{ width: size, height: size, borderRadius: radius.xl, backgroundColor: colors.surfaceRaised, overflow: 'hidden', alignItems: 'center', justifyContent: 'center' }}>
-            {uri ? <Image source={{ uri }} resizeMode="cover" style={{ width: size, height: size }} /> : <Icon icon={generalIcons.user} size={size / 3} color={colors.inactive} />}
+        <GestureDetector gesture={gesture}>
+          <Animated.View style={[{ backgroundColor: colors.surfaceRaised, overflow: 'hidden', alignItems: 'center', justifyContent: 'center' }, photoStyle]}>
+            {uri ? <Image source={{ uri }} resizeMode="cover" style={{ width: '100%', height: '100%' }} /> : <Icon icon={generalIcons.user} size={big / 3} color={colors.inactive} />}
             {busy && (
               <View style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: colors.scrim, alignItems: 'center', justifyContent: 'center' }}>
                 <ActivityIndicator color={colors.onAccent} />
               </View>
             )}
-          </View>
-        </View>
+          </Animated.View>
+        </GestureDetector>
 
-        <View style={{ paddingHorizontal: spacing.lg }}>
+        <Animated.View style={[{ position: 'absolute', left: 0, right: 0, bottom: 0, paddingHorizontal: spacing.lg, paddingBottom: insets.bottom + spacing.lg }, cardStyle]}>
           <SurfaceCard style={{ padding: 0, opacity: busy ? 0.5 : 1 }}>
             <Row icon={generalIcons.images} iconColor={colors.accent} title={uri ? 'Replace from library' : 'Choose from library'} onPress={busy ? undefined : onChooseLibrary} chevron={false} />
             <Row icon={generalIcons.camera} iconColor={colors.accent} title="Take a photo" divider onPress={busy ? undefined : onTakePhoto} chevron={false} />
             {uri && <Row icon={generalIcons.trash} title="Remove photo" tone="destructive" divider onPress={busy ? undefined : onRemove} chevron={false} />}
           </SurfaceCard>
-        </View>
+        </Animated.View>
       </View>
     </Modal>
   );
