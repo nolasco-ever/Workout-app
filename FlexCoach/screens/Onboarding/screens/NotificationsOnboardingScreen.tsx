@@ -4,6 +4,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { requestPermission } from '../../../data/notifications/notificationService';
+import { useAuth } from '../../../data/auth/AuthProvider';
 import { CustomText } from '../../../components/text/customText';
 import { PrimaryButton } from '../../../components/buttons/PrimaryButton';
 import { SurfaceCard } from '../../../components/cards/SurfaceCard';
@@ -21,6 +22,7 @@ import { OnboardingStackParams } from '../OnboardingStack';
 export const NotificationsOnboardingScreen = () => {
   const navigation = useNavigation<NativeStackNavigationProp<OnboardingStackParams>>();
   const { colors, spacing } = useTheme();
+  const { uid } = useAuth();
   const [busy, setBusy] = useState(false);
 
   const next = () => navigation.navigate('FirstPlanScreen');
@@ -28,7 +30,7 @@ export const NotificationsOnboardingScreen = () => {
   const turnOn = async () => {
     setBusy(true);
     try {
-      await requestPermission();
+      await requestPermission(uid);
     } catch {
       // The OS prompt failing shouldn't block onboarding.
     } finally {

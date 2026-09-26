@@ -2,6 +2,7 @@ import React, { useCallback, useState } from 'react';
 import { TouchableOpacity, View } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
 import { getPermission, PermissionState, requestPermission } from '../../data/notifications/notificationService';
+import { useAuth } from '../../data/auth/AuthProvider';
 import { CustomText } from '../text/customText';
 import { SurfaceCard } from './SurfaceCard';
 import { PrimaryButton } from '../buttons/PrimaryButton';
@@ -19,13 +20,15 @@ let dismissedThisLaunch = false;
  */
 export const NotificationPermissionCard = () => {
   const { colors, spacing } = useTheme();
+  const { uid, profile } = useAuth();
+  const prompted = !!profile?.notificationsPromptedAt;
   const [permission, setPermission] = useState<PermissionState | null>(null);
   const [dismissed, setDismissed] = useState(dismissedThisLaunch);
 
   useFocusEffect(
     useCallback(() => {
-      getPermission().then(setPermission).catch(() => undefined);
-    }, []),
+      getPermission(prompted).then(setPermission).catch(() => undefined);
+    }, [prompted]),
   );
 
   if (permission !== 'undetermined' || dismissed) return null;
@@ -46,7 +49,7 @@ export const NotificationPermissionCard = () => {
       </View>
       <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.md, marginTop: spacing.md }}>
         <View style={{ flex: 1 }}>
-          <PrimaryButton label="Turn on" onPress={() => requestPermission().then(setPermission).catch(() => undefined)} />
+          <PrimaryButton label="Turn on" onPress={() => requestPermission(uid).then(setPermission).catch(() => undefined)} />
         </View>
         <TouchableOpacity onPress={dismiss} hitSlop={10} accessibilityRole="button" style={{ paddingHorizontal: spacing.sm }}>
           <CustomText variant="label" color={colors.inkMuted}>Not now</CustomText>

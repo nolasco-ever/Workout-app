@@ -4,6 +4,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useProfilePhoto } from '../../../data/hooks/useProfilePhoto';
+import { useAuth } from '../../../data/auth/AuthProvider';
 import { getPermission } from '../../../data/notifications/notificationService';
 import { CustomText } from '../../../components/text/customText';
 import { PrimaryButton } from '../../../components/buttons/PrimaryButton';
@@ -15,13 +16,14 @@ import { OnboardingStackParams } from '../OnboardingStack';
 export const ProfilePhotoScreen = () => {
   const navigation = useNavigation<NativeStackNavigationProp<OnboardingStackParams>>();
   const { colors, spacing } = useTheme();
+  const { profile } = useAuth();
   const photo = useProfilePhoto();
   const [uri, setUri] = useState<string | null>(photo.photoUrl);
   const busy = photo.busy;
 
   // The reminders step only makes sense while the OS permission is still undecided.
   const next = async () => {
-    const permission = await getPermission().catch(() => 'undetermined' as const);
+    const permission = await getPermission(!!profile?.notificationsPromptedAt).catch(() => 'undetermined' as const);
     navigation.navigate(permission === 'undetermined' ? 'NotificationsOnboardingScreen' : 'FirstPlanScreen');
   };
 

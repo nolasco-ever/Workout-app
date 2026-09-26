@@ -20,6 +20,12 @@ export interface UserProfile extends BaseDocument {
   onboardingCompletedAt: Timestamp | null;
   /** Missing on profiles created before notifications existed; see withPrefDefaults. */
   notifications?: Partial<NotificationPrefs> | null;
+  /**
+   * When the OS notification prompt was first shown. Android reports only
+   * granted or denied, so this is how "never asked" is told apart from
+   * "asked and refused" there.
+   */
+  notificationsPromptedAt?: Timestamp | null;
 }
 
 /**

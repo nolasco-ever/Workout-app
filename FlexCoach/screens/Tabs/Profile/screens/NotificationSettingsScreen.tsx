@@ -81,14 +81,15 @@ export const NotificationSettingsScreen = () => {
   const bottomInset = useTabScrollInset();
   const { uid, profile } = useAuth();
   const prefs = withPrefDefaults(profile?.notifications);
+  const prompted = !!profile?.notificationsPromptedAt;
   const [permission, setPermission] = useState<PermissionState>('undetermined');
   const [exactAlarms, setExactAlarms] = useState(true);
   const [editing, setEditing] = useState<'morning' | 'evening' | null>(null);
 
   const refresh = useCallback(() => {
-    getPermission().then(setPermission).catch(() => undefined);
+    getPermission(prompted).then(setPermission).catch(() => undefined);
     exactAlarmsAllowed().then(setExactAlarms).catch(() => undefined);
-  }, []);
+  }, [prompted]);
 
   // Re-check when returning from the system settings app.
   useFocusEffect(refresh);
@@ -107,7 +108,7 @@ export const NotificationSettingsScreen = () => {
   /** Turning the master switch on is the natural moment for the OS prompt. */
   const setEnabled = async (enabled: boolean) => {
     save({ enabled });
-    if (enabled && permission === 'undetermined') setPermission(await requestPermission());
+    if (enabled && permission === 'undetermined') setPermission(await requestPermission(uid));
   };
 
   const blocked = permission === 'denied';
@@ -137,7 +138,7 @@ export const NotificationSettingsScreen = () => {
             <CustomText variant="caption" color={colors.inkMuted} style={{ marginBottom: spacing.md }}>
               FlexCoach can remind you on workout days and buzz when your rest is over. Nothing is sent until you allow it.
             </CustomText>
-            <PrimaryButton label="Allow notifications" onPress={() => requestPermission().then(setPermission)} />
+            <PrimaryButton label="Allow notifications" onPress={() => requestPermission(uid).then(setPermission)} />
           </SurfaceCard>
         )}
 

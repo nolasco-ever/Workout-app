@@ -33,6 +33,7 @@ export const useNotificationSync = (): { permission: PermissionState } => {
   const prefs = useMemo(() => withPrefDefaults(profile?.notifications), [profile?.notifications]);
   const prefsKey = JSON.stringify(prefs);
   const activeCycleId = profile?.activeCycleId ?? null;
+  const prompted = !!profile?.notificationsPromptedAt;
 
   const [cycle, setCycle] = useState<Cycle | null>(null);
   const [foregroundTick, setForegroundTick] = useState(0);
@@ -55,8 +56,8 @@ export const useNotificationSync = (): { permission: PermissionState } => {
   }, []);
 
   useEffect(() => {
-    getPermission().then(setPermission).catch(() => undefined);
-  }, [foregroundTick]);
+    getPermission(prompted).then(setPermission).catch(() => undefined);
+  }, [foregroundTick, prompted]);
 
   useEffect(() => {
     if (!uid || !activeCycleId) {
@@ -75,10 +76,10 @@ export const useNotificationSync = (): { permission: PermissionState } => {
       return;
     }
     if (activeCycleId && activeCycleId !== seenCycleId.current && permission === 'undetermined' && prefs.enabled) {
-      requestPermission().then(setPermission).catch(() => undefined);
+      requestPermission(uid).then(setPermission).catch(() => undefined);
     }
     seenCycleId.current = activeCycleId;
-  }, [profile, activeCycleId, permission, prefs.enabled]);
+  }, [profile, activeCycleId, permission, prefs.enabled, uid]);
 
   // Reconcile the OS's scheduled reminders with the plan.
   useEffect(() => {

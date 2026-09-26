@@ -1,4 +1,4 @@
-import { Platform } from 'react-native';
+import { PermissionsAndroid, Platform } from 'react-native';
 import notifee, {
   AlarmType,
   AndroidImportance,
@@ -9,8 +9,9 @@ import notifee, {
   type Event,
   type Notification,
 } from '@notifee/react-native';
-import { NotificationTarget } from '../models';
+import { Id, NotificationTarget } from '../models';
 import { NOTIFICATION_ID_PREFIX, PlannedNotification, REST_OVER_ID } from '../engine/notifications';
+import { userRepository } from '../repositories/userRepository';
 import { openTarget, parseTarget } from './openTarget';
 
 export type PermissionState = 'granted' | 'denied' | 'undetermined';
@@ -43,12 +44,41 @@ const toState = (status: AuthorizationStatus): PermissionState =>
       ? 'denied'
       : 'undetermined';
 
-export const getPermission = async (): Promise<PermissionState> => toState((await notifee.getNotificationSettings()).authorizationStatus);
+const POST_NOTIFICATIONS = 'android.permission.POST_NOTIFICATIONS';
 
-/** Shows the OS prompt. Returns the resulting state, which is final on iOS. */
-export const requestPermission = async (): Promise<PermissionState> => {
+/** Set once the prompt has been shown during this launch, before the profile write lands. */
+let promptedThisLaunch = false;
+
+/**
+ * Where the OS stands on notifications.
+ *
+ * iOS reports "not determined" itself. Android only ever says granted or
+ * denied, and on 13+ a fresh install reads as denied before anyone has been
+ * asked, which used to hide the onboarding step and the Workout tab card.
+ * So on Android, "denied" only counts once the prompt has actually been
+ * shown: `promptedBefore` is the profile's record of that.
+ */
+export const getPermission = async (promptedBefore = false): Promise<PermissionState> => {
+  if (Platform.OS === 'android' && Platform.Version >= 33) {
+    if (await PermissionsAndroid.check(POST_NOTIFICATIONS)) return 'granted';
+    return promptedBefore || promptedThisLaunch ? 'denied' : 'undetermined';
+  }
+  return toState((await notifee.getNotificationSettings()).authorizationStatus);
+};
+
+/**
+ * Shows the OS prompt and returns the resulting state, which is final on
+ * iOS. With a `uid` the prompt is recorded on the profile so Android can
+ * tell a refusal from never having asked (see getPermission).
+ */
+export const requestPermission = async (uid?: Id | null): Promise<PermissionState> => {
   await ensureChannels();
+  promptedThisLaunch = true;
+  if (uid) userRepository.update(uid, { notificationsPromptedAt: Date.now() }).catch(() => undefined);
   const settings = await notifee.requestPermission({ alert: true, sound: true, badge: false });
+  if (Platform.OS === 'android' && Platform.Version >= 33) {
+    return (await PermissionsAndroid.check(POST_NOTIFICATIONS)) ? 'granted' : 'denied';
+  }
   return toState(settings.authorizationStatus);
 };
 

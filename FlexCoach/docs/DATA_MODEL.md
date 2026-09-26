@@ -100,7 +100,14 @@ Two layers, decided in September 2026:
   workout (next morning), plan starts tomorrow, cycle finished, weekly
   weigh-in, and the rest timer (`planRestOverNotification`, scheduled from
   the session screen with an exact alarm). Ids are `flex:<kind>:<date>` so
-  re-planning replaces rather than duplicates.
+  re-planning replaces rather than duplicates. Wording comes from
+  `engine/notificationCopy.ts`, several variants per kind chosen from the
+  date so the same day always plans the same text.
+- **The OS permission** is read through `getPermission(promptedBefore)`.
+  Android never reports "not determined", and on 13+ a fresh install reads
+  as denied, so `UserProfile.notificationsPromptedAt` records that the
+  prompt has been shown; until then Android counts as undetermined and the
+  onboarding step and Workout-tab card are offered.
 - **The feed** (`users/{uid}/notifications`) holds only durable items worth
   revisiting or acting on: a missed workout, a finished cycle, and later
   achievements and buddy events. Time-based nudges are never stored. The
