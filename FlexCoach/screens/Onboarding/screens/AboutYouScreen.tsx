@@ -61,8 +61,11 @@ export const AboutYouScreen = () => {
     <SafeAreaView edges={['bottom', 'left', 'right']} style={{ flex: 1, backgroundColor: colors.ground }}>
       <KeyboardAvoiding>
         <ScrollView contentContainerStyle={{ padding: spacing.lg, gap: spacing.lg }} keyboardShouldPersistTaps="handled" keyboardDismissMode="on-drag">
-          <CustomText variant="body" color={colors.inkMuted}>A few basics so the app speaks your units. You can change any of this later.</CustomText>
-          <TextField id="ob-name" label="Your name" placeholder="How you'd like to be addressed" value={name} onChangeText={setName} autoCapitalize="words" autoFocus />
+          <CustomText variant="body" color={colors.inkMuted}>
+            {knownName ? `Hi ${knownName.split(' ')[0]}. ` : ''}A few basics so the app speaks your units. You can change any of this later.
+          </CustomText>
+          {/* The name was given at sign-up; only ask when a provider didn't supply one (Apple can withhold it). */}
+          {!knownName && <TextField id="ob-name" label="Your name" placeholder="How you'd like to be addressed" value={name} onChangeText={setName} autoCapitalize="words" autoFocus />}
           <SurfaceCard style={{ gap: spacing.md }}>
             <View style={{ gap: spacing.sm }}>
               <CustomText variant="overline" color={colors.inkMuted}>Weight in</CustomText>
