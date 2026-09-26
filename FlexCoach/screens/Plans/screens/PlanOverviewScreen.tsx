@@ -8,6 +8,10 @@ import { usePlans } from '../../../data/hooks/usePlans';
 import { useWorkoutHome } from '../../../data/hooks/useWorkoutHome';
 import { activatePlan, archivePlan, deactivatePlan, duplicatePlan, validatePlan } from '../../../data/services/planService';
 import { planRepository } from '../../../data/repositories/planRepository';
+import { setPlanVisibleToBuddies } from '../../../data/services/buddyService';
+import { SurfaceCard } from '../../../components/cards/SurfaceCard';
+import { SwitchRow } from '../../../components/inputs/SwitchRow';
+import { generalIcons } from '../../../components/icons/icon-library';
 import { CustomText } from '../../../components/text/customText';
 import { PrimaryButton } from '../../../components/buttons/PrimaryButton';
 import { useTheme } from '../../../theme';
@@ -20,10 +24,11 @@ export const PlanOverviewScreen = () => {
   const navigation = useNavigation<NativeStackNavigationProp<PlansStackParams>>();
   const { params } = useRoute<RouteProp<PlansStackParams, 'PlanOverviewScreen'>>();
   const { colors, spacing } = useTheme();
-  const { uid } = useAuth();
+  const { uid, profile } = useAuth();
   const { plans } = usePlans();
   const home = useWorkoutHome();
   const editor = usePlanEditor();
+  const [sharing, setSharing] = useState<boolean | null>(null);
   const [busy, setBusy] = useState<string | null>(null);
   const [pickingStart, setPickingStart] = useState(false);
   const plan = plans.find(p => p.id === params.planId);
@@ -66,9 +71,33 @@ export const PlanOverviewScreen = () => {
             {isActive ? 'Active plan' : plan.status === 'archived' ? 'Archived' : 'Inactive'}
           </CustomText>
           <CustomText variant="title">{plan.name}</CustomText>
+          {plan.sharedFrom && (
+            <CustomText variant="caption" color={colors.accent}>Created by {plan.sharedFrom.displayName ?? 'a buddy'} · your copy to edit</CustomText>
+          )}
           {plan.description ? <CustomText variant="body" color={colors.inkMuted}>{plan.description}</CustomText> : null}
         </View>
         <PlanSummaryCard plan={plan} />
+        {plan.status !== 'archived' && !unfinished && (
+          <SurfaceCard style={{ padding: 0 }}>
+            <SwitchRow
+              icon={generalIcons.users}
+              title="Visible to buddies"
+              description={plan.visibleToBuddies ? 'Buddies can look through this plan and save their own copy.' : 'Only you can see this plan.'}
+              value={sharing ?? !!plan.visibleToBuddies}
+              disabled={sharing !== null}
+              onChange={async visible => {
+                setSharing(visible);
+                try {
+                  await setPlanVisibleToBuddies(uid, profile, plan, visible);
+                } catch (err) {
+                  console.warn(err);
+                } finally {
+                  setSharing(null);
+                }
+              }}
+            />
+          </SurfaceCard>
+        )}
         {unfinished && (
           <View style={{ gap: spacing.xs }}>
             <CustomText variant="bodyStrong">Not finished yet</CustomText>

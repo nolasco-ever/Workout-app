@@ -24,7 +24,7 @@ const PlanRow = ({ plan, onPress }: { plan: Plan; onPress: () => void }) => {
       <View style={{ flex: 1 }}>
         <CustomText variant="bodyStrong">{plan.name || 'Untitled plan'}</CustomText>
         <CustomText variant="caption" color={colors.inkMuted}>
-          {plan.workouts.length} workout{plan.workouts.length === 1 ? '' : 's'} · {describeSchedule(plan)}
+          {plan.sharedFrom ? `by ${plan.sharedFrom.displayName ?? 'a buddy'} · ` : ''}{plan.workouts.length} workout{plan.workouts.length === 1 ? '' : 's'} · {describeSchedule(plan)}{plan.visibleToBuddies ? ' · shared' : ''}
         </CustomText>
       </View>
       <Icon icon={directionIcons.angleRight} color={colors.inactive} size={20} />
@@ -49,7 +49,9 @@ export const PlansScreen = () => {
   const editor = usePlanEditor();
 
   const active = plans.filter(p => p.status === 'active');
-  const inactive = plans.filter(p => p.status === 'draft');
+  const inactive = plans.filter(p => p.status === 'draft' && !p.sharedFrom);
+  // Copies of buddies' plans sit apart until they're activated, so it's clear which are yours from scratch.
+  const fromBuddies = plans.filter(p => p.status === 'draft' && !!p.sharedFrom);
   const archived = plans.filter(p => p.status === 'archived');
 
   const create = () => {
@@ -89,6 +91,7 @@ export const PlansScreen = () => {
         )}
         {!loading && section('Active', active)}
         {!loading && section('Inactive', inactive)}
+        {!loading && section('From buddies', fromBuddies)}
         {!loading && section('Archived', archived)}
       </ScrollView>
       <View style={{ padding: spacing.lg }}>
