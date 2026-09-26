@@ -12,8 +12,7 @@ import { ExerciseDetailScreen } from '../screens/Tabs/Workout/screens/ExerciseDe
 import { BuddiesScreen } from '../screens/Buddies/BuddiesScreen';
 import { MyCardScreen } from '../screens/Buddies/MyCardScreen';
 import { ScanCardScreen } from '../screens/Buddies/ScanCardScreen';
-import { CardPreviewScreen } from '../screens/Buddies/CardPreviewScreen';
-import { BuddyDetailScreen } from '../screens/Buddies/BuddyDetailScreen';
+import { BuddyCardScreen } from '../screens/Buddies/BuddyCardScreen';
 import { BuddyActivityScreen } from '../screens/Buddies/BuddyActivityScreen';
 import { BuddyPlansScreen } from '../screens/Buddies/BuddyPlansScreen';
 import { BuddyPlanScreen } from '../screens/Buddies/BuddyPlanScreen';
@@ -74,8 +73,8 @@ export const AppStack = () => {
                     <Stack.Screen name="BuddiesScreen" component={BuddiesScreen} options={opts.screen('Buddies')} />
                     <Stack.Screen name="MyCardScreen" component={MyCardScreen} options={opts.screen('My Iron Card')} />
                     <Stack.Screen name="ScanCardScreen" component={ScanCardScreen} options={opts.screen('Scan a card')} />
-                    <Stack.Screen name="CardPreviewScreen" component={CardPreviewScreen} options={opts.screen('Iron Card')} />
-                    <Stack.Screen name="BuddyDetailScreen" component={BuddyDetailScreen} options={({ route }) => opts.screen(route.params.displayName ?? 'Buddy')} />
+                    {/* A card is a sheet with an X: it can be brought up from a link, a scan, or the buddies list. */}
+                    <Stack.Screen name="BuddyCardScreen" component={BuddyCardScreen} options={({ navigation, route }) => opts.modal(route.params.displayName ?? 'Iron Card', () => <HeaderButton icon={generalIcons.xMark} accessibilityLabel="Close" onPress={() => navigation.goBack()} />)} />
                     <Stack.Screen name="BuddyActivityScreen" component={BuddyActivityScreen} options={opts.screen('Buddy activity')} />
                     <Stack.Screen name="BuddyPlansScreen" component={BuddyPlansScreen} options={opts.screen('Plans from buddies')} />
                     <Stack.Screen name="BuddyPlanScreen" component={BuddyPlanScreen} options={opts.screen('Plan')} />

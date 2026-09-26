@@ -89,6 +89,8 @@ export interface Buddy extends BaseDocument {
   /** Snapshots taken when the request was made, so pending rows can show a name. */
   displayName?: string | null;
   photoUrl?: string | null;
+  /** Their card code, so their Iron Card can be opened again from the list. */
+  inviteCode?: string | null;
 }
 
 export type ActivityKind = 'workout_done' | 'workout_skipped' | 'workout_pushed' | 'streak' | 'record' | 'cycle_done' | 'plan_shared' | 'joined';

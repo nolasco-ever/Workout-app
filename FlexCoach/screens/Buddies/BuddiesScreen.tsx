@@ -5,7 +5,7 @@ import { NavigationProp, useNavigation } from '@react-navigation/native';
 import { useAuth } from '../../data/auth/AuthProvider';
 import { useBuddies, BuddyWithCard } from '../../data/hooks/useBuddies';
 import { Buddy } from '../../data/models';
-import { acceptBuddyRequest, refreshPublicProfile, removeBuddy } from '../../data/services/buddyService';
+import { acceptBuddyRequest, refreshPublicProfile } from '../../data/services/buddyService';
 import { dateLabel } from '../../components/charts/scale';
 import { CustomText } from '../../components/text/customText';
 import { SurfaceCard } from '../../components/cards/SurfaceCard';
@@ -57,16 +57,7 @@ export const BuddiesScreen = () => {
   };
 
   const accept = (b: Buddy) => run(`accept-${b.userId}`, () => acceptBuddyRequest(uid!, profile, b));
-  const decline = (b: Buddy) =>
-    Alert.alert(`Decline ${b.displayName ?? 'this request'}?`, 'They won\'t be told.', [
-      { text: 'Cancel', style: 'cancel' },
-      { text: 'Decline', style: 'destructive', onPress: () => run(`decline-${b.userId}`, () => removeBuddy(uid!, b.userId)) },
-    ]);
-  const cancel = (b: Buddy) =>
-    Alert.alert('Cancel request?', `${b.displayName ?? 'They'} won't get it.`, [
-      { text: 'Keep', style: 'cancel' },
-      { text: 'Cancel request', style: 'destructive', onPress: () => run(`cancel-${b.userId}`, () => removeBuddy(uid!, b.userId)) },
-    ]);
+  const openCard = (b: Buddy) => navigation.navigate('BuddyCardScreen', { uid: b.userId, displayName: b.displayName ?? null });
 
   const empty = !loading && buddies.length === 0 && incoming.length === 0 && outgoing.length === 0;
 
@@ -102,15 +93,12 @@ export const BuddiesScreen = () => {
             <CustomText variant="overline" color={colors.inkMuted}>Requests</CustomText>
             <SurfaceCard style={{ padding: 0 }}>
               {incoming.map((b, i) => (
-                <View key={b.userId} style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.md, padding: spacing.lg, borderTopWidth: i ? 1 : 0, borderTopColor: colors.line }}>
+                <TouchableOpacity key={b.userId} onPress={() => openCard(b)} style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.md, padding: spacing.lg, borderTopWidth: i ? 1 : 0, borderTopColor: colors.line }}>
                   <Avatar uri={b.photoUrl} name={b.displayName} />
                   <View style={{ flex: 1 }}>
                     <CustomText variant="bodyStrong">{b.displayName ?? 'Someone'}</CustomText>
-                    <CustomText variant="caption" color={colors.inkMuted}>wants to be buddies</CustomText>
+                    <CustomText variant="caption" color={colors.inkMuted}>wants to be buddies · tap to see their card</CustomText>
                   </View>
-                  <TouchableOpacity onPress={() => decline(b)} disabled={busy !== null} hitSlop={8} style={{ padding: spacing.sm }}>
-                    <Icon icon={generalIcons.xMark} size={20} color={colors.inkMuted} />
-                  </TouchableOpacity>
                   <TouchableOpacity
                     onPress={() => accept(b)}
                     disabled={busy !== null}
@@ -118,7 +106,7 @@ export const BuddiesScreen = () => {
                   >
                     {busy === `accept-${b.userId}` ? <ActivityIndicator color={colors.onAccent} /> : <CustomText variant="label" color={colors.onAccent}>Accept</CustomText>}
                   </TouchableOpacity>
-                </View>
+                </TouchableOpacity>
               ))}
             </SurfaceCard>
           </View>
@@ -131,7 +119,7 @@ export const BuddiesScreen = () => {
               {buddies.map((b, i) => (
                 <TouchableOpacity
                   key={b.userId}
-                  onPress={() => navigation.navigate('BuddyDetailScreen', { uid: b.userId, displayName: b.card?.displayName ?? b.displayName ?? null })}
+                  onPress={() => navigation.navigate('BuddyCardScreen', { uid: b.userId, displayName: b.card?.displayName ?? b.displayName ?? null })}
                   style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.md, padding: spacing.lg, borderTopWidth: i ? 1 : 0, borderTopColor: colors.line }}
                 >
                   <Avatar uri={b.card?.photoUrl ?? b.photoUrl} name={b.card?.displayName ?? b.displayName} />
@@ -152,16 +140,14 @@ export const BuddiesScreen = () => {
             <CustomText variant="overline" color={colors.inkMuted}>Waiting on</CustomText>
             <SurfaceCard style={{ padding: 0 }}>
               {outgoing.map((b, i) => (
-                <View key={b.userId} style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.md, padding: spacing.lg, borderTopWidth: i ? 1 : 0, borderTopColor: colors.line }}>
+                <TouchableOpacity key={b.userId} onPress={() => openCard(b)} style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.md, padding: spacing.lg, borderTopWidth: i ? 1 : 0, borderTopColor: colors.line }}>
                   <Avatar uri={b.photoUrl} name={b.displayName} />
                   <View style={{ flex: 1 }}>
                     <CustomText variant="bodyStrong">{b.displayName ?? 'Someone'}</CustomText>
                     <CustomText variant="caption" color={colors.inkMuted}>Request sent</CustomText>
                   </View>
-                  <TouchableOpacity onPress={() => cancel(b)} disabled={busy !== null} hitSlop={8}>
-                    <CustomText variant="label" color={colors.inkMuted}>Cancel</CustomText>
-                  </TouchableOpacity>
-                </View>
+                  <Icon icon={directionIcons.angleRight} size={20} color={colors.inactive} />
+                </TouchableOpacity>
               ))}
             </SurfaceCard>
           </View>

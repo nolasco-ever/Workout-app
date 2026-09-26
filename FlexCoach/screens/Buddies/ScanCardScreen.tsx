@@ -67,7 +67,7 @@ export const ScanCardScreen = () => {
   const go = (code: string) => {
     if (handled.current) return;
     handled.current = true;
-    navigation.navigate('CardPreviewScreen', { code });
+    navigation.navigate('BuddyCardScreen', { code });
     // Allow another scan if the person comes back to this screen.
     setTimeout(() => {
       handled.current = false;

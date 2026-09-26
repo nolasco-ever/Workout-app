@@ -15,9 +15,9 @@ export const buddyRepository = {
   get: (uid: Id, otherUid: Id) => readDoc<Buddy>(paths.buddy(uid, otherUid)),
 
   /** Both rows carry a name and photo snapshot so pending lists can show who's who. */
-  sendRequest: async (from: { uid: Id; displayName: string | null; photoUrl: string | null }, to: { uid: Id; displayName: string | null; photoUrl: string | null }): Promise<void> => {
-    await writeDoc(paths.buddy(from.uid, to.uid), stamp<Buddy>({ id: to.uid, userId: to.uid, status: 'pending_sent', displayName: to.displayName, photoUrl: to.photoUrl } as Buddy));
-    await writeDoc(paths.buddy(to.uid, from.uid), stamp<Buddy>({ id: from.uid, userId: from.uid, status: 'pending_received', displayName: from.displayName, photoUrl: from.photoUrl } as Buddy));
+  sendRequest: async (from: { uid: Id; displayName: string | null; photoUrl: string | null; inviteCode: string | null }, to: { uid: Id; displayName: string | null; photoUrl: string | null; inviteCode: string | null }): Promise<void> => {
+    await writeDoc(paths.buddy(from.uid, to.uid), stamp<Buddy>({ id: to.uid, userId: to.uid, status: 'pending_sent', displayName: to.displayName, photoUrl: to.photoUrl, inviteCode: to.inviteCode } as Buddy));
+    await writeDoc(paths.buddy(to.uid, from.uid), stamp<Buddy>({ id: from.uid, userId: from.uid, status: 'pending_received', displayName: from.displayName, photoUrl: from.photoUrl, inviteCode: from.inviteCode } as Buddy));
   },
 
   /** The recipient accepts: their own row first, then the requester's row about them. */

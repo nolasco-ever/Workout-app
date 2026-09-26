@@ -1,7 +1,7 @@
 import { Activity, ActivityKind, Buddy, Id, InviteCode, Occurrence, Plan, PublicProfile, Session, UserProfile } from '../models';
 import { newId } from '../engine/ids';
 import { today } from '../engine/dates';
-import { buildPublicProfile, formatInviteCode, generateInviteCode, isStreakMilestone } from '../engine/buddies';
+import { buildPublicProfile, formatInviteCode, generateInviteCode, inviteUrl, isStreakMilestone } from '../engine/buddies';
 import { countWorkingSets, totalVolumeKg, summarizeCycle } from '../engine/stats';
 import { formatWeight } from '../engine/units';
 import { buddyRepository } from '../repositories/buddyRepository';
@@ -83,9 +83,11 @@ export const relationTo = async (uid: Id, otherUid: Id): Promise<CardRelation> =
 };
 
 export const sendBuddyRequest = async (uid: Id, profile: UserProfile | null, target: InviteCode): Promise<void> => {
+  // My own code goes on their row so they can open my card from their list.
+  const myCode = await ensureInviteCode(uid, profile);
   await buddyRepository.sendRequest(
-    { uid, displayName: profile?.displayName ?? null, photoUrl: profile?.photoUrl ?? null },
-    { uid: target.uid, displayName: target.card.displayName, photoUrl: target.card.photoUrl },
+    { uid, displayName: profile?.displayName ?? null, photoUrl: profile?.photoUrl ?? null, inviteCode: myCode },
+    { uid: target.uid, displayName: target.card.displayName, photoUrl: target.card.photoUrl, inviteCode: target.code },
   );
   await notificationRepository
     .createForUser(target.uid, {
@@ -116,6 +118,10 @@ export const acceptBuddyRequest = async (uid: Id, profile: UserProfile | null, o
 };
 
 export const removeBuddy = (uid: Id, otherUid: Id): Promise<void> => buddyRepository.remove(uid, otherUid);
+
+/** Text for the share sheet: the same link the QR code carries. */
+export const shareMessage = (code: string, displayName: string | null): string =>
+  `${displayName ? `${displayName.split(' ')[0]} wants` : 'Someone wants'} to be your buddy on FlexCoach. Tap to see their Iron Card and add them: ${inviteUrl(code)}`;
 
 /** Write a line to my own activity list. */
 export const recordActivity = async (uid: Id, kind: ActivityKind, title: string, detail: string | null = null, at: number = Date.now()): Promise<void> => {

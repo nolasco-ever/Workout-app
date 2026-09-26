@@ -5,7 +5,7 @@ import { NavigationProp, useNavigation } from '@react-navigation/native';
 import QRCode from 'react-native-qrcode-svg';
 import { useAuth } from '../../data/auth/AuthProvider';
 import { PublicProfile } from '../../data/models';
-import { ensureInviteCode, refreshPublicProfile } from '../../data/services/buddyService';
+import { ensureInviteCode, refreshPublicProfile, shareMessage } from '../../data/services/buddyService';
 import { formatInviteCode, inviteUrl } from '../../data/engine/buddies';
 import { CustomText } from '../../components/text/customText';
 import { PrimaryButton } from '../../components/buttons/PrimaryButton';
@@ -52,7 +52,7 @@ export const MyCardScreen = () => {
 
   const share = () => {
     if (!code) return;
-    Share.share({ message: `Add me as a buddy on FlexCoach: scan my Iron Card or enter code ${formatInviteCode(code)} under Profile > Buddies > Scan a card. ${inviteUrl(code)}` }).catch(() => undefined);
+    Share.share({ message: shareMessage(code, profile?.displayName ?? null), url: inviteUrl(code) }).catch(() => undefined);
   };
 
   return (
@@ -76,11 +76,11 @@ export const MyCardScreen = () => {
                     <CustomText variant="heading" style={{ letterSpacing: 2 }}>{formatInviteCode(code)}</CustomText>
                     <Icon icon={generalIcons.share} size={18} color={colors.accent} />
                   </TouchableOpacity>
-                  <CustomText variant="caption" color={colors.inkMuted} centered>Have a buddy scan this in their FlexCoach app, or send them the code.</CustomText>
+                  <CustomText variant="caption" color={colors.inkMuted} centered>Have a buddy scan this in their FlexCoach app, or share the link. Tapping it opens your card in their app.</CustomText>
                 </View>
               }
             />
-            <PrimaryButton label="Share my code" icon={generalIcons.share} variant="outline" onPress={share} />
+            <PrimaryButton label="Share my card" icon={generalIcons.share} onPress={share} />
             <PrimaryButton label="Scan a buddy's card instead" icon={generalIcons.scan} variant="quiet" onPress={() => navigation.navigate('ScanCardScreen')} />
           </>
         )}
