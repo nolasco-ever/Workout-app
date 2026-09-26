@@ -19,7 +19,14 @@ const iconFor = (kind: FeedNotificationKind): IconSource => {
     case 'cycle_finished':
       return generalIcons.flame;
     case 'achievement':
+    case 'buddy_achievement':
       return generalIcons.trophy;
+    case 'buddy_streak':
+      return generalIcons.flame;
+    case 'buddy_request':
+      return generalIcons.userPlus;
+    case 'buddy_accepted':
+      return generalIcons.handshake;
     default:
       return generalIcons.users;
   }

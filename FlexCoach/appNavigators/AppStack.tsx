@@ -8,18 +8,32 @@ import { PlansStack, type PlansStackParams } from '../screens/Plans/PlansStack';
 import { AuthStack } from '../screens/Auth/AuthStack';
 import { OnboardingStack } from '../screens/Onboarding/OnboardingStack';
 import { AccountScreen } from '../screens/Tabs/Profile/screens/AccountScreen';
+import { ExerciseDetailScreen } from '../screens/Tabs/Workout/screens/ExerciseDetailScreen';
+import { BuddiesScreen } from '../screens/Buddies/BuddiesScreen';
+import { MyCardScreen } from '../screens/Buddies/MyCardScreen';
+import { ScanCardScreen } from '../screens/Buddies/ScanCardScreen';
+import { CardPreviewScreen } from '../screens/Buddies/CardPreviewScreen';
+import { BuddyDetailScreen } from '../screens/Buddies/BuddyDetailScreen';
+import { BuddyActivityScreen } from '../screens/Buddies/BuddyActivityScreen';
+import { BuddyPlansScreen } from '../screens/Buddies/BuddyPlansScreen';
+import { BuddyPlanScreen } from '../screens/Buddies/BuddyPlanScreen';
+import type { BuddyRoutes } from '../screens/Buddies/routes';
+import { HeaderButton } from '../components/headers/HeaderButton';
+import { generalIcons } from '../components/icons/icon-library';
 import { devFlags } from '../dev/flags';
 import { useStackOptions } from '../navigation/stackOptions';
 import { useAuth } from '../data/auth/AuthProvider';
 import { useTheme } from '../theme';
 
-export type AppStackParams = {
+export type AppStackParams = BuddyRoutes & {
     AuthStack: undefined;
     OnboardingStack: undefined;
     TabNavigator: undefined;
     NotificationsScreen: undefined;
     PlansStack: NavigatorScreenParams<PlansStackParams> | undefined;
     AccountScreen: undefined;
+    /** How-to for an exercise opened from a buddy's plan; the plan creator and Workout tab have their own copies. */
+    ExerciseDetailScreen: { exerciseId: string };
 };
 
 const Stack = createNativeStackNavigator<AppStackParams>();
@@ -57,6 +71,15 @@ export const AppStack = () => {
                     <Stack.Screen name="NotificationsScreen" component={NotificationsScreen} options={opts.screen('Notifications')} />
                     <Stack.Screen name="AccountScreen" component={AccountScreen} options={opts.screen('Account')} />
                     <Stack.Screen name="PlansStack" component={PlansStack} options={{ presentation: 'fullScreenModal' }} />
+                    <Stack.Screen name="BuddiesScreen" component={BuddiesScreen} options={opts.screen('Buddies')} />
+                    <Stack.Screen name="MyCardScreen" component={MyCardScreen} options={opts.screen('My Iron Card')} />
+                    <Stack.Screen name="ScanCardScreen" component={ScanCardScreen} options={opts.screen('Scan a card')} />
+                    <Stack.Screen name="CardPreviewScreen" component={CardPreviewScreen} options={opts.screen('Iron Card')} />
+                    <Stack.Screen name="BuddyDetailScreen" component={BuddyDetailScreen} options={({ route }) => opts.screen(route.params.displayName ?? 'Buddy')} />
+                    <Stack.Screen name="BuddyActivityScreen" component={BuddyActivityScreen} options={opts.screen('Buddy activity')} />
+                    <Stack.Screen name="BuddyPlansScreen" component={BuddyPlansScreen} options={opts.screen('Plans from buddies')} />
+                    <Stack.Screen name="BuddyPlanScreen" component={BuddyPlanScreen} options={opts.screen('Plan')} />
+                    <Stack.Screen name="ExerciseDetailScreen" component={ExerciseDetailScreen} options={({ navigation }) => opts.modal('How to', () => <HeaderButton icon={generalIcons.xMark} accessibilityLabel="Close" onPress={() => navigation.goBack()} />)} />
                 </>
             )}
         </Stack.Navigator>

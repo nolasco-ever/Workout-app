@@ -41,7 +41,13 @@ export const openTarget = (target: NotificationTarget): void => {
       nav.navigate('NotificationsScreen');
       return;
     case 'buddies':
-      nav.navigate('TabNavigator', { screen: 'ProfileStack' });
+      nav.navigate('BuddiesScreen');
+      return;
+    case 'buddy':
+      nav.navigate('BuddyDetailScreen', { uid: target.uid, displayName: target.displayName ?? null });
+      return;
+    case 'buddy_activity':
+      nav.navigate('BuddyActivityScreen');
       return;
   }
 };

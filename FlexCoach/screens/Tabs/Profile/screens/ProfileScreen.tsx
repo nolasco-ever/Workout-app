@@ -88,6 +88,7 @@ export const ProfileScreen = () => {
           <SurfaceCard style={{ padding: 0 }}>
             <Row icon={generalIcons.dumbbell} iconColor={colors.accent} title="My plans" description={active ? `Active: ${active.name}` : 'No active plan'} onPress={() => navigation.navigate('PlansStack')} />
             <Row icon={generalIcons.clock} title="History" description="Every workout you've logged" divider onPress={() => navigation.navigate('HistoryScreen')} />
+            <Row icon={generalIcons.users} title="Buddies" description="Train alongside people you know" divider onPress={() => navigation.navigate('BuddiesScreen')} />
           </SurfaceCard>
         </View>
 
