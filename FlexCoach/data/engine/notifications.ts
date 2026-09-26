@@ -1,6 +1,7 @@
 import { ClockTime, Cycle, LocalDate, NotificationPrefs, NotificationTarget, Occurrence, Session } from '../models';
 import { addDays, fromLocalDate, weekdayOf } from './dates';
 import { currentStreakDays } from './stats';
+import { cycleFinishedCopy, missedWorkoutCopy, planStartsCopy, restOverCopy, streakRiskCopy, weighInCopy, workoutNudgeCopy, workoutTodayCopy } from './notificationCopy';
 
 /**
  * Local (on-device) notifications are planned as pure data from the active
@@ -111,8 +112,7 @@ export const planLocalNotifications = (input: PlanInput): PlannedNotification[] 
       id: idFor('plan_starts', eve),
       kind: 'plan_starts',
       fireAt: at(eve, prefs.eveningTime),
-      title: 'Your plan starts tomorrow',
-      body: first?.workoutName ? `First up: ${first.workoutName}. Get some sleep.` : 'First workout is tomorrow. Get some sleep.',
+      ...planStartsCopy(first?.workoutName ?? null, eve),
       target: { screen: 'workout' },
     });
   }
@@ -133,10 +133,7 @@ export const planLocalNotifications = (input: PlanInput): PlannedNotification[] 
           id: idFor('missed_workout', date),
           kind: 'missed_workout',
           fireAt: at(date, prefs.morningTime),
-          title: `You missed ${missedYesterday.workoutName ?? 'a workout'} yesterday`,
-          body: todaysWorkout?.workoutName
-            ? `Skip it or move it, then ${todaysWorkout.workoutName} is up today.`
-            : 'Skip it, or move it to today and keep the cycle on track.',
+          ...missedWorkoutCopy(missedYesterday.workoutName ?? 'a workout', todaysWorkout?.workoutName ?? null, date),
           target: { screen: 'workout' },
         });
       } else if (todaysWorkout && prefs.workoutToday) {
@@ -144,8 +141,7 @@ export const planLocalNotifications = (input: PlanInput): PlannedNotification[] 
           id: idFor('workout_today', date),
           kind: 'workout_today',
           fireAt: at(date, prefs.morningTime),
-          title: `${todaysWorkout.workoutName ?? 'Workout'} day`,
-          body: "It's on the schedule for today. Start when you're ready.",
+          ...workoutTodayCopy(todaysWorkout.workoutName ?? 'Workout', date),
           target: { screen: 'workout' },
         });
       }
@@ -160,8 +156,7 @@ export const planLocalNotifications = (input: PlanInput): PlannedNotification[] 
             id: idFor('streak_risk', date),
             kind: 'streak_risk',
             fireAt: at(date, prefs.eveningTime),
-            title: `Your ${streakAtRisk}-day streak ends tonight`,
-            body: `${todaysWorkout.workoutName ?? 'Your workout'} is still waiting. Keep it alive.`,
+            ...streakRiskCopy(todaysWorkout.workoutName ?? 'Your workout', streakAtRisk, date),
             target: { screen: 'workout' },
           });
         } else if (prefs.eveningNudge) {
@@ -169,8 +164,7 @@ export const planLocalNotifications = (input: PlanInput): PlannedNotification[] 
             id: idFor('workout_nudge', date),
             kind: 'workout_nudge',
             fireAt: at(date, prefs.eveningTime),
-            title: `${todaysWorkout.workoutName ?? 'Your workout'} isn't done yet`,
-            body: 'Still time to get it in today.',
+            ...workoutNudgeCopy(todaysWorkout.workoutName ?? 'Your workout', date),
             target: { screen: 'workout' },
           });
         }
@@ -181,8 +175,7 @@ export const planLocalNotifications = (input: PlanInput): PlannedNotification[] 
           id: idFor('cycle_finished', date),
           kind: 'cycle_finished',
           fireAt: at(date, prefs.morningTime),
-          title: `Cycle ${active.number} is done`,
-          body: 'See how it went and what comes next.',
+          ...cycleFinishedCopy(active.number, date),
           target: { screen: 'cycle_summary', cycleId: active.id },
         });
       }
@@ -193,8 +186,7 @@ export const planLocalNotifications = (input: PlanInput): PlannedNotification[] 
         id: idFor('weigh_in', date),
         kind: 'weigh_in',
         fireAt: at(date, prefs.morningTime),
-        title: 'Weigh-in day',
-        body: 'Log your weight before breakfast for the most consistent trend.',
+        ...weighInCopy(date),
         target: { screen: 'body_weight' },
       });
     }
@@ -215,7 +207,7 @@ export const planRestOverNotification = (
   id: REST_OVER_ID,
   kind: 'rest_over',
   fireAt: startedAt + durationSec * 1000,
-  title: 'Rest over. Go.',
-  body: nextExerciseName ? `Next set: ${nextExerciseName}.` : 'Back to it.',
+  // Seeded from the start time so each rest period reads a little differently.
+  ...restOverCopy(nextExerciseName, Math.floor(startedAt / 1000)),
   target: { screen: 'session', sessionId },
 });

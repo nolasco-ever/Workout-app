@@ -72,7 +72,7 @@ describe('planLocalNotifications', () => {
     ]);
     expect(new Date(list[0].fireAt).getHours()).toBe(9);
     expect(new Date(list[1].fireAt).getHours()).toBe(18);
-    expect(list[0].title).toBe('Push day');
+    expect(list[0].title).toContain('Push');
   });
 
   it('drops reminders whose time has already passed today', () => {
@@ -98,7 +98,8 @@ describe('planLocalNotifications', () => {
     const c = cycle([occ('2026-09-24', 'Pull', 'completed'), occ(TODAY, 'Push')]);
     const list = plan({ cycle: c, sessions: [session('2026-09-23'), session('2026-09-24')] });
     const evening = list.find(n => n.kind === 'streak_risk');
-    expect(evening?.title).toBe('Your 2-day streak ends tonight');
+    expect(evening?.title).toContain('2');
+    expect(`${evening?.title} ${evening?.body}`).toContain('Push');
     expect(list.some(n => n.kind === 'workout_nudge' && n.id.endsWith(TODAY))).toBe(false);
   });
 
@@ -108,7 +109,7 @@ describe('planLocalNotifications', () => {
     const morning = list.filter(n => new Date(n.fireAt).getHours() === 9 && n.id.endsWith(TODAY));
     expect(morning).toHaveLength(1);
     expect(morning[0].kind).toBe('missed_workout');
-    expect(morning[0].title).toBe('You missed Pull yesterday');
+    expect(morning[0].title).toContain('Pull');
     expect(morning[0].body).toContain('Push is up today');
   });
 
@@ -120,7 +121,8 @@ describe('planLocalNotifications', () => {
   it('announces a plan the evening before it starts', () => {
     const c = cycle([occ('2026-09-28', 'Push')]);
     const list = plan({ cycle: c });
-    expect(list[0]).toMatchObject({ kind: 'plan_starts', body: 'First up: Push. Get some sleep.' });
+    expect(list[0].kind).toBe('plan_starts');
+    expect(list[0].body).toContain('Push');
     expect(new Date(list[0].fireAt).getDate()).toBe(27);
   });
 
@@ -129,7 +131,7 @@ describe('planLocalNotifications', () => {
     const list = plan({ cycle: c, now: EVENING, sessions: [session(TODAY)] });
     expect(list.map(n => n.kind)).toEqual(['cycle_finished']);
     expect(list[0].target).toEqual({ screen: 'cycle_summary', cycleId: 'c1' });
-    expect(list[0].title).toBe('Cycle 2 is done');
+    expect(list[0].title).toContain('2');
   });
 
   it('ignores a completed cycle', () => {
@@ -159,6 +161,25 @@ describe('prefs and rest timer', () => {
 
   it('fires the rest-over notification when the rest ends', () => {
     const n = planRestOverNotification(1_000, 90, 's1', 'Bench press');
-    expect(n).toMatchObject({ fireAt: 91_000, body: 'Next set: Bench press.', target: { screen: 'session', sessionId: 's1' } });
+    expect(n).toMatchObject({ fireAt: 91_000, target: { screen: 'session', sessionId: 's1' } });
+    expect(n.body).toContain('Bench press');
+  });
+});
+
+describe('notification copy variants', () => {
+  it('varies the evening nudge across days but keeps it stable for one day', () => {
+    const c = cycle(Array.from({ length: 10 }, (_, i) => occ(`2026-09-${String(25 + i).padStart(2, '0')}`.replace('2026-09-31', '2026-10-01').replace('2026-09-32', '2026-10-02').replace('2026-09-33', '2026-10-03').replace('2026-09-34', '2026-10-04'), 'Push')));
+    const nudges = plan({ cycle: c }).filter(n => n.kind === 'workout_nudge');
+    expect(new Set(nudges.map(n => n.title)).size).toBeGreaterThan(1);
+    expect(nudges.every(n => `${n.title} ${n.body}`.includes('Push'))).toBe(true);
+    const again = plan({ cycle: c }).filter(n => n.kind === 'workout_nudge');
+    expect(again.map(n => n.title)).toEqual(nudges.map(n => n.title));
+  });
+
+  it('names the next exercise in every rest-over variant', () => {
+    for (let t = 0; t < 8; t++) {
+      const n = planRestOverNotification(t * 1000, 90, 's1', 'Bench Press');
+      expect(`${n.title} ${n.body}`).toContain('Bench Press');
+    }
   });
 });
