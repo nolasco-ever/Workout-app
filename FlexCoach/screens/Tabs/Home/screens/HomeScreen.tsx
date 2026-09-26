@@ -43,7 +43,7 @@ const title = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
 const SectionHeader = ({ label, first = false }: { label: string; first?: boolean }) => {
   const { colors, spacing } = useTheme();
   return (
-    <CustomText variant="overline" color={colors.inkMuted} style={{ marginTop: first ? 0 : spacing.sm, marginBottom: -spacing.xs }}>
+    <CustomText variant="sectionLabel" color={colors.inkMuted} style={{ marginTop: first ? 0 : spacing.sm, marginBottom: -spacing.xs }}>
       {label}
     </CustomText>
   );

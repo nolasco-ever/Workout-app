@@ -39,6 +39,8 @@ export const typography = {
   /** Buttons and tabs. */
   label: { fontFamily: fonts.body.bold, fontSize: 14, lineHeight: 18 },
   caption: { fontFamily: fonts.body.medium, fontSize: 12, lineHeight: 16 },
+  /** Uppercase labels that group a page into sections (Home's Today / Progress / Buddies). */
+  sectionLabel: { fontFamily: fonts.body.bold, fontSize: 13, lineHeight: 16, letterSpacing: 0.8, textTransform: 'uppercase' as const },
   /** Small uppercase labels above values. */
   overline: { fontFamily: fonts.body.bold, fontSize: 11, lineHeight: 14, letterSpacing: 0.6, textTransform: 'uppercase' as const },
 } satisfies Record<string, TextStyleToken>;
