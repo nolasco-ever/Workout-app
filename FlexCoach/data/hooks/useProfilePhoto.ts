@@ -3,8 +3,14 @@ import { Alert } from 'react-native';
 import { launchCamera, launchImageLibrary } from 'react-native-image-picker';
 import { useAuth } from '../auth/AuthProvider';
 import { removeProfilePhoto, saveProfilePhoto } from '../services/profileService';
+import { features } from '../../config/features';
 
-const pickerOptions = { mediaType: 'photo' as const, quality: 0.6 as const, maxWidth: 400, maxHeight: 400, selectionLimit: 1, includeBase64: true };
+/**
+ * 1024px at 90% is sharp on a 3x screen at the 120pt avatar and its 340pt
+ * expanded view; the earlier 400px/60% looked pixelated. Base64 is only
+ * needed for the inline fallback when cloud storage is off.
+ */
+const pickerOptions = { mediaType: 'photo' as const, quality: 0.9 as const, maxWidth: 1024, maxHeight: 1024, selectionLimit: 1, includeBase64: !features.cloudStorage };
 
 export type PhotoSource = 'library' | 'camera';
 

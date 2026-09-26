@@ -41,6 +41,10 @@ const DISMISS_VELOCITY = 900;
  * dimmed screen, with the ways to change it underneath. Tap anywhere or
  * flick the photo to put it back; while dragging, the photo follows the
  * finger and the screen brightens as it moves.
+ *
+ * The circle is laid out at its full size and scaled with a transform.
+ * Animating its width and height instead re-requested the image at every
+ * new size, which showed as a blank circle until the photo reloaded.
  */
 export const ProfilePhotoModal = ({ open, origin, uri, busy, onClose, onChooseLibrary, onTakePhoto, onRemove }: Props) => {
   const { colors, spacing } = useTheme();
@@ -102,16 +106,24 @@ export const ProfilePhotoModal = ({ open, origin, uri, busy, onClose, onChooseLi
   const tap = Gesture.Tap().onEnd(() => close());
   const gesture = Gesture.Exclusive(pan, tap);
 
+  // Centre-to-centre offset between where the avatar sits and where the big
+  // circle lands; the translate shrinks to zero as the scale grows to one.
+  const fromCentre = { x: from.x + from.size / 2, y: from.y + from.size / 2 };
+  const targetCentre = { x: target.x + target.size / 2, y: target.y + target.size / 2 };
   const photoStyle = useAnimatedStyle(() => {
-    const size = interpolate(progress.value, [0, 1], [from.size, target.size]);
+    const p = progress.value;
     return {
       position: 'absolute',
-      left: interpolate(progress.value, [0, 1], [from.x, target.x]),
-      top: interpolate(progress.value, [0, 1], [from.y, target.y]),
-      width: size,
-      height: size,
-      borderRadius: size / 2,
-      transform: [{ translateX: dragX.value }, { translateY: dragY.value }],
+      left: target.x,
+      top: target.y,
+      width: target.size,
+      height: target.size,
+      borderRadius: target.size / 2,
+      transform: [
+        { translateX: (fromCentre.x - targetCentre.x) * (1 - p) + dragX.value },
+        { translateY: (fromCentre.y - targetCentre.y) * (1 - p) + dragY.value },
+        { scale: interpolate(p, [0, 1], [from.size / target.size, 1]) },
+      ],
     };
   });
   const scrimStyle = useAnimatedStyle(() => {

@@ -20,6 +20,9 @@ import { AppStackParams } from '../../../../appNavigators/AppStack';
 import { dateLabel } from '../../../../components/charts/scale';
 import { toLocalDate } from '../../../../data/engine/dates';
 
+/** The avatar on the Profile tab. Big enough to be the focus of the top of the page. */
+const AVATAR = 120;
+
 export const ProfileScreen = () => {
   const navigation = useNavigation<NavigationProp<ProfileStackParams & AppStackParams>>();
   const { colors, spacing } = useTheme();
@@ -54,17 +57,17 @@ export const ProfileScreen = () => {
       <ScrollView contentContainerStyle={{ padding: spacing.lg, gap: spacing.lg, paddingBottom: spacing.xxl + bottomInset }}>
         <TabHeader title="Profile" />
         <View style={{ alignItems: 'center', gap: spacing.sm }}>
-          <TouchableOpacity ref={avatarRef} onPress={openPhoto} disabled={photo.busy} accessibilityRole="button" accessibilityLabel="View or change profile photo" style={{ width: 96, height: 96 }}>
+          <TouchableOpacity ref={avatarRef} onPress={openPhoto} disabled={photo.busy} accessibilityRole="button" accessibilityLabel="View or change profile photo" style={{ width: AVATAR, height: AVATAR }}>
             {profile?.photoUrl ? (
-              <Image source={{ uri: profile.photoUrl }} resizeMode="cover" style={{ width: 96, height: 96, borderRadius: 48, backgroundColor: colors.surfaceRaised }} />
+              <Image source={{ uri: profile.photoUrl }} resizeMode="cover" style={{ width: AVATAR, height: AVATAR, borderRadius: AVATAR / 2, backgroundColor: colors.surfaceRaised }} />
             ) : (
-              <View style={{ width: 96, height: 96, borderRadius: 48, backgroundColor: colors.surfaceRaised, alignItems: 'center', justifyContent: 'center' }}>
-                <Icon icon={generalIcons.user} size={40} color={colors.inactive} />
+              <View style={{ width: AVATAR, height: AVATAR, borderRadius: AVATAR / 2, backgroundColor: colors.surfaceRaised, alignItems: 'center', justifyContent: 'center' }}>
+                <Icon icon={generalIcons.user} size={48} color={colors.inactive} />
               </View>
             )}
             {/* Edit badge so the avatar reads as tappable. */}
-            <View style={{ position: 'absolute', right: -2, bottom: -2, width: 32, height: 32, borderRadius: 16, backgroundColor: colors.accent, borderWidth: 3, borderColor: colors.ground, alignItems: 'center', justifyContent: 'center' }}>
-              {photo.busy ? <ActivityIndicator size="small" color={colors.onAccent} /> : <Icon icon={generalIcons.pencil} size={16} color={colors.onAccent} strokeWidth={2.5} />}
+            <View style={{ position: 'absolute', right: 0, bottom: 0, width: 36, height: 36, borderRadius: 18, backgroundColor: colors.accent, borderWidth: 3, borderColor: colors.ground, alignItems: 'center', justifyContent: 'center' }}>
+              {photo.busy ? <ActivityIndicator size="small" color={colors.onAccent} /> : <Icon icon={generalIcons.pencil} size={18} color={colors.onAccent} strokeWidth={2.5} />}
             </View>
           </TouchableOpacity>
           <CustomText variant="heading">{profile?.displayName ?? 'Your name'}</CustomText>
