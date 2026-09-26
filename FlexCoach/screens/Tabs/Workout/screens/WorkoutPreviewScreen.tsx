@@ -14,6 +14,7 @@ import { sessionRepository } from '../../../../data/repositories/sessionReposito
 import { startWorkoutNow } from '../../../../data/services/workoutService';
 import { CustomText } from '../../../../components/text/customText';
 import { Icon } from '../../../../components/icons/Icon';
+import { MuscleMap } from '../../../../components/anatomy/MuscleMap';
 import { generalIcons } from '../../../../components/icons/icon-library';
 import { useTheme } from '../../../../theme';
 import { WorkoutStackParams } from '../WorkoutStack';
@@ -88,6 +89,7 @@ export const WorkoutPreviewScreen = () => {
               const t = targets[entry.id];
               return (
                 <View key={entry.id} style={{ flexDirection: 'row', alignItems: 'center', padding: spacing.lg, gap: spacing.md, borderTopWidth: i ? 1 : 0, borderTopColor: colors.line }}>
+                  {ex && <MuscleMap primary={ex.primaryMuscles} secondary={ex.secondaryMuscles} height={56} views="auto" />}
                   <View style={{ flex: 1 }}>
                     <CustomText variant="bodyStrong">{entry.exerciseName}</CustomText>
                     <CustomText variant="caption" color={colors.inkMuted}>
