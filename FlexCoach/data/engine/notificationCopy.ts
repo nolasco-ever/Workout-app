@@ -71,14 +71,14 @@ export const workoutNudgeCopy = (workout: string, date: LocalDate): Copy =>
   pickVariant<Copy>(
     [
       { title: `Still time for ${workout} tonight`, body: "A short session totally counts. Whatever you've got 💪" },
-      { title: `${workout} is still open today`, body: "No rush, no pressure. If you're up for it, we're here 🙂" },
+      { title: `${workout} is still open today`, body: "Tonight's the night. You'll feel amazing after 🙂" },
       { title: 'Evening check-in 👋', body: `${workout} is waiting whenever you're ready. Even 20 minutes is a win` },
       { title: `Hey, ${workout} hasn't happened yet`, body: 'The best part of a late session is how good you feel after 😌' },
-      { title: `${workout} tonight?`, body: 'Could be a great way to close out the day ✨' },
+      { title: `${workout} tonight?`, body: 'The perfect way to close out the day ✨' },
       { title: 'Got a little left in the tank?', body: `${workout} is ready when you are. Any amount counts 🔋` },
       { title: `Quick reminder: ${workout}`, body: "Tonight's a good night for it. You'll be glad you went 😄" },
       { title: `${workout} is still on the list`, body: "Get in, get a few sets done, feel awesome. That's the whole plan 🙌" },
-      { title: `One more thing today: ${workout}`, body: "Only if you're feeling it! A win's a win, big or small 🏆" },
+      { title: `One more thing today: ${workout}`, body: "Go grab the win! Big or small, it all counts 🏆" },
       { title: `Evening! ${workout} is up for grabs`, body: "Lace up if you're feeling it. You'll be walking out proud" },
     ],
     'workout_nudge',
