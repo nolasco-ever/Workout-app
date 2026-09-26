@@ -1,4 +1,6 @@
-import { LoggedSet, SessionExercise, SetTarget, WorkoutExercise } from '../models';
+import { LoggedSet, SessionExercise, SetTarget, WeightUnit, WorkoutExercise } from '../models';
+import { workingSets } from './sets';
+import { KG_PER_LB } from './units';
 
 /**
  * Double progression.
@@ -18,8 +20,6 @@ import { LoggedSet, SessionExercise, SetTarget, WorkoutExercise } from '../model
  * Cardio: repeats the last completed distance and duration, adding the
  * optional distance step. Cardio progression is deliberately conservative.
  */
-
-const workingSets = (sets: LoggedSet[]): LoggedSet[] => sets.filter(s => s.completed);
 
 const minOf = (values: (number | null)[]): number | null => {
   const nums = values.filter((v): v is number => typeof v === 'number');
@@ -149,3 +149,46 @@ export const buildPlannedSets = (target: SetTarget, makeId: () => string): Logge
     completed: false,
     completedAt: null,
   }));
+
+/**
+ * Warm-up ramp for a weighted lift, as fractions of the first working
+ * weight with the reps to do at each. Heavier working weights get a longer
+ * ramp; anything under 20 kg (about 45 lb) is light enough to start cold.
+ */
+export const warmupRamp = (workingKg: number): { fraction: number; reps: number }[] => {
+  if (workingKg >= 80) return [{ fraction: 0.4, reps: 8 }, { fraction: 0.6, reps: 5 }, { fraction: 0.8, reps: 3 }];
+  if (workingKg >= 40) return [{ fraction: 0.5, reps: 8 }, { fraction: 0.75, reps: 4 }];
+  if (workingKg >= 20) return [{ fraction: 0.5, reps: 8 }];
+  return [];
+};
+
+/** Round a warm-up weight to what can actually be loaded in the user's unit: 5 lb or 2.5 kg. */
+const roundWarmupKg = (kg: number, unit: WeightUnit): number => {
+  if (unit === 'lb') return roundTo(kg / KG_PER_LB, 5) * KG_PER_LB;
+  return roundTo(kg, 2.5);
+};
+
+/**
+ * Warm-up sets to log before the working sets of a weighted lift, built
+ * from the target's weight. Empty when there is no weight to scale from or
+ * the working weight is light. Set numbers restart from 1 within the warm-ups.
+ */
+export const buildWarmupSets = (target: SetTarget, unit: WeightUnit, makeId: () => string): LoggedSet[] => {
+  const w = target.weightKg;
+  if (w === null || w <= 0) return [];
+  return warmupRamp(w)
+    .map(step => ({ kg: roundWarmupKg(w * step.fraction, unit), reps: step.reps }))
+    // Rounding a light ramp can land on the working weight itself; no point warming up with it.
+    .filter(step => step.kg > 0 && step.kg < w)
+    .map((step, i) => ({
+      id: makeId(),
+      setNumber: i + 1,
+      weightKg: step.kg,
+      reps: step.reps,
+      durationSec: null,
+      distanceM: null,
+      completed: false,
+      completedAt: null,
+      warmup: true,
+    }));
+};

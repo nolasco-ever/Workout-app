@@ -33,7 +33,7 @@ export const WorkoutHomeScreen = () => {
   const navigation = useNavigation<NavigationProp<WorkoutStackParams>>();
   const { colors, spacing, radius } = useTheme();
   const tabBarInset = useTabBarInset();
-  const { uid } = useAuth();
+  const { uid, profile } = useAuth();
   const state = useWorkoutHome();
   const { plans } = usePlans();
   const drafts = plans.filter(p => p.status === 'draft');
@@ -74,7 +74,7 @@ export const WorkoutHomeScreen = () => {
   const start = (occurrence: Occurrence) =>
     run(`start-${occurrence.id}`, async () => {
       if (!uid || !plan || !cycle) return;
-      const { session, cycle: updated } = await startSession(uid, plan, cycle, occurrence);
+      const { session, cycle: updated } = await startSession(uid, plan, cycle, occurrence, profile?.weightUnit ?? 'lb');
       navigation.navigate('SessionScreen', { plan, cycle: updated, session });
     });
 

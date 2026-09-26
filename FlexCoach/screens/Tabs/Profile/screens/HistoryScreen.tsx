@@ -6,7 +6,7 @@ import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useAuth } from '../../../../data/auth/AuthProvider';
 import { Session } from '../../../../data/models';
 import { sessionRepository } from '../../../../data/repositories/sessionRepository';
-import { totalVolumeKg } from '../../../../data/engine/stats';
+import { countWorkingSets, totalVolumeKg } from '../../../../data/engine/stats';
 import { formatDuration, toDisplayWeight } from '../../../../data/engine/units';
 import { fromLocalDate } from '../../../../data/engine/dates';
 import { dateLabel } from '../../../../components/charts/scale';
@@ -67,7 +67,7 @@ export const HistoryScreen = () => {
             <CustomText variant="overline" color={colors.inkMuted}>{group.month}</CustomText>
             <SurfaceCard style={{ padding: 0 }}>
               {group.sessions.map((s, i) => {
-                const sets = s.exercises.reduce((n, ex) => n + ex.sets.filter(x => x.completed).length, 0);
+                const sets = countWorkingSets([s]);
                 const volume = Math.round(toDisplayWeight(totalVolumeKg([s]), unit) ?? 0);
                 const duration = s.finishedAt ? formatDuration(Math.round((s.finishedAt - s.startedAt) / 1000)) : null;
                 return (

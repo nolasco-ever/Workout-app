@@ -24,6 +24,12 @@ export interface LoggedSet {
   distanceM: number | null;
   completed: boolean;
   completedAt: Timestamp | null;
+  /**
+   * A lighter set done before the working sets, built from the first working
+   * set's weight when the session starts. Never counts toward volume,
+   * records or progression. Missing on sets logged before warm-ups existed.
+   */
+  warmup?: boolean;
 }
 
 export interface SessionExercise {

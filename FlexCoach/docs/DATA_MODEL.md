@@ -71,6 +71,17 @@ The suggestion is snapshotted onto the session as `target` so the next
 suggestion knows the previous target and so the UI can show suggested versus
 actual.
 
+## Warm-up sets
+
+Weighted lifts (`weight_reps`) get warm-up sets when the session starts,
+unless the plan entry turns them off (`WorkoutExercise.warmup`, see
+`wantsWarmup`). `engine/progression.ts` builds them from the first working
+set's weight: a longer ramp for heavier loads, none under 20 kg, rounded
+to 5 lb or 2.5 kg for the user's unit. They are ordinary `LoggedSet` rows
+flagged `warmup: true`, so the logger treats them like any set, but
+`engine/sets.ts` (`isWorkingSet`) keeps them out of volume, records,
+progression and every insight.
+
 ## Units
 
 Weights are stored in kilograms and distances in metres. The user's

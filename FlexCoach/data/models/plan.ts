@@ -41,7 +41,17 @@ export interface WorkoutExercise {
   restSec: number;
   progression: ProgressionConfig;
   notes: string | null;
+  /**
+   * Add warm-up sets before the working sets, scaled from the first working
+   * set's weight. Missing on entries made before the option existed, which
+   * reads as on for weighted lifts (see wantsWarmup).
+   */
+  warmup?: boolean;
 }
+
+/** Whether a plan entry gets warm-up sets: on by default for weighted lifts only. */
+export const wantsWarmup = (entry: Pick<WorkoutExercise, 'measurement' | 'warmup'>): boolean =>
+  entry.measurement === 'weight_reps' && entry.warmup !== false;
 
 /** One training day template, e.g. "Push" or "Full Body A". */
 export interface Workout {

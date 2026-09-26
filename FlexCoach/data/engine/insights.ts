@@ -1,5 +1,6 @@
 import { BodyWeightEntry, Id, LocalDate, Session } from '../models';
 import { addDays, daysBetween, weekdayOf } from './dates';
+import { isWorkingSet, workingSets } from './sets';
 
 /** Epley estimate of a one-rep max. Returns the weight itself for a single. */
 export const estimateOneRepMax = (weightKg: number, reps: number): number => (reps <= 1 ? weightKg : weightKg * (1 + reps / 30));
@@ -27,7 +28,7 @@ export const weeklySeries = (sessions: Session[], todayDate: LocalDate, weeks: n
     p.sessions += 1;
     for (const ex of s.exercises) {
       for (const set of ex.sets) {
-        if (!set.completed) continue;
+        if (!isWorkingSet(set)) continue;
         p.sets += 1;
         p.volumeKg += (set.weightKg ?? 0) * (set.reps ?? 0);
       }
@@ -57,7 +58,7 @@ export const exerciseHistory = (sessions: Session[], exerciseId: Id): ExercisePo
     .flatMap(s => {
       const ex = s.exercises.find(e => e.exerciseId === exerciseId);
       if (!ex) return [];
-      const done = ex.sets.filter(set => set.completed);
+      const done = workingSets(ex.sets);
       if (done.length === 0) return [];
       const weights = done.map(set => set.weightKg).filter((w): w is number => w !== null);
       const est = done.filter(set => set.weightKg !== null && set.reps).map(set => estimateOneRepMax(set.weightKg!, set.reps!));
@@ -81,7 +82,7 @@ export const loggedExercises = (sessions: Session[]): { exerciseId: Id; exercise
   for (const s of sessions) {
     if (s.status !== 'completed') continue;
     for (const ex of s.exercises) {
-      if (!ex.sets.some(set => set.completed)) continue;
+      if (!ex.sets.some(isWorkingSet)) continue;
       const cur = map.get(ex.exerciseId);
       if (cur) {
         cur.sessions += 1;
@@ -167,7 +168,7 @@ export const muscleBreakdown = (sessions: Session[], primaryMusclesOf: (exercise
   for (const s of sessions) {
     if (s.status !== 'completed') continue;
     for (const ex of s.exercises) {
-      const done = ex.sets.filter(set => set.completed);
+      const done = workingSets(ex.sets);
       if (done.length === 0) continue;
       const reps = done.reduce((n, set) => n + (set.reps ?? 0), 0);
       const volumeKg = done.reduce((n, set) => n + (set.weightKg ?? 0) * (set.reps ?? 0), 0);
@@ -219,7 +220,7 @@ export const muscleWeeklySeries = (
     for (const ex of s.exercises) {
       if (!primaryMusclesOf(ex.exerciseId).includes(muscle)) continue;
       for (const set of ex.sets) {
-        if (!set.completed) continue;
+        if (!isWorkingSet(set)) continue;
         points[i].sets += 1;
         points[i].reps += set.reps ?? 0;
         points[i].volumeKg += (set.weightKg ?? 0) * (set.reps ?? 0);

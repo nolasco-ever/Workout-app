@@ -4,9 +4,9 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { RouteProp, useNavigation, useRoute } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useAuth } from '../../../../data/auth/AuthProvider';
-import { SetTarget, WorkoutExercise } from '../../../../data/models';
+import { SetTarget, WorkoutExercise, wantsWarmup } from '../../../../data/models';
 import { findWorkout } from '../../../../data/engine/schedule';
-import { suggestTarget } from '../../../../data/engine/progression';
+import { suggestTarget, warmupRamp } from '../../../../data/engine/progression';
 import { formatDistance, formatDuration, formatWeight } from '../../../../data/engine/units';
 import { getCatalogExercise } from '../../../../data/catalog/exerciseCatalog';
 import { today } from '../../../../data/engine/dates';
@@ -23,8 +23,10 @@ import { PrimaryButton } from '../../../../components/buttons/PrimaryButton';
 
 const describeTarget = (entry: WorkoutExercise, t: SetTarget, unit: 'kg' | 'lb', dist: 'km' | 'mi'): string => {
   switch (entry.measurement) {
-    case 'weight_reps':
-      return `${t.sets} × ${t.reps ?? '—'} @ ${formatWeight(t.weightKg, unit)}`;
+    case 'weight_reps': {
+      const warmups = wantsWarmup(entry) && t.weightKg ? warmupRamp(t.weightKg).length : 0;
+      return `${t.sets} × ${t.reps ?? '—'} @ ${formatWeight(t.weightKg, unit)}${warmups ? ` · ${warmups} warm-up${warmups === 1 ? '' : 's'}` : ''}`;
+    }
     case 'reps':
       return `${t.sets} × ${t.reps ?? '—'}${t.weightKg ? ` +${formatWeight(t.weightKg, unit)}` : ''}`;
     case 'time':
@@ -118,7 +120,7 @@ export const WorkoutPreviewScreen = () => {
               if (!uid) return;
               setBusy(true);
               try {
-                const { session, cycle: updated } = await startWorkoutNow(uid, plan, cycle, occurrence);
+                const { session, cycle: updated } = await startWorkoutNow(uid, plan, cycle, occurrence, profile?.weightUnit ?? 'lb');
                 navigation.replace('SessionScreen', { plan, cycle: updated, session });
               } finally {
                 setBusy(false);

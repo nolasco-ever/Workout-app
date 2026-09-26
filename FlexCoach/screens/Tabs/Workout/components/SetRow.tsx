@@ -7,6 +7,9 @@ import { generalIcons } from '../../../../components/icons/icon-library';
 import { useTheme } from '../../../../theme';
 import { DurationInput } from '../../../../components/inputs/DurationInput';
 
+/** Row label: the set number, or W1, W2 for warm-ups. */
+export const setLabel = (set: Pick<LoggedSet, 'setNumber' | 'warmup'>): string => (set.warmup ? `W${set.setNumber}` : String(set.setNumber));
+
 export interface SetDraft {
   a: string;
   b: string;
@@ -59,8 +62,8 @@ export const SetRow = ({ set, measurement, draft, unitLabels, onChange, onToggle
       }}
     >
       <View style={{ width: 28, marginBottom: captionHeight }}>
-        <CustomText variant="label" color={colors.inkMuted}>
-          {set.setNumber}
+        <CustomText variant="label" color={set.warmup ? colors.accent : colors.inkMuted}>
+          {setLabel(set)}
         </CustomText>
       </View>
       {showA && (

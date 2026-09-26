@@ -11,6 +11,8 @@ import {
   Session,
   SessionExercise,
   UserProfile,
+  WeightUnit,
+  wantsWarmup,
 } from '../models';
 import { addDays, today } from '../engine/dates';
 import { newId } from '../engine/ids';
@@ -23,8 +25,8 @@ import {
   pushOccurrence,
   skipOccurrence,
 } from '../engine/schedule';
-import { buildPlannedSets, suggestTarget } from '../engine/progression';
-import { currentStreakDays, findPersonalRecords, summarizeCycle, totalVolumeKg } from '../engine/stats';
+import { buildPlannedSets, buildWarmupSets, suggestTarget } from '../engine/progression';
+import { countWorkingSets, currentStreakDays, findPersonalRecords, summarizeCycle, totalVolumeKg } from '../engine/stats';
 import { cycleRepository } from '../repositories/cycleRepository';
 import { planRepository } from '../repositories/planRepository';
 import { sessionRepository } from '../repositories/sessionRepository';
@@ -78,7 +80,11 @@ const latestExerciseLog = (history: Session[], exerciseId: Id): SessionExercise 
   return null;
 };
 
-export const startSession = async (uid: Id, plan: Plan, cycle: Cycle, occurrence: Occurrence): Promise<{ session: Session; cycle: Cycle }> => {
+/**
+ * Start a session for an occurrence. `unit` only affects how warm-up weights
+ * are rounded (to 5 lb or 2.5 kg); everything is stored in kilograms.
+ */
+export const startSession = async (uid: Id, plan: Plan, cycle: Cycle, occurrence: Occurrence, unit: WeightUnit = 'lb'): Promise<{ session: Session; cycle: Cycle }> => {
   const workout = findWorkout(plan, occurrence.workoutId);
   if (!workout) throw new Error('Occurrence has no workout');
   const history = await sessionRepository.listCompleted(uid);
@@ -99,6 +105,7 @@ export const startSession = async (uid: Id, plan: Plan, cycle: Cycle, occurrence
       .sort((a, b) => a.order - b.order)
       .map((entry, i) => {
         const target = suggestTarget(entry, latestExerciseLog(history, entry.exerciseId));
+        const warmups = wantsWarmup(entry) ? buildWarmupSets(target, unit, newId) : [];
         return {
           id: newId(),
           workoutExerciseId: entry.id,
@@ -107,7 +114,7 @@ export const startSession = async (uid: Id, plan: Plan, cycle: Cycle, occurrence
           measurement: entry.measurement,
           order: i,
           target,
-          sets: buildPlannedSets(target, newId),
+          sets: [...warmups, ...buildPlannedSets(target, newId)],
           notes: null,
         };
       }),
@@ -125,7 +132,7 @@ export const startSession = async (uid: Id, plan: Plan, cycle: Cycle, occurrence
  * workout swaps places with today's slot; a missed one is pushed forward to
  * today, cascading anything in its way. Today's workout just starts.
  */
-export const startWorkoutNow = async (uid: Id, plan: Plan, cycle: Cycle, occurrence: Occurrence): Promise<{ session: Session; cycle: Cycle }> => {
+export const startWorkoutNow = async (uid: Id, plan: Plan, cycle: Cycle, occurrence: Occurrence, unit: WeightUnit = 'lb'): Promise<{ session: Session; cycle: Cycle }> => {
   const todayDate = today();
   let current = cycle;
   if (occurrence.date > todayDate) {
@@ -136,7 +143,7 @@ export const startWorkoutNow = async (uid: Id, plan: Plan, cycle: Cycle, occurre
   }
   const moved = current.occurrences.find(o => o.id === occurrence.id);
   if (!moved || moved.status !== 'scheduled') throw new Error('Workout could not be scheduled for today');
-  return startSession(uid, plan, current, moved);
+  return startSession(uid, plan, current, moved, unit);
 };
 
 export const logSet = (uid: Id, session: Session, sessionExerciseId: Id, set: LoggedSet): Promise<Session> =>
@@ -186,7 +193,7 @@ export const finishSession = async (uid: Id, profile: UserProfile | null, sessio
     cycle: updatedCycle,
     durationSec: Math.round(((finished.finishedAt ?? Date.now()) - finished.startedAt) / 1000),
     volumeKg: totalVolumeKg([finished]),
-    setsCompleted: finished.exercises.reduce((n, ex) => n + ex.sets.filter(s => s.completed).length, 0),
+    setsCompleted: countWorkingSets([finished]),
     personalRecords,
   };
 };
@@ -221,7 +228,7 @@ export const getCycleReview = async (uid: Id, cycle: Cycle): Promise<CycleReview
     sessions: inCycle,
     volumeKg: totalVolumeKg(inCycle),
     durationSec: inCycle.reduce((n, s) => n + Math.max(0, Math.round(((s.finishedAt ?? s.startedAt) - s.startedAt) / 1000)), 0),
-    setsCompleted: inCycle.reduce((n, s) => n + s.exercises.reduce((m, ex) => m + ex.sets.filter(x => x.completed).length, 0), 0),
+    setsCompleted: countWorkingSets(inCycle),
   };
 };
 

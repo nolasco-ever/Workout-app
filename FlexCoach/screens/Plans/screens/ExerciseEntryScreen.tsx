@@ -5,13 +5,14 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { RouteProp, useNavigation, useRoute } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useAuth } from '../../../data/auth/AuthProvider';
-import { WorkoutExercise } from '../../../data/models';
+import { WorkoutExercise, wantsWarmup } from '../../../data/models';
 import { fromDisplayDistance, fromDisplayWeight, parseNumber, toDisplayDistance, toDisplayWeight } from '../../../data/engine/units';
 import { getCatalogExercise } from '../../../data/catalog/exerciseCatalog';
 import { CustomText } from '../../../components/text/customText';
 import { SurfaceCard } from '../../../components/cards/SurfaceCard';
 import { TextField } from '../../../components/inputs/TextField';
 import { Stepper } from '../../../components/inputs/Stepper';
+import { SwitchRow } from '../../../components/inputs/SwitchRow';
 import { DurationField } from '../../../components/inputs/DurationInput';
 import { PrimaryButton } from '../../../components/buttons/PrimaryButton';
 import { MuscleMap } from '../../../components/anatomy/MuscleMap';
@@ -113,6 +114,16 @@ export const ExerciseEntryScreen = () => {
             )}
           </SurfaceCard>
 
+          {entry.measurement === 'weight_reps' && (
+            <SurfaceCard style={{ padding: 0 }}>
+              <SwitchRow
+                title="Warm-up sets"
+                description="Lighter sets before the first working set, scaled from its weight. They don't count toward volume or records."
+                value={wantsWarmup(entry)}
+                onChange={warmup => setEntry({ ...entry, warmup })}
+              />
+            </SurfaceCard>
+          )}
         </ScrollView>
         <View style={{ padding: spacing.lg, borderTopWidth: 1, borderTopColor: colors.line }}>
           <PrimaryButton label="Save" onPress={save} />

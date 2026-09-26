@@ -1,11 +1,12 @@
 import { Cycle, CycleSummary, Id, PersonalRecord, Session, SessionExercise } from '../models';
+import { isWorkingSet, workingSets } from './sets';
 
 /**
  * The single best value for an exercise across a set of sessions, by the
  * measure that matters for its type.
  */
 const bestValue = (ex: SessionExercise): { kind: PersonalRecord['kind']; value: number } | null => {
-  const done = ex.sets.filter(s => s.completed);
+  const done = workingSets(ex.sets);
   if (done.length === 0) return null;
   const max = (vals: (number | null)[]) => Math.max(...vals.map(v => v ?? -Infinity));
   switch (ex.measurement) {
@@ -94,17 +95,21 @@ export const summarizeCycle = (cycle: Cycle, cycleSessions: Session[], history: 
   };
 };
 
-/** Total weight moved (kg × reps) for a session or list of sessions. */
+/** Total weight moved (kg × reps) for a session or list of sessions. Warm-ups don't count. */
 export const totalVolumeKg = (sessions: Session[]): number =>
   sessions.reduce(
     (sum, s) =>
       sum +
       s.exercises.reduce(
-        (exSum, ex) => exSum + ex.sets.reduce((setSum, set) => setSum + (set.completed ? (set.weightKg ?? 0) * (set.reps ?? 0) : 0), 0),
+        (exSum, ex) => exSum + ex.sets.reduce((setSum, set) => setSum + (isWorkingSet(set) ? (set.weightKg ?? 0) * (set.reps ?? 0) : 0), 0),
         0,
       ),
     0,
   );
+
+/** Completed working sets across sessions, the number shown as "Sets" in summaries. */
+export const countWorkingSets = (sessions: Session[]): number =>
+  sessions.reduce((n, s) => n + s.exercises.reduce((m, ex) => m + workingSets(ex.sets).length, 0), 0);
 
 /** Volume per primary muscle group, for the Home insights. */
 export const volumeByMuscle = (
@@ -116,7 +121,7 @@ export const volumeByMuscle = (
     for (const ex of s.exercises) {
       const muscles = primaryMusclesOf(ex.exerciseId);
       for (const set of ex.sets) {
-        if (!set.completed) continue;
+        if (!isWorkingSet(set)) continue;
         for (const m of muscles) {
           const bucket = (out[m] ??= { volumeKg: 0, sets: 0, reps: 0 });
           bucket.sets += 1;

@@ -6,6 +6,7 @@ import { useAuth } from '../../../../data/auth/AuthProvider';
 import { Cycle, Plan } from '../../../../data/models';
 import { formatDistance, formatDuration, formatWeight, toDisplayWeight } from '../../../../data/engine/units';
 import { CycleReview, getCycleReview, loadCycleForReview, startNextCycle } from '../../../../data/services/workoutService';
+import { countWorkingSets } from '../../../../data/engine/stats';
 import { notificationRepository } from '../../../../data/repositories/notificationRepository';
 import { CustomText } from '../../../../components/text/customText';
 import { Icon } from '../../../../components/icons/Icon';
@@ -137,7 +138,7 @@ export const CycleReviewScreen = () => {
             <CustomText variant="overline" color={colors.inkMuted}>Workouts</CustomText>
             <Card style={{ padding: 0 }}>
               {sessions.map((s, i) => {
-                const sets = s.exercises.reduce((n, ex) => n + ex.sets.filter(x => x.completed).length, 0);
+                const sets = countWorkingSets([s]);
                 const duration = s.finishedAt ? formatDuration(Math.round((s.finishedAt - s.startedAt) / 1000)) : null;
                 return (
                   <TouchableOpacity

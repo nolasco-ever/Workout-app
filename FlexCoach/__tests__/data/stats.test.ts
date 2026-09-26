@@ -55,3 +55,14 @@ describe('volume and streaks', () => {
     expect(currentStreakDays([s('2026-09-18')], '2026-09-21', addDays)).toBe(0);
   });
 });
+
+describe('warm-up sets in stats', () => {
+  it('count neither toward volume nor records', () => {
+    const ex = lastSession({ reps: 10, weightKg: 100 }, [set({ reps: 8, weightKg: 120, warmup: true, completed: true }), set({ reps: 10, weightKg: 100 })]);
+    const s = session('s1', '2026-09-25', [ex]);
+    expect(totalVolumeKg([s])).toBe(1000);
+    const prs = findPersonalRecords([s], []);
+    expect(prs).toHaveLength(1);
+    expect(prs[0].value).toBe(100);
+  });
+});

@@ -7,7 +7,7 @@ import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useAuth } from '../../../../data/auth/AuthProvider';
 import { LoggedSet, Session, SessionExercise } from '../../../../data/models';
 import { sessionRepository } from '../../../../data/repositories/sessionRepository';
-import { totalVolumeKg } from '../../../../data/engine/stats';
+import { countWorkingSets, totalVolumeKg } from '../../../../data/engine/stats';
 import { formatDistance, formatDuration, formatWeight, toDisplayDistance, toDisplayWeight } from '../../../../data/engine/units';
 import { fromLocalDate } from '../../../../data/engine/dates';
 import { getCatalogExercise } from '../../../../data/catalog/exerciseCatalog';
@@ -20,7 +20,7 @@ import { HeaderButton } from '../../../../components/headers/HeaderButton';
 import { generalIcons } from '../../../../components/icons/icon-library';
 import { useTheme } from '../../../../theme';
 import { useTabScrollInset } from '../../../../navigation/useTabBarInset';
-import { SetDraft, SetRow } from '../components/SetRow';
+import { SetDraft, SetRow, setLabel } from '../components/SetRow';
 import { fromDraft, toDraft, Units, unitLabels } from '../components/setDrafts';
 
 type Params = { SessionDetailScreen: { sessionId: string } };
@@ -167,7 +167,7 @@ export const SessionDetailScreen = () => {
   const shown = editing && draftSession ? draftSession : session;
   const stats = useMemo(() => {
     if (!shown) return null;
-    const setsDone = shown.exercises.reduce((n, ex) => n + ex.sets.filter(s => s.completed).length, 0);
+    const setsDone = countWorkingSets([shown]);
     const duration = shown.finishedAt ? Math.round((shown.finishedAt - shown.startedAt) / 1000) : null;
     return { setsDone, duration, volume: toDisplayWeight(totalVolumeKg([shown]), units.weight) ?? 0 };
   }, [shown, units.weight]);
@@ -235,7 +235,7 @@ export const SessionDetailScreen = () => {
                         return (
                           <View key={set.id} style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.md, paddingVertical: spacing.sm, borderTopWidth: 1, borderTopColor: colors.line, opacity: set.completed ? 1 : 0.5 }}>
                             <View style={{ width: 28 }}>
-                              <CustomText variant="label" color={colors.inkMuted}>{set.setNumber}</CustomText>
+                              <CustomText variant="label" color={set.warmup ? colors.accent : colors.inkMuted}>{setLabel(set)}</CustomText>
                             </View>
                             <CustomText variant="bodyStrong" style={{ flex: 1, textAlign: 'center' }}>{a}</CustomText>
                             <CustomText variant="bodyStrong" style={{ flex: 1, textAlign: 'center' }}>{b}</CustomText>
