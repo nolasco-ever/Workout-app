@@ -41,6 +41,29 @@ export const notificationRepository = {
     return true;
   },
 
+  /**
+   * Put an item in someone else's feed (a buddy request, a streak). Their
+   * feed can't be read from here, so this is a blind create; the rules only
+   * allow create, and a duplicate id fails harmlessly.
+   */
+  createForUser: async (uid: Id, item: NewFeedNotification): Promise<void> => {
+    const now = Date.now();
+    const doc: FeedNotification = {
+      id: item.id,
+      ownerId: uid,
+      kind: item.kind,
+      title: item.title,
+      body: item.body,
+      target: item.target,
+      readAt: null,
+      push: item.push ?? true,
+      pushedAt: null,
+      createdAt: now,
+      updatedAt: now,
+    };
+    await writeDoc(paths.notification(uid, item.id), doc);
+  },
+
   markRead: (uid: Id, notificationId: Id) => {
     const now = Date.now();
     return patchDoc<FeedNotification>(paths.notification(uid, notificationId), { readAt: now, updatedAt: now });

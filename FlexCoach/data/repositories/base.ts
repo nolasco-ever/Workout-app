@@ -3,6 +3,7 @@ import {
   doc,
   getDoc,
   getDocs,
+  limit,
   onSnapshot,
   orderBy,
   query,
@@ -91,4 +92,4 @@ export const stamp = <T extends Omit<BaseDocument, 'createdAt' | 'updatedAt'>>(
 
 export const touch = <T extends BaseDocument>(data: T, now: number = Date.now()): T => ({ ...data, updatedAt: now });
 
-export { where, orderBy };
+export { where, orderBy, limit };

@@ -13,6 +13,11 @@ export const planRepository = {
 
   listActiveAndDrafts: (uid: Id) => listDocs<Plan>(paths.plans(uid), where('status', 'in', ['active', 'draft'])),
 
+  /** Plans a buddy shares. The filter is what the security rule allows a buddy to query. */
+  listSharedBy: (ownerUid: Id) => listDocs<Plan>(paths.plans(ownerUid), where('visibleToBuddies', '==', true)),
+
+  setVisibleToBuddies: (uid: Id, planId: Id, visible: boolean) => patchDoc<Plan>(paths.plan(uid, planId), { visibleToBuddies: visible, updatedAt: Date.now() }),
+
   watchAll: (uid: Id, onChange: (plans: Plan[]) => void): Unsubscribe =>
     watchDocs<Plan>(paths.plans(uid), onChange, orderBy('updatedAt', 'desc')),
 
@@ -63,7 +68,7 @@ export const planRepository = {
    * Copy a plan into another user's account. The copy is a fully independent
    * draft; the recipient can edit or activate it like one they built.
    */
-  copyTo: async (recipientUid: Id, source: Plan, sharedByUid: Id, newId: () => Id): Promise<Plan> => {
+  copyTo: async (recipientUid: Id, source: Plan, sharedBy: { uid: Id; displayName?: string | null }, newId: () => Id): Promise<Plan> => {
     const now = Date.now();
     const copy: Plan = {
       ...source,
@@ -71,7 +76,8 @@ export const planRepository = {
       ownerId: recipientUid,
       status: 'draft',
       archivedAt: null,
-      sharedFrom: { userId: sharedByUid, planId: source.id, sharedAt: now },
+      visibleToBuddies: false,
+      sharedFrom: { userId: sharedBy.uid, planId: source.id, sharedAt: now, displayName: sharedBy.displayName ?? null },
       workouts: source.workouts.map(w => ({
         ...w,
         id: newId(),

@@ -34,7 +34,9 @@ export type NotificationTarget =
   | { screen: 'cycle_summary'; cycleId: Id }
   | { screen: 'body_weight' }
   | { screen: 'feed' }
-  | { screen: 'buddies' };
+  | { screen: 'buddies' }
+  | { screen: 'buddy'; uid: Id; displayName?: string | null }
+  | { screen: 'buddy_activity' };
 
 export type FeedNotificationKind =
   | 'missed_workout'
@@ -43,7 +45,9 @@ export type FeedNotificationKind =
   | 'buddy_request'
   | 'buddy_accepted'
   | 'buddy_workout'
-  | 'buddy_skipped';
+  | 'buddy_skipped'
+  | 'buddy_streak'
+  | 'buddy_achievement';
 
 /**
  * Stored at users/{uid}/notifications/{id}. The in-app feed. Only durable

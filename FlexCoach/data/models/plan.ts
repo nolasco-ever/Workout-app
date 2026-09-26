@@ -111,8 +111,10 @@ export interface Plan extends BaseDocument {
   workouts: Workout[];
   schedule: Schedule;
   /** Set when this plan was copied from a buddy's plan. */
-  sharedFrom: { userId: Id; planId: Id; sharedAt: number } | null;
+  sharedFrom: { userId: Id; planId: Id; sharedAt: number; displayName?: string | null } | null;
   archivedAt: number | null;
+  /** Buddies can see and copy this plan. Off by default; missing on older plans. */
+  visibleToBuddies?: boolean;
 }
 
 export const DEFAULT_PROGRESSION: ProgressionConfig = {

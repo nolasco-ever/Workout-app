@@ -27,8 +27,11 @@ service cloud.firestore {
     match /users/{uid} {
       allow read, write: if isOwner(uid);
 
+      // Plans the owner marked visible can be read (and so copied) by
+      // accepted buddies. A buddy's list query must filter on the flag.
       match /plans/{planId} {
-        allow read, write: if isOwner(uid);
+        allow read: if isOwner(uid) || (isAcceptedBuddyOf(uid) && resource.data.visibleToBuddies == true);
+        allow write: if isOwner(uid);
       }
       match /cycles/{cycleId} {
         allow read, write: if isOwner(uid);
@@ -47,9 +50,25 @@ service cloud.firestore {
       }
       // In-app notification feed. The owner reads, marks read and deletes;
       // the device also creates its own items (missed workout, cycle done).
-      // Buddy events are written by Cloud Functions with the Admin SDK.
+      // Buddies may create the few kinds addressed to this user: a request
+      // once their pending row exists, and the rest once accepted. Only
+      // create, never overwrite, so a buddy can't rewrite what's there.
       match /notifications/{notificationId} {
         allow read, write: if isOwner(uid);
+        allow create: if signedIn() && request.auth.uid != uid
+          && request.resource.data.ownerId == uid
+          && (
+            (request.resource.data.kind == 'buddy_request'
+              && exists(/databases/$(database)/documents/users/$(uid)/buddies/$(request.auth.uid)))
+            || (request.resource.data.kind in ['buddy_accepted', 'buddy_streak', 'buddy_achievement']
+              && isAcceptedBuddyOf(uid))
+          );
+      }
+      // What the owner has been up to, in buddy-safe words. Buddies read it
+      // and merge everyone's into one feed.
+      match /activity/{activityId} {
+        allow read: if isOwner(uid) || isAcceptedBuddyOf(uid);
+        allow write: if isOwner(uid);
       }
       // Push tokens, one per install. Only the owner and the server touch them.
       match /devices/{token} {
@@ -70,10 +89,18 @@ service cloud.firestore {
       }
     }
 
-    // Buddy-visible summary. Owner writes; accepted buddies read.
+    // Buddy-visible summary (the Iron Card). Owner writes; accepted buddies read.
     match /publicProfiles/{uid} {
       allow read: if isOwner(uid) || isAcceptedBuddyOf(uid);
       allow write: if isOwner(uid);
+    }
+
+    // A scanned or typed card code resolves here. Anyone signed in with the
+    // code can read the card copy; only its owner writes it.
+    match /inviteCodes/{code} {
+      allow read: if signedIn();
+      allow create, update: if signedIn() && request.resource.data.uid == request.auth.uid;
+      allow delete: if signedIn() && resource.data.uid == request.auth.uid;
     }
 
     // Deny anything not matched above.

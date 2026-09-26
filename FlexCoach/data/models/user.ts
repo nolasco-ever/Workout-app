@@ -26,12 +26,22 @@ export interface UserProfile extends BaseDocument {
    * "asked and refused" there.
    */
   notificationsPromptedAt?: Timestamp | null;
+  /** The code on this account's Iron Card (see inviteCodes); made on first visit to Buddies. */
+  inviteCode?: string | null;
+}
+
+/** The single best lift on record, for the card. */
+export interface BestRecord {
+  exerciseName: string;
+  kind: 'weight' | 'reps' | 'duration' | 'distance';
+  value: number;
 }
 
 /**
- * Stored at publicProfiles/{uid}. This is the only document a buddy can read,
- * refreshed whenever a session completes. Nothing here reveals sets, weights,
- * or body weight.
+ * Stored at publicProfiles/{uid}: the "Iron Card". This is the only document
+ * a buddy can read about someone, refreshed whenever a session completes or
+ * a workout is skipped. Summary numbers only: nothing here reveals sets,
+ * weights per exercise, or body weight.
  */
 export interface PublicProfile {
   id: Id;
@@ -46,6 +56,27 @@ export interface PublicProfile {
   /** Whether the most recently scheduled workout was skipped. */
   skippedLastScheduled: boolean;
   achievementIds: Id[];
+  /** Missing on cards written before build 12. */
+  totalVolumeKg?: number;
+  bestRecord?: BestRecord | null;
+  /** The exercise logged in the most sessions. */
+  favoriteExercise?: string | null;
+  /** Account creation time. */
+  trainingSince?: Timestamp | null;
+  /** How many plans this person shares with buddies. */
+  sharedPlanCount?: number;
+  updatedAt: Timestamp;
+}
+
+/**
+ * Stored at inviteCodes/{code}. What a scanned Iron Card resolves to before
+ * the two are buddies: readable by any signed-in user who has the code, so
+ * it carries a copy of the card rather than pointing at the private one.
+ */
+export interface InviteCode {
+  code: string;
+  uid: Id;
+  card: PublicProfile;
   updatedAt: Timestamp;
 }
 
@@ -55,6 +86,25 @@ export type BuddyStatus = 'pending_sent' | 'pending_received' | 'accepted';
 export interface Buddy extends BaseDocument {
   userId: Id;
   status: BuddyStatus;
+  /** Snapshots taken when the request was made, so pending rows can show a name. */
+  displayName?: string | null;
+  photoUrl?: string | null;
+}
+
+export type ActivityKind = 'workout_done' | 'workout_skipped' | 'workout_pushed' | 'streak' | 'record' | 'cycle_done' | 'plan_shared' | 'joined';
+
+/**
+ * Stored at users/{uid}/activity/{id}: what the owner has been up to, in
+ * the words buddies see ("Finished Upper · 15 sets"). Buddies read each
+ * other's lists and merge them into one feed; nothing is fanned out.
+ */
+export interface Activity extends BaseDocument {
+  ownerId: Id;
+  kind: ActivityKind;
+  title: string;
+  detail: string | null;
+  /** When it happened; createdAt is when it was written. */
+  at: Timestamp;
 }
 
 /** Stored at users/{uid}/bodyWeight/{entryId}. */

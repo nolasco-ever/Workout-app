@@ -34,7 +34,9 @@ users/{uid}/cycles/{cycleId}          Cycle (occurrences embedded)
 users/{uid}/sessions/{sessionId}      Session (sets embedded)
 users/{uid}/bodyWeight/{entryId}      BodyWeightEntry
 users/{uid}/achievements/{id}         AchievementUnlock
-users/{uid}/buddies/{otherUid}        Buddy
+users/{uid}/buddies/{otherUid}        Buddy                mirrored on both sides
+users/{uid}/activity/{id}             Activity             owner writes; accepted buddies read
+inviteCodes/{code}                    InviteCode           card copy; any signed-in user reads
 users/{uid}/customExercises/{id}      CustomExercise
 users/{uid}/notifications/{id}        FeedNotification     owner; server writes buddy items
 users/{uid}/devices/{token}           DeviceToken          push tokens, one per install
@@ -81,6 +83,43 @@ to 5 lb or 2.5 kg for the user's unit. They are ordinary `LoggedSet` rows
 flagged `warmup: true`, so the logger treats them like any set, but
 `engine/sets.ts` (`isWorkingSet`) keeps them out of volume, records,
 progression and every insight.
+
+## Buddies
+
+Decided 2026-09-26 with the user. People add each other by scanning an
+**Iron Card** (a QR code, `react-native-camera-kit` for scanning,
+`react-native-qrcode-svg` for showing) or typing its code (`FLX-K7MP2X`).
+The QR encodes `https://flexcoach.app/buddy/<code>`; `parseInviteCode`
+accepts the link, the formatted code, or the bare code.
+
+- **Card** = `PublicProfile` at `publicProfiles/{uid}`: name, photo,
+  workouts done, current/longest streak, best lift, total weight moved,
+  favourite exercise, last cycle completion rate. Built by
+  `engine/buddies.ts` (`buildPublicProfile`) and rewritten by
+  `services/buddyService.ts` after a session, a skip, a plan-share flip,
+  or opening Buddies. Never sets, per-exercise weights, or body weight.
+- **Codes** live at `inviteCodes/{code}` with a copy of the card, since a
+  scanner isn't a buddy yet and can't read `publicProfiles`. The code is
+  kept on the profile (`inviteCode`) and made on first visit to the card.
+- **Requests** are two `buddies` rows (`pending_sent` / `pending_received`,
+  with name and photo snapshots). Accepting patches both to `accepted`. The
+  requester writes a `buddy_request` feed item straight into the other
+  person's feed; the rules allow that once the pending row exists, and
+  allow `buddy_accepted` / `buddy_streak` / `buddy_achievement` from
+  accepted buddies. `sendFeedPush` turns those into pushes.
+- **Activity** (`users/{uid}/activity`): each person writes their own
+  lines (finished workout, skipped, moved, streak milestone, record, cycle
+  done, plan shared). Buddies read each other's lists and
+  `useBuddyActivity` merges them; nothing is fanned out. Notifications go
+  out only for streak milestones (every fifth day) and, later,
+  achievements. Feed items for finished/skipped workouts stay in the
+  activity feed, not the notification tray.
+- **Shared plans**: `Plan.visibleToBuddies` (off by default). The rule lets
+  an accepted buddy read a plan only when that flag is true, and a list
+  query must filter on it (`planRepository.listSharedBy`). "Save to my
+  plans" is `planRepository.copyTo`: an independent draft with
+  `sharedFrom` (uid, planId, displayName), listed under "From buddies" in
+  My plans until activated. No syncing afterwards.
 
 ## Units
 

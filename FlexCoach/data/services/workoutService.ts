@@ -26,14 +26,14 @@ import {
   skipOccurrence,
 } from '../engine/schedule';
 import { buildPlannedSets, buildWarmupSets, suggestTarget } from '../engine/progression';
-import { countWorkingSets, currentStreakDays, findPersonalRecords, summarizeCycle, totalVolumeKg } from '../engine/stats';
+import { countWorkingSets, findPersonalRecords, summarizeCycle, totalVolumeKg } from '../engine/stats';
 import { cycleRepository } from '../repositories/cycleRepository';
 import { planRepository } from '../repositories/planRepository';
 import { sessionRepository } from '../repositories/sessionRepository';
 import { userRepository } from '../repositories/userRepository';
-import { achievementRepository } from '../repositories/achievementRepository';
 import { buildSamplePlan } from './samplePlan';
 import { activatePlan } from './planService';
+import { afterCycleFinished, afterSessionFinished, afterWorkoutPushed, afterWorkoutSkipped } from './buddyService';
 
 /**
  * Use-case layer for the Workout tab. Screens call these; they compose the
@@ -50,9 +50,11 @@ export const seedSamplePlan = async (uid: Id): Promise<{ plan: Plan; cycle: Cycl
   return { plan, cycle };
 };
 
-export const skipWorkout = async (uid: Id, cycle: Cycle, occurrenceId: Id): Promise<Cycle> => {
+export const skipWorkout = async (uid: Id, cycle: Cycle, occurrenceId: Id, profile: UserProfile | null = null): Promise<Cycle> => {
   const updated = skipOccurrence(cycle, occurrenceId);
   await cycleRepository.save(uid, updated);
+  const occ = updated.occurrences.find(o => o.id === occurrenceId);
+  if (occ) afterWorkoutSkipped(uid, profile, occ).catch(err => console.warn('buddy activity failed', err));
   return updated;
 };
 
@@ -69,6 +71,8 @@ export const pushWorkoutTo = async (uid: Id, plan: Plan, cycle: Cycle, occurrenc
     updated = pushOccurrence(updated, plan, occurrenceId);
   }
   await cycleRepository.save(uid, updated);
+  const moved = updated.occurrences.find(o => o.id === occurrenceId);
+  if (moved && updated !== cycle) afterWorkoutPushed(uid, moved, moved.date).catch(err => console.warn('buddy activity failed', err));
   return updated;
 };
 
@@ -158,26 +162,6 @@ export interface SessionResult {
   personalRecords: PersonalRecord[];
 }
 
-const refreshPublicProfile = async (uid: Id, profile: UserProfile | null, completed: Session[], lastCycleRate: number | null): Promise<void> => {
-  const todayDate = today();
-  const unlocks = await achievementRepository.list(uid);
-  const dates = completed.map(s => s.date);
-  const pub: PublicProfile = {
-    id: uid,
-    displayName: profile?.displayName ?? null,
-    photoUrl: profile?.photoUrl ?? null,
-    currentStreakDays: currentStreakDays(completed, todayDate, addDays),
-    longestStreakDays: Math.max(currentStreakDays(completed, todayDate, addDays), 0),
-    totalSessions: completed.length,
-    lastWorkoutDate: dates.length ? dates.sort()[dates.length - 1] : null,
-    lastCycleCompletionRate: lastCycleRate,
-    skippedLastScheduled: false,
-    achievementIds: unlocks.map(u => u.achievementId),
-    updatedAt: Date.now(),
-  };
-  await userRepository.writePublicProfile(pub);
-};
-
 export const finishSession = async (uid: Id, profile: UserProfile | null, session: Session, cycle: Cycle): Promise<SessionResult> => {
   const finished = await sessionRepository.finish(uid, session, 'completed');
   const updatedCycle = session.occurrenceId ? markOccurrence(cycle, session.occurrenceId, 'completed', session.id) : cycle;
@@ -186,7 +170,7 @@ export const finishSession = async (uid: Id, profile: UserProfile | null, sessio
   const completed = await sessionRepository.listCompleted(uid);
   const history = completed.filter(s => s.id !== session.id);
   const personalRecords = findPersonalRecords([finished], history);
-  refreshPublicProfile(uid, profile, completed, null).catch(err => console.warn('public profile refresh failed', err));
+  afterSessionFinished(uid, profile, finished, personalRecords, profile?.weightUnit ?? 'lb').catch(err => console.warn('buddy update failed', err));
 
   return {
     session: finished,
@@ -244,6 +228,7 @@ export const loadCycleForReview = async (uid: Id, cycleId: Id): Promise<{ plan: 
 export const startNextCycle = async (uid: Id, plan: Plan, cycle: Cycle): Promise<Cycle> => {
   const { cycle: closed, nextStart } = closeCycle(cycle);
   await cycleRepository.save(uid, closed);
+  afterCycleFinished(uid, closed.number, summarizeCycle(closed, [], []).completionRate).catch(err => console.warn('buddy activity failed', err));
   const next = generateCycle(plan, uid, cycle.number + 1, laterOf(nextStart, today()));
   await cycleRepository.save(uid, next);
   await userRepository.update(uid, { activeCycleId: next.id });

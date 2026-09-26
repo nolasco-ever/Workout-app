@@ -144,6 +144,7 @@ export const archivePlan = async (uid: Id, plan: Plan, activeCycle: Cycle | null
 };
 
 export const duplicatePlan = async (uid: Id, source: Plan): Promise<Plan> => {
-  const copy = await planRepository.copyTo(uid, { ...source, name: `${source.name} copy` }, uid, newId);
-  return { ...copy, sharedFrom: null };
+  const copy = { ...(await planRepository.copyTo(uid, { ...source, name: `${source.name} copy` }, { uid }, newId)), sharedFrom: source.sharedFrom };
+  await planRepository.save(uid, copy);
+  return copy;
 };

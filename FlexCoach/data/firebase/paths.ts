@@ -22,4 +22,7 @@ export const paths = {
   devices: (uid: Id) => `users/${uid}/devices`,
   device: (uid: Id, token: string) => `users/${uid}/devices/${token}`,
   publicProfile: (uid: Id) => `publicProfiles/${uid}`,
+  activity: (uid: Id) => `users/${uid}/activity`,
+  activityItem: (uid: Id, activityId: Id) => `users/${uid}/activity/${activityId}`,
+  inviteCode: (code: string) => `inviteCodes/${code}`,
 };
