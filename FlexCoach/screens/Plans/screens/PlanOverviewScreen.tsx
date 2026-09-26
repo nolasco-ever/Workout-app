@@ -6,7 +6,7 @@ import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useAuth } from '../../../data/auth/AuthProvider';
 import { usePlans } from '../../../data/hooks/usePlans';
 import { useWorkoutHome } from '../../../data/hooks/useWorkoutHome';
-import { activatePlan, archivePlan, deactivatePlan, duplicatePlan } from '../../../data/services/planService';
+import { activatePlan, archivePlan, deactivatePlan, duplicatePlan, validatePlan } from '../../../data/services/planService';
 import { planRepository } from '../../../data/repositories/planRepository';
 import { CustomText } from '../../../components/text/customText';
 import { PrimaryButton } from '../../../components/buttons/PrimaryButton';
@@ -54,6 +54,9 @@ export const PlanOverviewScreen = () => {
 
   const isActive = plan.status === 'active';
   const activeCycle = home.plan?.id === plan.id ? home.cycle : null;
+  // A plan autosaved mid-creation may still be missing workouts or a schedule.
+  const problems = validatePlan(plan);
+  const unfinished = !isActive && problems.length > 0;
 
   return (
     <SafeAreaView edges={['bottom', 'left', 'right']} style={{ flex: 1, backgroundColor: colors.ground }}>
@@ -66,11 +69,20 @@ export const PlanOverviewScreen = () => {
           {plan.description ? <CustomText variant="body" color={colors.inkMuted}>{plan.description}</CustomText> : null}
         </View>
         <PlanSummaryCard plan={plan} />
+        {unfinished && (
+          <View style={{ gap: spacing.xs }}>
+            <CustomText variant="bodyStrong">Not finished yet</CustomText>
+            {problems.map(p => (
+              <CustomText key={p.message} variant="caption" color={colors.inkMuted}>• {p.message}</CustomText>
+            ))}
+          </View>
+        )}
         <View style={{ gap: spacing.sm }}>
-          {!isActive && plan.status !== 'archived' && (
+          {unfinished && plan.status !== 'archived' && <PrimaryButton label="Finish setting up" onPress={edit} />}
+          {!isActive && !unfinished && plan.status !== 'archived' && (
             <PrimaryButton label="Activate" busy={busy === 'Activate'} onPress={() => setPickingStart(true)} />
           )}
-          {plan.status !== 'archived' && <PrimaryButton label="Edit" variant="outline" onPress={edit} />}
+          {plan.status !== 'archived' && <PrimaryButton label="Edit" variant={unfinished ? 'quiet' : 'outline'} onPress={edit} />}
           {isActive && (
             <PrimaryButton
               label="Deactivate"

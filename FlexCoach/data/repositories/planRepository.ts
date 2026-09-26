@@ -1,6 +1,6 @@
 import { paths } from '../firebase/paths';
 import { Id, Plan } from '../models';
-import { listDocs, orderBy, patchDoc, readDoc, removeDoc, touch, watchDoc, watchDocs, where, writeDoc, Unsubscribe } from './base';
+import { listDocs, mergeDoc, orderBy, patchDoc, readDoc, removeDoc, touch, watchDoc, watchDocs, where, writeDoc, Unsubscribe } from './base';
 import { userRepository } from './userRepository';
 
 export const planRepository = {
@@ -17,6 +17,17 @@ export const planRepository = {
     watchDocs<Plan>(paths.plans(uid), onChange, orderBy('updatedAt', 'desc')),
 
   save: (uid: Id, plan: Plan) => writeDoc(paths.plan(uid, plan.id), touch(plan)),
+
+  /**
+   * Background save of a plan still being built. The first write creates the
+   * document as a draft; later ones merge only what the editor changes, so
+   * a save that lands after the user activated the plan can't demote it.
+   */
+  autosave: (uid: Id, plan: Plan, exists: boolean): Promise<void> => {
+    if (!exists) return writeDoc(paths.plan(uid, plan.id), touch({ ...plan, status: 'draft' }));
+    const { name, description, goal, workouts, schedule } = plan;
+    return mergeDoc<Plan>(paths.plan(uid, plan.id), { name, description, goal, workouts, schedule, updatedAt: Date.now() });
+  },
 
   /**
    * Make a plan the active one. Only one plan can be active, so any other

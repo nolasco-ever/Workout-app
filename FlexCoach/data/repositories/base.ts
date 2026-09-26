@@ -48,6 +48,11 @@ export const patchDoc = async <T extends object>(path: string, data: Partial<T>)
   await updateDoc(doc(db, path), data as any);
 };
 
+/** Like patchDoc, but creates the document if it doesn't exist yet. */
+export const mergeDoc = async <T extends object>(path: string, data: Partial<T>): Promise<void> => {
+  await setDoc(doc(db, path), data as any, { merge: true });
+};
+
 export const removeDoc = async (path: string): Promise<void> => {
   await deleteDoc(doc(db, path));
 };

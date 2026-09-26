@@ -23,7 +23,7 @@ export const PlanReviewScreen = () => {
   const { uid } = useAuth();
   const { plans } = usePlans();
   const home = useWorkoutHome();
-  const { draft, original, clear } = usePlanEditor();
+  const { draft, original, clear, stopAutosave } = usePlanEditor();
   const [busy, setBusy] = useState<string | null>(null);
   const [pickingStart, setPickingStart] = useState(false);
   if (!draft || !uid) return null;
@@ -40,6 +40,7 @@ export const PlanReviewScreen = () => {
 
   const run = (key: string, fn: () => Promise<void>) => async () => {
     setBusy(key);
+    stopAutosave();
     try {
       await fn();
       finish();
