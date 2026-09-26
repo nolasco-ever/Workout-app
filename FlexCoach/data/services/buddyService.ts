@@ -1,4 +1,4 @@
-import { Activity, ActivityKind, Buddy, Id, InviteCode, Occurrence, Plan, PublicProfile, Session, UserProfile } from '../models';
+import { Activity, ActivityKind, Id, InviteCode, Occurrence, Plan, PublicProfile, Session, UserProfile } from '../models';
 import { newId } from '../engine/ids';
 import { today } from '../engine/dates';
 import { buildPublicProfile, formatInviteCode, generateInviteCode, inviteUrl, isStreakMilestone } from '../engine/buddies';
@@ -73,46 +73,35 @@ export const ensureInviteCode = async (uid: Id, profile: UserProfile | null): Pr
 
 export const lookupInviteCode = (code: string): Promise<InviteCode | null> => buddyRepository.getInviteCode(code);
 
-/** Where a scanned card stands relative to me. */
-export type CardRelation = 'self' | 'accepted' | 'pending_sent' | 'pending_received' | 'none';
+/** Where a card stands relative to me. */
+export type CardRelation = 'self' | 'accepted' | 'none';
 
 export const relationTo = async (uid: Id, otherUid: Id): Promise<CardRelation> => {
   if (uid === otherUid) return 'self';
   const row = await buddyRepository.get(uid, otherUid);
-  return row?.status ?? 'none';
+  return row?.status === 'accepted' ? 'accepted' : 'none';
 };
 
-export const sendBuddyRequest = async (uid: Id, profile: UserProfile | null, target: InviteCode): Promise<void> => {
-  // My own code goes on their row so they can open my card from their list.
+/**
+ * Add a buddy from their card. No request and no waiting: they shared the
+ * card, so adding makes it mutual right away, and they're told.
+ */
+export const addBuddy = async (uid: Id, profile: UserProfile | null, target: InviteCode): Promise<void> => {
   const myCode = await ensureInviteCode(uid, profile);
-  await buddyRepository.sendRequest(
+  await buddyRepository.add(
     { uid, displayName: profile?.displayName ?? null, photoUrl: profile?.photoUrl ?? null, inviteCode: myCode },
     { uid: target.uid, displayName: target.card.displayName, photoUrl: target.card.photoUrl, inviteCode: target.code },
   );
   await notificationRepository
     .createForUser(target.uid, {
-      id: `buddy_request:${uid}`,
-      kind: 'buddy_request',
-      title: `${profile?.displayName ?? 'Someone'} wants to be your buddy`,
-      body: 'Accept and you\'ll see each other\'s streaks, workouts and shared plans.',
-      target: { screen: 'buddies' },
-      push: true,
-    })
-    .catch(err => console.warn('buddy request notification failed', err));
-};
-
-export const acceptBuddyRequest = async (uid: Id, profile: UserProfile | null, other: Buddy): Promise<void> => {
-  await buddyRepository.accept(uid, other.userId);
-  await notificationRepository
-    .createForUser(other.userId, {
-      id: `buddy_accepted:${uid}`,
-      kind: 'buddy_accepted',
-      title: `${profile?.displayName ?? 'Your buddy'} accepted your request`,
-      body: "You're buddies now. Their activity shows up on Home.",
+      id: `buddy_added:${uid}`,
+      kind: 'buddy_added',
+      title: `${profile?.displayName ?? 'Someone'} added you as a buddy`,
+      body: "You'll see each other's streaks, workouts and shared plans. Tap to see their card.",
       target: { screen: 'buddy', uid, displayName: profile?.displayName ?? null },
       push: true,
     })
-    .catch(err => console.warn('buddy accepted notification failed', err));
+    .catch(err => console.warn('buddy added notification failed', err));
   // The card is what they'll look at next; make sure it exists and is fresh.
   refreshPublicProfile(uid, profile).catch(() => undefined);
 };

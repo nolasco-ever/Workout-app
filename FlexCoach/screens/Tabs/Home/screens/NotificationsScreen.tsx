@@ -23,9 +23,7 @@ const iconFor = (kind: FeedNotificationKind): IconSource => {
       return generalIcons.trophy;
     case 'buddy_streak':
       return generalIcons.flame;
-    case 'buddy_request':
-      return generalIcons.userPlus;
-    case 'buddy_accepted':
+    case 'buddy_added':
       return generalIcons.handshake;
     default:
       return generalIcons.users;

@@ -106,8 +106,7 @@ Deploy with `npx firebase-tools deploy --only hosting`. In the app,
 iOS SceneDelegate repackages a launch URL into launch options) into
 `openTarget({ screen: 'card', code })`, which waits for the signed-in
 routes if needed, then opens `BuddyCardScreen`: one sheet with an X that
-shows the card and a single button (Add buddy, Accept, Request sent, or
-Remove buddy). There is no decline; unwanted requests can be left. Buddy
+shows the card and a single button (Add buddy or Remove buddy). Buddy
 rows keep each other's `inviteCode` so a card can be reopened any time.
 
 - **Card** = `PublicProfile` at `publicProfiles/{uid}`: name, photo,
@@ -119,12 +118,17 @@ rows keep each other's `inviteCode` so a card can be reopened any time.
 - **Codes** live at `inviteCodes/{code}` with a copy of the card, since a
   scanner isn't a buddy yet and can't read `publicProfiles`. The code is
   kept on the profile (`inviteCode`) and made on first visit to the card.
-- **Requests** are two `buddies` rows (`pending_sent` / `pending_received`,
-  with name and photo snapshots). Accepting patches both to `accepted`. The
-  requester writes a `buddy_request` feed item straight into the other
-  person's feed; the rules allow that once the pending row exists, and
-  allow `buddy_accepted` / `buddy_streak` / `buddy_achievement` from
-  accepted buddies. `sendFeedPush` turns those into pushes.
+- **Adding** has no request step. Sharing a card is the invitation and
+  tapping Add is the acceptance, like saving a contact, so it's mutual at
+  once: `buddyRepository.add` writes both `buddies` rows as `accepted`
+  (with name, photo and card-code snapshots). The row written into the
+  other person's list carries `viaCode`, their current card code; the rule
+  compares it with their profile's `inviteCode`, so nobody can add
+  themselves to a list without having been given the card. Either side can
+  remove the other. The adder writes a `buddy_added` feed item into the
+  other person's feed; the rules allow `buddy_added` / `buddy_streak` /
+  `buddy_achievement` from accepted buddies, and `sendFeedPush` turns
+  those into pushes.
 - **Activity** (`users/{uid}/activity`): each person writes their own
   lines (finished workout, skipped, moved, streak milestone, record, cycle
   done, plan shared). Buddies read each other's lists and

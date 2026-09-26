@@ -80,17 +80,28 @@ export interface InviteCode {
   updatedAt: Timestamp;
 }
 
-export type BuddyStatus = 'pending_sent' | 'pending_received' | 'accepted';
+/**
+ * Buddies have no request step: sharing a card is the invitation and
+ * adding is the acceptance, like saving a contact. The status field is
+ * kept for the rules and for any future "blocked" state.
+ */
+export type BuddyStatus = 'accepted';
 
-/** Stored at users/{uid}/buddies/{otherUid}. */
+/** Stored at users/{uid}/buddies/{otherUid}, mirrored on both sides. */
 export interface Buddy extends BaseDocument {
   userId: Id;
   status: BuddyStatus;
-  /** Snapshots taken when the request was made, so pending rows can show a name. */
+  /** Snapshots taken when the buddy was added, until their live card loads. */
   displayName?: string | null;
   photoUrl?: string | null;
   /** Their card code, so their Iron Card can be opened again from the list. */
   inviteCode?: string | null;
+  /**
+   * On the row a person writes into someone else's list: that someone's
+   * card code, proving they had the card. The rules check it against the
+   * owner's profile before letting the row be created.
+   */
+  viaCode?: string | null;
 }
 
 export type ActivityKind = 'workout_done' | 'workout_skipped' | 'workout_pushed' | 'streak' | 'record' | 'cycle_done' | 'plan_shared' | 'joined';

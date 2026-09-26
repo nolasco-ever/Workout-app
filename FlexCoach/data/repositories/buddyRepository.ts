@@ -1,6 +1,6 @@
 import { paths } from '../firebase/paths';
 import { Activity, Buddy, Id, InviteCode, PublicProfile } from '../models';
-import { limit, listDocs, orderBy, patchDoc, readDoc, removeDoc, stamp, watchDoc, watchDocs, writeDoc, Unsubscribe } from './base';
+import { limit, listDocs, orderBy, readDoc, removeDoc, stamp, watchDoc, watchDocs, writeDoc, Unsubscribe } from './base';
 
 /**
  * A buddy relationship is stored on both sides so each user's list is a
@@ -14,20 +14,17 @@ export const buddyRepository = {
 
   get: (uid: Id, otherUid: Id) => readDoc<Buddy>(paths.buddy(uid, otherUid)),
 
-  /** Both rows carry a name and photo snapshot so pending lists can show who's who. */
-  sendRequest: async (from: { uid: Id; displayName: string | null; photoUrl: string | null; inviteCode: string | null }, to: { uid: Id; displayName: string | null; photoUrl: string | null; inviteCode: string | null }): Promise<void> => {
-    await writeDoc(paths.buddy(from.uid, to.uid), stamp<Buddy>({ id: to.uid, userId: to.uid, status: 'pending_sent', displayName: to.displayName, photoUrl: to.photoUrl, inviteCode: to.inviteCode } as Buddy));
-    await writeDoc(paths.buddy(to.uid, from.uid), stamp<Buddy>({ id: from.uid, userId: from.uid, status: 'pending_received', displayName: from.displayName, photoUrl: from.photoUrl, inviteCode: from.inviteCode } as Buddy));
+  /**
+   * Make two people buddies in one go. `me` had `them`'s card, so the row
+   * written into their list carries their code as proof (see the rules).
+   * Both rows carry a name and photo snapshot for the list.
+   */
+  add: async (me: { uid: Id; displayName: string | null; photoUrl: string | null; inviteCode: string }, them: { uid: Id; displayName: string | null; photoUrl: string | null; inviteCode: string }): Promise<void> => {
+    await writeDoc(paths.buddy(them.uid, me.uid), stamp<Buddy>({ id: me.uid, userId: me.uid, status: 'accepted', displayName: me.displayName, photoUrl: me.photoUrl, inviteCode: me.inviteCode, viaCode: them.inviteCode } as Buddy));
+    await writeDoc(paths.buddy(me.uid, them.uid), stamp<Buddy>({ id: them.uid, userId: them.uid, status: 'accepted', displayName: them.displayName, photoUrl: them.photoUrl, inviteCode: them.inviteCode } as Buddy));
   },
 
-  /** The recipient accepts: their own row first, then the requester's row about them. */
-  accept: async (uid: Id, otherUid: Id): Promise<void> => {
-    const now = Date.now();
-    await patchDoc<Buddy>(paths.buddy(uid, otherUid), { status: 'accepted', updatedAt: now });
-    await patchDoc<Buddy>(paths.buddy(otherUid, uid), { status: 'accepted', updatedAt: now });
-  },
-
-  /** Decline, cancel, or remove: both rows go. Either side may do it. */
+  /** Remove: both rows go. Either side may do it. */
   remove: async (uid: Id, otherUid: Id): Promise<void> => {
     await removeDoc(paths.buddy(uid, otherUid)).catch(() => undefined);
     await removeDoc(paths.buddy(otherUid, uid)).catch(() => undefined);

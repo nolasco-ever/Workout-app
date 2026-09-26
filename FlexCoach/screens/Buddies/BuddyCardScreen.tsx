@@ -6,7 +6,7 @@ import { useAuth } from '../../data/auth/AuthProvider';
 import { Buddy, Plan, PublicProfile } from '../../data/models';
 import { buddyRepository } from '../../data/repositories/buddyRepository';
 import { planRepository } from '../../data/repositories/planRepository';
-import { acceptBuddyRequest, lookupInviteCode, removeBuddy, sendBuddyRequest, shareMessage } from '../../data/services/buddyService';
+import { addBuddy, lookupInviteCode, removeBuddy, shareMessage } from '../../data/services/buddyService';
 import { formatInviteCode } from '../../data/engine/buddies';
 import { describeSchedule } from '../Plans/components/planSummary';
 import { CustomText } from '../../components/text/customText';
@@ -18,14 +18,14 @@ import { IronCard } from '../../components/buddies/IronCard';
 import { useTheme } from '../../theme';
 import { BuddyRoutes } from './routes';
 
-type Relation = 'self' | 'accepted' | 'pending_sent' | 'pending_received' | 'none';
+type Relation = 'self' | 'accepted' | 'none';
 
 /**
  * Someone's Iron Card, however you got here: a scanned or tapped link (by
  * code), or a row in your buddies list (by uid). Closes with the X. One
- * button says what you can do: Add buddy, Accept, Request sent, or Remove
- * buddy. The same screen serves before and after you're buddies, so a card
- * can always be brought back up.
+ * button says what you can do: Add buddy or Remove buddy. Adding is
+ * immediate and mutual; having the card is the invitation. The same screen
+ * serves before and after, so a card can always be brought back up.
  */
 export const BuddyCardScreen = () => {
   const navigation = useNavigation<NavigationProp<BuddyRoutes>>();
@@ -42,7 +42,7 @@ export const BuddyCardScreen = () => {
   const [plans, setPlans] = useState<Plan[] | null>(null);
   const [busy, setBusy] = useState(false);
 
-  const relation: Relation | null = otherUid === null ? null : otherUid === uid ? 'self' : row?.status ?? 'none';
+  const relation: Relation | null = otherUid === null ? null : otherUid === uid ? 'self' : row?.status === 'accepted' ? 'accepted' : 'none';
 
   // Resolve who this is and load their card. By code: the public copy at
   // inviteCodes. By uid: my buddy row, then their live card if we're
@@ -122,11 +122,7 @@ export const BuddyCardScreen = () => {
     run(async () => {
       if (!uid || !code) return;
       const invite = await lookupInviteCode(code);
-      if (invite) await sendBuddyRequest(uid, profile, invite);
-    });
-  const accept = () =>
-    run(async () => {
-      if (uid && row) await acceptBuddyRequest(uid, profile, row);
+      if (invite) await addBuddy(uid, profile, invite);
     });
   const remove = () =>
     Alert.alert(`Remove ${name ?? 'this buddy'}?`, "You'll stop seeing each other's activity and plans. Either of you can add the other again from this card.", [
@@ -150,10 +146,6 @@ export const BuddyCardScreen = () => {
         return <PrimaryButton label="Share my card" icon={generalIcons.share} variant="outline" onPress={share} />;
       case 'accepted':
         return <PrimaryButton label="Remove buddy" variant="outline" busy={busy} onPress={remove} />;
-      case 'pending_sent':
-        return <PrimaryButton label="Request sent" variant="quiet" disabled onPress={() => {}} />;
-      case 'pending_received':
-        return <PrimaryButton label="Accept buddy request" busy={busy} onPress={accept} />;
       case 'none':
         return <PrimaryButton label="Add buddy" icon={generalIcons.userPlus} busy={busy} disabled={!code} onPress={add} />;
       default:
@@ -179,7 +171,7 @@ export const BuddyCardScreen = () => {
 
         {!notFound && action()}
         {relation === 'none' && card && (
-          <CustomText variant="caption" color={colors.inkMuted} centered>They'll get a request. Once they accept, you'll see each other's streaks, workouts and shared plans.</CustomText>
+          <CustomText variant="caption" color={colors.inkMuted} centered>Adding makes you buddies right away: you'll both see each other's streaks, workouts and shared plans.</CustomText>
         )}
 
         {relation === 'accepted' && (

@@ -10,12 +10,8 @@ export interface BuddyWithCard extends Buddy {
 
 export interface BuddiesState {
   loading: boolean;
-  /** Accepted buddies with their cards, name order. */
+  /** Buddies with their cards, name order. */
   buddies: BuddyWithCard[];
-  /** Requests waiting for my answer. */
-  incoming: Buddy[];
-  /** Requests I sent that haven't been answered. */
-  outgoing: Buddy[];
 }
 
 /** Live buddy list for the signed-in user, with each accepted buddy's Iron Card kept in step. */
@@ -48,8 +44,6 @@ export const useBuddies = (): BuddiesState => {
         .filter(b => b.status === 'accepted')
         .map(b => ({ ...b, card: cards[b.userId] ?? null }))
         .sort((a, b) => name(a).localeCompare(name(b))),
-      incoming: all.filter(b => b.status === 'pending_received'),
-      outgoing: all.filter(b => b.status === 'pending_sent'),
     };
   }, [rows, cards]);
 };
