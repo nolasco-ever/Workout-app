@@ -79,7 +79,7 @@ export const workoutNudgeCopy = (workout: string, date: LocalDate): Copy =>
       { title: `Quick reminder: ${workout}`, body: "Tonight's a good night for it. You'll be glad you went 😄" },
       { title: `${workout} is still on the list`, body: "Get in, get a few sets done, feel awesome. That's the whole plan 🙌" },
       { title: `One more thing today: ${workout}`, body: "Go grab the win! Big or small, it all counts 🏆" },
-      { title: `Evening! ${workout} is up for grabs`, body: "Lace up if you're feeling it. You'll be walking out proud" },
+      { title: `Evening! ${workout} is up for grabs`, body: "Lace up and go take it. You'll be walking out proud" },
     ],
     'workout_nudge',
     date,
