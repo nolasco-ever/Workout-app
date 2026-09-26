@@ -10,4 +10,9 @@ export const features = {
    * then a small JPEG is kept inline on the profile document instead.
    */
   cloudStorage: true,
+  /**
+   * Built-in avatars (components/buddies/avatarLibrary). The code stays;
+   * the picker is hidden until the character set gets its own design pass.
+   */
+  avatars: false,
 };

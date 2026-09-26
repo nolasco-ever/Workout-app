@@ -1,13 +1,15 @@
 import React, { useEffect, useState } from 'react';
-import { ActivityIndicator, Modal, Pressable, useWindowDimensions, View } from 'react-native';
+import { ActivityIndicator, Image, Modal, Pressable, useWindowDimensions, View } from 'react-native';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import Animated, { Easing, interpolate, runOnJS, useAnimatedStyle, useSharedValue, withSpring, withTiming } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { SurfaceCard } from '../cards/SurfaceCard';
 import { Row } from '../list-items/Row';
+import { Icon } from '../icons/Icon';
 import { generalIcons } from '../icons/icon-library';
 import { Avatar } from '../buddies/Avatar';
-import { isAvatarUri } from '../../data/engine/avatars';
+import { isAvatarUri, isPhotoUri } from '../../data/engine/avatars';
+import { features } from '../../config/features';
 import { useTheme } from '../../theme';
 
 /** Where the small avatar sits on screen, in window coordinates, so the big one can grow out of it. */
@@ -26,6 +28,8 @@ interface Props {
   /** A save or removal is in flight: the options are disabled and the photo shows a spinner. */
   busy: boolean;
   onClose: () => void;
+  /** The sheet is on screen with its first frame drawn; the caller can hide what it covers. */
+  onShown?: () => void;
   onChooseLibrary: () => void;
   onTakePhoto: () => void;
   /** Opens the built-in avatar picker (the caller closes this sheet first). */
@@ -33,12 +37,11 @@ interface Props {
   onRemove: () => void;
 }
 
-/**
- * Size of the expanded circle. The Profile tab renders a hidden copy of the
- * photo at exactly this size so the decoded image is already cached when
- * the sheet asks for it; otherwise the circle showed blank for a moment.
- */
+/** Size of the expanded circle. */
 export const expandedPhotoSize = (windowWidth: number): number => Math.min(windowWidth - 32, 340);
+
+/** Matches the edit badge drawn on the Profile tab's avatar. */
+export const EDIT_BADGE = 36;
 
 const OPEN_MS = 320;
 const CLOSE_MS = 260;
@@ -52,26 +55,39 @@ const DISMISS_VELOCITY = 900;
  * flick the photo to put it back; while dragging, the photo follows the
  * finger and the screen brightens as it moves.
  *
- * The circle is laid out at its full size and scaled with a transform.
- * Animating its width and height instead re-requested the image at every
- * new size, which showed as a blank circle until the photo reloaded.
+ * Two things keep it from flickering:
+ * - The circle is laid out at full size and scaled with a transform.
+ *   Animating its width and height re-requested the image at every size.
+ * - The full-size image can't come from React Native's decoded-image
+ *   cache (that cache skips anything over 2MB, and a 340pt circle on a 3x
+ *   screen decodes to about 4MB), so it always loads asynchronously. The
+ *   circle therefore shows the small avatar image, which is cached, from
+ *   its first frame, and the full-size one fades in over it once loaded.
+ *
+ * The edit badge is drawn here too, fading out as the circle grows, so the
+ * caller can hide its own badge while the sheet is up and nothing overlaps
+ * on the way back.
  */
-export const ProfilePhotoModal = ({ open, origin, uri, busy, onClose, onChooseLibrary, onTakePhoto, onChooseAvatar, onRemove }: Props) => {
+export const ProfilePhotoModal = ({ open, origin, uri, busy, onClose, onShown, onChooseLibrary, onTakePhoto, onChooseAvatar, onRemove }: Props) => {
   const { colors, spacing } = useTheme();
   const insets = useSafeAreaInsets();
   const { width, height } = useWindowDimensions();
 
   const big = expandedPhotoSize(width);
+  const rows = 2 + (features.avatars ? 1 : 0) + (uri ? 1 : 0);
   // Room for the options card at the bottom; the photo centres in what's left.
-  const cardHeight = 4 * 60 + spacing.lg * 2 + insets.bottom;
+  const cardHeight = rows * 60 + spacing.lg * 2 + insets.bottom;
   const target = { x: (width - big) / 2, y: Math.max(insets.top + spacing.lg, (height - cardHeight - big) / 2), size: big };
-  const from = origin ?? { x: width / 2 - 48, y: height / 2 - 48, size: 96 };
+  const from = origin ?? { x: width / 2 - 60, y: height / 2 - 60, size: 120 };
+  const photo = isPhotoUri(uri);
 
   // Modal stays mounted while the close animation plays.
   const [mounted, setMounted] = useState(open);
   const progress = useSharedValue(0);
   const dragX = useSharedValue(0);
   const dragY = useSharedValue(0);
+  /** 0 until the full-size image has loaded, then 1. */
+  const loaded = useSharedValue(0);
 
   const finishClose = () => {
     setMounted(false);
@@ -92,6 +108,7 @@ export const ProfilePhotoModal = ({ open, origin, uri, busy, onClose, onChooseLi
       setMounted(true);
       dragX.value = 0;
       dragY.value = 0;
+      loaded.value = 0;
       progress.value = withTiming(1, { duration: OPEN_MS, easing: Easing.out(Easing.cubic) });
     } else if (mounted) {
       close();
@@ -136,6 +153,21 @@ export const ProfilePhotoModal = ({ open, origin, uri, busy, onClose, onChooseLi
       ],
     };
   });
+  // The badge rides on the circle's bottom-right corner, unscaled, and is
+  // only there while the circle is (nearly) back at avatar size.
+  const badgeStyle = useAnimatedStyle(() => {
+    const p = progress.value;
+    const size = target.size * interpolate(p, [0, 1], [from.size / target.size, 1]);
+    const cx = targetCentre.x + (fromCentre.x - targetCentre.x) * (1 - p) + dragX.value;
+    const cy = targetCentre.y + (fromCentre.y - targetCentre.y) * (1 - p) + dragY.value;
+    return {
+      position: 'absolute',
+      left: cx + size / 2 - EDIT_BADGE,
+      top: cy + size / 2 - EDIT_BADGE,
+      opacity: interpolate(p, [0, 0.25], [1, 0]),
+    };
+  });
+  const fullStyle = useAnimatedStyle(() => ({ opacity: loaded.value }));
   const scrimStyle = useAnimatedStyle(() => {
     const drag = Math.min(1, Math.hypot(dragX.value, dragY.value) / (DISMISS_DISTANCE * 2));
     return { opacity: progress.value * (1 - drag * 0.6) };
@@ -146,7 +178,7 @@ export const ProfilePhotoModal = ({ open, origin, uri, busy, onClose, onChooseLi
   }));
 
   return (
-    <Modal visible={mounted} animationType="none" onRequestClose={() => close()} statusBarTranslucent navigationBarTranslucent presentationStyle="overFullScreen" transparent>
+    <Modal visible={mounted} animationType="none" onShow={onShown} onRequestClose={() => close()} statusBarTranslucent navigationBarTranslucent presentationStyle="overFullScreen" transparent>
       <View style={{ flex: 1 }}>
         {/* Dimmed screen; tapping it anywhere closes. */}
         <Animated.View style={[{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: colors.ground }, scrimStyle]}>
@@ -154,9 +186,16 @@ export const ProfilePhotoModal = ({ open, origin, uri, busy, onClose, onChooseLi
         </Animated.View>
 
         <GestureDetector gesture={gesture}>
-          {/* No background of its own: until the big image lands, the avatar underneath shows through instead of a blank disc. */}
-          <Animated.View style={[{ overflow: 'hidden', alignItems: 'center', justifyContent: 'center' }, photoStyle]}>
-            <Avatar uri={uri} size={big} fallback="icon" />
+          <Animated.View style={[{ backgroundColor: colors.surfaceRaised, overflow: 'hidden', alignItems: 'center', justifyContent: 'center' }, photoStyle]}>
+            {photo ? (
+              <>
+                {/* Same layout size as the tab's avatar, so this is a decoded-cache hit and paints on the first frame. */}
+                <Image source={{ uri }} resizeMode="cover" style={{ width: from.size, height: from.size, transform: [{ scale: big / from.size }] }} />
+                <Animated.Image source={{ uri }} resizeMode="cover" onLoad={() => { loaded.value = withTiming(1, { duration: 160 }); }} style={[{ position: 'absolute', top: 0, left: 0, width: big, height: big }, fullStyle]} />
+              </>
+            ) : (
+              <Avatar uri={uri} size={big} fallback="icon" />
+            )}
             {busy && (
               <View style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: colors.scrim, alignItems: 'center', justifyContent: 'center' }}>
                 <ActivityIndicator color={colors.onAccent} />
@@ -165,11 +204,15 @@ export const ProfilePhotoModal = ({ open, origin, uri, busy, onClose, onChooseLi
           </Animated.View>
         </GestureDetector>
 
+        <Animated.View pointerEvents="none" style={[{ width: EDIT_BADGE, height: EDIT_BADGE, borderRadius: EDIT_BADGE / 2, backgroundColor: colors.accent, borderWidth: 3, borderColor: colors.ground, alignItems: 'center', justifyContent: 'center' }, badgeStyle]}>
+          <Icon icon={generalIcons.pencil} size={18} color={colors.onAccent} strokeWidth={2.5} />
+        </Animated.View>
+
         <Animated.View style={[{ position: 'absolute', left: 0, right: 0, bottom: 0, paddingHorizontal: spacing.lg, paddingBottom: insets.bottom + spacing.lg }, cardStyle]}>
           <SurfaceCard style={{ padding: 0, opacity: busy ? 0.5 : 1 }}>
             <Row icon={generalIcons.images} iconColor={colors.accent} title={uri ? 'Replace from library' : 'Choose from library'} onPress={busy ? undefined : onChooseLibrary} chevron={false} />
             <Row icon={generalIcons.camera} iconColor={colors.accent} title="Take a photo" divider onPress={busy ? undefined : onTakePhoto} chevron={false} />
-            <Row icon={generalIcons.smile} iconColor={colors.accent} title="Pick an avatar" divider onPress={busy ? undefined : onChooseAvatar} chevron={false} />
+            {features.avatars && <Row icon={generalIcons.smile} iconColor={colors.accent} title="Pick an avatar" divider onPress={busy ? undefined : onChooseAvatar} chevron={false} />}
             {uri && <Row icon={generalIcons.trash} title={isAvatarUri(uri) ? 'Remove avatar' : 'Remove photo'} tone="destructive" divider onPress={busy ? undefined : onRemove} chevron={false} />}
           </SurfaceCard>
         </Animated.View>

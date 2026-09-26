@@ -1,5 +1,5 @@
 import React, { useState, useRef } from 'react';
-import { ActivityIndicator, Alert, Image, ScrollView, TouchableOpacity, useWindowDimensions, View } from 'react-native';
+import { ActivityIndicator, Alert, ScrollView, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { NavigationProp, useNavigation } from '@react-navigation/native';
 import { useAuth } from '../../../../data/auth/AuthProvider';
@@ -15,10 +15,10 @@ import { useTheme } from '../../../../theme';
 import { ProfileStackParams } from '../ProfileStack';
 import { useTabScrollInset } from '../../../../navigation/useTabBarInset';
 import { TabHeader } from '../../../../components/headers/TabHeader';
-import { expandedPhotoSize, PhotoOrigin, ProfilePhotoModal } from '../../../../components/media/ProfilePhotoModal';
+import { EDIT_BADGE, PhotoOrigin, ProfilePhotoModal } from '../../../../components/media/ProfilePhotoModal';
 import { AvatarPicker } from '../../../../components/media/AvatarPicker';
 import { Avatar } from '../../../../components/buddies/Avatar';
-import { avatarIdOf, isPhotoUri } from '../../../../data/engine/avatars';
+import { avatarIdOf } from '../../../../data/engine/avatars';
 import { AppStackParams } from '../../../../appNavigators/AppStack';
 import { dateLabel } from '../../../../components/charts/scale';
 import { toLocalDate } from '../../../../data/engine/dates';
@@ -36,8 +36,8 @@ export const ProfileScreen = () => {
   const [photoOpen, setPhotoOpen] = useState(false);
   const [photoOrigin, setPhotoOrigin] = useState<PhotoOrigin | null>(null);
   const [avatarOpen, setAvatarOpen] = useState(false);
-  const { width } = useWindowDimensions();
-  const expanded = expandedPhotoSize(width);
+  /** The photo sheet draws its own copy of the edit badge; ours hides while it's up so the two never overlap. */
+  const [badgeHidden, setBadgeHidden] = useState(false);
   const avatarRef = useRef<React.ComponentRef<typeof View>>(null);
   /** Measure the avatar first so the big photo can grow out of it. */
   const openPhoto = () => {
@@ -66,7 +66,7 @@ export const ProfileScreen = () => {
           <TouchableOpacity ref={avatarRef} onPress={openPhoto} disabled={photo.busy} accessibilityRole="button" accessibilityLabel="View or change profile photo" style={{ width: AVATAR, height: AVATAR }}>
             <Avatar uri={profile?.photoUrl} name={profile?.displayName} size={AVATAR} fallback="icon" />
             {/* Edit badge so the avatar reads as tappable. */}
-            <View style={{ position: 'absolute', right: 0, bottom: 0, width: 36, height: 36, borderRadius: 18, backgroundColor: colors.accent, borderWidth: 3, borderColor: colors.ground, alignItems: 'center', justifyContent: 'center' }}>
+            <View style={{ position: 'absolute', right: 0, bottom: 0, width: EDIT_BADGE, height: EDIT_BADGE, borderRadius: EDIT_BADGE / 2, backgroundColor: colors.accent, borderWidth: 3, borderColor: colors.ground, alignItems: 'center', justifyContent: 'center', opacity: badgeHidden ? 0 : 1 }}>
               {photo.busy ? <ActivityIndicator size="small" color={colors.onAccent} /> : <Icon icon={generalIcons.pencil} size={18} color={colors.onAccent} strokeWidth={2.5} />}
             </View>
           </TouchableOpacity>
@@ -109,16 +109,16 @@ export const ProfileScreen = () => {
           <Row icon={generalIcons.signOut} title="Sign out" tone="destructive" chevron={false} onPress={signOut} />
         </SurfaceCard>
       </ScrollView>
-      {/* Warms the image cache at the expanded size so the sheet opens with the photo already decoded. */}
-      {isPhotoUri(profile?.photoUrl) && (
-        <Image source={{ uri: profile.photoUrl }} resizeMode="cover" pointerEvents="none" accessibilityElementsHidden importantForAccessibility="no-hide-descendants" style={{ position: 'absolute', top: 0, left: 0, width: expanded, height: expanded, opacity: 0 }} />
-      )}
       <ProfilePhotoModal
         open={photoOpen}
         origin={photoOrigin}
         uri={profile?.photoUrl ?? null}
         busy={photo.busy}
-        onClose={() => setPhotoOpen(false)}
+        onClose={() => {
+          setPhotoOpen(false);
+          setBadgeHidden(false);
+        }}
+        onShown={() => setBadgeHidden(true)}
         onChooseLibrary={() => photo.pick('library')}
         onTakePhoto={() => photo.pick('camera')}
         onChooseAvatar={() => {
