@@ -1,12 +1,13 @@
 import React, { useEffect, useState } from 'react';
-import { ActivityIndicator, Image, Modal, Pressable, useWindowDimensions, View } from 'react-native';
+import { ActivityIndicator, Modal, Pressable, useWindowDimensions, View } from 'react-native';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import Animated, { Easing, interpolate, runOnJS, useAnimatedStyle, useSharedValue, withSpring, withTiming } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { SurfaceCard } from '../cards/SurfaceCard';
 import { Row } from '../list-items/Row';
-import { Icon } from '../icons/Icon';
 import { generalIcons } from '../icons/icon-library';
+import { Avatar } from '../buddies/Avatar';
+import { isAvatarUri } from '../../data/engine/avatars';
 import { useTheme } from '../../theme';
 
 /** Where the small avatar sits on screen, in window coordinates, so the big one can grow out of it. */
@@ -20,13 +21,15 @@ interface Props {
   open: boolean;
   /** The avatar's position when it was tapped. Null falls back to growing from the centre. */
   origin: PhotoOrigin | null;
-  /** The current photo, or null for the placeholder. */
+  /** The current photo or `avatar:<id>`, or null for the placeholder. */
   uri: string | null;
   /** A save or removal is in flight: the options are disabled and the photo shows a spinner. */
   busy: boolean;
   onClose: () => void;
   onChooseLibrary: () => void;
   onTakePhoto: () => void;
+  /** Opens the built-in avatar picker (the caller closes this sheet first). */
+  onChooseAvatar: () => void;
   onRemove: () => void;
 }
 
@@ -46,14 +49,14 @@ const DISMISS_VELOCITY = 900;
  * Animating its width and height instead re-requested the image at every
  * new size, which showed as a blank circle until the photo reloaded.
  */
-export const ProfilePhotoModal = ({ open, origin, uri, busy, onClose, onChooseLibrary, onTakePhoto, onRemove }: Props) => {
+export const ProfilePhotoModal = ({ open, origin, uri, busy, onClose, onChooseLibrary, onTakePhoto, onChooseAvatar, onRemove }: Props) => {
   const { colors, spacing } = useTheme();
   const insets = useSafeAreaInsets();
   const { width, height } = useWindowDimensions();
 
   const big = Math.min(width - spacing.lg * 2, 340);
   // Room for the options card at the bottom; the photo centres in what's left.
-  const cardHeight = 3 * 60 + spacing.lg * 2 + insets.bottom;
+  const cardHeight = 4 * 60 + spacing.lg * 2 + insets.bottom;
   const target = { x: (width - big) / 2, y: Math.max(insets.top + spacing.lg, (height - cardHeight - big) / 2), size: big };
   const from = origin ?? { x: width / 2 - 48, y: height / 2 - 48, size: 96 };
 
@@ -145,7 +148,7 @@ export const ProfilePhotoModal = ({ open, origin, uri, busy, onClose, onChooseLi
 
         <GestureDetector gesture={gesture}>
           <Animated.View style={[{ backgroundColor: colors.surfaceRaised, overflow: 'hidden', alignItems: 'center', justifyContent: 'center' }, photoStyle]}>
-            {uri ? <Image source={{ uri }} resizeMode="cover" style={{ width: '100%', height: '100%' }} /> : <Icon icon={generalIcons.user} size={big / 3} color={colors.inactive} />}
+            <Avatar uri={uri} size={big} fallback="icon" />
             {busy && (
               <View style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: colors.scrim, alignItems: 'center', justifyContent: 'center' }}>
                 <ActivityIndicator color={colors.onAccent} />
@@ -158,7 +161,8 @@ export const ProfilePhotoModal = ({ open, origin, uri, busy, onClose, onChooseLi
           <SurfaceCard style={{ padding: 0, opacity: busy ? 0.5 : 1 }}>
             <Row icon={generalIcons.images} iconColor={colors.accent} title={uri ? 'Replace from library' : 'Choose from library'} onPress={busy ? undefined : onChooseLibrary} chevron={false} />
             <Row icon={generalIcons.camera} iconColor={colors.accent} title="Take a photo" divider onPress={busy ? undefined : onTakePhoto} chevron={false} />
-            {uri && <Row icon={generalIcons.trash} title="Remove photo" tone="destructive" divider onPress={busy ? undefined : onRemove} chevron={false} />}
+            <Row icon={generalIcons.smile} iconColor={colors.accent} title="Pick an avatar" divider onPress={busy ? undefined : onChooseAvatar} chevron={false} />
+            {uri && <Row icon={generalIcons.trash} title={isAvatarUri(uri) ? 'Remove avatar' : 'Remove photo'} tone="destructive" divider onPress={busy ? undefined : onRemove} chevron={false} />}
           </SurfaceCard>
         </Animated.View>
       </View>

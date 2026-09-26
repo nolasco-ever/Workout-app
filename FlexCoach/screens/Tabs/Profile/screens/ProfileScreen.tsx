@@ -1,5 +1,5 @@
 import React, { useState, useRef } from 'react';
-import { ActivityIndicator, Alert, Image, ScrollView, TouchableOpacity, View } from 'react-native';
+import { ActivityIndicator, Alert, ScrollView, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { NavigationProp, useNavigation } from '@react-navigation/native';
 import { useAuth } from '../../../../data/auth/AuthProvider';
@@ -16,6 +16,9 @@ import { ProfileStackParams } from '../ProfileStack';
 import { useTabScrollInset } from '../../../../navigation/useTabBarInset';
 import { TabHeader } from '../../../../components/headers/TabHeader';
 import { PhotoOrigin, ProfilePhotoModal } from '../../../../components/media/ProfilePhotoModal';
+import { AvatarPicker } from '../../../../components/media/AvatarPicker';
+import { Avatar } from '../../../../components/buddies/Avatar';
+import { avatarIdOf } from '../../../../data/engine/avatars';
 import { AppStackParams } from '../../../../appNavigators/AppStack';
 import { dateLabel } from '../../../../components/charts/scale';
 import { toLocalDate } from '../../../../data/engine/dates';
@@ -32,6 +35,7 @@ export const ProfileScreen = () => {
   const photo = useProfilePhoto();
   const [photoOpen, setPhotoOpen] = useState(false);
   const [photoOrigin, setPhotoOrigin] = useState<PhotoOrigin | null>(null);
+  const [avatarOpen, setAvatarOpen] = useState(false);
   const avatarRef = useRef<React.ComponentRef<typeof View>>(null);
   /** Measure the avatar first so the big photo can grow out of it. */
   const openPhoto = () => {
@@ -58,13 +62,7 @@ export const ProfileScreen = () => {
         <TabHeader title="Profile" />
         <View style={{ alignItems: 'center', gap: spacing.sm }}>
           <TouchableOpacity ref={avatarRef} onPress={openPhoto} disabled={photo.busy} accessibilityRole="button" accessibilityLabel="View or change profile photo" style={{ width: AVATAR, height: AVATAR }}>
-            {profile?.photoUrl ? (
-              <Image source={{ uri: profile.photoUrl }} resizeMode="cover" style={{ width: AVATAR, height: AVATAR, borderRadius: AVATAR / 2, backgroundColor: colors.surfaceRaised }} />
-            ) : (
-              <View style={{ width: AVATAR, height: AVATAR, borderRadius: AVATAR / 2, backgroundColor: colors.surfaceRaised, alignItems: 'center', justifyContent: 'center' }}>
-                <Icon icon={generalIcons.user} size={48} color={colors.inactive} />
-              </View>
-            )}
+            <Avatar uri={profile?.photoUrl} name={profile?.displayName} size={AVATAR} fallback="icon" />
             {/* Edit badge so the avatar reads as tappable. */}
             <View style={{ position: 'absolute', right: 0, bottom: 0, width: 36, height: 36, borderRadius: 18, backgroundColor: colors.accent, borderWidth: 3, borderColor: colors.ground, alignItems: 'center', justifyContent: 'center' }}>
               {photo.busy ? <ActivityIndicator size="small" color={colors.onAccent} /> : <Icon icon={generalIcons.pencil} size={18} color={colors.onAccent} strokeWidth={2.5} />}
@@ -117,8 +115,14 @@ export const ProfileScreen = () => {
         onClose={() => setPhotoOpen(false)}
         onChooseLibrary={() => photo.pick('library')}
         onTakePhoto={() => photo.pick('camera')}
+        onChooseAvatar={() => {
+          // One sheet at a time: let the photo sheet finish closing first.
+          setPhotoOpen(false);
+          setTimeout(() => setAvatarOpen(true), 320);
+        }}
         onRemove={() => photo.remove().then(() => setPhotoOpen(false))}
       />
+      <AvatarPicker open={avatarOpen} selected={avatarIdOf(profile?.photoUrl)} onClose={() => setAvatarOpen(false)} onSelect={id => photo.chooseAvatar(id)} />
     </SafeAreaView>
   );
 };

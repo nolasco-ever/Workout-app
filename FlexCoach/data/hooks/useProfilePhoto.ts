@@ -2,7 +2,8 @@ import { useCallback, useState } from 'react';
 import { Alert } from 'react-native';
 import { launchCamera, launchImageLibrary } from 'react-native-image-picker';
 import { useAuth } from '../auth/AuthProvider';
-import { removeProfilePhoto, saveProfilePhoto } from '../services/profileService';
+import { removeProfilePhoto, saveAvatar, saveProfilePhoto } from '../services/profileService';
+import { AvatarId } from '../engine/avatars';
 import { features } from '../../config/features';
 
 /**
@@ -15,7 +16,8 @@ const pickerOptions = { mediaType: 'photo' as const, quality: 0.9 as const, maxW
 export type PhotoSource = 'library' | 'camera';
 
 /**
- * Pick, save, and remove the profile photo. Shared by onboarding and the
+ * Pick, save, and remove the profile photo, or choose a built-in avatar.
+ * Shared by onboarding and the
  * Profile tab so both go through the same picker settings and storage path.
  * The Profile tab presents the choices in ProfilePhotoModal.
  */
@@ -44,6 +46,23 @@ export const useProfilePhoto = () => {
     [uid],
   );
 
+  const chooseAvatar = useCallback(
+    async (id: AvatarId): Promise<string | null> => {
+      if (!uid) return null;
+      setBusy(true);
+      try {
+        return await saveAvatar(uid, id, profile?.photoUrl);
+      } catch (err) {
+        console.warn(err);
+        Alert.alert("Couldn't save the avatar", 'Try again in a moment.');
+        return null;
+      } finally {
+        setBusy(false);
+      }
+    },
+    [uid, profile?.photoUrl],
+  );
+
   const remove = useCallback(async () => {
     if (!uid) return;
     setBusy(true);
@@ -57,5 +76,5 @@ export const useProfilePhoto = () => {
     }
   }, [uid]);
 
-  return { busy, pick, remove, photoUrl: profile?.photoUrl ?? null };
+  return { busy, pick, chooseAvatar, remove, photoUrl: profile?.photoUrl ?? null };
 };

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Image, View } from 'react-native';
+import { View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
@@ -8,8 +8,10 @@ import { useAuth } from '../../../data/auth/AuthProvider';
 import { getPermission } from '../../../data/notifications/notificationService';
 import { CustomText } from '../../../components/text/customText';
 import { PrimaryButton } from '../../../components/buttons/PrimaryButton';
-import { Icon } from '../../../components/icons/Icon';
 import { generalIcons } from '../../../components/icons/icon-library';
+import { Avatar } from '../../../components/buddies/Avatar';
+import { AvatarPicker } from '../../../components/media/AvatarPicker';
+import { avatarIdOf } from '../../../data/engine/avatars';
 import { useTheme } from '../../../theme';
 import { OnboardingStackParams } from '../OnboardingStack';
 
@@ -19,6 +21,7 @@ export const ProfilePhotoScreen = () => {
   const { profile } = useAuth();
   const photo = useProfilePhoto();
   const [uri, setUri] = useState<string | null>(photo.photoUrl);
+  const [avatarOpen, setAvatarOpen] = useState(false);
   const busy = photo.busy;
 
   // The reminders step only makes sense while the OS permission is still undecided.
@@ -35,19 +38,24 @@ export const ProfilePhotoScreen = () => {
   return (
     <SafeAreaView edges={['bottom', 'left', 'right']} style={{ flex: 1, backgroundColor: colors.ground }}>
       <View style={{ flex: 1, padding: spacing.lg, gap: spacing.lg }}>
-        <CustomText variant="body" color={colors.inkMuted}>A photo helps buddies recognise you. Optional.</CustomText>
+        <CustomText variant="body" color={colors.inkMuted}>A photo or an avatar helps buddies recognise you. Optional.</CustomText>
         <View style={{ alignItems: 'center', paddingVertical: spacing.xl }}>
-          {uri ? (
-            <Image source={{ uri }} style={{ width: 160, height: 160, borderRadius: 80, backgroundColor: colors.surfaceRaised }} />
-          ) : (
-            <View style={{ width: 160, height: 160, borderRadius: 80, backgroundColor: colors.surfaceRaised, alignItems: 'center', justifyContent: 'center' }}>
-              <Icon icon={generalIcons.user} size={64} color={colors.inactive} />
-            </View>
-          )}
+          <Avatar uri={uri} name={profile?.displayName} size={160} fallback="icon" />
         </View>
         <PrimaryButton label="Choose from library" variant="outline" busy={busy} onPress={() => pick('library')} />
         <PrimaryButton label="Take a photo" variant="outline" busy={busy} onPress={() => pick('camera')} />
+        <PrimaryButton label="Pick an avatar" icon={generalIcons.smile} variant="outline" busy={busy} onPress={() => setAvatarOpen(true)} />
       </View>
+      <AvatarPicker
+        open={avatarOpen}
+        selected={avatarIdOf(uri)}
+        onClose={() => setAvatarOpen(false)}
+        onSelect={id => {
+          photo.chooseAvatar(id).then(saved => {
+            if (saved) setUri(saved);
+          });
+        }}
+      />
       <View style={{ padding: spacing.lg, borderTopWidth: 1, borderTopColor: colors.line }}>
         <PrimaryButton label={uri ? 'Next' : 'Skip for now'} disabled={busy} onPress={next} />
       </View>
