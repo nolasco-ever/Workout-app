@@ -33,6 +33,13 @@ interface Props {
   onRemove: () => void;
 }
 
+/**
+ * Size of the expanded circle. The Profile tab renders a hidden copy of the
+ * photo at exactly this size so the decoded image is already cached when
+ * the sheet asks for it; otherwise the circle showed blank for a moment.
+ */
+export const expandedPhotoSize = (windowWidth: number): number => Math.min(windowWidth - 32, 340);
+
 const OPEN_MS = 320;
 const CLOSE_MS = 260;
 /** Drag distance or fling speed that counts as "throw it away". */
@@ -54,7 +61,7 @@ export const ProfilePhotoModal = ({ open, origin, uri, busy, onClose, onChooseLi
   const insets = useSafeAreaInsets();
   const { width, height } = useWindowDimensions();
 
-  const big = Math.min(width - spacing.lg * 2, 340);
+  const big = expandedPhotoSize(width);
   // Room for the options card at the bottom; the photo centres in what's left.
   const cardHeight = 4 * 60 + spacing.lg * 2 + insets.bottom;
   const target = { x: (width - big) / 2, y: Math.max(insets.top + spacing.lg, (height - cardHeight - big) / 2), size: big };
@@ -147,7 +154,8 @@ export const ProfilePhotoModal = ({ open, origin, uri, busy, onClose, onChooseLi
         </Animated.View>
 
         <GestureDetector gesture={gesture}>
-          <Animated.View style={[{ backgroundColor: colors.surfaceRaised, overflow: 'hidden', alignItems: 'center', justifyContent: 'center' }, photoStyle]}>
+          {/* No background of its own: until the big image lands, the avatar underneath shows through instead of a blank disc. */}
+          <Animated.View style={[{ overflow: 'hidden', alignItems: 'center', justifyContent: 'center' }, photoStyle]}>
             <Avatar uri={uri} size={big} fallback="icon" />
             {busy && (
               <View style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: colors.scrim, alignItems: 'center', justifyContent: 'center' }}>

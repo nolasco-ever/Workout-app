@@ -1,5 +1,5 @@
 import React, { useState, useRef } from 'react';
-import { ActivityIndicator, Alert, ScrollView, TouchableOpacity, View } from 'react-native';
+import { ActivityIndicator, Alert, Image, ScrollView, TouchableOpacity, useWindowDimensions, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { NavigationProp, useNavigation } from '@react-navigation/native';
 import { useAuth } from '../../../../data/auth/AuthProvider';
@@ -15,10 +15,10 @@ import { useTheme } from '../../../../theme';
 import { ProfileStackParams } from '../ProfileStack';
 import { useTabScrollInset } from '../../../../navigation/useTabBarInset';
 import { TabHeader } from '../../../../components/headers/TabHeader';
-import { PhotoOrigin, ProfilePhotoModal } from '../../../../components/media/ProfilePhotoModal';
+import { expandedPhotoSize, PhotoOrigin, ProfilePhotoModal } from '../../../../components/media/ProfilePhotoModal';
 import { AvatarPicker } from '../../../../components/media/AvatarPicker';
 import { Avatar } from '../../../../components/buddies/Avatar';
-import { avatarIdOf } from '../../../../data/engine/avatars';
+import { avatarIdOf, isPhotoUri } from '../../../../data/engine/avatars';
 import { AppStackParams } from '../../../../appNavigators/AppStack';
 import { dateLabel } from '../../../../components/charts/scale';
 import { toLocalDate } from '../../../../data/engine/dates';
@@ -36,6 +36,8 @@ export const ProfileScreen = () => {
   const [photoOpen, setPhotoOpen] = useState(false);
   const [photoOrigin, setPhotoOrigin] = useState<PhotoOrigin | null>(null);
   const [avatarOpen, setAvatarOpen] = useState(false);
+  const { width } = useWindowDimensions();
+  const expanded = expandedPhotoSize(width);
   const avatarRef = useRef<React.ComponentRef<typeof View>>(null);
   /** Measure the avatar first so the big photo can grow out of it. */
   const openPhoto = () => {
@@ -59,7 +61,7 @@ export const ProfileScreen = () => {
   return (
     <SafeAreaView edges={['top', 'left', 'right']} style={{ flex: 1, backgroundColor: colors.ground }}>
       <ScrollView contentContainerStyle={{ padding: spacing.lg, gap: spacing.lg, paddingBottom: spacing.xxl + bottomInset }}>
-        <TabHeader title="Profile" leading={{ icon: generalIcons.idCard, accessibilityLabel: 'My Iron Card', onPress: () => navigation.navigate('MyCardScreen') }} />
+        <TabHeader title="Profile" action={{ icon: generalIcons.users, accessibilityLabel: 'Buddies and my Iron Card', onPress: () => navigation.navigate('CardStack') }} />
         <View style={{ alignItems: 'center', gap: spacing.sm }}>
           <TouchableOpacity ref={avatarRef} onPress={openPhoto} disabled={photo.busy} accessibilityRole="button" accessibilityLabel="View or change profile photo" style={{ width: AVATAR, height: AVATAR }}>
             <Avatar uri={profile?.photoUrl} name={profile?.displayName} size={AVATAR} fallback="icon" />
@@ -107,6 +109,10 @@ export const ProfileScreen = () => {
           <Row icon={generalIcons.signOut} title="Sign out" tone="destructive" chevron={false} onPress={signOut} />
         </SurfaceCard>
       </ScrollView>
+      {/* Warms the image cache at the expanded size so the sheet opens with the photo already decoded. */}
+      {isPhotoUri(profile?.photoUrl) && (
+        <Image source={{ uri: profile.photoUrl }} resizeMode="cover" pointerEvents="none" accessibilityElementsHidden importantForAccessibility="no-hide-descendants" style={{ position: 'absolute', top: 0, left: 0, width: expanded, height: expanded, opacity: 0 }} />
+      )}
       <ProfilePhotoModal
         open={photoOpen}
         origin={photoOrigin}
