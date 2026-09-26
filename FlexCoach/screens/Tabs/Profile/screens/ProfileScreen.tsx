@@ -59,7 +59,7 @@ export const ProfileScreen = () => {
   return (
     <SafeAreaView edges={['top', 'left', 'right']} style={{ flex: 1, backgroundColor: colors.ground }}>
       <ScrollView contentContainerStyle={{ padding: spacing.lg, gap: spacing.lg, paddingBottom: spacing.xxl + bottomInset }}>
-        <TabHeader title="Profile" />
+        <TabHeader title="Profile" leading={{ icon: generalIcons.idCard, accessibilityLabel: 'My Iron Card', onPress: () => navigation.navigate('MyCardScreen') }} />
         <View style={{ alignItems: 'center', gap: spacing.sm }}>
           <TouchableOpacity ref={avatarRef} onPress={openPhoto} disabled={photo.busy} accessibilityRole="button" accessibilityLabel="View or change profile photo" style={{ width: AVATAR, height: AVATAR }}>
             <Avatar uri={profile?.photoUrl} name={profile?.displayName} size={AVATAR} fallback="icon" />

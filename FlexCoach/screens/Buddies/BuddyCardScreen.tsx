@@ -161,7 +161,7 @@ export const BuddyCardScreen = () => {
         ) : notFound ? (
           <View style={{ gap: spacing.md, paddingVertical: spacing.xl }}>
             <CustomText variant="heading" centered>No card for {formatInviteCode(params.code ?? '')}</CustomText>
-            <CustomText variant="body" color={colors.inkMuted} centered>Check the link or code with your buddy. Theirs is under Profile › Buddies › My Iron Card.</CustomText>
+            <CustomText variant="body" color={colors.inkMuted} centered>Check the link or code with your buddy. Theirs is behind the card button at the top of Profile.</CustomText>
           </View>
         ) : card === null ? (
           <CustomText variant="body" color={colors.inkMuted} centered>{name ?? 'This person'} hasn't logged a workout yet, so there's no card to show.</CustomText>

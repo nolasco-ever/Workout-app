@@ -27,8 +27,9 @@ export const buddySummary = (b: BuddyWithCard): string => {
 };
 
 /**
- * Your buddies: requests to answer, the people you train alongside, and
- * the two ways to add someone (show your Iron Card, or scan theirs).
+ * Your buddies: the people you train alongside, with their latest numbers.
+ * Adding someone happens from your Iron Card sheet (Profile header), which
+ * carries the QR code and the scanner.
  */
 export const BuddiesScreen = () => {
   const navigation = useNavigation<NavigationProp<BuddyRoutes>>();
@@ -47,16 +48,6 @@ export const BuddiesScreen = () => {
   return (
     <SafeAreaView edges={['bottom', 'left', 'right']} style={{ flex: 1, backgroundColor: colors.ground }}>
       <ScrollView contentContainerStyle={{ padding: spacing.lg, gap: spacing.lg, paddingBottom: spacing.xxl }}>
-        {/* Add */}
-        <View style={{ flexDirection: 'row', gap: spacing.sm }}>
-          <View style={{ flex: 1 }}>
-            <PrimaryButton label="My Iron Card" icon={generalIcons.qrCode} variant="outline" onPress={() => navigation.navigate('MyCardScreen')} />
-          </View>
-          <View style={{ flex: 1 }}>
-            <PrimaryButton label="Scan a card" icon={generalIcons.scan} onPress={() => navigation.navigate('ScanCardScreen')} />
-          </View>
-        </View>
-
         {loading && <ActivityIndicator color={colors.accent} style={{ marginTop: spacing.xl }} />}
 
         {empty && (
@@ -66,8 +57,10 @@ export const BuddiesScreen = () => {
             </View>
             <CustomText variant="heading" centered>Train with people you know</CustomText>
             <CustomText variant="body" color={colors.inkMuted} centered>
-              Buddies see each other's streaks, finished workouts and shared plans. Never your sets or your weight. Share your Iron Card, or scan or tap a buddy's, and you're buddies.
+              Buddies see each other's streaks, finished workouts and shared plans. Never your sets or your weight. Show your Iron Card, or scan or tap a buddy's, and you're buddies.
             </CustomText>
+            <PrimaryButton label="Show my Iron Card" icon={generalIcons.idCard} onPress={() => navigation.navigate('MyCardScreen')} />
+            <CustomText variant="caption" color={colors.inkMuted} centered>It's also behind the card button at the top of Profile.</CustomText>
           </View>
         )}
 

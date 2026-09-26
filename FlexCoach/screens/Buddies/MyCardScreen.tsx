@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { ActivityIndicator, Share, TouchableOpacity, View, ScrollView } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { NavigationProp, useNavigation } from '@react-navigation/native';
 import QRCode from 'react-native-qrcode-svg';
 import { useAuth } from '../../data/auth/AuthProvider';
 import { PublicProfile } from '../../data/models';
@@ -13,14 +12,14 @@ import { Icon } from '../../components/icons/Icon';
 import { generalIcons } from '../../components/icons/icon-library';
 import { IronCard } from '../../components/buddies/IronCard';
 import { useTheme } from '../../theme';
-import { BuddyRoutes } from './routes';
 
 /**
- * Your Iron Card with its QR code. A buddy scans it in their app (or types
- * the code) and gets your card with an Add button.
+ * Your Iron Card with its QR code, presented as a sheet from the Profile
+ * header. A buddy scans it in their app (or types the code) and gets your
+ * card with an Add button; the scanner for their card is in this sheet's
+ * header.
  */
 export const MyCardScreen = () => {
-  const navigation = useNavigation<NavigationProp<BuddyRoutes>>();
   const { colors, spacing, radius } = useTheme();
   const { uid, profile } = useAuth();
   const unit = profile?.weightUnit ?? 'lb';
@@ -81,7 +80,7 @@ export const MyCardScreen = () => {
               }
             />
             <PrimaryButton label="Share my card" icon={generalIcons.share} onPress={share} />
-            <PrimaryButton label="Scan a buddy's card instead" icon={generalIcons.scan} variant="quiet" onPress={() => navigation.navigate('ScanCardScreen')} />
+            <CustomText variant="caption" color={colors.inkMuted} centered>Got someone's card in front of you? Use the scan button at the top.</CustomText>
           </>
         )}
       </ScrollView>

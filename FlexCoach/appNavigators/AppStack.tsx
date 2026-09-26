@@ -71,7 +71,18 @@ export const AppStack = () => {
                     <Stack.Screen name="AccountScreen" component={AccountScreen} options={opts.screen('Account')} />
                     <Stack.Screen name="PlansStack" component={PlansStack} options={{ presentation: 'fullScreenModal' }} />
                     <Stack.Screen name="BuddiesScreen" component={BuddiesScreen} options={opts.screen('Buddies')} />
-                    <Stack.Screen name="MyCardScreen" component={MyCardScreen} options={opts.screen('My Iron Card')} />
+                    {/* Your own card slides up from the Profile header; swipe it down (or X) to put it away, scan from the top right. */}
+                    <Stack.Screen
+                        name="MyCardScreen"
+                        component={MyCardScreen}
+                        options={({ navigation }) =>
+                            opts.modal(
+                                'My Iron Card',
+                                () => <HeaderButton icon={generalIcons.xMark} accessibilityLabel="Close" onPress={() => navigation.goBack()} />,
+                                () => <HeaderButton icon={generalIcons.scanQr} accessibilityLabel="Scan a buddy's card" onPress={() => navigation.navigate('ScanCardScreen')} />,
+                            )
+                        }
+                    />
                     <Stack.Screen name="ScanCardScreen" component={ScanCardScreen} options={opts.screen('Scan a card')} />
                     {/* A card is a sheet with an X: it can be brought up from a link, a scan, or the buddies list. */}
                     <Stack.Screen name="BuddyCardScreen" component={BuddyCardScreen} options={({ navigation, route }) => opts.modal(route.params.displayName ?? 'Iron Card', () => <HeaderButton icon={generalIcons.xMark} accessibilityLabel="Close" onPress={() => navigation.goBack()} />)} />
