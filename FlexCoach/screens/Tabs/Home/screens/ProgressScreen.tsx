@@ -34,7 +34,7 @@ export const ProgressScreen = () => {
 
   return (
     <SafeAreaView edges={['left', 'right']} style={{ flex: 1, backgroundColor: colors.ground }}>
-      <ScrollView contentContainerStyle={{ padding: spacing.lg, gap: spacing.md, paddingBottom: spacing.lg + bottomInset }}>
+      <ScrollView contentContainerStyle={{ padding: spacing.lg, gap: spacing.md, paddingBottom: spacing.xl + bottomInset }}>
         <SurfaceCard>
           <CustomText variant="heading" style={{ marginBottom: spacing.sm }}>Weekly volume</CustomText>
           <BarChart

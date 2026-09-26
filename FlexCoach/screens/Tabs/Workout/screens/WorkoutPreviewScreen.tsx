@@ -76,7 +76,7 @@ export const WorkoutPreviewScreen = () => {
 
   return (
     <SafeAreaView edges={['left', 'right']} style={{ flex: 1, backgroundColor: colors.ground }}>
-      <ScrollView contentContainerStyle={{ padding: spacing.lg, gap: spacing.md, paddingBottom: canStart ? spacing.lg : spacing.lg + bottomInset }}>
+      <ScrollView contentContainerStyle={{ padding: spacing.lg, gap: spacing.md, paddingBottom: canStart ? spacing.lg : spacing.xl + bottomInset }}>
         <CustomText variant="caption" color={colors.inkMuted}>
           Suggested targets come from your last session of each exercise. You can change them as you go.
         </CustomText>

@@ -36,7 +36,7 @@ export const MuscleDetailScreen = () => {
 
   return (
     <SafeAreaView edges={['left', 'right']} style={{ flex: 1, backgroundColor: colors.ground }}>
-      <ScrollView contentContainerStyle={{ padding: spacing.lg, gap: spacing.lg, paddingBottom: spacing.lg + bottomInset }}>
+      <ScrollView contentContainerStyle={{ padding: spacing.lg, gap: spacing.lg, paddingBottom: spacing.xl + bottomInset }}>
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.md }}>
           <MuscleMap primary={[params.muscle as MuscleGroup]} height={90} views="auto" />
           <View style={{ flex: 1, flexDirection: 'row', gap: spacing.sm }}>

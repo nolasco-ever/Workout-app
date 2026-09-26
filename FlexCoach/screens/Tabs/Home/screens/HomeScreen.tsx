@@ -23,7 +23,7 @@ import { MuscleRow } from '../components/MuscleRow';
 import { MuscleGroup } from '../../../../data/models';
 import { useTheme } from '../../../../theme';
 import { HomeStackParams } from '../HomeStack';
-import { useTabBarInset } from '../../../../navigation/useTabBarInset';
+import { useTabScrollInset } from '../../../../navigation/useTabBarInset';
 import { TabHeader } from '../../../../components/headers/TabHeader';
 import { useNotificationFeed } from '../../../../data/notifications/useNotificationFeed';
 import { AppStackParams } from '../../../../appNavigators/AppStack';
@@ -83,7 +83,7 @@ const LinkCard = ({ label, onPress, children }: { label: string; onPress: () => 
 export const HomeScreen = () => {
   const navigation = useNavigation<NativeStackNavigationProp<HomeStackParams>>();
   const { colors, spacing } = useTheme();
-  const tabBarInset = useTabBarInset();
+  const bottomInset = useTabScrollInset();
   const { uid, profile } = useAuth();
   const unit = profile?.weightUnit ?? 'lb';
   const ins = useInsights();
@@ -151,7 +151,7 @@ export const HomeScreen = () => {
     <SafeAreaView edges={['top', 'left', 'right']} style={{ flex: 1, backgroundColor: colors.ground }}>
       <ScrollView
         ref={scrollRef}
-        contentContainerStyle={{ padding: spacing.lg, gap: spacing.lg, paddingBottom: spacing.xxl + tabBarInset }}
+        contentContainerStyle={{ padding: spacing.lg, gap: spacing.lg, paddingBottom: spacing.xxl + bottomInset }}
         showsVerticalScrollIndicator={false}
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.accent} />}
       >

@@ -15,7 +15,7 @@ import { Icon } from '../../../../components/icons/Icon';
 import { generalIcons } from '../../../../components/icons/icon-library';
 import { useTheme } from '../../../../theme';
 import { WorkoutStackParams } from '../WorkoutStack';
-import { useTabBarInset } from '../../../../navigation/useTabBarInset';
+import { useTabScrollInset } from '../../../../navigation/useTabBarInset';
 import { TabHeader } from '../../../../components/headers/TabHeader';
 import { SurfaceCard as Card } from '../../../../components/cards/SurfaceCard';
 import { PrimaryButton } from '../../../../components/buttons/PrimaryButton';
@@ -32,7 +32,7 @@ const shortDate = (d: string) => fromLocalDate(d).toLocaleDateString(undefined, 
 export const WorkoutHomeScreen = () => {
   const navigation = useNavigation<NavigationProp<WorkoutStackParams>>();
   const { colors, spacing, radius } = useTheme();
-  const tabBarInset = useTabBarInset();
+  const bottomInset = useTabScrollInset();
   const { uid, profile } = useAuth();
   const state = useWorkoutHome();
   const { plans } = usePlans();
@@ -93,7 +93,7 @@ export const WorkoutHomeScreen = () => {
     <SafeAreaView edges={['top', 'left', 'right']} style={{ flex: 1, backgroundColor: colors.ground }}>
       <ScrollView
         alwaysBounceVertical={false}
-        contentContainerStyle={{ padding: spacing.lg, gap: spacing.lg, paddingBottom: spacing.xxl + tabBarInset }}
+        contentContainerStyle={{ padding: spacing.lg, gap: spacing.lg, paddingBottom: spacing.xxl + bottomInset }}
       >
         {/* One scroll view for every state; the title row scrolls with the content.
             The content is never stretched to fill the screen, so short states don't scroll. */}

@@ -28,7 +28,7 @@ export const MusclesScreen = () => {
 
   return (
     <SafeAreaView edges={['left', 'right']} style={{ flex: 1, backgroundColor: colors.ground }}>
-      <ScrollView contentContainerStyle={{ padding: spacing.lg, gap: spacing.lg, paddingBottom: spacing.lg + bottomInset }}>
+      <ScrollView contentContainerStyle={{ padding: spacing.lg, gap: spacing.lg, paddingBottom: spacing.xl + bottomInset }}>
         <SurfaceCard>
           <View style={{ alignItems: 'center', marginBottom: spacing.sm }}>
             <MuscleMap primary={trained.slice(0, 6).map(m => m.muscle as MuscleGroup)} secondary={trained.slice(6).map(m => m.muscle as MuscleGroup)} height={190} />

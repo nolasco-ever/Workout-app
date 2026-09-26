@@ -43,7 +43,7 @@ export const ExerciseProgressScreen = () => {
 
   return (
     <SafeAreaView edges={['left', 'right']} style={{ flex: 1, backgroundColor: colors.ground }}>
-      <ScrollView contentContainerStyle={{ padding: spacing.lg, gap: spacing.lg, paddingBottom: spacing.lg + bottomInset }}>
+      <ScrollView contentContainerStyle={{ padding: spacing.lg, gap: spacing.lg, paddingBottom: spacing.xl + bottomInset }}>
         {cat && (
           <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.md }}>
             <MuscleMap primary={cat.primaryMuscles} secondary={cat.secondaryMuscles} height={80} views="auto" />

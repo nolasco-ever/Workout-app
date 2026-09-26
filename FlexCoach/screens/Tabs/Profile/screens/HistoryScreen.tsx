@@ -53,7 +53,7 @@ export const HistoryScreen = () => {
 
   return (
     <SafeAreaView edges={['left', 'right']} style={{ flex: 1, backgroundColor: colors.ground }}>
-      <ScrollView contentContainerStyle={{ padding: spacing.lg, gap: spacing.lg, paddingBottom: spacing.lg + bottomInset }}>
+      <ScrollView contentContainerStyle={{ padding: spacing.lg, gap: spacing.lg, paddingBottom: spacing.xl + bottomInset }}>
         {sessions === null && <ActivityIndicator color={colors.accent} style={{ marginTop: spacing.xxl }} />}
         {sessions !== null && sessions.length === 0 && (
           <View style={{ alignItems: 'center', gap: spacing.md, paddingTop: spacing.xxl }}>

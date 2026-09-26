@@ -183,7 +183,7 @@ export const SessionDetailScreen = () => {
   return (
     <SafeAreaView edges={['left', 'right']} style={{ flex: 1, backgroundColor: colors.ground }}>
       <KeyboardAvoiding>
-        <ScrollView contentContainerStyle={{ padding: spacing.lg, gap: spacing.lg, paddingBottom: (editing ? spacing.lg : spacing.lg + bottomInset) }} keyboardShouldPersistTaps="handled" keyboardDismissMode="on-drag">
+        <ScrollView contentContainerStyle={{ padding: spacing.lg, gap: spacing.lg, paddingBottom: (editing ? spacing.lg : spacing.xl + bottomInset) }} keyboardShouldPersistTaps="handled" keyboardDismissMode="on-drag">
           <View>
             <CustomText variant="overline" color={colors.inkMuted}>{longDate(shown.date)}</CustomText>
             <View style={{ flexDirection: 'row', gap: spacing.lg, marginTop: spacing.sm }}>

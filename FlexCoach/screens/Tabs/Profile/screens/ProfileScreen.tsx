@@ -13,7 +13,7 @@ import { Icon } from '../../../../components/icons/Icon';
 import { generalIcons } from '../../../../components/icons/icon-library';
 import { useTheme } from '../../../../theme';
 import { ProfileStackParams } from '../ProfileStack';
-import { useTabBarInset } from '../../../../navigation/useTabBarInset';
+import { useTabScrollInset } from '../../../../navigation/useTabBarInset';
 import { TabHeader } from '../../../../components/headers/TabHeader';
 import { PhotoOrigin, ProfilePhotoModal } from '../../../../components/media/ProfilePhotoModal';
 import { AppStackParams } from '../../../../appNavigators/AppStack';
@@ -23,7 +23,7 @@ import { toLocalDate } from '../../../../data/engine/dates';
 export const ProfileScreen = () => {
   const navigation = useNavigation<NavigationProp<ProfileStackParams & AppStackParams>>();
   const { colors, spacing } = useTheme();
-  const tabBarInset = useTabBarInset();
+  const bottomInset = useTabScrollInset();
   const { profile, user } = useAuth();
   const { plans } = usePlans();
   const photo = useProfilePhoto();
@@ -51,7 +51,7 @@ export const ProfileScreen = () => {
 
   return (
     <SafeAreaView edges={['top', 'left', 'right']} style={{ flex: 1, backgroundColor: colors.ground }}>
-      <ScrollView contentContainerStyle={{ padding: spacing.lg, gap: spacing.lg, paddingBottom: spacing.xxl + tabBarInset }}>
+      <ScrollView contentContainerStyle={{ padding: spacing.lg, gap: spacing.lg, paddingBottom: spacing.xxl + bottomInset }}>
         <TabHeader title="Profile" />
         <View style={{ alignItems: 'center', gap: spacing.sm }}>
           <TouchableOpacity ref={avatarRef} onPress={openPhoto} disabled={photo.busy} accessibilityRole="button" accessibilityLabel="View or change profile photo" style={{ width: 96, height: 96 }}>
