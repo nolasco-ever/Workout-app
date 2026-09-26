@@ -1,12 +1,15 @@
 import { Equipment, Exercise, ExerciseCategory, MuscleGroup, MeasurementType } from '../models';
 import catalogJson from './exercises.json';
+import extraJson from './extraExercises.json';
 
 /**
  * Bundled, read-only exercise catalog seeded from the public-domain
- * free-exercise-db project (https://github.com/yuhonas/free-exercise-db).
+ * free-exercise-db project (https://github.com/yuhonas/free-exercise-db),
+ * plus a hand-written supplement of common gym movements that project lacks
+ * (extraExercises.json; no photos yet). Kept in one alphabetical list.
  * Custom exercises live in Firestore and are merged in by the repository layer.
  */
-const catalog = catalogJson as Exercise[];
+const catalog = ([...(catalogJson as Exercise[]), ...(extraJson as Exercise[])] as Exercise[]).sort((a, b) => a.name.localeCompare(b.name));
 
 const byId = new Map<string, Exercise>(catalog.map(e => [e.id, e]));
 
@@ -26,8 +29,40 @@ export interface CatalogFilter {
   category?: ExerciseCategory;
 }
 
-/** Lower-case words, with punctuation such as "Sit-Up" or "90/90" split apart. */
-const words = (s: string): string[] => s.toLowerCase().split(/[^a-z0-9]+/).filter(Boolean);
+/**
+ * Fold plurals so "shrugs" finds "Shrug", "raises" finds "Raise" and
+ * "crunches" finds "Crunch": trailing "es" after a sibilant, else a
+ * trailing "s" that isn't part of "ss". Short words are left alone ("abs").
+ */
+export const stem = (w: string): string => {
+  if (w.length <= 3) return w;
+  if (/(ss|us|is)$/.test(w)) return w;
+  if (/(sh|ch|x|z)es$/.test(w)) return w.slice(0, -2);
+  if (/ies$/.test(w)) return `${w.slice(0, -3)}y`;
+  if (/s$/.test(w)) return w.slice(0, -1);
+  return w;
+};
+
+/** Spellings and gym slang folded onto the catalog's own words, after stemming. Applied to names and queries alike. */
+const SYNONYMS: Record<string, string> = {
+  flye: 'fly',
+  calve: 'calf',
+  delt: 'shoulder',
+  hammie: 'hamstring',
+  booty: 'glute',
+  core: 'abdominal',
+  abs: 'abdominal',
+  pec: 'chest',
+};
+
+/** Lower-case, singularised, synonym-folded words, with punctuation such as "Sit-Up" or "90/90" split apart. */
+const words = (s: string): string[] =>
+  s
+    .toLowerCase()
+    .split(/[^a-z0-9]+/)
+    .filter(Boolean)
+    .map(stem)
+    .map(w => SYNONYMS[w] ?? w);
 
 interface Indexed {
   exercise: Exercise;
@@ -36,7 +71,7 @@ interface Indexed {
   tagWords: string[];
 }
 
-/** Common gym shorthand, expanded before matching. */
+/** Shorthand that stands for several words, expanded before matching. Keys are stemmed. */
 const ALIASES: Record<string, string[]> = {
   db: ['dumbbell'],
   bb: ['barbell'],
@@ -44,14 +79,13 @@ const ALIASES: Record<string, string[]> = {
   ez: ['e', 'z'],
   ohp: ['overhead', 'press'],
   rdl: ['romanian', 'deadlift'],
+  bss: ['bulgarian', 'split', 'squat'],
   pullup: ['pull', 'up'],
-  pullups: ['pull', 'up'],
   chinup: ['chin', 'up'],
-  chinups: ['chin', 'up'],
   pushup: ['push', 'up'],
-  pushups: ['push', 'up'],
   situp: ['sit', 'up'],
-  situps: ['sit', 'up'],
+  deadbug: ['dead', 'bug'],
+  skullcrusher: ['skull', 'crusher'],
 };
 
 const queryWords = (q: string): string[] => words(q).flatMap(w => ALIASES[w] ?? [w]);
