@@ -47,7 +47,7 @@
 		<true/>
 	</dict>
 	<key>NSCameraUsageDescription</key>
-	<string>FlexCoach uses the camera to take a profile photo.</string>
+	<string>FlexCoach uses the camera to take a profile photo and to scan a buddy's Iron Card.</string>
 	<key>NSHealthShareUsageDescription</key>
 	<string>FlexCoach reads your step count and body weight from Apple Health to show them on your Home tab.</string>
 	<key>NSHealthUpdateUsageDescription</key>
