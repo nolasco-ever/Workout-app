@@ -132,7 +132,7 @@ export const BuddyCardScreen = () => {
         style: 'destructive',
         onPress: () =>
           run(async () => {
-            if (uid && otherUid) await removeBuddy(uid, otherUid);
+            if (uid && otherUid) await removeBuddy(uid, profile, otherUid);
           }),
       },
     ]);

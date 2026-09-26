@@ -94,7 +94,7 @@ export const addBuddy = async (uid: Id, profile: UserProfile | null, target: Inv
   );
   await notificationRepository
     .createForUser(target.uid, {
-      id: `buddy_added:${uid}`,
+      id: `buddy_added:${uid}:${Date.now()}`,
       kind: 'buddy_added',
       title: `${profile?.displayName ?? 'Someone'} added you as a buddy`,
       body: "You'll see each other's streaks, workouts and shared plans. Tap to see their card.",
@@ -106,7 +106,26 @@ export const addBuddy = async (uid: Id, profile: UserProfile | null, target: Inv
   refreshPublicProfile(uid, profile).catch(() => undefined);
 };
 
-export const removeBuddy = (uid: Id, otherUid: Id): Promise<void> => buddyRepository.remove(uid, otherUid);
+/**
+ * Remove a buddy. They're told first: the rules only let a buddy write to
+ * someone's feed while the relationship exists, so the notification has to
+ * land before the rows go. Either side can add the other again from the
+ * card.
+ */
+export const removeBuddy = async (uid: Id, profile: UserProfile | null, otherUid: Id): Promise<void> => {
+  const name = profile?.displayName ?? 'A buddy';
+  await notificationRepository
+    .createForUser(otherUid, {
+      id: `buddy_removed:${uid}:${Date.now()}`,
+      kind: 'buddy_removed',
+      title: `${name} removed you as a buddy`,
+      body: "You'll no longer see each other's activity or plans. Their card still adds them back any time.",
+      target: { screen: 'buddies' },
+      push: true,
+    })
+    .catch(err => console.warn('buddy removed notification failed', err));
+  await buddyRepository.remove(uid, otherUid);
+};
 
 /** Text for the share sheet: the same link the QR code carries. */
 export const shareMessage = (code: string, displayName: string | null): string =>

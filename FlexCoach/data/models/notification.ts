@@ -44,6 +44,7 @@ export type FeedNotificationKind =
   | 'cycle_finished'
   | 'achievement'
   | 'buddy_added'
+  | 'buddy_removed'
   | 'buddy_workout'
   | 'buddy_skipped'
   | 'buddy_streak'
