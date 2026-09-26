@@ -1,9 +1,10 @@
 import { Anchor, Crown, Dumbbell, Flame, Heart, Mountain, Rocket, Shield, Star, Sun, Target, Zap } from 'lucide-react-native';
-import { AvatarId } from '../../data/engine/avatars';
+import { FaceId, IconAvatarId } from '../../data/engine/avatars';
+import { FaceSpec } from './FaceAvatar';
 import { IconSource } from '../icons/Icon';
 
 export interface AvatarStyle {
-  id: AvatarId;
+  id: IconAvatarId;
   /** Spoken name for accessibility and the picker. */
   label: string;
   icon: IconSource;
@@ -31,4 +32,18 @@ export const AVATARS: readonly AvatarStyle[] = [
   { id: 'anchor', label: 'Anchor', icon: Anchor, bg: '#5A6B7A', fg: '#FFFFFF' },
 ];
 
-export const avatarStyle = (id: AvatarId): AvatarStyle => AVATARS.find(a => a.id === id) ?? AVATARS[0];
+export const avatarStyle = (id: IconAvatarId): AvatarStyle => AVATARS.find(a => a.id === id) ?? AVATARS[0];
+
+/** The character faces. Names are only spoken by screen readers and shown in the picker. */
+export const FACES: readonly { id: FaceId; label: string; spec: FaceSpec }[] = [
+  { id: 'sam', label: 'Sam', spec: { bg: '#E2602A', skin: '#F1C27D', hair: 'short', hairColor: '#2B1B12', shirt: '#1A1A1C', cheeks: true } },
+  { id: 'maya', label: 'Maya', spec: { bg: '#1F8A8A', skin: '#8D5524', hair: 'bun', hairColor: '#1A1A1C', shirt: '#FBE7DD' } },
+  { id: 'leo', label: 'Leo', spec: { bg: '#3B7DD8', skin: '#FFDBAC', hair: 'curly', hairColor: '#C4622D', shirt: '#F0B545', glasses: true } },
+  { id: 'aria', label: 'Aria', spec: { bg: '#7A4B9E', skin: '#C68642', hair: 'long', hairColor: '#1A1A1C', shirt: '#E2602A' } },
+  { id: 'dre', label: 'Dre', spec: { bg: '#2E9E6B', skin: '#5C3A1E', hair: 'bald', hairColor: '#1A1A1C', shirt: '#2A2B2F', beard: true, headband: '#E2602A' } },
+  { id: 'jules', label: 'Jules', spec: { bg: '#D64B6B', skin: '#E0AC69', hair: 'cap', hairColor: '#4A2C17', cap: '#1A1A1C', shirt: '#F4F3F1' } },
+  { id: 'nico', label: 'Nico', spec: { bg: '#2A2B2F', skin: '#F1C27D', hair: 'buzz', hairColor: '#1A1A1C', shirt: '#FF7A3D', glasses: true } },
+  { id: 'zara', label: 'Zara', spec: { bg: '#F0B545', skin: '#A66B3E', hair: 'puffs', hairColor: '#1A1A1C', shirt: '#3B7DD8', cheeks: true } },
+];
+
+export const faceSpec = (id: FaceId): FaceSpec => (FACES.find(f => f.id === id) ?? FACES[0]).spec;

@@ -1,12 +1,13 @@
 import React from 'react';
 import { Image, StyleSheet, View } from 'react-native';
 import Svg, { Circle } from 'react-native-svg';
-import { avatarIdOf, isPhotoUri } from '../../data/engine/avatars';
+import { avatarIdOf, isFaceId, isPhotoUri } from '../../data/engine/avatars';
 import { CustomText } from '../text/customText';
 import { Icon } from '../icons/Icon';
 import { generalIcons } from '../icons/icon-library';
 import { useTheme } from '../../theme';
-import { avatarStyle } from './avatarLibrary';
+import { avatarStyle, faceSpec } from './avatarLibrary';
+import { FaceAvatar } from './FaceAvatar';
 
 /** Initials from a display name: "Ever Nolasco" → "EN". */
 export const initialsOf = (name: string | null | undefined): string => {
@@ -35,13 +36,20 @@ const Disc = ({ size, color, children }: { size: number; color: string; children
 );
 
 /**
- * A person's picture wherever one is shown: their photo, one of the
- * built-in avatars, or a fallback. Photos are clipped to a circle; the
+ * A person's picture wherever one is shown: their photo, a character face,
+ * an icon avatar, or a fallback. Photos are clipped to a circle; the
  * other two are drawn on a vector disc.
  */
 export const Avatar = ({ uri, name, size = 44, fallback = 'initials' }: Props) => {
   const { colors, fonts } = useTheme();
   const avatar = avatarIdOf(uri);
+  if (avatar && isFaceId(avatar)) {
+    return (
+      <View style={{ width: size, height: size, flexShrink: 0 }}>
+        <FaceAvatar spec={faceSpec(avatar)} size={size} />
+      </View>
+    );
+  }
   if (avatar) {
     const style = avatarStyle(avatar);
     return (

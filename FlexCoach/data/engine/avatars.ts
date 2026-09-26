@@ -7,7 +7,13 @@
 
 export const AVATAR_PREFIX = 'avatar:';
 
-export const AVATAR_IDS = ['ember', 'bolt', 'peak', 'star', 'iron', 'crown', 'target', 'rocket', 'heart', 'shield', 'sun', 'anchor'] as const;
+/** Character faces first, then the icon marks. The picker shows them in two sections. */
+export const FACE_IDS = ['sam', 'maya', 'leo', 'aria', 'dre', 'jules', 'nico', 'zara'] as const;
+export const ICON_IDS = ['ember', 'bolt', 'peak', 'star', 'iron', 'crown', 'target', 'rocket', 'heart', 'shield', 'sun', 'anchor'] as const;
+export const AVATAR_IDS = [...FACE_IDS, ...ICON_IDS] as const;
+
+export type FaceId = (typeof FACE_IDS)[number];
+export type IconAvatarId = (typeof ICON_IDS)[number];
 
 export type AvatarId = (typeof AVATAR_IDS)[number];
 
@@ -19,6 +25,8 @@ export const avatarIdOf = (photoUrl: string | null | undefined): AvatarId | null
   const id = photoUrl.slice(AVATAR_PREFIX.length);
   return (AVATAR_IDS as readonly string[]).includes(id) ? (id as AvatarId) : null;
 };
+
+export const isFaceId = (id: AvatarId): id is FaceId => (FACE_IDS as readonly string[]).includes(id);
 
 export const isAvatarUri = (photoUrl: string | null | undefined): boolean => avatarIdOf(photoUrl) !== null;
 
