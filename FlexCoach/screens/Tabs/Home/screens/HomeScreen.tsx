@@ -30,8 +30,24 @@ import { AppStackParams } from '../../../../appNavigators/AppStack';
 import { devFlags } from '../../../../dev/flags';
 import { seedSampleWeights } from '../../../../data/services/devSeeds';
 import { askNotToday } from '../../Workout/components/notToday';
+import { useBuddies } from '../../../../data/hooks/useBuddies';
+import { useBuddyActivity } from '../../../../data/hooks/useBuddyActivity';
+import { useBuddyPlans } from '../../../../data/hooks/useBuddyPlans';
+import { ActivityRow } from '../../../../components/buddies/ActivityRow';
+import { Avatar } from '../../../../components/buddies/Avatar';
+import { BuddyRoutes } from '../../../Buddies/routes';
 
 const title = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
+
+/** Groups the Home cards. A little air above each one keeps the page from reading as one long stack. */
+const SectionHeader = ({ label, first = false }: { label: string; first?: boolean }) => {
+  const { colors, spacing } = useTheme();
+  return (
+    <CustomText variant="overline" color={colors.inkMuted} style={{ marginTop: first ? 0 : spacing.sm, marginBottom: -spacing.xs }}>
+      {label}
+    </CustomText>
+  );
+};
 
 const CardHeader = ({ label, action, onAction }: { label: string; action?: string; onAction?: () => void }) => {
   const { colors, spacing } = useTheme();
@@ -75,17 +91,21 @@ export const HomeScreen = () => {
   const openNotifications = () => (navigation as unknown as NavigationProp<AppStackParams>).navigate('NotificationsScreen');
   const home = useWorkoutHome();
   const steps = useSteps();
+  const { buddies } = useBuddies();
+  const buddyFeed = useBuddyActivity(buddies, 3);
+  const buddyPlans = useBuddyPlans(buddies);
+  const goBuddies = (screen: keyof BuddyRoutes) => (navigation as unknown as NavigationProp<BuddyRoutes>).navigate(screen as never);
   const scrollRef = useRef<React.ComponentRef<typeof ScrollView>>(null);
   useScrollToTop(scrollRef);
   const [refreshing, setRefreshing] = useState(false);
   const onRefresh = useCallback(async () => {
     setRefreshing(true);
     try {
-      await Promise.all([ins.refresh(), steps.refresh()]);
+      await Promise.all([ins.refresh(), steps.refresh(), buddyFeed.refresh(), buddyPlans.refresh()]);
     } finally {
       setRefreshing(false);
     }
-  }, [ins.refresh, steps.refresh]);
+  }, [ins.refresh, steps.refresh, buddyFeed.refresh, buddyPlans.refresh]);
 
   useEffect(() => {
     if (__DEV__ && devFlags.seedBodyWeightIfEmpty && uid && !ins.loading && ins.weightEntries.length === 0) {
@@ -140,6 +160,7 @@ export const HomeScreen = () => {
         {loading && <ActivityIndicator color={colors.accent} style={{ marginTop: spacing.xxl }} />}
         {!loading && (
         <>
+        <SectionHeader label="Today" first />
         {/* Today */}
         <TouchableOpacity onPress={ins.todaySession && !home.inProgressSession ? () => goSession(ins.todaySession!.id, ins.todaySession!.workoutName) : goWorkout} activeOpacity={0.7}>
           <SurfaceCard tone={todayStatus.tone === colors.accent ? 'accent' : 'surface'}>
@@ -178,6 +199,7 @@ export const HomeScreen = () => {
           />
         </View>
 
+        <SectionHeader label="Progress" />
         {/* Muscles, last 30 days */}
         <SurfaceCard>
           <CardHeader label="Muscles, last 30 days" action={ins.muscles30d.length > 0 ? 'All' : undefined} onAction={() => navigation.navigate('MusclesScreen')} />
@@ -254,6 +276,41 @@ export const HomeScreen = () => {
           </SurfaceCard>
         )}
 
+        <SectionHeader label="Buddies" />
+        {/* Buddy activity: the latest few lines, or a nudge to add someone. */}
+        <LinkCard label="Buddy activity" onPress={() => goBuddies(buddies.length ? 'BuddyActivityScreen' : 'BuddiesScreen')}>
+          {buddies.length === 0 ? (
+            <CustomText variant="body" color={colors.inkMuted}>Add a buddy and their workouts, streaks and records show up here next to yours.</CustomText>
+          ) : buddyFeed.items.length === 0 ? (
+            <CustomText variant="body" color={colors.inkMuted}>Nothing yet. Finished workouts and streaks land here.</CustomText>
+          ) : (
+            buddyFeed.items.map(item => <ActivityRow key={item.id} item={item} compact />)
+          )}
+        </LinkCard>
+        {/* Plans buddies share: the newest three. */}
+        {buddies.length > 0 && (
+          <LinkCard label="Plans from buddies" onPress={() => goBuddies('BuddyPlansScreen')}>
+            {buddyPlans.plans.length === 0 ? (
+              <CustomText variant="body" color={colors.inkMuted}>When a buddy shares a plan, it shows up here for you to copy.</CustomText>
+            ) : (
+              buddyPlans.plans.slice(0, 3).map((sp, i) => (
+                <TouchableOpacity
+                  key={`${sp.ownerUid}:${sp.plan.id}`}
+                  onPress={() => (navigation as unknown as NavigationProp<BuddyRoutes>).navigate('BuddyPlanScreen', { ownerUid: sp.ownerUid, planId: sp.plan.id, ownerName: sp.ownerName })}
+                  style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.md, paddingVertical: spacing.sm, borderTopWidth: i ? 1 : 0, borderTopColor: colors.line }}
+                >
+                  <Avatar uri={sp.ownerPhoto} name={sp.ownerName} size={32} />
+                  <View style={{ flex: 1 }}>
+                    <CustomText variant="body" numberOfLines={1}>{sp.plan.name}</CustomText>
+                    <CustomText variant="caption" color={colors.inkMuted} numberOfLines={1}>by {sp.ownerName ?? 'a buddy'} · {sp.plan.workouts.length} workout{sp.plan.workouts.length === 1 ? '' : 's'}</CustomText>
+                  </View>
+                </TouchableOpacity>
+              ))
+            )}
+          </LinkCard>
+        )}
+
+        <SectionHeader label="Activity" />
         {/* Steps */}
         <SurfaceCard>
           <CardHeader label="Steps" />
