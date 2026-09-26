@@ -1,16 +1,16 @@
-import React, { useCallback, useLayoutEffect, useState } from 'react';
-import { ActivityIndicator, Alert, RefreshControl, ScrollView, TouchableOpacity, View } from 'react-native';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
+import { ActivityIndicator, RefreshControl, ScrollView, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { NavigationProp, useNavigation } from '@react-navigation/native';
+import { useFocusEffect } from '@react-navigation/native';
 import { FeedNotification, FeedNotificationKind } from '../../../../data/models';
 import { useNotificationFeed } from '../../../../data/notifications/useNotificationFeed';
 import { openTarget } from '../../../../data/notifications/openTarget';
 import { CustomText } from '../../../../components/text/customText';
 import { SurfaceCard } from '../../../../components/cards/SurfaceCard';
+import { SwipeToDelete } from '../../../../components/list-items/SwipeToDelete';
 import { Icon, IconSource } from '../../../../components/icons/Icon';
 import { generalIcons } from '../../../../components/icons/icon-library';
 import { useTheme } from '../../../../theme';
-import { AppStackParams } from '../../../../appNavigators/AppStack';
 
 const iconFor = (kind: FeedNotificationKind): IconSource => {
   switch (kind) {
@@ -59,9 +59,10 @@ const dayGroup = (ts: number, now = Date.now()): string => {
 /**
  * The feed: durable notifications worth revisiting or acting on. Reminders
  * that go stale within hours never land here; they live only in the OS tray.
+ * Swipe a row left to delete it. Everything counts as read once the screen
+ * is left, so the unread dot on Home clears without a button.
  */
 export const NotificationsScreen = () => {
-  const navigation = useNavigation<NavigationProp<AppStackParams>>();
   const { colors, spacing, radius } = useTheme();
   const feed = useNotificationFeed();
   const [refreshing, setRefreshing] = useState(false);
@@ -77,27 +78,24 @@ export const NotificationsScreen = () => {
   }, [feed.refresh]);
   const refreshControl = <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.accent} />;
 
-  useLayoutEffect(() => {
-    navigation.setOptions({
-      headerRight: () =>
-        feed.unreadCount > 0 ? (
-          <TouchableOpacity onPress={() => feed.markAllRead().catch(() => undefined)} hitSlop={10} accessibilityRole="button">
-            <CustomText variant="label" color={colors.accent}>Mark all read</CustomText>
-          </TouchableOpacity>
-        ) : null,
-    });
-  }, [navigation, feed.unreadCount, colors.accent]);
+  // Leaving the screen (back, a tap through, or closing the app) marks
+  // everything read. The ref keeps the latest feed for the cleanup.
+  const markAllRead = useRef(feed.markAllRead);
+  useEffect(() => {
+    markAllRead.current = feed.markAllRead;
+  }, [feed.markAllRead]);
+  useFocusEffect(
+    useCallback(() => {
+      return () => {
+        markAllRead.current().catch(() => undefined);
+      };
+    }, []),
+  );
 
   const open = (item: FeedNotification) => {
     if (item.readAt === null) feed.markRead(item.id).catch(() => undefined);
     openTarget(item.target);
   };
-
-  const confirmRemove = (item: FeedNotification) =>
-    Alert.alert('Remove notification?', item.title, [
-      { text: 'Cancel', style: 'cancel' },
-      { text: 'Remove', style: 'destructive', onPress: () => feed.remove(item.id).catch(() => undefined) },
-    ]);
 
   const groups: { label: string; items: FeedNotification[] }[] = [];
   for (const item of feed.items) {
@@ -126,14 +124,13 @@ export const NotificationsScreen = () => {
           {groups.map(group => (
             <View key={group.label} style={{ gap: spacing.sm }}>
               <CustomText variant="overline" color={colors.inkMuted}>{group.label}</CustomText>
-              <SurfaceCard style={{ padding: 0 }}>
+              <SurfaceCard style={{ padding: 0, overflow: 'hidden' }}>
                 {group.items.map((item, i) => {
                   const unread = item.readAt === null;
                   return (
+                    <SwipeToDelete key={item.id} label={`Delete notification: ${item.title}`} onDelete={() => feed.remove(item.id).catch(() => undefined)}>
                     <TouchableOpacity
-                      key={item.id}
                       onPress={() => open(item)}
-                      onLongPress={() => confirmRemove(item)}
                       accessibilityRole="button"
                       accessibilityLabel={`${unread ? 'Unread. ' : ''}${item.title}. ${item.body}`}
                       style={{ flexDirection: 'row', alignItems: 'flex-start', gap: spacing.md, padding: spacing.lg, borderTopWidth: i ? 1 : 0, borderTopColor: colors.line }}
@@ -150,12 +147,13 @@ export const NotificationsScreen = () => {
                       </View>
                       {unread && <View style={{ width: 8, height: 8, borderRadius: 4, backgroundColor: colors.accent, marginTop: 6 }} />}
                     </TouchableOpacity>
+                    </SwipeToDelete>
                   );
                 })}
               </SurfaceCard>
             </View>
           ))}
-          <CustomText variant="caption" color={colors.inkMuted} centered>Hold a notification to remove it.</CustomText>
+          <CustomText variant="caption" color={colors.inkMuted} centered>Swipe a notification left to delete it.</CustomText>
         </ScrollView>
       )}
     </SafeAreaView>
