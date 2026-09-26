@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { KeyboardAvoidingView, Platform, ScrollView, TouchableOpacity, View } from 'react-native';
+import { ScrollView, TouchableOpacity, View } from 'react-native';
+import { KeyboardAvoiding } from '../../../components/layout/KeyboardAvoiding';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { RouteProp, useNavigation, useRoute } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
@@ -56,7 +57,7 @@ export const EmailAuthScreen = () => {
 
   return (
     <SafeAreaView edges={['bottom', 'left', 'right']} style={{ flex: 1, backgroundColor: colors.ground }}>
-      <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={{ flex: 1 }} keyboardVerticalOffset={100}>
+      <KeyboardAvoiding>
         <ScrollView contentContainerStyle={{ padding: spacing.lg, gap: spacing.lg }} keyboardShouldPersistTaps="handled" keyboardDismissMode="on-drag">
           {create && <TextField id="auth-name" label="Your name" placeholder="Full Name" value={name} onChangeText={setName} autoCapitalize="words" autoComplete="name" textContentType="name" returnKeyType="next" autoFocus />}
           <TextField id="auth-email" label="Email" placeholder="you@example.com" value={email} onChangeText={setEmail} autoCapitalize="none" autoCorrect={false} keyboardType="email-address" autoComplete="email" textContentType="emailAddress" returnKeyType="next" autoFocus={!create} />
@@ -121,7 +122,7 @@ export const EmailAuthScreen = () => {
             <CustomText variant="caption" color={colors.inkMuted} centered>By creating an account you agree to the Terms of Use and Privacy Policy.</CustomText>
           )}
         </ScrollView>
-      </KeyboardAvoidingView>
+      </KeyboardAvoiding>
     </SafeAreaView>
   );
 };

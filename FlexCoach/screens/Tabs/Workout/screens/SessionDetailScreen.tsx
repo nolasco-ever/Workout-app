@@ -1,5 +1,6 @@
 import React, { useEffect, useLayoutEffect, useMemo, useState } from 'react';
-import { ActivityIndicator, Alert, KeyboardAvoidingView, Platform, ScrollView, View } from 'react-native';
+import { ActivityIndicator, Alert, ScrollView, View } from 'react-native';
+import { KeyboardAvoiding } from '../../../../components/layout/KeyboardAvoiding';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { RouteProp, useNavigation, useRoute } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
@@ -181,7 +182,7 @@ export const SessionDetailScreen = () => {
 
   return (
     <SafeAreaView edges={['left', 'right']} style={{ flex: 1, backgroundColor: colors.ground }}>
-      <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={{ flex: 1 }} keyboardVerticalOffset={100}>
+      <KeyboardAvoiding>
         <ScrollView contentContainerStyle={{ padding: spacing.lg, gap: spacing.lg, paddingBottom: (editing ? spacing.lg : spacing.lg + bottomInset) }} keyboardShouldPersistTaps="handled" keyboardDismissMode="on-drag">
           <View>
             <CustomText variant="overline" color={colors.inkMuted}>{longDate(shown.date)}</CustomText>
@@ -255,7 +256,7 @@ export const SessionDetailScreen = () => {
             <PrimaryButton label="Save changes" icon={generalIcons.check} busy={saving} onPress={save} />
           </View>
         )}
-      </KeyboardAvoidingView>
+      </KeyboardAvoiding>
     </SafeAreaView>
   );
 };

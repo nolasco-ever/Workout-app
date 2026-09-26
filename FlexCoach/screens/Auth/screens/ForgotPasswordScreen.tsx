@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { KeyboardAvoidingView, Platform, ScrollView, View } from 'react-native';
+import { ScrollView, View } from 'react-native';
+import { KeyboardAvoiding } from '../../../components/layout/KeyboardAvoiding';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { RouteProp, useNavigation, useRoute } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
@@ -36,7 +37,7 @@ export const ForgotPasswordScreen = () => {
 
   return (
     <SafeAreaView edges={['bottom', 'left', 'right']} style={{ flex: 1, backgroundColor: colors.ground }}>
-      <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={{ flex: 1 }} keyboardVerticalOffset={100}>
+      <KeyboardAvoiding>
         <ScrollView contentContainerStyle={{ padding: spacing.lg, gap: spacing.lg }} keyboardShouldPersistTaps="handled" keyboardDismissMode="on-drag">
           {sent ? (
             <View style={{ alignItems: 'center', gap: spacing.md, paddingVertical: spacing.xl }}>
@@ -56,7 +57,7 @@ export const ForgotPasswordScreen = () => {
             </>
           )}
         </ScrollView>
-      </KeyboardAvoidingView>
+      </KeyboardAvoiding>
     </SafeAreaView>
   );
 };

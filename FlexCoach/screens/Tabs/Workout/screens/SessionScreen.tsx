@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { Alert, KeyboardAvoidingView, Platform, ScrollView, TouchableOpacity, View } from 'react-native';
+import { Alert, ScrollView, TouchableOpacity, View } from 'react-native';
+import { KeyboardAvoiding } from '../../../../components/layout/KeyboardAvoiding';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { RouteProp, useNavigation, useRoute } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
@@ -137,7 +138,7 @@ export const SessionScreen = () => {
 
   return (
     <SafeAreaView edges={['bottom', 'left', 'right']} style={{ flex: 1, backgroundColor: colors.ground }}>
-      <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={{ flex: 1 }} keyboardVerticalOffset={100}>
+      <KeyboardAvoiding>
         {/* Progress strip */}
         <View style={{ paddingHorizontal: spacing.lg, paddingTop: spacing.md, gap: spacing.sm }}>
           <View style={{ flexDirection: 'row', gap: 4 }}>
@@ -220,7 +221,7 @@ export const SessionScreen = () => {
             </TouchableOpacity>
           )}
         </View>
-      </KeyboardAvoidingView>
+      </KeyboardAvoiding>
     </SafeAreaView>
   );
 };

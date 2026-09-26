@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { Alert, KeyboardAvoidingView, Platform, ScrollView, View } from 'react-native';
+import { Alert, ScrollView, View } from 'react-native';
+import { KeyboardAvoiding } from '../../../../components/layout/KeyboardAvoiding';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useAuth } from '../../../../data/auth/AuthProvider';
 import { authService, passwordOk } from '../../../../data/auth/authService';
@@ -63,7 +64,7 @@ export const AccountScreen = () => {
 
   return (
     <SafeAreaView edges={['bottom', 'left', 'right']} style={{ flex: 1, backgroundColor: colors.ground }}>
-      <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={{ flex: 1 }} keyboardVerticalOffset={100}>
+      <KeyboardAvoiding>
         <ScrollView contentContainerStyle={{ padding: spacing.lg, gap: spacing.lg }} keyboardShouldPersistTaps="handled" keyboardDismissMode="on-drag">
           <SurfaceCard style={{ padding: 0 }}>
             <Row title="Signed in with" right={providerLabel[provider]} chevron={false} />
@@ -93,7 +94,7 @@ export const AccountScreen = () => {
             </SurfaceCard>
           </View>
         </ScrollView>
-      </KeyboardAvoidingView>
+      </KeyboardAvoiding>
     </SafeAreaView>
   );
 };

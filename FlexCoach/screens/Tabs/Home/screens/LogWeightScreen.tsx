@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { KeyboardAvoidingView, Platform, ScrollView, View } from 'react-native';
+import { ScrollView, View } from 'react-native';
+import { KeyboardAvoiding } from '../../../../components/layout/KeyboardAvoiding';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
@@ -54,7 +55,7 @@ export const LogWeightScreen = () => {
 
   return (
     <SafeAreaView edges={['bottom', 'left', 'right']} style={{ flex: 1, backgroundColor: colors.ground }}>
-      <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={{ flex: 1 }} keyboardVerticalOffset={100}>
+      <KeyboardAvoiding>
         <ScrollView contentContainerStyle={{ padding: spacing.lg, gap: spacing.lg }} keyboardShouldPersistTaps="handled" keyboardDismissMode="on-drag">
           <TextField id="weight" label="Weight" placeholder={unit === 'lb' ? '178.4' : '81.2'} value={weight} onChangeText={setWeight} keyboardType="decimal-pad" suffix={unit} autoFocus />
           <View style={{ gap: spacing.sm }}>
@@ -68,7 +69,7 @@ export const LogWeightScreen = () => {
         <View style={{ padding: spacing.lg, borderTopWidth: 1, borderTopColor: colors.line }}>
           <PrimaryButton label="Save" disabled={value === null || value <= 0} busy={busy} onPress={save} />
         </View>
-      </KeyboardAvoidingView>
+      </KeyboardAvoiding>
     </SafeAreaView>
   );
 };

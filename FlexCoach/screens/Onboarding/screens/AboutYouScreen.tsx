@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import { KeyboardAvoidingView, Platform, ScrollView, View } from 'react-native';
+import { ScrollView, View } from 'react-native';
+import { KeyboardAvoiding } from '../../../components/layout/KeyboardAvoiding';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
@@ -58,7 +59,7 @@ export const AboutYouScreen = () => {
 
   return (
     <SafeAreaView edges={['bottom', 'left', 'right']} style={{ flex: 1, backgroundColor: colors.ground }}>
-      <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={{ flex: 1 }} keyboardVerticalOffset={100}>
+      <KeyboardAvoiding>
         <ScrollView contentContainerStyle={{ padding: spacing.lg, gap: spacing.lg }} keyboardShouldPersistTaps="handled" keyboardDismissMode="on-drag">
           <CustomText variant="body" color={colors.inkMuted}>A few basics so the app speaks your units. You can change any of this later.</CustomText>
           <TextField id="ob-name" label="Your name" placeholder="How you'd like to be addressed" value={name} onChangeText={setName} autoCapitalize="words" autoFocus />
@@ -80,7 +81,7 @@ export const AboutYouScreen = () => {
         <View style={{ padding: spacing.lg, borderTopWidth: 1, borderTopColor: colors.line }}>
           <PrimaryButton label="Next" disabled={!name.trim()} busy={busy} onPress={save} />
         </View>
-      </KeyboardAvoidingView>
+      </KeyboardAvoiding>
     </SafeAreaView>
   );
 };
