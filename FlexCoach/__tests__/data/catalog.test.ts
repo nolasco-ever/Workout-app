@@ -1,4 +1,4 @@
-import { getCatalogExercise, searchCatalog, stem } from '../../data/catalog/exerciseCatalog';
+import { comparableExercises, getCatalogExercise, searchCatalog, stem } from '../../data/catalog/exerciseCatalog';
 
 const names = (q: string) => searchCatalog({ query: q }).map(e => e.name);
 
@@ -29,5 +29,23 @@ describe('exercise search', () => {
     expect(getCatalogExercise('x_Cable_Lateral_Raise')?.name).toBe('Cable Lateral Raise');
     expect(names('pec deck')).toContain('Pec Deck Fly');
     expect(names('bulgarian split squat')).toContain('Bulgarian Split Squat');
+  });
+});
+
+describe('comparableExercises', () => {
+  it('offers same-muscle, same-measurement stand-ins with matching equipment first', () => {
+    const bench = getCatalogExercise('Barbell_Bench_Press_-_Medium_Grip')!;
+    const out = comparableExercises(bench);
+    expect(out.length).toBeGreaterThan(0);
+    expect(out.every(e => e.id !== bench.id && e.measurement === bench.measurement && e.primaryMuscles.includes('chest'))).toBe(true);
+    const firstOther = out.findIndex(e => e.equipment !== bench.equipment);
+    const lastSame = out.map(e => e.equipment === bench.equipment).lastIndexOf(true);
+    if (firstOther !== -1 && lastSame !== -1) expect(lastSame).toBeLessThan(firstOther);
+  });
+
+  it('leaves out exercises already in the workout', () => {
+    const bench = getCatalogExercise('Barbell_Bench_Press_-_Medium_Grip')!;
+    const [first] = comparableExercises(bench);
+    expect(comparableExercises(bench, new Set([first.id])).some(e => e.id === first.id)).toBe(false);
   });
 });

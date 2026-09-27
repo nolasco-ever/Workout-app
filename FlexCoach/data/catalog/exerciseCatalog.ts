@@ -1,4 +1,4 @@
-import { Equipment, Exercise, ExerciseCategory, MuscleGroup, MeasurementType } from '../models';
+import { Equipment, Exercise, ExerciseCategory, Id, MuscleGroup, MeasurementType } from '../models';
 import catalogJson from './exercises.json';
 import extraJson from './extraExercises.json';
 
@@ -179,3 +179,24 @@ export const MUSCLE_GROUPS: MuscleGroup[] = [
   'lower back', 'traps', 'neck', 'abdominals', 'quadriceps', 'hamstrings',
   'glutes', 'calves', 'adductors', 'abductors',
 ];
+
+/**
+ * Exercises that could stand in for `exercise` mid-workout: the same
+ * primary muscles and measurement, closest equipment first (same
+ * equipment, then anything), never a stretch. `exclude` drops the ones
+ * already in the workout.
+ */
+export const comparableExercises = (exercise: Exercise, exclude: Set<Id> = new Set(), limit = 12): Exercise[] => {
+  const primary = new Set(exercise.primaryMuscles);
+  const ranked: { exercise: Exercise; rank: number }[] = [];
+  for (const item of index) {
+    const e = item.exercise;
+    if (e.id === exercise.id || exclude.has(e.id) || e.category === 'stretching') continue;
+    if (e.measurement !== exercise.measurement) continue;
+    const shared = e.primaryMuscles.filter(m => primary.has(m)).length;
+    if (shared === 0) continue;
+    const rank = (e.equipment === exercise.equipment ? 0 : 10) + (primary.size - shared) + (e.primaryMuscles.length - shared) * 0.5;
+    ranked.push({ exercise: e, rank });
+  }
+  return ranked.sort((a, b) => a.rank - b.rank || a.exercise.name.localeCompare(b.exercise.name)).slice(0, limit).map(r => r.exercise);
+};

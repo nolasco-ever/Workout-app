@@ -9,7 +9,9 @@ import { LoggedSet, Session, SessionExercise } from '../../../../data/models';
 import { findWorkout } from '../../../../data/engine/schedule';
 import { newId } from '../../../../data/engine/ids';
 import { getCatalogExercise } from '../../../../data/catalog/exerciseCatalog';
-import { abandonSession, addSetTo, addWarmupSetTo, finishSession, logSet, removeSetFrom, saveSets } from '../../../../data/services/workoutService';
+import { abandonSession, addSetTo, addWarmupSetTo, finishSession, logSet, removeSetFrom, saveExercises, saveSets, substituteExercise } from '../../../../data/services/workoutService';
+import { sessionRepository } from '../../../../data/repositories/sessionRepository';
+import { subscribeSwap } from '../components/swapChannel';
 import { warmupRestSec } from '../../../../data/engine/progression';
 import { planRestOverNotification, withPrefDefaults } from '../../../../data/engine/notifications';
 import { cancelRestOver, scheduleRestOver } from '../../../../data/notifications/notificationService';
@@ -107,6 +109,41 @@ export const SessionScreen = () => {
     setRestFor(set.warmup ? warmupRestSec(restSec) : restSec);
     setRestStartedAt(done && !workoutDone ? Date.now() : null);
   };
+
+  // A pick on the swap screen replaces this exercise for the rest of the
+  // session. Sets already logged for it are dropped, so ask first.
+  useEffect(
+    () =>
+      subscribeSwap(async (sessionExerciseId, replacement) => {
+        const current = sessionRef.current;
+        const ex = current.exercises.find(e => e.id === sessionExerciseId);
+        if (!ex || !uid) return;
+        const apply = async () => {
+          const history = await sessionRepository.listCompleted(uid).catch(() => [] as Session[]);
+          const next = substituteExercise(sessionRef.current, sessionExerciseId, replacement, plan, history, units.weight, newId);
+          const swapped = next.exercises.find(e => e.id === sessionExerciseId)!;
+          setSession(next);
+          setDrafts(d => {
+            const out = { ...d };
+            for (const set of swapped.sets) out[set.id] = toDraft(swapped, set, units);
+            return out;
+          });
+          saveExercises(uid, next).catch(err => console.warn('swap failed', err));
+        };
+        const logged = ex.sets.filter(s => s.completed).length;
+        if (logged > 0) {
+          Alert.alert(`Swap to ${replacement.name}?`, `The ${logged} set${logged === 1 ? '' : 's'} you logged for ${ex.exerciseName} will be dropped.`, [
+            { text: 'Keep', style: 'cancel' },
+            { text: 'Swap', style: 'destructive', onPress: () => { apply().catch(err => console.warn(err)); } },
+          ]);
+        } else {
+          await apply();
+        }
+      }),
+    // units and plan don't change during a session.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [uid],
+  );
 
   const addWarmupSet = () => {
     const { session: next, set } = addWarmupSetTo(session, exercise.id, units.weight, newId);
@@ -236,16 +273,32 @@ export const SessionScreen = () => {
                 {catalog?.primaryMuscles.join(', ')}
                 {workoutEntry?.repRangeMin ? ` · ${workoutEntry.repRangeMin}–${workoutEntry.repRangeMax} reps` : ''} · rest {restSec}s
               </CustomText>
-              {catalog && (
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.lg, marginTop: spacing.xs }}>
+                {catalog && (
+                  <TouchableOpacity
+                    onPress={() => navigation.navigate('ExerciseDetailScreen', { exerciseId: catalog.id })}
+                    hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+                    accessibilityRole="link"
+                    style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.xs }}
+                  >
+                    <Icon icon={generalIcons.info} color={colors.accent} size={14} />
+                    <CustomText variant="caption" color={colors.accent}>How to</CustomText>
+                  </TouchableOpacity>
+                )}
                 <TouchableOpacity
-                  onPress={() => navigation.navigate('ExerciseDetailScreen', { exerciseId: catalog.id })}
-                  hitSlop={{ top: 8, bottom: 8, left: 8, right: 16 }}
+                  onPress={() => navigation.navigate('SwapExerciseScreen', { sessionExerciseId: exercise.id, exerciseId: exercise.exerciseId, excludeIds: session.exercises.map(e => e.exerciseId) })}
+                  hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
                   accessibilityRole="link"
-                  style={{ alignSelf: 'flex-start', flexDirection: 'row', alignItems: 'center', gap: spacing.xs, marginTop: spacing.xs }}
+                  style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.xs }}
                 >
-                  <Icon icon={generalIcons.info} color={colors.accent} size={14} />
-                  <CustomText variant="caption" color={colors.accent}>How to</CustomText>
+                  <Icon icon={generalIcons.swap} color={colors.accent} size={14} />
+                  <CustomText variant="caption" color={colors.accent}>Swap</CustomText>
                 </TouchableOpacity>
+              </View>
+              {exercise.substitutedFor && (
+                <CustomText variant="caption" color={colors.inkMuted} style={{ marginTop: spacing.xs }}>
+                  In place of {exercise.substitutedFor.exerciseName} for this workout
+                </CustomText>
               )}
             </View>
           </View>

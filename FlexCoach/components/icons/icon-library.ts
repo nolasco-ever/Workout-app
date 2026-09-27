@@ -1,4 +1,5 @@
 import {
+  ArrowLeftRight,
   Banknote,
   Bell,
   BellOff,
@@ -103,6 +104,7 @@ export const generalIcons = {
   idCard: IdCard,
   smile: Smile,
   share: Share2,
+  swap: ArrowLeftRight,
   userPlus: UserPlus,
   check: Check,
   clock: ClockArrowLeft,

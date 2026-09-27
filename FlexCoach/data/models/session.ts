@@ -55,6 +55,8 @@ export interface SessionExercise {
   target: SetTarget;
   sets: LoggedSet[];
   notes: string | null;
+  /** Set when this exercise replaced the plan's one for this session only. */
+  substitutedFor?: { exerciseId: Id; exerciseName: string };
 }
 
 export type SessionStatus = 'in_progress' | 'completed' | 'abandoned';
