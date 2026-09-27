@@ -27,6 +27,9 @@ const iconFor = (kind: FeedNotificationKind): IconSource => {
       return generalIcons.handshake;
     case 'buddy_removed':
       return generalIcons.users;
+    case 'plan_synced':
+    case 'plan_sync_ended':
+      return generalIcons.dumbbell;
     default:
       return generalIcons.users;
   }

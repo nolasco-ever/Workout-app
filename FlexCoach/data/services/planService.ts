@@ -3,6 +3,7 @@ import { newId } from '../engine/ids';
 import { lbToKg } from '../engine/units';
 import { today } from '../engine/dates';
 import { closeCycle, generateCycle } from '../engine/schedule';
+import { applySource, detachFromSource } from '../engine/planSync';
 import { planRepository } from '../repositories/planRepository';
 import { cycleRepository } from '../repositories/cycleRepository';
 import { userRepository } from '../repositories/userRepository';
@@ -151,7 +152,24 @@ export const archivePlan = async (uid: Id, plan: Plan, activeCycle: Cycle | null
 };
 
 export const duplicatePlan = async (uid: Id, source: Plan): Promise<Plan> => {
-  const copy = { ...(await planRepository.copyTo(uid, { ...source, name: `${source.name} copy` }, { uid }, newId)), sharedFrom: source.sharedFrom };
+  // A duplicate is always the user's own: it keeps the credit line but never follows the buddy's edits.
+  const copy = { ...(await planRepository.copyTo(uid, { ...source, name: `${source.name} copy` }, { uid }, newId)), sharedFrom: source.sharedFrom ? { ...source.sharedFrom, synced: false } : null };
   await planRepository.save(uid, copy);
   return copy;
 };
+
+/**
+ * Bring a synced copy up to the buddy's current plan. An active copy goes
+ * through the same rules as editing your own active plan: exercise edits
+ * apply from the next session, schedule or workout changes restart the
+ * cycle.
+ */
+export const applySyncedSource = async (uid: Id, mine: Plan, source: Plan, activeCycle: Cycle | null): Promise<{ restarted: boolean }> => {
+  const after = applySource(mine, source);
+  if (mine.status === 'active') return saveActivePlan(uid, mine, after, activeCycle);
+  await planRepository.save(uid, pruneSchedule(after));
+  return { restarted: false };
+};
+
+/** Keep the plan as it is now, as a plain copy that no longer follows the buddy. */
+export const stopSyncing = (uid: Id, plan: Plan): Promise<void> => planRepository.save(uid, detachFromSource(plan));

@@ -10,6 +10,7 @@ import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { useTheme } from './theme';
 import { navigationRef } from './navigation/navigationRef';
 import { NotificationBridge } from './data/notifications/NotificationBridge';
+import { PlanSyncBridge } from './data/notifications/PlanSyncBridge';
 import { useAuth } from './data/auth/AuthProvider';
 import { startInviteLinkListener } from './data/links/inviteLinks';
 import { InAppBannerHost } from './components/overlays/InAppBanner';
@@ -41,10 +42,15 @@ const Navigation = () => {
   );
 };
 
-/** Notification sync only runs for a signed-in, onboarded account. */
+/** Notification and plan sync only run for a signed-in, onboarded account. */
 const Notifications = () => {
   const { uid, profile } = useAuth();
-  return uid && profile?.onboardingCompletedAt ? <NotificationBridge /> : null;
+  return uid && profile?.onboardingCompletedAt ? (
+    <>
+      <NotificationBridge />
+      <PlanSyncBridge />
+    </>
+  ) : null;
 };
 
 const App = () => {

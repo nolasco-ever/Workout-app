@@ -73,6 +73,10 @@ const onListenError = (path: string) => (err: unknown) => console.warn(`[firesto
 export const watchDoc = <T>(path: string, onChange: (value: T | null) => void): Unsubscribe =>
   onSnapshot(doc(db, path), snap => onChange(snap && snap.exists() ? (snap.data() as T) : null), onListenError(path));
 
+/** Like watchDoc, but the caller hears about a listener failing (e.g. losing read access) instead of a log line. */
+export const watchDocOrError = <T>(path: string, onChange: (value: T | null) => void, onError: (err: unknown) => void): Unsubscribe =>
+  onSnapshot(doc(db, path), snap => onChange(snap && snap.exists() ? (snap.data() as T) : null), onError);
+
 export const watchDocs = <T>(
   collectionPath: string,
   onChange: (values: T[]) => void,

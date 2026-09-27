@@ -110,8 +110,15 @@ export interface Plan extends BaseDocument {
   goal: PlanGoal | null;
   workouts: Workout[];
   schedule: Schedule;
-  /** Set when this plan was copied from a buddy's plan. */
-  sharedFrom: { userId: Id; planId: Id; sharedAt: number; displayName?: string | null } | null;
+  /**
+   * Set when this plan came from a buddy's plan. A plain copy is
+   * independent. A synced one (`synced: true`) follows the buddy's edits:
+   * the app watches their plan and applies changes with the same rules as
+   * editing your own active plan. It turns back into a plain copy when the
+   * buddy deletes, archives or un-shares it, or when you stop syncing.
+   * `sourceUpdatedAt` is the buddy's plan version last applied.
+   */
+  sharedFrom: { userId: Id; planId: Id; sharedAt: number; displayName?: string | null; synced?: boolean; sourceUpdatedAt?: number } | null;
   archivedAt: number | null;
   /** Buddies can see and copy this plan. Off by default; missing on older plans. */
   visibleToBuddies?: boolean;

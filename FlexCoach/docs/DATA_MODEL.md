@@ -156,10 +156,23 @@ rows keep each other's `inviteCode` so a card can be reopened any time.
   activity feed, not the notification tray.
 - **Shared plans**: `Plan.visibleToBuddies` (off by default). The rule lets
   an accepted buddy read a plan only when that flag is true, and a list
-  query must filter on it (`planRepository.listSharedBy`). "Save to my
-  plans" is `planRepository.copyTo`: an independent draft with
-  `sharedFrom` (uid, planId, displayName), listed under "From buddies" in
-  My plans until activated. No syncing afterwards.
+  query must filter on it (`planRepository.listSharedBy`). A buddy's plan
+  can be taken two ways (`planRepository.copyTo`), both listed under
+  "From buddies" in My plans until activated:
+  - **Save a copy**: an independent draft with fresh workout ids and
+    `sharedFrom` (uid, planId, displayName). Never changes on its own.
+  - **Use it and keep in sync** (added 2026-09-27): `sharedFrom.synced`
+    is true and the source's workout ids are kept. `usePlanSync` (mounted
+    at the app root) watches the buddy's plan and applies its substance
+    (`engine/planSync.ts`) with the same rules as editing your own active
+    plan: exercise edits apply from the next session, schedule or workout
+    changes restart the cycle. A feed item says what happened. When the
+    buddy deletes, archives or un-shares the plan, or the buddy
+    relationship ends (the listener loses read access), the copy is
+    detached into a plain copy with a feed item explaining why. The
+    recipient can also "Stop syncing" from the plan overview; a synced
+    plan has no Edit button. No rule change was needed: reading a shared
+    plan was already allowed while it is visible and the pair are buddies.
 
 ## Units
 

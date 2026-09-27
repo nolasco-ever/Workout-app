@@ -291,7 +291,7 @@ export const HomeScreen = () => {
         {buddies.length > 0 && (
           <LinkCard label="Plans from buddies" onPress={() => goBuddies('BuddyPlansScreen')}>
             {buddyPlans.plans.length === 0 ? (
-              <CustomText variant="body" color={colors.inkMuted}>When a buddy shares a plan, it shows up here for you to copy.</CustomText>
+              <CustomText variant="body" color={colors.inkMuted}>When a buddy shares a plan, it shows up here for you to use or copy.</CustomText>
             ) : (
               buddyPlans.plans.slice(0, 3).map((sp, i) => (
                 <TouchableOpacity

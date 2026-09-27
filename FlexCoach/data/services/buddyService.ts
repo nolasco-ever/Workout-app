@@ -189,6 +189,7 @@ export const setPlanVisibleToBuddies = async (uid: Id, profile: UserProfile | nu
 };
 
 /** Copy a buddy's shared plan into my account as an editable draft that remembers who made it. */
-export const copyBuddyPlan = (uid: Id, plan: Plan, owner: { uid: Id; displayName: string | null }): Promise<Plan> => planRepository.copyTo(uid, plan, owner, newId);
+/** Save a buddy's plan under My plans: an independent copy, or one that keeps following their edits. */
+export const copyBuddyPlan = (uid: Id, plan: Plan, owner: { uid: Id; displayName: string | null }, synced = false): Promise<Plan> => planRepository.copyTo(uid, plan, owner, newId, synced);
 
 export { formatInviteCode };

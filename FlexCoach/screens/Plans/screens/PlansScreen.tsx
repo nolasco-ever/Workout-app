@@ -26,7 +26,7 @@ const PlanRow = ({ plan, onPress }: { plan: Plan; onPress: () => void }) => {
       <View style={{ flex: 1 }}>
         <CustomText variant="bodyStrong">{plan.name || 'Untitled plan'}</CustomText>
         <CustomText variant="caption" color={colors.inkMuted}>
-          {plan.sharedFrom ? `by ${plan.sharedFrom.displayName ?? 'a buddy'} · ` : ''}{plan.workouts.length} workout{plan.workouts.length === 1 ? '' : 's'} · {describeSchedule(plan)}{plan.visibleToBuddies ? ' · shared' : ''}
+          {plan.sharedFrom ? `${plan.sharedFrom.synced ? 'in sync with' : 'by'} ${plan.sharedFrom.displayName ?? 'a buddy'} · ` : ''}{plan.workouts.length} workout{plan.workouts.length === 1 ? '' : 's'} · {describeSchedule(plan)}{plan.visibleToBuddies ? ' · shared' : ''}
         </CustomText>
       </View>
       <Icon icon={directionIcons.angleRight} color={colors.inactive} size={20} />

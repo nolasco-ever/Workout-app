@@ -6,7 +6,7 @@ import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useAuth } from '../../../data/auth/AuthProvider';
 import { usePlans } from '../../../data/hooks/usePlans';
 import { useWorkoutHome } from '../../../data/hooks/useWorkoutHome';
-import { activatePlan, archivePlan, deactivatePlan, duplicatePlan, validatePlan } from '../../../data/services/planService';
+import { activatePlan, archivePlan, deactivatePlan, duplicatePlan, stopSyncing, validatePlan } from '../../../data/services/planService';
 import { planRepository } from '../../../data/repositories/planRepository';
 import { setPlanVisibleToBuddies } from '../../../data/services/buddyService';
 import { SurfaceCard } from '../../../components/cards/SurfaceCard';
@@ -58,6 +58,7 @@ export const PlanOverviewScreen = () => {
     ]);
 
   const isActive = plan.status === 'active';
+  const synced = !!plan.sharedFrom?.synced;
   const activeCycle = home.plan?.id === plan.id ? home.cycle : null;
   // A plan autosaved mid-creation may still be missing workouts or a schedule.
   const problems = validatePlan(plan);
@@ -72,7 +73,9 @@ export const PlanOverviewScreen = () => {
           </CustomText>
           <CustomText variant="title">{plan.name}</CustomText>
           {plan.sharedFrom && (
-            <CustomText variant="caption" color={colors.accent}>Created by {plan.sharedFrom.displayName ?? 'a buddy'} · your copy to edit</CustomText>
+            <CustomText variant="caption" color={colors.accent}>
+              Created by {plan.sharedFrom.displayName ?? 'a buddy'} · {plan.sharedFrom.synced ? 'in sync with their edits' : 'your copy to edit'}
+            </CustomText>
           )}
           {plan.description ? <CustomText variant="body" color={colors.inkMuted}>{plan.description}</CustomText> : null}
         </View>
@@ -111,7 +114,22 @@ export const PlanOverviewScreen = () => {
           {!isActive && !unfinished && plan.status !== 'archived' && (
             <PrimaryButton label="Activate" busy={busy === 'Activate'} onPress={() => setPickingStart(true)} />
           )}
-          {plan.status !== 'archived' && <PrimaryButton label="Edit" variant={unfinished ? 'quiet' : 'outline'} onPress={edit} />}
+          {plan.status !== 'archived' && !synced && <PrimaryButton label="Edit" variant={unfinished ? 'quiet' : 'outline'} onPress={edit} />}
+          {synced && (
+            <PrimaryButton
+              label="Stop syncing"
+              variant="outline"
+              busy={busy === 'Stop syncing'}
+              onPress={() =>
+                confirm(
+                  'Stop syncing?',
+                  `The plan stays as it is now and becomes your own copy to edit. Changes ${plan.sharedFrom?.displayName?.split(' ')[0] ?? 'your buddy'} makes later won't carry over.`,
+                  'Stop syncing',
+                  () => stopSyncing(uid, plan),
+                )
+              }
+            />
+          )}
           {isActive && (
             <PrimaryButton
               label="Deactivate"

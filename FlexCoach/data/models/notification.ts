@@ -48,7 +48,9 @@ export type FeedNotificationKind =
   | 'buddy_workout'
   | 'buddy_skipped'
   | 'buddy_streak'
-  | 'buddy_achievement';
+  | 'buddy_achievement'
+  | 'plan_synced'
+  | 'plan_sync_ended';
 
 /**
  * Stored at users/{uid}/notifications/{id}. The in-app feed. Only durable

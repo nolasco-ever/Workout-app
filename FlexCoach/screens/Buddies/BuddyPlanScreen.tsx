@@ -16,8 +16,9 @@ import { useTheme } from '../../theme';
 import { BuddyRoutes } from './routes';
 
 /**
- * A buddy's shared plan, read-only, with a button to save your own copy.
- * The copy is yours: editing or activating it changes nothing of theirs.
+ * A buddy's shared plan, read-only, with two ways to take it: use it and
+ * keep it in sync with the buddy's edits, or save an independent copy.
+ * Either way, activating or editing it changes nothing of theirs.
  */
 export const BuddyPlanScreen = () => {
   const navigation = useNavigation<NavigationProp<BuddyRoutes & AppStackParams>>();
@@ -26,8 +27,11 @@ export const BuddyPlanScreen = () => {
   const { uid } = useAuth();
   const { plans } = usePlans();
   const [plan, setPlan] = useState<Plan | null | undefined>(undefined);
-  const [busy, setBusy] = useState(false);
-  const alreadyCopied = plans.find(p => p.sharedFrom?.planId === params.planId && p.sharedFrom.userId === params.ownerUid && p.status !== 'archived');
+  const [busy, setBusy] = useState<'sync' | 'copy' | null>(null);
+  const mine = plans.filter(p => p.sharedFrom?.planId === params.planId && p.sharedFrom.userId === params.ownerUid && p.status !== 'archived');
+  const alreadySynced = mine.find(p => p.sharedFrom?.synced);
+  const alreadyCopied = mine.find(p => !p.sharedFrom?.synced);
+  const first = params.ownerName?.split(' ')[0] ?? 'they';
 
   useEffect(() => {
     readDoc<Plan>(paths.plan(params.ownerUid, params.planId))
@@ -39,20 +43,26 @@ export const BuddyPlanScreen = () => {
     (navigation as any).setOptions({ title: plan?.name ?? 'Plan' });
   }, [navigation, plan?.name]);
 
-  const save = async () => {
+  const save = async (synced: boolean) => {
     if (!uid || !plan) return;
-    setBusy(true);
+    setBusy(synced ? 'sync' : 'copy');
     try {
-      const copy = await copyBuddyPlan(uid, plan, { uid: params.ownerUid, displayName: params.ownerName });
-      Alert.alert('Saved to My plans', `${copy.name} is under "From buddies". Edit it or activate it whenever you like.`, [
-        { text: 'Later', style: 'cancel' },
-        { text: 'Open it', onPress: () => navigation.navigate('PlansStack', { screen: 'PlanOverviewScreen', initial: false, params: { planId: copy.id } }) },
-      ]);
+      const copy = await copyBuddyPlan(uid, plan, { uid: params.ownerUid, displayName: params.ownerName }, synced);
+      Alert.alert(
+        'Saved to My plans',
+        synced
+          ? `${copy.name} is under "From buddies" and follows ${first}'s edits. Activate it whenever you like.`
+          : `${copy.name} is under "From buddies". Edit it or activate it whenever you like.`,
+        [
+          { text: 'Later', style: 'cancel' },
+          { text: 'Open it', onPress: () => navigation.navigate('PlansStack', { screen: 'PlanOverviewScreen', initial: false, params: { planId: copy.id } }) },
+        ],
+      );
     } catch (err) {
       console.warn(err);
       Alert.alert('Something went wrong', 'The plan was not saved. Try again.');
     } finally {
-      setBusy(false);
+      setBusy(null);
     }
   };
 
@@ -76,9 +86,13 @@ export const BuddyPlanScreen = () => {
       </ScrollView>
       {plan && (
         <View style={{ padding: spacing.lg, gap: spacing.sm, borderTopWidth: 1, borderTopColor: colors.line }}>
-          {alreadyCopied && <CustomText variant="caption" color={colors.inkMuted} centered>You already have a copy: "{alreadyCopied.name}" in My plans.</CustomText>}
-          <PrimaryButton label={alreadyCopied ? 'Save another copy' : 'Save to my plans'} variant={alreadyCopied ? 'outline' : 'filled'} busy={busy} onPress={save} />
-          <CustomText variant="caption" color={colors.inkMuted} centered>Your copy is yours to edit. Changes {params.ownerName?.split(' ')[0] ?? 'they'} make later don't carry over.</CustomText>
+          {alreadySynced && <CustomText variant="caption" color={colors.inkMuted} centered>You're already using this plan in sync: "{alreadySynced.name}" in My plans.</CustomText>}
+          {!alreadySynced && alreadyCopied && <CustomText variant="caption" color={colors.inkMuted} centered>You already have a copy: "{alreadyCopied.name}" in My plans.</CustomText>}
+          {!alreadySynced && <PrimaryButton label="Use it and keep in sync" busy={busy === 'sync'} disabled={busy === 'copy'} onPress={() => save(true)} />}
+          <PrimaryButton label={alreadyCopied ? 'Save another copy' : 'Save a copy'} variant={alreadySynced ? 'filled' : 'outline'} busy={busy === 'copy'} disabled={busy === 'sync'} onPress={() => save(false)} />
+          <CustomText variant="caption" color={colors.inkMuted} centered>
+            In sync, edits {first} makes later show up in yours. A copy is yours to edit and never changes on its own.
+          </CustomText>
         </View>
       )}
     </SafeAreaView>

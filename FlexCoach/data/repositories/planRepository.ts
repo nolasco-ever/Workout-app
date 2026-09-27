@@ -1,6 +1,6 @@
 import { paths } from '../firebase/paths';
 import { Id, Plan } from '../models';
-import { listDocs, mergeDoc, orderBy, patchDoc, readDoc, removeDoc, touch, watchDoc, watchDocs, where, writeDoc, Unsubscribe } from './base';
+import { listDocs, mergeDoc, orderBy, patchDoc, readDoc, removeDoc, touch, watchDoc, watchDocOrError, watchDocs, where, writeDoc, Unsubscribe } from './base';
 import { userRepository } from './userRepository';
 
 export const planRepository = {
@@ -15,6 +15,14 @@ export const planRepository = {
 
   /** Plans a buddy shares. The filter is what the security rule allows a buddy to query. */
   listSharedBy: (ownerUid: Id) => listDocs<Plan>(paths.plans(ownerUid), where('visibleToBuddies', '==', true)),
+
+  /**
+   * Follow a buddy's plan. `onError` fires when it can no longer be read
+   * (un-shared, or the buddy relationship ended); `onChange` gets null when
+   * it was deleted.
+   */
+  watchShared: (ownerUid: Id, planId: Id, onChange: (plan: Plan | null) => void, onError: (err: unknown) => void): Unsubscribe =>
+    watchDocOrError<Plan>(paths.plan(ownerUid, planId), onChange, onError),
 
   setVisibleToBuddies: (uid: Id, planId: Id, visible: boolean) => patchDoc<Plan>(paths.plan(uid, planId), { visibleToBuddies: visible, updatedAt: Date.now() }),
 
@@ -68,7 +76,13 @@ export const planRepository = {
    * Copy a plan into another user's account. The copy is a fully independent
    * draft; the recipient can edit or activate it like one they built.
    */
-  copyTo: async (recipientUid: Id, source: Plan, sharedBy: { uid: Id; displayName?: string | null }, newId: () => Id): Promise<Plan> => {
+  /**
+   * Save a buddy's plan as the recipient's own draft. A plain copy gets
+   * fresh workout and exercise ids. A synced copy keeps the source's ids,
+   * so later updates from the buddy line up with the cycle and the logged
+   * sessions that point at them.
+   */
+  copyTo: async (recipientUid: Id, source: Plan, sharedBy: { uid: Id; displayName?: string | null }, newId: () => Id, synced = false): Promise<Plan> => {
     const now = Date.now();
     const copy: Plan = {
       ...source,
@@ -77,22 +91,26 @@ export const planRepository = {
       status: 'draft',
       archivedAt: null,
       visibleToBuddies: false,
-      sharedFrom: { userId: sharedBy.uid, planId: source.id, sharedAt: now, displayName: sharedBy.displayName ?? null },
-      workouts: source.workouts.map(w => ({
-        ...w,
-        id: newId(),
-        exercises: w.exercises.map(e => ({ ...e, id: newId() })),
-      })),
+      sharedFrom: { userId: sharedBy.uid, planId: source.id, sharedAt: now, displayName: sharedBy.displayName ?? null, synced, sourceUpdatedAt: source.updatedAt },
+      workouts: synced
+        ? source.workouts
+        : source.workouts.map(w => ({
+            ...w,
+            id: newId(),
+            exercises: w.exercises.map(e => ({ ...e, id: newId() })),
+          })),
       createdAt: now,
       updatedAt: now,
     };
-    // Workout ids changed, so remap the schedule to the new ids.
-    const idMap = new Map(source.workouts.map((w, i) => [w.id, copy.workouts[i].id]));
-    const remap = (id: Id | null) => (id ? idMap.get(id) ?? null : null);
-    copy.schedule =
-      source.schedule.mode === 'rotation'
-        ? { ...source.schedule, slots: source.schedule.slots.map(remap) }
-        : { ...source.schedule, weekdays: source.schedule.weekdays.map(remap) as typeof source.schedule.weekdays };
+    if (!synced) {
+      // Workout ids changed, so remap the schedule to the new ids.
+      const idMap = new Map(source.workouts.map((w, i) => [w.id, copy.workouts[i].id]));
+      const remap = (id: Id | null) => (id ? idMap.get(id) ?? null : null);
+      copy.schedule =
+        source.schedule.mode === 'rotation'
+          ? { ...source.schedule, slots: source.schedule.slots.map(remap) }
+          : { ...source.schedule, weekdays: source.schedule.weekdays.map(remap) as typeof source.schedule.weekdays };
+    }
     await writeDoc(paths.plan(recipientUid, copy.id), copy);
     return copy;
   },
