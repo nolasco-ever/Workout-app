@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import React, { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { Alert, AppState, ScrollView, TouchableOpacity, Vibration, View } from 'react-native';
 import { KeyboardAvoiding } from '../../../../components/layout/KeyboardAvoiding';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -22,7 +22,7 @@ import { WorkoutStackParams } from '../WorkoutStack';
 import { useTabBarInset } from '../../../../navigation/useTabBarInset';
 import { PrimaryButton } from '../../../../components/buttons/PrimaryButton';
 import { MuscleMap } from '../../../../components/anatomy/MuscleMap';
-import { RestTimer } from '../components/RestTimer';
+import { RestRing, SessionTitle } from '../components/SessionHeader';
 import { SetDraft, SetRow } from '../components/SetRow';
 import { SwipeToDelete } from '../../../../components/list-items/SwipeToDelete';
 import { fromDraft, toDraft, Units, unitLabels } from '../components/setDrafts';
@@ -140,6 +140,18 @@ export const SessionScreen = () => {
   };
 
   const isLast = index === total - 1;
+
+  // The header carries the running clock and the rest ring, so neither
+  // takes room from the set rows.
+  const dismissRest = () => setRestStartedAt(null);
+  useLayoutEffect(() => {
+    navigation.setOptions({
+      headerTitle: () => <SessionTitle name={session.workoutName} startedAt={session.startedAt} />,
+      headerRight: () => <RestRing startedAt={restStartedAt} durationSec={restFor} onDismiss={dismissRest} />,
+    });
+    // dismissRest is a stable setter.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [navigation, session.workoutName, session.startedAt, restStartedAt, restFor]);
 
   // While the app is in front, the rest timer is handled here: this screen
   // counts down in its own strip, any other screen gets an in-app banner,
@@ -267,7 +279,6 @@ export const SessionScreen = () => {
         </ScrollView>
 
         <View style={{ padding: spacing.lg, paddingBottom: spacing.lg + tabBarInset, gap: spacing.sm, borderTopWidth: 1, borderTopColor: colors.line, backgroundColor: colors.ground }}>
-          <RestTimer startedAt={restStartedAt} durationSec={restFor} onDismiss={() => setRestStartedAt(null)} />
           <View style={{ flexDirection: 'row', gap: spacing.sm }}>
             <TouchableOpacity
               disabled={index === 0}
