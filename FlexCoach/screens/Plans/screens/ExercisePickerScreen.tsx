@@ -49,6 +49,8 @@ const ExerciseRow = React.memo(({ item, inWorkout, muscle, onOpen, onAdd }: RowP
             {item.primaryMuscles.map(title).join(', ')}{alsoHits ? ` · also ${muscle}` : ''}{item.equipment ? ` · ${title(item.equipment)}` : ''}{inWorkout ? ' · added' : ''}
           </CustomText>
         </View>
+        {/* The whole row opens the how-to; the icon is there so people know it does. */}
+        <Icon icon={generalIcons.info} size={20} color={colors.inkMuted} />
       </TouchableOpacity>
       <TouchableOpacity
         onPress={() => onAdd(item)}
