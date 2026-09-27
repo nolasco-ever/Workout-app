@@ -1,8 +1,8 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { Alert, ScrollView, TouchableOpacity, View } from 'react-native';
+import { Alert, AppState, ScrollView, TouchableOpacity, Vibration, View } from 'react-native';
 import { KeyboardAvoiding } from '../../../../components/layout/KeyboardAvoiding';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { RouteProp, useNavigation, useRoute } from '@react-navigation/native';
+import { RouteProp, useIsFocused, useNavigation, useRoute } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useAuth } from '../../../../data/auth/AuthProvider';
 import { LoggedSet, Session, SessionExercise } from '../../../../data/models';
@@ -12,6 +12,7 @@ import { getCatalogExercise } from '../../../../data/catalog/exerciseCatalog';
 import { abandonSession, addSetTo, finishSession, logSet, removeSetFrom, saveSets } from '../../../../data/services/workoutService';
 import { planRestOverNotification, withPrefDefaults } from '../../../../data/engine/notifications';
 import { cancelRestOver, scheduleRestOver } from '../../../../data/notifications/notificationService';
+import { showInAppBanner } from '../../../../data/notifications/inAppBanner';
 import { CustomText } from '../../../../components/text/customText';
 import { Icon } from '../../../../components/icons/Icon';
 import { directionIcons, generalIcons } from '../../../../components/icons/icon-library';
@@ -129,22 +130,52 @@ export const SessionScreen = () => {
 
   const isLast = index === total - 1;
 
-  // The OS fires "Rest over" at the exact second, with sound and vibration,
-  // whether the app is in the background or open on another screen. Any
-  // change to the timer replaces the pending one; leaving the screen clears it.
+  // While the app is in front, the rest timer is handled here: this screen
+  // counts down in its own strip, any other screen gets an in-app banner,
+  // and the phone buzzes either way. The system notification is only
+  // scheduled for the time the app spends in the background, so it never
+  // doubles up with what is on screen.
   const restOverWanted = withPrefDefaults(profile?.notifications);
+  const restOverEnabled = restOverWanted.enabled && restOverWanted.restOver;
+  const focused = useIsFocused();
+  const focusedRef = useRef(focused);
+  focusedRef.current = focused;
+  const [appState, setAppState] = useState(AppState.currentState);
   useEffect(() => {
-    if (restStartedAt === null || !restOverWanted.enabled || !restOverWanted.restOver) {
+    const sub = AppState.addEventListener('change', setAppState);
+    return () => sub.remove();
+  }, []);
+  const inBackground = appState !== 'active';
+
+  useEffect(() => {
+    if (restStartedAt === null || !restOverEnabled || !inBackground) {
       cancelRestOver().catch(() => undefined);
       return;
     }
     scheduleRestOver(planRestOverNotification(restStartedAt, restSec, session.id, exercise.exerciseName)).catch(err => console.warn('rest timer notification failed', err));
     // exercise.exerciseName only changes with `index`, which also resets the timer.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [restStartedAt, restSec, session.id, restOverWanted.enabled, restOverWanted.restOver]);
+  }, [restStartedAt, restSec, session.id, restOverEnabled, inBackground]);
   useEffect(() => () => {
     cancelRestOver().catch(() => undefined);
   }, []);
+
+  useEffect(() => {
+    if (restStartedAt === null || !restOverEnabled) return;
+    const endAt = restStartedAt + restSec * 1000;
+    const id = setTimeout(() => {
+      // A timer that fires late means the app was suspended in between, and
+      // the system notification has already done its job.
+      if (AppState.currentState !== 'active' || Date.now() - endAt > 2000) return;
+      Vibration.vibrate();
+      if (!focusedRef.current) {
+        const { title, body, target } = planRestOverNotification(restStartedAt, restSec, session.id, exercise.exerciseName);
+        showInAppBanner({ title, body, target });
+      }
+    }, Math.max(0, endAt - Date.now()));
+    return () => clearTimeout(id);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [restStartedAt, restSec, session.id, restOverEnabled]);
 
   return (
     <SafeAreaView edges={['bottom', 'left', 'right']} style={{ flex: 1, backgroundColor: colors.ground }}>

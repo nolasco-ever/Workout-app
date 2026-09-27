@@ -12,6 +12,7 @@ import { navigationRef } from './navigation/navigationRef';
 import { NotificationBridge } from './data/notifications/NotificationBridge';
 import { useAuth } from './data/auth/AuthProvider';
 import { startInviteLinkListener } from './data/links/inviteLinks';
+import { InAppBannerHost } from './components/overlays/InAppBanner';
 
 // react-native-sortables passes dependency arrays to Reanimated hooks (meant
 // for web); Reanimated 4.7 warns about it on native. Harmless, and not ours.
@@ -58,6 +59,7 @@ const App = () => {
           <Navigation/>
           <Notifications/>
           <CustomModal/>
+          <InAppBannerHost/>
         </ModalProvider>
       </AuthProvider>
     </SafeAreaProvider>

@@ -109,9 +109,10 @@ const toNotification = (n: PlannedNotification): Notification => ({
   },
   ios: {
     sound: 'default',
-    // The rest timer should be heard even while the app is open on another
-    // screen; daily reminders only matter when the app is closed.
-    foregroundPresentationOptions: n.kind === 'rest_over' ? { banner: true, sound: true, list: true, badge: false } : { banner: false, sound: false, list: false, badge: false },
+    // Nothing scheduled here should surface while the app is in front: the
+    // session screen shows the rest timer itself and other screens get an
+    // in-app banner (see SessionScreen), so a system banner would double up.
+    foregroundPresentationOptions: { banner: false, sound: false, list: false, badge: false },
   },
 });
 
