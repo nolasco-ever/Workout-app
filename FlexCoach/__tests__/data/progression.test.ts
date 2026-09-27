@@ -1,4 +1,5 @@
 import { buildWarmupSets, suggestTarget, warmupRamp } from '../../data/engine/progression';
+import { kgToLb, lbToKg } from '../../data/engine/units';
 import { entry, lastSession, set } from './support/fixtures';
 
 describe('suggestTarget: weighted lifts (double progression)', () => {
@@ -119,5 +120,26 @@ describe('warm-up sets', () => {
   it('ignores warm-up sets when judging the last session', () => {
     const last = lastSession({ reps: 10, weightKg: 30 }, [set({ reps: 8, weightKg: 15, warmup: true }), set({ reps: 10 }), set({ reps: 10 }), set({ reps: 10 })]);
     expect(suggestTarget(entry(), last).weightKg).toBe(32.5);
+  });
+});
+
+describe('suggestTarget: loadable weights', () => {
+  it('lands a pound-based increase on a 2.5 lb step', () => {
+    const e = entry({ progression: { weightIncrementKg: lbToKg(5), repStep: 1, durationStepSec: 10, distanceStepM: 0 } });
+    const fifty = lbToKg(50);
+    const last = lastSession({ reps: 10, weightKg: fifty }, [set({ weightKg: fifty, reps: 10 }), set({ weightKg: fifty, reps: 10 }), set({ weightKg: fifty, reps: 10 })], e);
+    const t = suggestTarget(e, last, 'lb');
+    expect(kgToLb(t.weightKg!)).toBeCloseTo(55, 5);
+  });
+
+  it('rounds a 2.5 kg increment to the nearest 2.5 lb for pound users', () => {
+    const fifty = lbToKg(50);
+    const last = lastSession({ reps: 10, weightKg: fifty }, [set({ weightKg: fifty, reps: 10 }), set({ weightKg: fifty, reps: 10 }), set({ weightKg: fifty, reps: 10 })]);
+    expect(kgToLb(suggestTarget(entry(), last, 'lb').weightKg!)).toBeCloseTo(55, 5);
+  });
+
+  it('keeps kilogram users on 1.25 kg steps', () => {
+    const last = lastSession({ reps: 10, weightKg: 30 }, [set({ reps: 10 }), set({ reps: 10 }), set({ reps: 10 })]);
+    expect(suggestTarget(entry(), last, 'kg')).toMatchObject({ weightKg: 32.5 });
   });
 });

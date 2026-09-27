@@ -17,6 +17,7 @@ import { useTheme } from '../../../theme';
 import { MuscleMap } from '../../../components/anatomy/MuscleMap';
 import { PlansStackParams } from '../PlansStack';
 import { usePlanEditor } from '../PlanEditorContext';
+import { useAuth } from '../../../data/auth/AuthProvider';
 
 const title = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
 
@@ -66,6 +67,8 @@ export const ExercisePickerScreen = () => {
   const { params } = useRoute<RouteProp<PlansStackParams, 'ExercisePickerScreen'>>();
   const { colors, spacing, radius } = useTheme();
   const { draft, update } = usePlanEditor();
+  const { profile } = useAuth();
+  const unit = profile?.weightUnit ?? 'lb';
   const [query, setQuery] = useState('');
   const [muscle, setMuscle] = useState<MuscleGroup | 'all'>('all');
   const [equipment, setEquipment] = useState<Equipment | 'any'>('any');
@@ -92,11 +95,11 @@ export const ExercisePickerScreen = () => {
     (ex: Exercise) => {
       update(p => ({
         ...p,
-        workouts: p.workouts.map(w => (w.id === workoutId ? { ...w, exercises: [...w.exercises, newEntry(ex, w.exercises.length, p.goal)] } : w)),
+        workouts: p.workouts.map(w => (w.id === workoutId ? { ...w, exercises: [...w.exercises, newEntry(ex, w.exercises.length, p.goal, unit)] } : w)),
       }));
       navigation.goBack();
     },
-    [update, navigation, workoutId],
+    [update, navigation, workoutId, unit],
   );
   const open = useCallback((ex: Exercise) => navigation.navigate('ExerciseDetailScreen', { exerciseId: ex.id, addToWorkoutId: workoutId }), [navigation, workoutId]);
 

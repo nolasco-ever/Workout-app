@@ -5,6 +5,7 @@ import { RouteProp, useNavigation, useRoute } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { newEntry } from '../../../../data/services/planService';
 import { usePlanEditor } from '../../../Plans/PlanEditorContext';
+import { useAuth } from '../../../../data/auth/AuthProvider';
 import { PrimaryButton } from '../../../../components/buttons/PrimaryButton';
 import { generalIcons } from '../../../../components/icons/icon-library';
 import { getCatalogExercise } from '../../../../data/catalog/exerciseCatalog';
@@ -35,6 +36,7 @@ export const ExerciseDetailScreen = () => {
   const { colors, spacing, radius } = useTheme();
   const ex = getCatalogExercise(params.exerciseId);
   const editor = usePlanEditor();
+  const { profile } = useAuth();
   const [viewing, setViewing] = useState<number | null>(null);
   const targetWorkout = params.addToWorkoutId ? editor.draft?.workouts.find(w => w.id === params.addToWorkoutId) : undefined;
   const alreadyAdded = !!targetWorkout && !!ex && targetWorkout.exercises.some(e => e.exerciseId === ex.id);
@@ -43,7 +45,7 @@ export const ExerciseDetailScreen = () => {
     if (!ex || !targetWorkout) return;
     editor.update(p => ({
       ...p,
-      workouts: p.workouts.map(w => (w.id === targetWorkout.id ? { ...w, exercises: [...w.exercises, newEntry(ex, w.exercises.length, p.goal)] } : w)),
+      workouts: p.workouts.map(w => (w.id === targetWorkout.id ? { ...w, exercises: [...w.exercises, newEntry(ex, w.exercises.length, p.goal, profile?.weightUnit ?? 'lb')] } : w)),
     }));
     // Pop the detail screen and the picker beneath it, back to the workout editor.
     navigation.pop(2);

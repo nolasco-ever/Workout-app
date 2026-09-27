@@ -1,5 +1,6 @@
-import { Cycle, DEFAULT_PROGRESSION, Exercise, GOAL_DEFAULTS, Id, LocalDate, Plan, PlanGoal, Schedule, Workout, WorkoutExercise } from '../models';
+import { Cycle, DEFAULT_PROGRESSION, Exercise, GOAL_DEFAULTS, Id, LocalDate, Plan, PlanGoal, ProgressionConfig, Schedule, WeightUnit, Workout, WorkoutExercise } from '../models';
 import { newId } from '../engine/ids';
+import { lbToKg } from '../engine/units';
 import { today } from '../engine/dates';
 import { closeCycle, generateCycle } from '../engine/schedule';
 import { planRepository } from '../repositories/planRepository';
@@ -27,8 +28,14 @@ export const newPlan = (ownerId: Id): Plan => {
 
 export const newWorkout = (name: string, order: number): Workout => ({ id: newId(), name, order, exercises: [] });
 
+/** The stock weight step: 5 lb for people who think in pounds, 2.5 kg otherwise. */
+export const defaultProgression = (unit: WeightUnit): ProgressionConfig => ({
+  ...DEFAULT_PROGRESSION,
+  weightIncrementKg: unit === 'lb' ? lbToKg(5) : DEFAULT_PROGRESSION.weightIncrementKg,
+});
+
 /** Build an entry for a catalog exercise using the plan's goal defaults. */
-export const newEntry = (exercise: Exercise, order: number, goal: PlanGoal | null): WorkoutExercise => {
+export const newEntry = (exercise: Exercise, order: number, goal: PlanGoal | null, unit: WeightUnit = 'lb'): WorkoutExercise => {
   const d = GOAL_DEFAULTS[goal ?? 'hypertrophy'];
   const timed = exercise.measurement === 'time';
   const cardio = exercise.measurement === 'distance_time';
@@ -45,7 +52,7 @@ export const newEntry = (exercise: Exercise, order: number, goal: PlanGoal | nul
     startingDurationSec: timed ? 30 : cardio ? 1200 : null,
     startingDistanceM: cardio ? 3000 : null,
     restSec: d.restSec,
-    progression: { ...DEFAULT_PROGRESSION },
+    progression: defaultProgression(unit),
     notes: null,
   };
 };

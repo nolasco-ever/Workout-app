@@ -33,6 +33,16 @@ const maxOf = (values: (number | null)[]): number | null => {
 
 const roundTo = (value: number, step: number): number => Math.round(value / step) * step;
 
+/**
+ * Snap a stored weight to something that can actually be loaded in the
+ * user's unit: 2.5 lb or 1.25 kg. Suggestions are computed in kilograms,
+ * so without this a 5 lb increment lands on 55.5 lb.
+ */
+export const roundToLoadableKg = (kg: number, unit: WeightUnit): number => {
+  if (unit === 'lb') return roundTo(kg / KG_PER_LB, 2.5) * KG_PER_LB;
+  return roundTo(kg, 1.25);
+};
+
 const initialTarget = (entry: WorkoutExercise): SetTarget => ({
   sets: entry.sets,
   reps: entry.repRangeMax,
@@ -46,8 +56,9 @@ const initialTarget = (entry: WorkoutExercise): SetTarget => ({
  *
  * @param entry the plan prescription
  * @param last  the most recent logged session of this exercise, or null
+ * @param unit  the user's weight unit, so a weight increase lands on a loadable number
  */
-export const suggestTarget = (entry: WorkoutExercise, last: SessionExercise | null): SetTarget => {
+export const suggestTarget = (entry: WorkoutExercise, last: SessionExercise | null, unit: WeightUnit = 'kg'): SetTarget => {
   if (!last) return initialTarget(entry);
   const done = workingSets(last.sets);
   if (done.length === 0) return { ...last.target, sets: entry.sets };
@@ -94,7 +105,7 @@ export const suggestTarget = (entry: WorkoutExercise, last: SessionExercise | nu
         return {
           sets: entry.sets,
           reps: rangeMax,
-          weightKg: roundTo(weight + p.weightIncrementKg, 0.25),
+          weightKg: roundToLoadableKg(weight + p.weightIncrementKg, unit),
           durationSec: null,
           distanceM: null,
         };

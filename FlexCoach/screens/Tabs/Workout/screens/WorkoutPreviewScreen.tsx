@@ -44,6 +44,7 @@ export const WorkoutPreviewScreen = () => {
   const { colors, spacing } = useTheme();
   const bottomInset = useTabScrollInset();
   const { uid, profile } = useAuth();
+  const unit = profile?.weightUnit ?? 'lb';
   const workout = findWorkout(plan, occurrence.workoutId);
   const [targets, setTargets] = useState<Record<string, SetTarget>>({});
   const [busy, setBusy] = useState(false);
@@ -57,17 +58,16 @@ export const WorkoutPreviewScreen = () => {
       for (const entry of workout.exercises) {
         let last = null;
         for (let i = history.length - 1; i >= 0 && !last; i--) last = history[i].exercises.find(ex => ex.exerciseId === entry.exerciseId) ?? null;
-        next[entry.id] = suggestTarget(entry, last);
+        next[entry.id] = suggestTarget(entry, last, unit);
       }
       setTargets(next);
     });
     return () => {
       cancelled = true;
     };
-  }, [uid, workout]);
+  }, [uid, workout, unit]);
 
   if (!workout) return null;
-  const unit = profile?.weightUnit ?? 'lb';
   const dist = profile?.distanceUnit ?? 'mi';
   const todayDate = today();
   const canStart = occurrence.status === 'scheduled';

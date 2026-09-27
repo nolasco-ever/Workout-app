@@ -86,8 +86,8 @@ const latestExerciseLog = (history: Session[], exerciseId: Id): SessionExercise 
 };
 
 /**
- * Start a session for an occurrence. `unit` only affects how warm-up weights
- * are rounded (to 5 lb or 2.5 kg); everything is stored in kilograms.
+ * Start a session for an occurrence. `unit` only affects how suggested and
+ * warm-up weights are rounded; everything is stored in kilograms.
  */
 export const startSession = async (uid: Id, plan: Plan, cycle: Cycle, occurrence: Occurrence, unit: WeightUnit = 'lb'): Promise<{ session: Session; cycle: Cycle }> => {
   const workout = findWorkout(plan, occurrence.workoutId);
@@ -109,7 +109,7 @@ export const startSession = async (uid: Id, plan: Plan, cycle: Cycle, occurrence
     exercises: [...workout.exercises]
       .sort((a, b) => a.order - b.order)
       .map((entry, i) => {
-        const target = suggestTarget(entry, latestExerciseLog(history, entry.exerciseId));
+        const target = suggestTarget(entry, latestExerciseLog(history, entry.exerciseId), unit);
         const warmups = wantsWarmup(entry) ? buildWarmupSets(target, unit, newId) : [];
         return {
           id: newId(),
