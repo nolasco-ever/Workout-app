@@ -53,7 +53,8 @@ const DISMISS_VELOCITY = 900;
  * The profile photo, grown from the avatar into a large circle over a
  * dimmed screen, with the ways to change it underneath. Tap anywhere or
  * flick the photo to put it back; while dragging, the photo follows the
- * finger and the screen brightens as it moves.
+ * finger and the screen brightens as it moves. Pinching zooms the circle
+ * for a closer look and it springs back on release.
  *
  * Two things keep it from flickering:
  * - The circle is laid out at full size and scaled with a transform.
@@ -88,6 +89,8 @@ export const ProfilePhotoModal = ({ open, origin, uri, busy, onClose, onShown, o
   const dragY = useSharedValue(0);
   /** 0 until the full-size image has loaded, then 1. */
   const loaded = useSharedValue(0);
+  /** Pinch zoom on the big circle; springs back to 1 on release. */
+  const pinch = useSharedValue(1);
 
   const finishClose = () => {
     setMounted(false);
@@ -108,6 +111,7 @@ export const ProfilePhotoModal = ({ open, origin, uri, busy, onClose, onShown, o
       setMounted(true);
       dragX.value = 0;
       dragY.value = 0;
+      pinch.value = 1;
       loaded.value = 0;
       progress.value = withTiming(1, { duration: OPEN_MS, easing: Easing.out(Easing.cubic) });
     } else if (mounted) {
@@ -117,7 +121,15 @@ export const ProfilePhotoModal = ({ open, origin, uri, busy, onClose, onShown, o
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open]);
 
+  const pinchGesture = Gesture.Pinch()
+    .onUpdate(e => {
+      pinch.value = Math.min(3, Math.max(1, e.scale));
+    })
+    .onEnd(() => {
+      pinch.value = withSpring(1, { damping: 18, stiffness: 220 });
+    });
   const pan = Gesture.Pan()
+    .maxPointers(1)
     .onUpdate(e => {
       dragX.value = e.translationX;
       dragY.value = e.translationY;
@@ -131,7 +143,7 @@ export const ProfilePhotoModal = ({ open, origin, uri, busy, onClose, onShown, o
       }
     });
   const tap = Gesture.Tap().onEnd(() => close());
-  const gesture = Gesture.Exclusive(pan, tap);
+  const gesture = Gesture.Simultaneous(pinchGesture, Gesture.Exclusive(pan, tap));
 
   // Centre-to-centre offset between where the avatar sits and where the big
   // circle lands; the translate shrinks to zero as the scale grows to one.
@@ -149,7 +161,7 @@ export const ProfilePhotoModal = ({ open, origin, uri, busy, onClose, onShown, o
       transform: [
         { translateX: (fromCentre.x - targetCentre.x) * (1 - p) + dragX.value },
         { translateY: (fromCentre.y - targetCentre.y) * (1 - p) + dragY.value },
-        { scale: interpolate(p, [0, 1], [from.size / target.size, 1]) },
+        { scale: interpolate(p, [0, 1], [from.size / target.size, 1]) * pinch.value },
       ],
     };
   });
