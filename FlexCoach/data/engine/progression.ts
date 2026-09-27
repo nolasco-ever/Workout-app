@@ -279,8 +279,11 @@ export const warmupRamp = (workingKg: number): { fraction: number; reps: number 
   return [];
 };
 
+/** Rest after a warm-up set: half the working rest, at most a minute. */
+export const warmupRestSec = (workingRestSec: number): number => Math.max(15, Math.min(60, Math.round(workingRestSec / 2)));
+
 /** Round a warm-up weight to what can actually be loaded in the user's unit: 5 lb or 2.5 kg. */
-const roundWarmupKg = (kg: number, unit: WeightUnit): number => {
+export const roundWarmupKg = (kg: number, unit: WeightUnit): number => {
   if (unit === 'lb') return roundTo(kg / KG_PER_LB, 5) * KG_PER_LB;
   return roundTo(kg, 2.5);
 };

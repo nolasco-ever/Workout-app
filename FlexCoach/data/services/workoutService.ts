@@ -25,7 +25,7 @@ import {
   pushOccurrence,
   skipOccurrence,
 } from '../engine/schedule';
-import { buildPlannedSets, buildWarmupSets, ExerciseProgression, progressExercise, progressPlan, targetsForCycle } from '../engine/progression';
+import { buildPlannedSets, buildWarmupSets, ExerciseProgression, progressExercise, progressPlan, roundWarmupKg, targetsForCycle } from '../engine/progression';
 import { renumberSets } from '../engine/sets';
 import { countWorkingSets, findPersonalRecords, summarizeCycle, totalVolumeKg } from '../engine/stats';
 import { cycleRepository } from '../repositories/cycleRepository';
@@ -159,6 +159,25 @@ export const addSetTo = (session: Session, sessionExerciseId: Id, makeId: () => 
   return {
     session: { ...session, exercises: session.exercises.map(e => (e.id === ex.id ? { ...e, sets } : e)) },
     set: sets[sets.length - 1],
+  };
+};
+
+/**
+ * Add a warm-up set below the existing warm-ups: a copy of the last one, or
+ * half the first working weight for eight reps when there are none yet.
+ */
+export const addWarmupSetTo = (session: Session, sessionExerciseId: Id, unit: WeightUnit, makeId: () => Id): { session: Session; set: LoggedSet } => {
+  const ex = session.exercises.find(e => e.id === sessionExerciseId);
+  if (!ex) throw new Error('Unknown session exercise');
+  const warmups = ex.sets.filter(s => s.warmup);
+  const lastWarmup = warmups[warmups.length - 1];
+  const working = ex.sets.find(s => !s.warmup);
+  const weightKg = lastWarmup ? lastWarmup.weightKg : working?.weightKg ? roundWarmupKg(working.weightKg * 0.5, unit) : null;
+  const set: LoggedSet = { id: makeId(), setNumber: 0, weightKg, reps: lastWarmup?.reps ?? 8, durationSec: null, distanceM: null, completed: false, completedAt: null, warmup: true };
+  const sets = renumberSets([...warmups, set, ...ex.sets.filter(s => !s.warmup)]);
+  return {
+    session: { ...session, exercises: session.exercises.map(e => (e.id === ex.id ? { ...e, sets } : e)) },
+    set: sets[warmups.length],
   };
 };
 

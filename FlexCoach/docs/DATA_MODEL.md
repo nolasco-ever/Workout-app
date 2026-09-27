@@ -62,16 +62,32 @@ the user to **skip** or **push** it (see `getOverdueOccurrences`).
 
 ## Progression
 
-`suggestTarget` implements double progression. For weighted lifts, reps climb
-from the bottom to the top of the rep range at a fixed weight; when every set
-hits the top, weight increases by the entry's increment and reps stay at the
-top. A miss drops the next target to what was achieved (never below the range
-floor) and it climbs back one step per successful session. Bodyweight, timed,
-and cardio exercises progress reps, duration, and distance respectively.
+Double progression, judged once per cycle (`engine/progression.ts`,
+decided with the user 2026-09-27 after build 13). Targets hold for a whole
+cycle; a good session does not raise the weight two days later. When a
+cycle ends, `progressPlan` looks at every session of each exercise in it
+and sets the next cycle's target, set by set:
 
-The suggestion is snapshotted onto the session as `target` so the next
-suggestion knows the previous target and so the UI can show suggested versus
-actual.
+- every session hit the target reps and the target was the top of the
+  range: weight up by the entry's increment (snapped to 2.5 lb / 1.25 kg),
+  reps restart at the bottom of the range
+- every session hit a lower target: reps climb to what was managed every
+  time, at least one step
+- any session missed: reps ease back to the fewest managed (never below
+  the range floor), weight stays
+- not trained in the cycle: the last target carries forward
+
+Sets progress independently, so a 25/30/35 ramp stays a ramp. `SetTarget`
+carries `perSet` goals when sets differ; older single-value targets still
+read through `goalFor`. Bodyweight reps grow past the top of the range;
+timed holds add a step when every set of every session reached the target;
+cardio repeats the last distance and duration plus the optional step.
+
+`startSession` reads `targetsForCycle` (the previous cycle of the plan,
+found from the sessions themselves) and snapshots the target onto the
+session as `target`, so the judgement always knows what was asked. The
+cycle review shows each exercise's next target with the reason
+(`engine/progressionCopy.ts`).
 
 ## Warm-up sets
 
@@ -79,10 +95,12 @@ Weighted lifts (`weight_reps`) get warm-up sets when the session starts,
 unless the plan entry turns them off (`WorkoutExercise.warmup`, see
 `wantsWarmup`). `engine/progression.ts` builds them from the first working
 set's weight: a longer ramp for heavier loads, none under 20 kg, rounded
-to 5 lb or 2.5 kg for the user's unit. They are ordinary `LoggedSet` rows
-flagged `warmup: true`, so the logger treats them like any set, but
+to 5 lb or 2.5 kg for the user's unit. The logger can add more mid-session
+(`addWarmupSetTo`). They are ordinary `LoggedSet` rows flagged
+`warmup: true`, so the logger treats them like any set, but
 `engine/sets.ts` (`isWorkingSet`) keeps them out of volume, records,
-progression and every insight.
+progression and every insight. Rest after a warm-up set is half the
+exercise's rest, capped at 60 s (`warmupRestSec`).
 
 ## Buddies
 

@@ -1,4 +1,4 @@
-import { buildPlannedSets, buildWarmupSets, previousCycleId, progressExercise, progressPlan, warmupRamp } from '../../data/engine/progression';
+import { buildPlannedSets, buildWarmupSets, previousCycleId, progressExercise, progressPlan, warmupRamp, warmupRestSec } from '../../data/engine/progression';
 import { describeProgression } from '../../data/engine/progressionCopy';
 import { kgToLb, lbToKg } from '../../data/engine/units';
 import { Session, SetTarget } from '../../data/models';
@@ -263,5 +263,13 @@ describe('warm-up sets', () => {
         expect(buildWarmupSets(target(w), unit, id).every(s => s.weightKg! < w)).toBe(true);
       }
     }
+  });
+});
+
+describe('warmupRestSec', () => {
+  it('is half the working rest, between 15 and 60 seconds', () => {
+    expect(warmupRestSec(90)).toBe(45);
+    expect(warmupRestSec(180)).toBe(60);
+    expect(warmupRestSec(20)).toBe(15);
   });
 });

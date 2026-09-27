@@ -9,7 +9,8 @@ import { LoggedSet, Session, SessionExercise } from '../../../../data/models';
 import { findWorkout } from '../../../../data/engine/schedule';
 import { newId } from '../../../../data/engine/ids';
 import { getCatalogExercise } from '../../../../data/catalog/exerciseCatalog';
-import { abandonSession, addSetTo, finishSession, logSet, removeSetFrom, saveSets } from '../../../../data/services/workoutService';
+import { abandonSession, addSetTo, addWarmupSetTo, finishSession, logSet, removeSetFrom, saveSets } from '../../../../data/services/workoutService';
+import { warmupRestSec } from '../../../../data/engine/progression';
 import { planRestOverNotification, withPrefDefaults } from '../../../../data/engine/notifications';
 import { cancelRestOver, scheduleRestOver } from '../../../../data/notifications/notificationService';
 import { showInAppBanner } from '../../../../data/notifications/inAppBanner';
@@ -48,6 +49,8 @@ export const SessionScreen = () => {
     return d;
   });
   const [restStartedAt, setRestStartedAt] = useState<number | null>(null);
+  /** Length of the rest that is running: shorter after a warm-up set. */
+  const [restFor, setRestFor] = useState(90);
   const [finishing, setFinishing] = useState(false);
 
   const exercise = session.exercises[index];
@@ -93,7 +96,15 @@ export const SessionScreen = () => {
     persist(exercise, { ...merged, completed: done, completedAt: done ? Date.now() : null });
     // No rest after the workout's final set: there is nothing left to rest for.
     const workoutDone = done && index === session.exercises.length - 1 && exercise.sets.every(s => s.id === set.id || s.completed);
+    setRestFor(set.warmup ? warmupRestSec(restSec) : restSec);
     setRestStartedAt(done && !workoutDone ? Date.now() : null);
+  };
+
+  const addWarmupSet = () => {
+    const { session: next, set } = addWarmupSetTo(session, exercise.id, units.weight, newId);
+    setSession(next);
+    setDrafts(d => ({ ...d, [set.id]: toDraft(exercise, set, units) }));
+    if (uid) saveSets(uid, next, exercise.id).catch(err => console.warn('addWarmupSet failed', err));
   };
 
   const addSet = () => {
@@ -152,30 +163,30 @@ export const SessionScreen = () => {
       cancelRestOver().catch(() => undefined);
       return;
     }
-    scheduleRestOver(planRestOverNotification(restStartedAt, restSec, session.id, exercise.exerciseName)).catch(err => console.warn('rest timer notification failed', err));
+    scheduleRestOver(planRestOverNotification(restStartedAt, restFor, session.id, exercise.exerciseName)).catch(err => console.warn('rest timer notification failed', err));
     // exercise.exerciseName only changes with `index`, which also resets the timer.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [restStartedAt, restSec, session.id, restOverEnabled, inBackground]);
+  }, [restStartedAt, restFor, session.id, restOverEnabled, inBackground]);
   useEffect(() => () => {
     cancelRestOver().catch(() => undefined);
   }, []);
 
   useEffect(() => {
     if (restStartedAt === null || !restOverEnabled) return;
-    const endAt = restStartedAt + restSec * 1000;
+    const endAt = restStartedAt + restFor * 1000;
     const id = setTimeout(() => {
       // A timer that fires late means the app was suspended in between, and
       // the system notification has already done its job.
       if (AppState.currentState !== 'active' || Date.now() - endAt > 2000) return;
       Vibration.vibrate();
       if (!focusedRef.current) {
-        const { title, body, target } = planRestOverNotification(restStartedAt, restSec, session.id, exercise.exerciseName);
+        const { title, body, target } = planRestOverNotification(restStartedAt, restFor, session.id, exercise.exerciseName);
         showInAppBanner({ title, body, target });
       }
     }, Math.max(0, endAt - Date.now()));
     return () => clearTimeout(id);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [restStartedAt, restSec, session.id, restOverEnabled]);
+  }, [restStartedAt, restFor, session.id, restOverEnabled]);
 
   return (
     <SafeAreaView edges={['bottom', 'left', 'right']} style={{ flex: 1, backgroundColor: colors.ground }}>
@@ -238,16 +249,25 @@ export const SessionScreen = () => {
                 <View key={set.id}>{row}</View>
               );
             })}
-            <TouchableOpacity onPress={addSet} style={{ paddingVertical: spacing.sm, alignItems: 'center' }}>
-              <CustomText variant="label" color={colors.accent}>
-                + Add set
-              </CustomText>
-            </TouchableOpacity>
+            <View style={{ flexDirection: 'row', justifyContent: 'center', gap: spacing.xl }}>
+              {exercise.measurement === 'weight_reps' && (
+                <TouchableOpacity onPress={addWarmupSet} style={{ paddingVertical: spacing.sm }}>
+                  <CustomText variant="label" color={colors.accent}>
+                    + Warm-up set
+                  </CustomText>
+                </TouchableOpacity>
+              )}
+              <TouchableOpacity onPress={addSet} style={{ paddingVertical: spacing.sm }}>
+                <CustomText variant="label" color={colors.accent}>
+                  + Add set
+                </CustomText>
+              </TouchableOpacity>
+            </View>
           </View>
         </ScrollView>
 
         <View style={{ padding: spacing.lg, paddingBottom: spacing.lg + tabBarInset, gap: spacing.sm, borderTopWidth: 1, borderTopColor: colors.line, backgroundColor: colors.ground }}>
-          <RestTimer startedAt={restStartedAt} durationSec={restSec} onDismiss={() => setRestStartedAt(null)} />
+          <RestTimer startedAt={restStartedAt} durationSec={restFor} onDismiss={() => setRestStartedAt(null)} />
           <View style={{ flexDirection: 'row', gap: spacing.sm }}>
             <TouchableOpacity
               disabled={index === 0}
