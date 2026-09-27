@@ -45,6 +45,8 @@ export interface ExercisePoint {
   /** Best Epley estimate across completed sets. */
   estOneRepMaxKg: number | null;
   totalReps: number;
+  /** Most reps in a single completed set. */
+  bestSetReps: number | null;
   volumeKg: number;
   /** Longest completed hold, for timed exercises. */
   bestDurationSec: number | null;
@@ -70,6 +72,7 @@ export const exerciseHistory = (sessions: Session[], exerciseId: Id): ExercisePo
           topWeightKg: weights.length ? Math.max(...weights) : null,
           estOneRepMaxKg: est.length ? Math.max(...est) : null,
           totalReps: done.reduce((n, set) => n + (set.reps ?? 0), 0),
+          bestSetReps: done.some(set => set.reps !== null) ? Math.max(...done.map(set => set.reps ?? 0)) : null,
           volumeKg: done.reduce((n, set) => n + (set.weightKg ?? 0) * (set.reps ?? 0), 0),
           bestDurationSec: durations.length ? Math.max(...durations) : null,
         },

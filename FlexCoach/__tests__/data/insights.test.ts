@@ -30,6 +30,7 @@ describe('exercise history', () => {
     expect(h[0].topWeightKg).toBe(100);
     expect(h[0].estOneRepMaxKg).toBeCloseTo(Math.max(estimateOneRepMax(100, 5), estimateOneRepMax(90, 8)));
     expect(h[0].totalReps).toBe(13);
+    expect(h[0].bestSetReps).toBe(8);
     expect(h[0].volumeKg).toBe(1220);
   });
 });

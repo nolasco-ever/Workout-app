@@ -27,8 +27,12 @@ export const ExerciseProgressScreen = () => {
   const history = exerciseHistory(ins.sessions, params.exerciseId);
   const cat = getCatalogExercise(params.exerciseId);
   const latest = history[history.length - 1];
-  const weighted = history.some(h => h.topWeightKg !== null);
+  // Charts follow what was actually logged: weight for loaded lifts, reps
+  // for bodyweight work, holds for timed exercises. Volume only means
+  // something when there is weight in it.
+  const weighted = history.some(h => h.topWeightKg !== null && h.topWeightKg > 0);
   const timed = !weighted && history.some(h => h.bestDurationSec !== null);
+  const repsOnly = !weighted && !timed && history.some(h => h.totalReps > 0);
   const disp = (kg: number) => (unit === 'lb' ? kgToLb(kg) : kg); // exact; labels round
   const fmtW = (v: number) => `${Math.round(v * 10) / 10}`;
 
@@ -58,13 +62,16 @@ export const ExerciseProgressScreen = () => {
             {weighted && <StatTile label="Top set" value={formatWeight(latest.topWeightKg, unit)} />}
             {weighted && latest.estOneRepMaxKg !== null && <StatTile label="Est. 1RM" value={formatWeight(latest.estOneRepMaxKg, unit)} delta="Epley" />}
             {timed && <StatTile label="Best hold" value={formatDuration(latest.bestDurationSec)} />}
-            <StatTile label="Last reps" value={String(latest.totalReps)} />
+            {repsOnly && latest.bestSetReps !== null && <StatTile label="Best set" value={`${latest.bestSetReps} reps`} />}
+            <StatTile label={repsOnly ? 'Last total' : 'Last reps'} value={String(latest.totalReps)} />
           </View>
         )}
         {weighted && chart('Top set weight', history.filter(h => h.topWeightKg !== null).map(h => ({ date: h.date, value: disp(h.topWeightKg!) })), fmtW, `Heaviest completed set each session, in ${unit}.`)}
         {weighted && chart('Estimated one-rep max', history.filter(h => h.estOneRepMaxKg !== null).map(h => ({ date: h.date, value: disp(h.estOneRepMaxKg!) })), fmtW, 'Epley formula from your best set. Rises when weight or reps go up.')}
         {timed && chart('Best hold', history.filter(h => h.bestDurationSec !== null).map(h => ({ date: h.date, value: h.bestDurationSec! })), v => formatDuration(v), 'Longest completed hold each session.')}
-        {chart('Volume per session', history.map(h => ({ date: h.date, value: unit === 'lb' ? kgToLb(h.volumeKg) : h.volumeKg })), v => compactNumber(v), `Weight × reps, in ${unit}.`)}
+        {repsOnly && chart('Reps per session', history.map(h => ({ date: h.date, value: h.totalReps })), v => String(Math.round(v)), 'Total reps across your working sets each session.')}
+        {repsOnly && chart('Best set', history.filter(h => h.bestSetReps !== null).map(h => ({ date: h.date, value: h.bestSetReps! })), v => String(Math.round(v)), 'Most reps in a single set each session.')}
+        {weighted && chart('Volume per session', history.map(h => ({ date: h.date, value: unit === 'lb' ? kgToLb(h.volumeKg) : h.volumeKg })), v => compactNumber(v), `Weight × reps, in ${unit}.`)}
         {history.length < 2 && <CustomText variant="body" color={colors.inkMuted}>Log this exercise a couple more times to see trends.</CustomText>}
       </ScrollView>
     </SafeAreaView>
