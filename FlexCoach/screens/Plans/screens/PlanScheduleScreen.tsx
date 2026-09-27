@@ -18,6 +18,7 @@ import { PlansStackParams } from '../PlansStack';
 import { usePlanEditor } from '../PlanEditorContext';
 import { StepFooter } from '../components/StepFooter';
 import { workoutName } from '../components/planSummary';
+import { CycleHelpButton } from '../components/CycleHelpSheet';
 
 const DAY = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
 const DAY_SHORT = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
@@ -121,10 +122,15 @@ export const PlanScheduleScreen = () => {
                 onChange={v => setRotation(s => ({ ...s, slots: [...s.slots, v === 'rest' ? null : (v as Id)] }))}
               />
             </View>
-            <SurfaceCard>
-              <Stepper label="Passes per cycle" value={plan.schedule.passesPerCycle} min={1} max={8} onChange={v => setRotation(s => ({ ...s, passesPerCycle: v }))} />
+            <SurfaceCard style={{ gap: spacing.sm }}>
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.md }}>
+                <View style={{ flex: 1 }}>
+                  <Stepper label="Passes per cycle" value={plan.schedule.passesPerCycle} min={1} max={8} onChange={v => setRotation(s => ({ ...s, passesPerCycle: v }))} />
+                </View>
+                <CycleHelpButton />
+              </View>
               <CustomText variant="caption" color={colors.inkMuted}>
-                One cycle is {plan.schedule.slots.length * plan.schedule.passesPerCycle} days. You'll get a review at the end of each.
+                One cycle is {plan.schedule.slots.length * plan.schedule.passesPerCycle} days. Your targets hold for the cycle; at the end you get a report card and the app decides, from every workout in it, whether weights or reps should go up. Tap ? for more.
               </CustomText>
             </SurfaceCard>
           </>
@@ -162,7 +168,15 @@ export const PlanScheduleScreen = () => {
               ))}
             </SurfaceCard>
             <SurfaceCard style={{ gap: spacing.sm }}>
-              <Stepper label="Weeks per cycle" value={plan.schedule.weeksPerCycle} min={1} max={12} onChange={v => setWeekly(s => ({ ...s, weeksPerCycle: v }))} />
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.md }}>
+                <View style={{ flex: 1 }}>
+                  <Stepper label="Weeks per cycle" value={plan.schedule.weeksPerCycle} min={1} max={12} onChange={v => setWeekly(s => ({ ...s, weeksPerCycle: v }))} />
+                </View>
+                <CycleHelpButton />
+              </View>
+              <CustomText variant="caption" color={colors.inkMuted}>
+                Your targets hold for the cycle; at the end you get a report card and the app decides, from every workout in it, whether weights or reps should go up. Tap ? for more.
+              </CustomText>
               <CustomText variant="overline" color={colors.inkMuted}>Week starts on</CustomText>
               <ChoiceChips<string>
                 options={DAY.map((d, i) => ({ value: String(i), label: d.slice(0, 3) }))}

@@ -1,6 +1,7 @@
 import {
   ArrowLeftRight,
   Banknote,
+  CircleHelp,
   Bell,
   BellOff,
   Book,
@@ -123,6 +124,7 @@ export const generalIcons = {
   heart: Heart,
   images: Images,
   info: Info,
+  help: CircleHelp,
   key: KeyRound,
   lightbulb: Lightbulb,
   list: List,
