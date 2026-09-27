@@ -88,7 +88,15 @@ export const WorkoutPreviewScreen = () => {
               const ex = getCatalogExercise(entry.exerciseId);
               const t = targets[entry.id];
               return (
-                <View key={entry.id} style={{ flexDirection: 'row', alignItems: 'center', padding: spacing.lg, gap: spacing.md, borderTopWidth: i ? 1 : 0, borderTopColor: colors.line }}>
+                <TouchableOpacity
+                  key={entry.id}
+                  onPress={() => openTutorial(entry)}
+                  disabled={!ex}
+                  activeOpacity={0.7}
+                  accessibilityRole="button"
+                  accessibilityLabel={`How to do ${entry.exerciseName}`}
+                  style={{ flexDirection: 'row', alignItems: 'center', padding: spacing.lg, gap: spacing.md, borderTopWidth: i ? 1 : 0, borderTopColor: colors.line }}
+                >
                   {ex && <MuscleMap primary={ex.primaryMuscles} secondary={ex.secondaryMuscles} height={56} views="auto" />}
                   <View style={{ flex: 1 }}>
                     <CustomText variant="bodyStrong">{entry.exerciseName}</CustomText>
@@ -99,10 +107,8 @@ export const WorkoutPreviewScreen = () => {
                       {t ? describeTarget(entry, t, unit, dist) : `${entry.sets} sets`}
                     </CustomText>
                   </View>
-                  <TouchableOpacity onPress={() => openTutorial(entry)} hitSlop={8}>
-                    <Icon icon={generalIcons.info} color={colors.inkMuted} size={22} />
-                  </TouchableOpacity>
-                </View>
+                  <Icon icon={generalIcons.info} color={colors.inkMuted} size={22} />
+                </TouchableOpacity>
               );
             })}
         </Card>
