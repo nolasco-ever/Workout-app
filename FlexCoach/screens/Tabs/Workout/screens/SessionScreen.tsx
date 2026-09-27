@@ -25,6 +25,7 @@ import { MuscleMap } from '../../../../components/anatomy/MuscleMap';
 import { RestRing, SessionTitle } from '../components/SessionHeader';
 import { SetDraft, SetRow } from '../components/SetRow';
 import { SwipeToDelete } from '../../../../components/list-items/SwipeToDelete';
+import Animated, { SlideInLeft, SlideInRight } from 'react-native-reanimated';
 import { fromDraft, toDraft, Units, unitLabels } from '../components/setDrafts';
 
 export const SessionScreen = () => {
@@ -48,6 +49,13 @@ export const SessionScreen = () => {
     for (const ex of params.session.exercises) for (const s of ex.sets) d[s.id] = toDraft(ex, s, units);
     return d;
   });
+  /** Which way the last exercise change went, so the new one slides in from that side. */
+  const slideDir = useRef<1 | -1>(1);
+  const goTo = (next: number) => {
+    slideDir.current = next > index ? 1 : -1;
+    setRestStartedAt(null);
+    setIndex(next);
+  };
   const [restStartedAt, setRestStartedAt] = useState<number | null>(null);
   /** Length of the rest that is running: shorter after a warm-up set. */
   const [restFor, setRestFor] = useState(90);
@@ -216,7 +224,9 @@ export const SessionScreen = () => {
           </CustomText>
         </View>
 
-        <ScrollView contentContainerStyle={{ padding: spacing.lg, gap: spacing.lg }} keyboardShouldPersistTaps="handled" keyboardDismissMode="on-drag">
+        <ScrollView contentContainerStyle={{ padding: spacing.lg }} keyboardShouldPersistTaps="handled" keyboardDismissMode="on-drag">
+          {/* Keyed by exercise so a change mounts fresh content that slides in from the side it came from. */}
+          <Animated.View key={exercise.id} entering={(slideDir.current === 1 ? SlideInRight : SlideInLeft).duration(240)} style={{ gap: spacing.lg }}>
           {/* Only the How-to link opens the tutorial, so a stray tap on the header doesn't leave the workout. */}
           <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.md }}>
             {catalog && <MuscleMap primary={catalog.primaryMuscles} secondary={catalog.secondaryMuscles} height={84} views="auto" />}
@@ -276,13 +286,14 @@ export const SessionScreen = () => {
               </TouchableOpacity>
             </View>
           </View>
+          </Animated.View>
         </ScrollView>
 
         <View style={{ padding: spacing.lg, paddingBottom: spacing.lg + tabBarInset, gap: spacing.sm, borderTopWidth: 1, borderTopColor: colors.line, backgroundColor: colors.ground }}>
           <View style={{ flexDirection: 'row', gap: spacing.sm }}>
             <TouchableOpacity
               disabled={index === 0}
-              onPress={() => setIndex(i => i - 1)}
+              onPress={() => goTo(index - 1)}
               style={{ width: 52, alignItems: 'center', justifyContent: 'center', borderRadius: radius.md, backgroundColor: colors.surfaceRaised, opacity: index === 0 ? 0.4 : 1 }}
             >
               <Icon icon={directionIcons.angleLeft} color={colors.ink} size={24} />
@@ -291,7 +302,7 @@ export const SessionScreen = () => {
               {isLast ? (
                 <PrimaryButton label="Finish workout" icon={generalIcons.check} busy={finishing} onPress={finish} />
               ) : (
-                <PrimaryButton label="Next exercise" icon={directionIcons.angleRight} iconPosition="trailing" onPress={() => { setRestStartedAt(null); setIndex(i => i + 1); }} />
+                <PrimaryButton label="Next exercise" icon={directionIcons.angleRight} iconPosition="trailing" onPress={() => goTo(index + 1)} />
               )}
             </View>
           </View>
