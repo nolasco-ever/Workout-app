@@ -163,12 +163,8 @@ export const SessionScreen = () => {
         </View>
 
         <ScrollView contentContainerStyle={{ padding: spacing.lg, gap: spacing.lg }} keyboardShouldPersistTaps="handled" keyboardDismissMode="on-drag">
-          <TouchableOpacity
-            disabled={!catalog}
-            activeOpacity={0.7}
-            onPress={() => catalog && navigation.navigate('ExerciseDetailScreen', { exerciseId: catalog.id })}
-            style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.md }}
-          >
+          {/* Only the How-to link opens the tutorial, so a stray tap on the header doesn't leave the workout. */}
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.md }}>
             {catalog && <MuscleMap primary={catalog.primaryMuscles} secondary={catalog.secondaryMuscles} height={84} views="auto" />}
             <View style={{ flex: 1 }}>
               <CustomText variant="title">{exercise.exerciseName}</CustomText>
@@ -177,13 +173,18 @@ export const SessionScreen = () => {
                 {workoutEntry?.repRangeMin ? ` · ${workoutEntry.repRangeMin}–${workoutEntry.repRangeMax} reps` : ''} · rest {restSec}s
               </CustomText>
               {catalog && (
-                <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.xs, marginTop: spacing.xs }}>
+                <TouchableOpacity
+                  onPress={() => navigation.navigate('ExerciseDetailScreen', { exerciseId: catalog.id })}
+                  hitSlop={{ top: 8, bottom: 8, left: 8, right: 16 }}
+                  accessibilityRole="link"
+                  style={{ alignSelf: 'flex-start', flexDirection: 'row', alignItems: 'center', gap: spacing.xs, marginTop: spacing.xs }}
+                >
                   <Icon icon={generalIcons.info} color={colors.accent} size={14} />
                   <CustomText variant="caption" color={colors.accent}>How to</CustomText>
-                </View>
+                </TouchableOpacity>
               )}
             </View>
-          </TouchableOpacity>
+          </View>
 
           <View style={{ backgroundColor: colors.surface, borderRadius: radius.lg, borderWidth: 1, borderColor: colors.line, paddingVertical: spacing.md, overflow: 'hidden' }}>
             {exercise.sets.map(set => {
