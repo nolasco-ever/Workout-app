@@ -40,6 +40,13 @@ export const sessionRepository = {
     return touch(updated);
   },
 
+  /** Persist the set list of one exercise after a set was added or removed. */
+  saveSets: async (uid: Id, session: Session, exerciseId: Id, sets: LoggedSet[]): Promise<Session> => {
+    const updated: Session = { ...session, exercises: session.exercises.map(ex => (ex.id === exerciseId ? { ...ex, sets } : ex)) };
+    await patchDoc<Session>(paths.session(uid, session.id), { exercises: updated.exercises, updatedAt: Date.now() });
+    return touch(updated);
+  },
+
   finish: async (uid: Id, session: Session, status: 'completed' | 'abandoned'): Promise<Session> => {
     const now = Date.now();
     const finished: Session = { ...session, status, finishedAt: now, updatedAt: now };

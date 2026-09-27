@@ -24,13 +24,15 @@ interface Props {
   onToggleDone: () => void;
   /** Keep the fields editable even for completed sets, for fixing a logged session afterwards. */
   alwaysEditable?: boolean;
+  /** Horizontal padding, for rows that sit edge to edge in a card (so a swipe action can reach the card's edge). */
+  inset?: number;
 }
 
 /**
  * One editable set. Field A and B mean different things by measurement:
  * weight/reps, added weight/reps, weight/seconds, or distance/seconds.
  */
-export const SetRow = ({ set, measurement, draft, unitLabels, onChange, onToggleDone, alwaysEditable = false }: Props) => {
+export const SetRow = ({ set, measurement, draft, unitLabels, onChange, onToggleDone, alwaysEditable = false, inset = 0 }: Props) => {
   const { colors, radius, spacing, fonts } = useTheme();
   const done = set.completed;
   const editable = alwaysEditable || !done;
@@ -58,6 +60,7 @@ export const SetRow = ({ set, measurement, draft, unitLabels, onChange, onToggle
         alignItems: 'center',
         gap: spacing.md,
         paddingVertical: spacing.sm,
+        paddingHorizontal: inset,
         opacity: done && !alwaysEditable ? 0.75 : 1,
       }}
     >

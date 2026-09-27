@@ -26,6 +26,7 @@ import {
   skipOccurrence,
 } from '../engine/schedule';
 import { buildPlannedSets, buildWarmupSets, suggestTarget } from '../engine/progression';
+import { renumberSets } from '../engine/sets';
 import { countWorkingSets, findPersonalRecords, summarizeCycle, totalVolumeKg } from '../engine/stats';
 import { cycleRepository } from '../repositories/cycleRepository';
 import { planRepository } from '../repositories/planRepository';
@@ -152,6 +153,32 @@ export const startWorkoutNow = async (uid: Id, plan: Plan, cycle: Cycle, occurre
 
 export const logSet = (uid: Id, session: Session, sessionExerciseId: Id, set: LoggedSet): Promise<Session> =>
   sessionRepository.logSet(uid, session, sessionExerciseId, set);
+
+/** Append a set to an exercise mid-session, copied from the last one. Working sets number on from the last working set. */
+export const addSetTo = (session: Session, sessionExerciseId: Id, makeId: () => Id): { session: Session; set: LoggedSet } => {
+  const ex = session.exercises.find(e => e.id === sessionExerciseId);
+  if (!ex) throw new Error('Unknown session exercise');
+  const last = ex.sets[ex.sets.length - 1];
+  const base: LoggedSet = last ?? { id: '', setNumber: 0, weightKg: ex.target.weightKg, reps: ex.target.reps, durationSec: ex.target.durationSec, distanceM: ex.target.distanceM, completed: false, completedAt: null };
+  const set: LoggedSet = { ...base, id: makeId(), warmup: false, completed: false, completedAt: null };
+  const sets = renumberSets([...ex.sets, set]);
+  return {
+    session: { ...session, exercises: session.exercises.map(e => (e.id === ex.id ? { ...e, sets } : e)) },
+    set: sets[sets.length - 1],
+  };
+};
+
+/** Drop a set from an exercise mid-session; the remaining sets close the gap in their numbering. */
+export const removeSetFrom = (session: Session, sessionExerciseId: Id, setId: Id): Session => ({
+  ...session,
+  exercises: session.exercises.map(e => (e.id === sessionExerciseId ? { ...e, sets: renumberSets(e.sets.filter(s => s.id !== setId)) } : e)),
+});
+
+export const saveSets = (uid: Id, session: Session, sessionExerciseId: Id): Promise<Session> => {
+  const ex = session.exercises.find(e => e.id === sessionExerciseId);
+  if (!ex) throw new Error('Unknown session exercise');
+  return sessionRepository.saveSets(uid, session, sessionExerciseId, ex.sets);
+};
 
 export interface SessionResult {
   session: Session;

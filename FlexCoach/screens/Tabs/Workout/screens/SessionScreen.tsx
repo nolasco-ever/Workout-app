@@ -9,7 +9,7 @@ import { LoggedSet, Session, SessionExercise } from '../../../../data/models';
 import { findWorkout } from '../../../../data/engine/schedule';
 import { newId } from '../../../../data/engine/ids';
 import { getCatalogExercise } from '../../../../data/catalog/exerciseCatalog';
-import { abandonSession, finishSession, logSet } from '../../../../data/services/workoutService';
+import { abandonSession, addSetTo, finishSession, logSet, removeSetFrom, saveSets } from '../../../../data/services/workoutService';
 import { planRestOverNotification, withPrefDefaults } from '../../../../data/engine/notifications';
 import { cancelRestOver, scheduleRestOver } from '../../../../data/notifications/notificationService';
 import { CustomText } from '../../../../components/text/customText';
@@ -22,6 +22,7 @@ import { PrimaryButton } from '../../../../components/buttons/PrimaryButton';
 import { MuscleMap } from '../../../../components/anatomy/MuscleMap';
 import { RestTimer } from '../components/RestTimer';
 import { SetDraft, SetRow } from '../components/SetRow';
+import { SwipeToDelete } from '../../../../components/list-items/SwipeToDelete';
 import { fromDraft, toDraft, Units, unitLabels } from '../components/setDrafts';
 
 export const SessionScreen = () => {
@@ -93,12 +94,19 @@ export const SessionScreen = () => {
   };
 
   const addSet = () => {
-    const last = exercise.sets[exercise.sets.length - 1];
-    const set: LoggedSet = { ...last, id: newId(), setNumber: exercise.sets.length + 1, completed: false, completedAt: null };
-    const next: Session = { ...session, exercises: session.exercises.map(e => (e.id === exercise.id ? { ...e, sets: [...e.sets, set] } : e)) };
+    const { session: next, set } = addSetTo(session, exercise.id, newId);
     setSession(next);
     setDrafts(d => ({ ...d, [set.id]: toDraft(exercise, set, units) }));
-    if (uid) logSet(uid, next, exercise.id, set).catch(err => console.warn('addSet failed', err));
+    if (uid) saveSets(uid, next, exercise.id).catch(err => console.warn('addSet failed', err));
+  };
+
+  // Any set can be swiped away, down to the last one. Removing a completed
+  // set also takes it out of the count and the volume.
+  const removeSet = (set: LoggedSet) => {
+    if (exercise.sets.length <= 1) return;
+    const next = removeSetFrom(session, exercise.id, set.id);
+    setSession(next);
+    if (uid) saveSets(uid, next, exercise.id).catch(err => console.warn('removeSet failed', err));
   };
 
   const finish = async () => {
@@ -175,18 +183,27 @@ export const SessionScreen = () => {
             </View>
           </TouchableOpacity>
 
-          <View style={{ backgroundColor: colors.surface, borderRadius: radius.lg, borderWidth: 1, borderColor: colors.line, padding: spacing.md }}>
-            {exercise.sets.map(set => (
-              <SetRow
-                key={set.id}
-                set={set}
-                measurement={exercise.measurement}
-                draft={drafts[set.id] ?? { a: '', b: '' }}
-                unitLabels={unitLabels(exercise, units)}
-                onChange={d => setDrafts(prev => ({ ...prev, [set.id]: d }))}
-                onToggleDone={() => toggleDone(set)}
-              />
-            ))}
+          <View style={{ backgroundColor: colors.surface, borderRadius: radius.lg, borderWidth: 1, borderColor: colors.line, paddingVertical: spacing.md, overflow: 'hidden' }}>
+            {exercise.sets.map(set => {
+              const row = (
+                <SetRow
+                  set={set}
+                  measurement={exercise.measurement}
+                  draft={drafts[set.id] ?? { a: '', b: '' }}
+                  unitLabels={unitLabels(exercise, units)}
+                  onChange={d => setDrafts(prev => ({ ...prev, [set.id]: d }))}
+                  onToggleDone={() => toggleDone(set)}
+                  inset={spacing.md}
+                />
+              );
+              return exercise.sets.length > 1 ? (
+                <SwipeToDelete key={set.id} label="Remove set" onDelete={() => removeSet(set)}>
+                  {row}
+                </SwipeToDelete>
+              ) : (
+                <View key={set.id}>{row}</View>
+              );
+            })}
             <TouchableOpacity onPress={addSet} style={{ paddingVertical: spacing.sm, alignItems: 'center' }}>
               <CustomText variant="label" color={colors.accent}>
                 + Add set

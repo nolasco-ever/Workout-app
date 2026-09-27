@@ -9,3 +9,17 @@ import { LoggedSet } from '../models';
 export const isWorkingSet = (s: LoggedSet): boolean => s.completed && !s.warmup;
 
 export const workingSets = (sets: LoggedSet[]): LoggedSet[] => sets.filter(isWorkingSet);
+
+/**
+ * Set numbers restart within each group: warm-ups count W1, W2 and working
+ * sets count 1, 2, 3 regardless of how many warm-ups sit above them. Called
+ * after a set is added or removed so the labels never skip a number.
+ */
+export const renumberSets = (sets: LoggedSet[]): LoggedSet[] => {
+  let warm = 0;
+  let work = 0;
+  return sets.map(s => {
+    const n = s.warmup ? ++warm : ++work;
+    return s.setNumber === n ? s : { ...s, setNumber: n };
+  });
+};
