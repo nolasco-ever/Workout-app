@@ -70,11 +70,17 @@ const MuscleMapInner = ({ primary, secondary = [], height = 200, views = 'both' 
     if (intensity) return { slug, intensity };
     return { slug, styles: { fill: EXTREMITIES.includes(slug) ? colors.surfaceRaised : colors.line } };
   });
-  const slugs = [...level.keys()];
-  const frontScore = slugs.filter(s => !BACK_ONLY.includes(s)).length;
-  const backScore = slugs.filter(s => !FRONT_ONLY.includes(s)).length;
-  const showFront = views === 'both' || frontScore >= backScore;
-  const showBack = views === 'both' || backScore > frontScore;
+  // In "auto" the primary muscles pick the side; secondary ones only break
+  // a tie. A row primarily works the back even when it also hits the abs
+  // and biceps on the front.
+  const score = (slugs: Slug[]) => ({
+    front: slugs.filter(s => !BACK_ONLY.includes(s)).length,
+    back: slugs.filter(s => !FRONT_ONLY.includes(s)).length,
+  });
+  const primaryScore = score(primary.map(m => SLUG[m]));
+  const decided = primaryScore.front !== primaryScore.back ? primaryScore : score([...level.keys()]);
+  const showFront = views === 'both' || decided.front >= decided.back;
+  const showBack = views === 'both' || decided.back > decided.front;
 
   const figure = (side: 'front' | 'back') => (
     <Body
