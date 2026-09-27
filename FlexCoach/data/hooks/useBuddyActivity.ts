@@ -12,24 +12,26 @@ export interface ActivityEntry extends Activity {
 }
 
 /**
- * One feed from everyone's activity lists (mine included), newest first.
- * Read on demand rather than watched: it's a few small reads, and it
- * refreshes when the screen comes back or the buddy list changes.
+ * One feed from the buddies' activity lists, newest first. The user's own
+ * activity is left out: they were there for it, and it only pushed their
+ * buddies' entries down. Read on demand rather than watched: it's a few
+ * small reads, and it refreshes when the screen comes back or the buddy
+ * list changes.
  */
 export const useBuddyActivity = (buddies: BuddyWithCard[], max = 20): { items: ActivityEntry[]; loading: boolean; refresh: () => Promise<void> } => {
-  const { uid, profile } = useAuth();
+  const { uid } = useAuth();
   const [items, setItems] = useState<ActivityEntry[] | null>(null);
   const key = buddies.map(b => b.userId).sort().join('|');
 
   const refresh = useCallback(async () => {
     if (!uid) return;
-    const people = [{ uid, name: profile?.displayName ?? null, photo: profile?.photoUrl ?? null, me: true }, ...buddies.map(b => ({ uid: b.userId, name: b.card?.displayName ?? b.displayName ?? null, photo: b.card?.photoUrl ?? b.photoUrl ?? null, me: false }))];
+    const people = buddies.map(b => ({ uid: b.userId, name: b.card?.displayName ?? b.displayName ?? null, photo: b.card?.photoUrl ?? b.photoUrl ?? null, me: false }));
     const lists = await Promise.all(people.map(p => buddyRepository.listActivity(p.uid, max).catch(() => [] as Activity[])));
     const merged = people.flatMap((p, i) => lists[i].map(a => ({ ...a, actorName: p.name, actorPhoto: p.photo, isMe: p.me })));
     setItems(merged.sort((a, b) => b.at - a.at).slice(0, max));
-    // buddies is represented by `key`; profile fields are read at call time.
+    // buddies is represented by `key`.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [uid, key, max, profile?.displayName, profile?.photoUrl]);
+  }, [uid, key, max]);
 
   useEffect(() => {
     refresh().catch(err => console.warn('activity load failed', err));

@@ -280,7 +280,7 @@ export const HomeScreen = () => {
         {/* Buddy activity: the latest few lines, or a nudge to add someone. */}
         <LinkCard label="Buddy activity" onPress={() => goBuddies(buddies.length ? 'BuddyActivityScreen' : 'BuddiesScreen')}>
           {buddies.length === 0 ? (
-            <CustomText variant="body" color={colors.inkMuted}>Add a buddy and their workouts, streaks and records show up here next to yours.</CustomText>
+            <CustomText variant="body" color={colors.inkMuted}>Add a buddy and their workouts, streaks and records show up here.</CustomText>
           ) : buddyFeed.items.length === 0 ? (
             <CustomText variant="body" color={colors.inkMuted}>Nothing yet. Finished workouts and streaks land here.</CustomText>
           ) : (

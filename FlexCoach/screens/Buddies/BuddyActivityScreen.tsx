@@ -21,7 +21,7 @@ const dayGroup = (ts: number, now = Date.now()): string => {
   return 'Earlier';
 };
 
-/** Everything you and your buddies have done lately, newest first. */
+/** Everything your buddies have done lately, newest first. */
 export const BuddyActivityScreen = () => {
   const navigation = useNavigation<NavigationProp<BuddyRoutes>>();
   const { colors, spacing } = useTheme();
@@ -62,7 +62,7 @@ export const BuddyActivityScreen = () => {
           <View style={{ flex: 1, justifyContent: 'center', gap: spacing.md, padding: spacing.lg }}>
             <CustomText variant="heading" centered>Nothing here yet</CustomText>
             <CustomText variant="body" color={colors.inkMuted} centered>
-              {buddies.length === 0 ? 'Add a buddy and their finished workouts, streaks and records show up here alongside yours.' : 'Finished workouts, streaks and records from you and your buddies land here.'}
+              {buddies.length === 0 ? 'Add a buddy and their finished workouts, streaks and records show up here.' : 'Your buddies\' finished workouts, streaks and records land here.'}
             </CustomText>
             {buddies.length === 0 && <PrimaryButton label="Add a buddy" onPress={() => navigation.navigate('BuddiesScreen')} />}
           </View>
