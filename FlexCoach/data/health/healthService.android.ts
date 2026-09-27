@@ -55,7 +55,7 @@ export const healthService: HealthService = {
       });
     } catch (err) {
       console.warn('Health Connect steps query failed', err);
-      return [];
+      throw err;
     }
   },
 

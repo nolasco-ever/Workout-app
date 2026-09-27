@@ -54,7 +54,7 @@ export const healthService: HealthService = {
       });
     } catch (err) {
       console.warn('HealthKit steps query failed', err);
-      return [];
+      throw err;
     }
   },
 

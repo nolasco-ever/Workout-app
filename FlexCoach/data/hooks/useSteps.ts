@@ -9,6 +9,8 @@ export interface StepsState {
   available: boolean | null;
   connected: boolean;
   loading: boolean;
+  /** Why the last read failed, if it did; null when the store answered. */
+  error: string | null;
   today: number | null;
   weekAverage: number | null;
   days: DailySteps[];
@@ -24,25 +26,36 @@ export const useSteps = (): StepsState => {
   const [available, setAvailable] = useState<boolean | null>(null);
   const [days, setDays] = useState<DailySteps[]>([]);
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     healthService.isAvailable().then(setAvailable);
   }, []);
 
+  // Steps and the weigh-in import are independent: a failure in one must
+  // not blank the other, and a failed step read says why on the card.
   const refresh = useCallback(async () => {
     if (!uid || !connected) return;
     setLoading(true);
     try {
-      const [steps, existing] = await Promise.all([healthService.getDailySteps(7), bodyWeightRepository.list(uid)]);
-      setDays(steps);
-      await importHealthWeights(uid, existing);
+      try {
+        setDays(await healthService.getDailySteps(7));
+        setError(null);
+      } catch (err) {
+        setError(err instanceof Error ? err.message : String(err));
+      }
+      try {
+        await importHealthWeights(uid, await bodyWeightRepository.list(uid));
+      } catch (err) {
+        console.warn('weigh-in import failed', err);
+      }
     } finally {
       setLoading(false);
     }
   }, [uid, connected]);
 
   useEffect(() => {
-    refresh();
+    refresh().catch(err => console.warn('steps refresh failed', err));
   }, [refresh]);
 
   const connect = useCallback(async () => {
@@ -54,5 +67,5 @@ export const useSteps = (): StepsState => {
   const todaySteps = days.length ? days[days.length - 1].steps : null;
   const weekAverage = days.length ? Math.round(days.reduce((n, d) => n + d.steps, 0) / days.length) : null;
 
-  return { available, connected, loading, today: todaySteps, weekAverage, days, platformName: healthService.platformName, connect, refresh };
+  return { available, connected, loading, error, today: todaySteps, weekAverage, days, platformName: healthService.platformName, connect, refresh };
 };

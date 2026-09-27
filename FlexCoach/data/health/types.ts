@@ -26,7 +26,7 @@ export interface HealthService {
   isAvailable(): Promise<boolean>;
   /** Show the system permission sheet. Resolves true when the sheet completed. */
   requestAccess(): Promise<boolean>;
-  /** Step totals per day for the last `days` days, oldest first, today last. */
+  /** Step totals per day for the last `days` days, oldest first, today last. Rejects if the store can't be read. */
   getDailySteps(days: number): Promise<DailySteps[]>;
   /** Body weight samples on or after `sinceDate`. */
   getWeightSamples(sinceDate: LocalDate): Promise<HealthWeightSample[]>;
