@@ -1,11 +1,13 @@
 import React, { useCallback, useState } from 'react';
-import { ActivityIndicator, RefreshControl, ScrollView, TouchableOpacity, View } from 'react-native';
+import { ActivityIndicator, Alert, RefreshControl, ScrollView, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useAuth } from '../../../data/auth/AuthProvider';
 import { usePlans } from '../../../data/hooks/usePlans';
 import { newPlan } from '../../../data/services/planService';
+import { planRepository } from '../../../data/repositories/planRepository';
+import { SwipeToDelete } from '../../../components/list-items/SwipeToDelete';
 import { Plan } from '../../../data/models';
 import { CustomText } from '../../../components/text/customText';
 import { PrimaryButton } from '../../../components/buttons/PrimaryButton';
@@ -60,16 +62,33 @@ export const PlansScreen = () => {
     navigation.navigate('PlanBasicsScreen', { mode: 'create' });
   };
 
-  const section = (title: string, items: Plan[]) =>
+  // Only a plan that isn't running can be swiped away; the active one is
+  // deactivated from its overview first. The row's own delete asks the same question.
+  const confirmDelete = (p: Plan) =>
+    Alert.alert('Delete plan?', `"${p.name || 'Untitled plan'}" goes for good. Logged sessions are kept.`, [
+      { text: 'Cancel', style: 'cancel' },
+      { text: 'Delete', style: 'destructive', onPress: () => { if (uid) planRepository.remove(uid, p.id).catch(err => console.warn('delete plan failed', err)); } },
+    ]);
+
+  const section = (title: string, items: Plan[], deletable = false) =>
     items.length > 0 && (
       <View style={{ gap: spacing.sm }}>
         <CustomText variant="heading">{title}</CustomText>
-        <SurfaceCard style={{ padding: 0 }}>
-          {items.map((p, i) => (
-            <View key={p.id} style={{ borderTopWidth: i ? 1 : 0, borderTopColor: colors.line }}>
-              <PlanRow plan={p} onPress={() => navigation.navigate('PlanOverviewScreen', { planId: p.id })} />
-            </View>
-          ))}
+        <SurfaceCard style={{ padding: 0, overflow: 'hidden' }}>
+          {items.map((p, i) => {
+            const row = (
+              <View style={{ borderTopWidth: i ? 1 : 0, borderTopColor: colors.line }}>
+                <PlanRow plan={p} onPress={() => navigation.navigate('PlanOverviewScreen', { planId: p.id })} />
+              </View>
+            );
+            return deletable ? (
+              <SwipeToDelete key={p.id} label={`Delete ${p.name || 'plan'}`} onDelete={() => confirmDelete(p)}>
+                {row}
+              </SwipeToDelete>
+            ) : (
+              <View key={p.id}>{row}</View>
+            );
+          })}
         </SurfaceCard>
       </View>
     );
@@ -90,9 +109,9 @@ export const PlansScreen = () => {
           </View>
         )}
         {!loading && section('Active', active)}
-        {!loading && section('Inactive', inactive)}
-        {!loading && section('From buddies', fromBuddies)}
-        {!loading && section('Archived', archived)}
+        {!loading && section('Inactive', inactive, true)}
+        {!loading && section('From buddies', fromBuddies, true)}
+        {!loading && section('Archived', archived, true)}
       </ScrollView>
       <View style={{ padding: spacing.lg }}>
         <PrimaryButton label="New plan" icon={generalIcons.plus} onPress={create} />
