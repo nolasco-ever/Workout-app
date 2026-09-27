@@ -8,6 +8,8 @@ interface Props {
   label: string;
   onPress: () => void;
   icon?: IconSource;
+  /** Which side of the label the icon sits on. Trailing suits "next" actions. */
+  iconPosition?: 'leading' | 'trailing';
   variant?: 'filled' | 'outline' | 'quiet';
   /** Destructive swaps the accent for the error color. */
   tone?: 'accent' | 'destructive';
@@ -16,7 +18,7 @@ interface Props {
 }
 
 /** Token-driven button for the new screens. The legacy Button stays for old ones. */
-export const PrimaryButton = ({ label, onPress, icon, variant = 'filled', tone = 'accent', disabled = false, busy = false }: Props) => {
+export const PrimaryButton = ({ label, onPress, icon, iconPosition = 'leading', variant = 'filled', tone = 'accent', disabled = false, busy = false }: Props) => {
   const { colors, radius, spacing } = useTheme();
   const filled = variant === 'filled';
   const accent = tone === 'destructive' ? colors.error : colors.accent;
@@ -43,7 +45,7 @@ export const PrimaryButton = ({ label, onPress, icon, variant = 'filled', tone =
       {busy ? (
         <ActivityIndicator color={fg} />
       ) : (
-        <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.sm }}>
+        <View style={{ flexDirection: iconPosition === 'trailing' ? 'row-reverse' : 'row', alignItems: 'center', gap: spacing.sm }}>
           {icon && <Icon icon={icon} color={fg} size={18} strokeWidth={2.5} />}
           <CustomText variant="label" color={fg}>
             {label}

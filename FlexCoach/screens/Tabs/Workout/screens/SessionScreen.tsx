@@ -228,7 +228,7 @@ export const SessionScreen = () => {
               {isLast ? (
                 <PrimaryButton label="Finish workout" icon={generalIcons.check} busy={finishing} onPress={finish} />
               ) : (
-                <PrimaryButton label="Next exercise" icon={directionIcons.angleRight} onPress={() => { setRestStartedAt(null); setIndex(i => i + 1); }} />
+                <PrimaryButton label="Next exercise" icon={directionIcons.angleRight} iconPosition="trailing" onPress={() => { setRestStartedAt(null); setIndex(i => i + 1); }} />
               )}
             </View>
           </View>
