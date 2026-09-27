@@ -5,8 +5,9 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { RouteProp, useNavigation, useRoute } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useAuth } from '../../../../data/auth/AuthProvider';
-import { LoggedSet, Session, SessionExercise } from '../../../../data/models';
+import { LoggedSet, Session, SessionExercise, SetTarget } from '../../../../data/models';
 import { sessionRepository } from '../../../../data/repositories/sessionRepository';
+import { targetRepsLabel, targetWeightRange } from '../../../../data/engine/progression';
 import { countWorkingSets, totalVolumeKg } from '../../../../data/engine/stats';
 import { formatDistance, formatDuration, formatWeight, toDisplayDistance, toDisplayWeight } from '../../../../data/engine/units';
 import { fromLocalDate } from '../../../../data/engine/dates';
@@ -51,13 +52,19 @@ const setValues = (ex: SessionExercise, s: LoggedSet, u: Units): [string, string
   }
 };
 
+const weightLabel = (t: SetTarget, unit: 'kg' | 'lb'): string => {
+  const range = targetWeightRange(t);
+  if (!range) return formatWeight(null, unit);
+  return range.min === range.max ? formatWeight(range.max, unit) : `${formatWeight(range.min, unit).replace(` ${unit}`, '')}–${formatWeight(range.max, unit)}`;
+};
+
 const describeTarget = (ex: SessionExercise, u: Units): string => {
   const t = ex.target;
   switch (ex.measurement) {
     case 'weight_reps':
-      return `${t.sets} × ${t.reps ?? '—'} @ ${formatWeight(t.weightKg, u.weight)}`;
+      return `${t.sets} × ${targetRepsLabel(t)} @ ${weightLabel(t, u.weight)}`;
     case 'reps':
-      return `${t.sets} × ${t.reps ?? '—'}${t.weightKg ? ` +${formatWeight(t.weightKg, u.weight)}` : ''}`;
+      return `${t.sets} × ${targetRepsLabel(t)}${targetWeightRange(t)?.max ? ` +${weightLabel(t, u.weight)}` : ''}`;
     case 'time':
       return `${t.sets} × ${formatDuration(t.durationSec)}`;
     case 'distance_time':

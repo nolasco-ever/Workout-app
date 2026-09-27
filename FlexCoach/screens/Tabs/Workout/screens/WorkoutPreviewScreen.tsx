@@ -6,7 +6,7 @@ import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useAuth } from '../../../../data/auth/AuthProvider';
 import { SetTarget, WorkoutExercise, wantsWarmup } from '../../../../data/models';
 import { findWorkout } from '../../../../data/engine/schedule';
-import { suggestTarget, warmupRamp } from '../../../../data/engine/progression';
+import { goalFor, targetRepsLabel, targetWeightRange, targetsForCycle, warmupRamp } from '../../../../data/engine/progression';
 import { formatDistance, formatDuration, formatWeight } from '../../../../data/engine/units';
 import { getCatalogExercise } from '../../../../data/catalog/exerciseCatalog';
 import { today } from '../../../../data/engine/dates';
@@ -22,14 +22,22 @@ import { useTabScrollInset } from '../../../../navigation/useTabBarInset';
 import { SurfaceCard as Card } from '../../../../components/cards/SurfaceCard';
 import { PrimaryButton } from '../../../../components/buttons/PrimaryButton';
 
+/** "3 × 8–12 @ 25–35 lb" when the sets differ, "3 × 12 @ 55 lb" when they don't. */
+const weightLabel = (t: SetTarget, unit: 'kg' | 'lb'): string => {
+  const range = targetWeightRange(t);
+  if (!range) return formatWeight(null, unit);
+  return range.min === range.max ? formatWeight(range.max, unit) : `${formatWeight(range.min, unit).replace(` ${unit}`, '')}–${formatWeight(range.max, unit)}`;
+};
+
 const describeTarget = (entry: WorkoutExercise, t: SetTarget, unit: 'kg' | 'lb', dist: 'km' | 'mi'): string => {
   switch (entry.measurement) {
     case 'weight_reps': {
-      const warmups = wantsWarmup(entry) && t.weightKg ? warmupRamp(t.weightKg).length : 0;
-      return `${t.sets} × ${t.reps ?? '—'} @ ${formatWeight(t.weightKg, unit)}${warmups ? ` · ${warmups} warm-up${warmups === 1 ? '' : 's'}` : ''}`;
+      const first = goalFor(t, 0).weightKg;
+      const warmups = wantsWarmup(entry) && first ? warmupRamp(first).length : 0;
+      return `${t.sets} × ${targetRepsLabel(t)} @ ${weightLabel(t, unit)}${warmups ? ` · ${warmups} warm-up${warmups === 1 ? '' : 's'}` : ''}`;
     }
     case 'reps':
-      return `${t.sets} × ${t.reps ?? '—'}${t.weightKg ? ` +${formatWeight(t.weightKg, unit)}` : ''}`;
+      return `${t.sets} × ${targetRepsLabel(t)}${targetWeightRange(t)?.max ? ` +${weightLabel(t, unit)}` : ''}`;
     case 'time':
       return `${t.sets} × ${formatDuration(t.durationSec)}`;
     case 'distance_time':
@@ -55,17 +63,13 @@ export const WorkoutPreviewScreen = () => {
     sessionRepository.listCompleted(uid).then(history => {
       if (cancelled) return;
       const next: Record<string, SetTarget> = {};
-      for (const entry of workout.exercises) {
-        let last = null;
-        for (let i = history.length - 1; i >= 0 && !last; i--) last = history[i].exercises.find(ex => ex.exerciseId === entry.exerciseId) ?? null;
-        next[entry.id] = suggestTarget(entry, last, unit);
-      }
+      for (const [id, p] of targetsForCycle(plan, cycle, history, unit)) next[id] = p.target;
       setTargets(next);
     });
     return () => {
       cancelled = true;
     };
-  }, [uid, workout, unit]);
+  }, [uid, workout, unit, plan, cycle]);
 
   if (!workout) return null;
   const dist = profile?.distanceUnit ?? 'mi';
@@ -79,7 +83,7 @@ export const WorkoutPreviewScreen = () => {
     <SafeAreaView edges={['left', 'right']} style={{ flex: 1, backgroundColor: colors.ground }}>
       <ScrollView contentContainerStyle={{ padding: spacing.lg, gap: spacing.md, paddingBottom: canStart ? spacing.lg : spacing.xl + bottomInset }}>
         <CustomText variant="caption" color={colors.inkMuted}>
-          Suggested targets come from your last session of each exercise. You can change them as you go.
+          Targets hold for the whole cycle and move at the cycle review. You can change them as you go.
         </CustomText>
         <Card style={{ padding: 0 }}>
           {[...workout.exercises]

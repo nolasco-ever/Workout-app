@@ -25,7 +25,7 @@ import {
   pushOccurrence,
   skipOccurrence,
 } from '../engine/schedule';
-import { buildPlannedSets, buildWarmupSets, suggestTarget } from '../engine/progression';
+import { buildPlannedSets, buildWarmupSets, ExerciseProgression, progressExercise, progressPlan, targetsForCycle } from '../engine/progression';
 import { renumberSets } from '../engine/sets';
 import { countWorkingSets, findPersonalRecords, summarizeCycle, totalVolumeKg } from '../engine/stats';
 import { cycleRepository } from '../repositories/cycleRepository';
@@ -77,14 +77,6 @@ export const pushWorkoutTo = async (uid: Id, plan: Plan, cycle: Cycle, occurrenc
   return updated;
 };
 
-const latestExerciseLog = (history: Session[], exerciseId: Id): SessionExercise | null => {
-  for (let i = history.length - 1; i >= 0; i--) {
-    const found = history[i].exercises.find(ex => ex.exerciseId === exerciseId);
-    if (found) return found;
-  }
-  return null;
-};
-
 /**
  * Start a session for an occurrence. `unit` only affects how suggested and
  * warm-up weights are rounded; everything is stored in kilograms.
@@ -92,7 +84,9 @@ const latestExerciseLog = (history: Session[], exerciseId: Id): SessionExercise 
 export const startSession = async (uid: Id, plan: Plan, cycle: Cycle, occurrence: Occurrence, unit: WeightUnit = 'lb'): Promise<{ session: Session; cycle: Cycle }> => {
   const workout = findWorkout(plan, occurrence.workoutId);
   if (!workout) throw new Error('Occurrence has no workout');
+  // Targets are fixed for the cycle: what the previous cycle earned.
   const history = await sessionRepository.listCompleted(uid);
+  const targets = targetsForCycle(plan, cycle, history, unit);
   const now = Date.now();
   const session: Session = {
     id: newId(),
@@ -109,7 +103,7 @@ export const startSession = async (uid: Id, plan: Plan, cycle: Cycle, occurrence
     exercises: [...workout.exercises]
       .sort((a, b) => a.order - b.order)
       .map((entry, i) => {
-        const target = suggestTarget(entry, latestExerciseLog(history, entry.exerciseId), unit);
+        const target = targets.get(entry.id)?.target ?? progressExercise(entry, [], null, unit).target;
         const warmups = wantsWarmup(entry) ? buildWarmupSets(target, unit, newId) : [];
         return {
           id: newId(),
@@ -228,9 +222,11 @@ export interface CycleReview {
   volumeKg: number;
   durationSec: number;
   setsCompleted: number;
+  /** What each exercise's target becomes next cycle, judged from this one. */
+  nextTargets: ExerciseProgression[];
 }
 
-export const getCycleReview = async (uid: Id, cycle: Cycle): Promise<CycleReview> => {
+export const getCycleReview = async (uid: Id, plan: Plan, cycle: Cycle, unit: WeightUnit = 'lb'): Promise<CycleReview> => {
   const all = await sessionRepository.listCompleted(uid);
   const inCycle = all.filter(s => s.cycleId === cycle.id);
   const before = all.filter(s => s.cycleId !== cycle.id && s.date < cycle.startDate);
@@ -240,6 +236,7 @@ export const getCycleReview = async (uid: Id, cycle: Cycle): Promise<CycleReview
     volumeKg: totalVolumeKg(inCycle),
     durationSec: inCycle.reduce((n, s) => n + Math.max(0, Math.round(((s.finishedAt ?? s.startedAt) - s.startedAt) / 1000)), 0),
     setsCompleted: countWorkingSets(inCycle),
+    nextTargets: progressPlan(plan, all, cycle.id, unit),
   };
 };
 

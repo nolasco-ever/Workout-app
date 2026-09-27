@@ -7,6 +7,7 @@ import { Cycle, Plan } from '../../../../data/models';
 import { formatDistance, formatDuration, formatWeight, toDisplayWeight } from '../../../../data/engine/units';
 import { CycleReview, getCycleReview, loadCycleForReview, startNextCycle } from '../../../../data/services/workoutService';
 import { countWorkingSets } from '../../../../data/engine/stats';
+import { describeProgression } from '../../../../data/engine/progressionCopy';
 import { notificationRepository } from '../../../../data/repositories/notificationRepository';
 import { CustomText } from '../../../../components/text/customText';
 import { Icon } from '../../../../components/icons/Icon';
@@ -59,9 +60,11 @@ export const CycleReviewScreen = () => {
 
   useEffect(() => {
     if (!uid || !loaded) return;
-    getCycleReview(uid, loaded.cycle).then(setReview).catch(err => console.warn(err));
+    getCycleReview(uid, loaded.plan, loaded.cycle, profile?.weightUnit ?? 'lb').then(setReview).catch(err => console.warn(err));
     // Opening the review is what the feed item was for.
     notificationRepository.markRead(uid, `cycle_finished:${loaded.cycle.id}`).catch(() => undefined);
+    // The unit only changes the labels; no need to refetch for it.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [uid, loaded]);
 
   if (missing) {
@@ -133,6 +136,33 @@ export const CycleReviewScreen = () => {
             </View>
           ))}
         </Card>
+        {review.nextTargets.length > 0 && (
+          <View style={{ gap: spacing.sm }}>
+            <CustomText variant="overline" color={colors.inkMuted}>Next cycle's targets</CustomText>
+            <CustomText variant="caption" color={colors.inkMuted}>
+              Targets hold for a whole cycle. Each one moves only on what every session of the cycle showed.
+            </CustomText>
+            <Card style={{ padding: 0 }}>
+              {review.nextTargets.map((p, i) => {
+                const { headline, reason } = describeProgression(p, unit);
+                const tone = p.change === 'increase' ? colors.success : p.change === 'climb' ? colors.accent : p.change === 'drop' ? colors.warning : colors.inkMuted;
+                const icon = p.change === 'increase' || p.change === 'climb' ? directionIcons.angleUp : p.change === 'drop' ? directionIcons.angleDown : generalIcons.minus;
+                return (
+                  <View key={p.workoutExerciseId} style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.md, padding: spacing.lg, borderTopWidth: i ? 1 : 0, borderTopColor: colors.line }}>
+                    <View style={{ width: 32, height: 32, borderRadius: 16, backgroundColor: colors.surfaceRaised, alignItems: 'center', justifyContent: 'center' }}>
+                      <Icon icon={icon} size={18} color={tone} strokeWidth={2.5} />
+                    </View>
+                    <View style={{ flex: 1 }}>
+                      <CustomText variant="bodyStrong">{p.exerciseName}</CustomText>
+                      <CustomText variant="label" color={tone}>{headline}</CustomText>
+                      <CustomText variant="caption" color={colors.inkMuted}>{reason}</CustomText>
+                    </View>
+                  </View>
+                );
+              })}
+            </Card>
+          </View>
+        )}
         {sessions.length > 0 && (
           <View style={{ gap: spacing.sm }}>
             <CustomText variant="overline" color={colors.inkMuted}>Workouts</CustomText>

@@ -8,10 +8,22 @@ import { MeasurementType } from './exercise';
  */
 export interface SetTarget {
   sets: number;
+  /** Headline reps and weight: the first working set's, when sets differ. */
   reps: number | null;
   weightKg: number | null;
   durationSec: number | null;
   distanceM: number | null;
+  /**
+   * Per working set, when a lifter ramps (25, 30, 35) or only some sets
+   * progressed. Missing on targets set before per-set progression, and for
+   * timed and cardio exercises; the headline applies to every set then.
+   */
+  perSet?: SetGoal[];
+}
+
+export interface SetGoal {
+  weightKg: number | null;
+  reps: number | null;
 }
 
 /** One logged set. Which fields are used depends on the exercise measurement. */
