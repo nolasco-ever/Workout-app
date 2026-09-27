@@ -90,7 +90,9 @@ export const SessionScreen = () => {
     const merged = fromDraft(exercise, set, drafts[set.id], units);
     const done = !set.completed;
     persist(exercise, { ...merged, completed: done, completedAt: done ? Date.now() : null });
-    setRestStartedAt(done ? Date.now() : null);
+    // No rest after the workout's final set: there is nothing left to rest for.
+    const workoutDone = done && index === session.exercises.length - 1 && exercise.sets.every(s => s.id === set.id || s.completed);
+    setRestStartedAt(done && !workoutDone ? Date.now() : null);
   };
 
   const addSet = () => {
