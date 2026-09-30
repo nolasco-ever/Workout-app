@@ -1,11 +1,12 @@
 import React from 'react';
-import { TextInput, TouchableOpacity, View } from 'react-native';
+import { TouchableOpacity, View } from 'react-native';
 import { LoggedSet, MeasurementType } from '../../../../data/models';
 import { CustomText } from '../../../../components/text/customText';
 import { Icon } from '../../../../components/icons/Icon';
 import { generalIcons } from '../../../../components/icons/icon-library';
 import { useTheme } from '../../../../theme';
 import { DurationInput } from '../../../../components/inputs/DurationInput';
+import { SelectAllTextInput } from '../../../../components/inputs/SelectAllTextInput';
 
 /** Row label: the set number, or W1, W2 for warm-ups. */
 export const setLabel = (set: Pick<LoggedSet, 'setNumber' | 'warmup'>): string => (set.warmup ? `W${set.setNumber}` : String(set.setNumber));
@@ -71,7 +72,7 @@ export const SetRow = ({ set, measurement, draft, unitLabels, onChange, onToggle
       </View>
       {showA && (
         <View style={{ flex: 1 }}>
-          <TextInput
+          <SelectAllTextInput
             id={`set-${set.id}-a`}
             value={draft.a}
             onChangeText={a => onChange({ ...draft, a })}
@@ -80,7 +81,6 @@ export const SetRow = ({ set, measurement, draft, unitLabels, onChange, onToggle
             placeholder={measurement === 'reps' ? '+0' : '—'}
             placeholderTextColor={colors.inactive}
             style={inputStyle}
-            selectTextOnFocus
           />
           <CustomText variant="caption" color={colors.inkMuted} centered>
             {unitLabels.a}
@@ -93,7 +93,7 @@ export const SetRow = ({ set, measurement, draft, unitLabels, onChange, onToggle
         </View>
       ) : (
         <View style={{ flex: 1 }}>
-          <TextInput
+          <SelectAllTextInput
             id={`set-${set.id}-b`}
             value={draft.b}
             onChangeText={b => onChange({ ...draft, b })}
@@ -102,7 +102,6 @@ export const SetRow = ({ set, measurement, draft, unitLabels, onChange, onToggle
             placeholder="—"
             placeholderTextColor={colors.inactive}
             style={inputStyle}
-            selectTextOnFocus
           />
           <CustomText variant="caption" color={colors.inkMuted} centered>
             {unitLabels.b}

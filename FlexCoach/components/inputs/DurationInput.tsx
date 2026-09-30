@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { StyleProp, TextInput, TextStyle, View } from 'react-native';
+import { StyleProp, TextStyle, View } from 'react-native';
+import { SelectAllTextInput } from './SelectAllTextInput';
 import { CustomText } from '../text/customText';
 import { useTheme } from '../../theme';
 
@@ -57,7 +58,7 @@ export const DurationInput = ({ seconds, onChange, editable = true, inputStyle, 
 
   const box = (key: 'min' | 'sec', caption: string, first: boolean) => (
     <View style={{ flex: 1 }}>
-      <TextInput
+      <SelectAllTextInput
         id={id ? `${id}-${key}` : undefined}
         value={parts[key]}
         onChangeText={t => set({ ...parts, [key]: digits(t).slice(0, key === 'sec' ? 2 : 3) })}
@@ -66,7 +67,6 @@ export const DurationInput = ({ seconds, onChange, editable = true, inputStyle, 
         placeholder={key === 'sec' ? '00' : '0'}
         placeholderTextColor={colors.inactive}
         style={inputStyle}
-        selectTextOnFocus
         autoFocus={first && autoFocus}
         accessibilityLabel={caption === 'min' ? 'Minutes' : 'Seconds'}
       />
