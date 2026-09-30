@@ -131,9 +131,13 @@ export const removeBuddy = async (uid: Id, profile: UserProfile | null, otherUid
 export const shareMessage = (code: string, displayName: string | null): string =>
   `${displayName ? `${displayName.split(' ')[0]} wants` : 'Someone wants'} to be your buddy on FlexCoach. Tap to see their Iron Card and add them: ${inviteUrl(code)}`;
 
-/** Write a line to my own activity list. */
-export const recordActivity = async (uid: Id, kind: ActivityKind, title: string, detail: string | null = null, at: number = Date.now()): Promise<void> => {
-  const item: Activity = { id: newId(), ownerId: uid, kind, title, detail, at, createdAt: at, updatedAt: at };
+/**
+ * Write a line to my own activity list. The id names the event, so writing
+ * the same event twice (a double tap on Finish, a retried save) overwrites
+ * one line instead of adding a second.
+ */
+export const recordActivity = async (uid: Id, id: string, kind: ActivityKind, title: string, detail: string | null = null, at: number = Date.now()): Promise<void> => {
+  const item: Activity = { id, ownerId: uid, kind, title, detail, at, createdAt: at, updatedAt: at };
   await buddyRepository.addActivity(uid, item);
 };
 
@@ -156,35 +160,35 @@ export const afterSessionFinished = async (uid: Id, profile: UserProfile | null,
   const card = await refreshPublicProfile(uid, profile, sessions);
   const sets = countWorkingSets([session]);
   const volume = totalVolumeKg([session]);
-  await recordActivity(uid, 'workout_done', `Finished ${session.workoutName}`, `${sets} set${sets === 1 ? '' : 's'}${volume > 0 ? ` · ${formatWeight(volume, unit).replace(/\.0+ /, ' ')} moved` : ''}`, session.finishedAt ?? Date.now());
+  await recordActivity(uid, `workout_done:${session.id}`, 'workout_done', `Finished ${session.workoutName}`, `${sets} set${sets === 1 ? '' : 's'}${volume > 0 ? ` · ${formatWeight(volume, unit).replace(/\.0+ /, ' ')} moved` : ''}`, session.finishedAt ?? Date.now());
   for (const pr of records) {
     const value = pr.kind === 'weight' ? formatWeight(pr.value, unit) : pr.kind === 'reps' ? `${pr.value} reps` : `${pr.value}`;
-    await recordActivity(uid, 'record', `New record: ${pr.exerciseName}`, value);
+    await recordActivity(uid, `record:${session.id}:${pr.exerciseId}:${pr.kind}`, 'record', `New record: ${pr.exerciseName}`, value);
   }
   if (isStreakMilestone(card.currentStreakDays)) {
     const name = firstName(profile?.displayName);
-    await recordActivity(uid, 'streak', `${card.currentStreakDays}-day streak`, 'Every day counts.');
+    await recordActivity(uid, `streak:${card.currentStreakDays}:${session.date}`, 'streak', `${card.currentStreakDays}-day streak`, 'Every day counts.');
     await notifyBuddies(uid, `${card.currentStreakDays}:${session.date}`, 'buddy_streak', `${name} is on a ${card.currentStreakDays}-day streak`, 'Send some encouragement, or go match it.', profile?.displayName ?? null);
   }
 };
 
 export const afterWorkoutSkipped = async (uid: Id, profile: UserProfile | null, occurrence: Occurrence): Promise<void> => {
-  await recordActivity(uid, 'workout_skipped', `Skipped ${occurrence.workoutName ?? 'a workout'}`, 'It happens. Next one counts double.');
+  await recordActivity(uid, `workout_skipped:${occurrence.id}`, 'workout_skipped', `Skipped ${occurrence.workoutName ?? 'a workout'}`, 'It happens. Next one counts double.');
   refreshPublicProfile(uid, profile).catch(() => undefined);
 };
 
 export const afterWorkoutPushed = async (uid: Id, occurrence: Occurrence, toDate: string): Promise<void> => {
-  await recordActivity(uid, 'workout_pushed', `Moved ${occurrence.workoutName ?? 'a workout'}`, toDate === today() ? 'Doing it today instead.' : `Now on ${toDate}.`);
+  await recordActivity(uid, `workout_pushed:${occurrence.id}:${toDate}`, 'workout_pushed', `Moved ${occurrence.workoutName ?? 'a workout'}`, toDate === today() ? 'Doing it today instead.' : `Now on ${toDate}.`);
 };
 
-export const afterCycleFinished = async (uid: Id, cycleNumber: number, completionRate: number): Promise<void> => {
-  await recordActivity(uid, 'cycle_done', `Finished cycle ${cycleNumber}`, `${Math.round(completionRate * 100)}% of workouts done`);
+export const afterCycleFinished = async (uid: Id, cycleId: Id, cycleNumber: number, completionRate: number): Promise<void> => {
+  await recordActivity(uid, `cycle_done:${cycleId}`, 'cycle_done', `Finished cycle ${cycleNumber}`, `${Math.round(completionRate * 100)}% of workouts done`);
 };
 
 /** Flip a plan's buddy visibility; sharing it is worth a line in the feed. */
 export const setPlanVisibleToBuddies = async (uid: Id, profile: UserProfile | null, plan: Plan, visible: boolean): Promise<void> => {
   await planRepository.setVisibleToBuddies(uid, plan.id, visible);
-  if (visible && !plan.visibleToBuddies) await recordActivity(uid, 'plan_shared', `Shared a plan: ${plan.name}`, `${plan.workouts.length} workout${plan.workouts.length === 1 ? '' : 's'}`);
+  if (visible && !plan.visibleToBuddies) await recordActivity(uid, `plan_shared:${plan.id}`, 'plan_shared', `Shared a plan: ${plan.name}`, `${plan.workouts.length} workout${plan.workouts.length === 1 ? '' : 's'}`);
   refreshPublicProfile(uid, profile).catch(() => undefined);
 };
 

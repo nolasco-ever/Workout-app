@@ -327,7 +327,7 @@ export const repairCycleNumbers = async (uid: Id): Promise<void> => {
 export const startNextCycle = async (uid: Id, plan: Plan, cycle: Cycle): Promise<Cycle> => {
   const { cycle: closed, nextStart } = closeCycle(cycle);
   await cycleRepository.save(uid, closed);
-  afterCycleFinished(uid, closed.number, summarizeCycle(closed, [], []).completionRate).catch(err => console.warn('buddy activity failed', err));
+  afterCycleFinished(uid, closed.id, closed.number, summarizeCycle(closed, [], []).completionRate).catch(err => console.warn('buddy activity failed', err));
   const next = generateCycle(plan, uid, nextCycleNumberAfter(closed), laterOf(nextStart, today()));
   await cycleRepository.save(uid, next);
   await userRepository.update(uid, { activeCycleId: next.id });

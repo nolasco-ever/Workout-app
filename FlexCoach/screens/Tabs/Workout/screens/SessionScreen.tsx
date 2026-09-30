@@ -168,18 +168,23 @@ export const SessionScreen = () => {
     if (uid) saveSets(uid, next, exercise.id).catch(err => console.warn('removeSet failed', err));
   };
 
+  // A ref as well as state: two taps in the same frame would both see
+  // `finishing` false and finish the session twice.
+  const finishingRef = useRef(false);
   const finish = async () => {
-    if (!uid) return;
+    if (!uid || finishingRef.current) return;
     if (completedSets === 0) {
       Alert.alert('Nothing logged yet', 'Mark at least one set done before finishing.');
       return;
     }
+    finishingRef.current = true;
     setFinishing(true);
     try {
       const result = await finishSession(uid, profile, session, cycle);
       navigation.replace('SessionCompleteScreen', { result });
     } catch (err) {
       console.warn(err);
+      finishingRef.current = false;
       setFinishing(false);
     }
   };
