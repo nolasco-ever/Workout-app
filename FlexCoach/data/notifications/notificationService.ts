@@ -116,17 +116,27 @@ const toNotification = (n: PlannedNotification): Notification => ({
   },
 });
 
-const triggerFor = (n: PlannedNotification): TimestampTrigger => ({
+const triggerFor = (n: PlannedNotification, exact: boolean): TimestampTrigger => ({
   type: TriggerType.TIMESTAMP,
   timestamp: n.fireAt,
   // Exact alarms need a user-granted permission on Android 14+; reminders at
   // 9:00 can drift a few minutes, the rest timer cannot.
-  alarmManager: { type: n.kind === 'rest_over' ? AlarmType.SET_EXACT_AND_ALLOW_WHILE_IDLE : AlarmType.SET_AND_ALLOW_WHILE_IDLE },
+  alarmManager: { type: exact ? AlarmType.SET_EXACT_AND_ALLOW_WHILE_IDLE : AlarmType.SET_AND_ALLOW_WHILE_IDLE },
 });
 
 const schedule = async (n: PlannedNotification): Promise<void> => {
   await ensureChannels();
-  await notifee.createTriggerNotification(toNotification(n), triggerFor(n));
+  // Android 14+ installs start without the exact-alarm permission, and an
+  // exact trigger without it never fires. Fall back to an inexact one,
+  // which may land a little late, rather than not at all.
+  const exact = n.kind === 'rest_over' && (await exactAlarmsAllowed());
+  try {
+    await notifee.createTriggerNotification(toNotification(n), triggerFor(n, exact));
+  } catch (err) {
+    if (!exact) throw err;
+    console.warn('exact alarm refused, scheduling inexact', err);
+    await notifee.createTriggerNotification(toNotification(n), triggerFor(n, false));
+  }
 };
 
 /**
