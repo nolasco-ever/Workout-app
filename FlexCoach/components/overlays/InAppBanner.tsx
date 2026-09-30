@@ -11,7 +11,8 @@ import { generalIcons } from '../icons/icon-library';
 import { useTheme } from '../../theme';
 
 const HIDDEN_Y = -160;
-const SPRING = { damping: 18, stiffness: 240 };
+/** Settles without overshoot: a banner that bounces reads as playful, and these carry timers and reminders. */
+const SPRING = { damping: 30, stiffness: 300, overshootClamping: true };
 
 /**
  * Hosts in-app banners: slides in under the status bar, stays a few
