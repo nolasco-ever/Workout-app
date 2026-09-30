@@ -70,6 +70,35 @@ export const generateCycle = (
   };
 };
 
+/** A cycle counts towards the numbering once a workout was actually done in it. */
+export const cycleCounts = (cycle: Cycle): boolean => cycle.occurrences.some(o => o.status === 'completed');
+
+/**
+ * Cycle numbers count cycles the user trained in, not cycles that were
+ * generated. A plan edit that restarts the cycle keeps the number; only a
+ * cycle with at least one finished workout moves it on. `previous` is every
+ * cycle of the plan so far, in any order.
+ */
+export const nextCycleNumber = (previous: Cycle[]): number => 1 + previous.filter(cycleCounts).length;
+
+/** The number the cycle after `cycle` gets: one more if anything was done in it, else the same again. */
+export const nextCycleNumberAfter = (cycle: Cycle): number => cycle.number + (cycleCounts(cycle) ? 1 : 0);
+
+/**
+ * The same rule applied to a plan's stored cycles, oldest first. Returns
+ * only the cycles whose number changes, for cycles written before the rule.
+ */
+export const renumberCycles = (cycles: Cycle[]): Cycle[] => {
+  const ordered = [...cycles].sort((a, b) => a.createdAt - b.createdAt || (a.startDate < b.startDate ? -1 : a.startDate > b.startDate ? 1 : 0));
+  const changed: Cycle[] = [];
+  let n = 1;
+  for (const c of ordered) {
+    if (c.number !== n) changed.push({ ...c, number: n });
+    if (cycleCounts(c)) n++;
+  }
+  return changed;
+};
+
 const sortByDate = (occurrences: Occurrence[]): Occurrence[] =>
   [...occurrences].sort((a, b) => (a.date < b.date ? -1 : a.date > b.date ? 1 : 0));
 

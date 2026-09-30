@@ -25,7 +25,9 @@ import {
   generateCycle,
   markOccurrence,
   moveOccurrenceToDate,
+  nextCycleNumberAfter,
   pushOccurrence,
+  renumberCycles,
   skipOccurrence,
 } from '../engine/schedule';
 import { buildPlannedSets, buildWarmupSets, ExerciseProgression, progressExercise, progressPlan, roundWarmupKg, targetsForCycle } from '../engine/progression';
@@ -309,11 +311,24 @@ export const loadCycleForReview = async (uid: Id, cycleId: Id): Promise<{ plan: 
 };
 
 /** Close the finished cycle and generate the next one, starting no earlier than today. */
+/**
+ * Cycle numbers used to go up on every restart; bring stored cycles in line
+ * with the rule in `renumberCycles`. Cheap when nothing changes.
+ */
+export const repairCycleNumbers = async (uid: Id): Promise<void> => {
+  const all = await cycleRepository.listAll(uid);
+  const byPlan = new Map<Id, Cycle[]>();
+  for (const c of all) byPlan.set(c.planId, [...(byPlan.get(c.planId) ?? []), c]);
+  for (const cycles of byPlan.values()) {
+    for (const fixed of renumberCycles(cycles)) await cycleRepository.save(uid, fixed);
+  }
+};
+
 export const startNextCycle = async (uid: Id, plan: Plan, cycle: Cycle): Promise<Cycle> => {
   const { cycle: closed, nextStart } = closeCycle(cycle);
   await cycleRepository.save(uid, closed);
   afterCycleFinished(uid, closed.number, summarizeCycle(closed, [], []).completionRate).catch(err => console.warn('buddy activity failed', err));
-  const next = generateCycle(plan, uid, cycle.number + 1, laterOf(nextStart, today()));
+  const next = generateCycle(plan, uid, nextCycleNumberAfter(closed), laterOf(nextStart, today()));
   await cycleRepository.save(uid, next);
   await userRepository.update(uid, { activeCycleId: next.id });
   return next;

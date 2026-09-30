@@ -1,4 +1,4 @@
-import { closeCycle, generateCycle, getOverdueOccurrences, moveOccurrenceToDate, pushOccurrence, skipOccurrence, markOccurrence } from '../../data/engine/schedule';
+import { closeCycle, generateCycle, getOverdueOccurrences, moveOccurrenceToDate, nextCycleNumber, nextCycleNumberAfter, pushOccurrence, renumberCycles, skipOccurrence, markOccurrence } from '../../data/engine/schedule';
 import { summarizeCycle } from '../../data/engine/stats';
 import { rotationPlan, weeklyPlan } from './support/fixtures';
 
@@ -153,5 +153,33 @@ describe('moveOccurrenceToDate', () => {
     const cycle = generateCycle(plan, 'user-1', 1, '2026-09-21');
     const done = markOccurrence(cycle, cycle.occurrences[1].id, 'completed', 's1');
     expect(() => moveOccurrenceToDate(done, cycle.occurrences[1].id, '2026-09-21')).toThrow(/Only scheduled/);
+  });
+});
+
+describe('cycle numbering', () => {
+  const plan = rotationPlan();
+  const trained = (number: number, createdAt: number) => {
+    const c = generateCycle(plan, 'user-1', number, '2026-09-21', createdAt);
+    return closeCycle(markOccurrence(c, c.occurrences[0].id, 'completed', 's1')).cycle;
+  };
+  const untouched = (number: number, createdAt: number) => closeCycle(generateCycle(plan, 'user-1', number, '2026-09-21', createdAt)).cycle;
+
+  it('starts at 1 and only counts cycles with a finished workout', () => {
+    expect(nextCycleNumber([])).toBe(1);
+    expect(nextCycleNumber([untouched(1, 1)])).toBe(1);
+    expect(nextCycleNumber([untouched(1, 1), trained(1, 2)])).toBe(2);
+    expect(nextCycleNumber([trained(1, 1), untouched(2, 2), trained(2, 3)])).toBe(3);
+  });
+
+  it('keeps the number after a restart with nothing done, moves on after training', () => {
+    expect(nextCycleNumberAfter(untouched(3, 1))).toBe(3);
+    expect(nextCycleNumberAfter(trained(3, 1))).toBe(4);
+  });
+
+  it('renumbers stored cycles by creation order and reports only the changed ones', () => {
+    const cycles = [trained(5, 30), untouched(1, 10), trained(2, 20), untouched(3, 25)];
+    const fixed = renumberCycles(cycles);
+    expect(fixed.map(c => [c.createdAt, c.number])).toEqual([[20, 1], [25, 2], [30, 2]]);
+    expect(renumberCycles([untouched(1, 10), trained(1, 20), trained(2, 30)])).toEqual([]);
   });
 });

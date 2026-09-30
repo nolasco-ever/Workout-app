@@ -2,7 +2,7 @@ import { Cycle, DEFAULT_PROGRESSION, Exercise, GOAL_DEFAULTS, Id, LocalDate, Pla
 import { newId } from '../engine/ids';
 import { lbToKg } from '../engine/units';
 import { today } from '../engine/dates';
-import { closeCycle, generateCycle } from '../engine/schedule';
+import { closeCycle, generateCycle, nextCycleNumber, nextCycleNumberAfter } from '../engine/schedule';
 import { applySource, detachFromSource } from '../engine/planSync';
 import { planRepository } from '../repositories/planRepository';
 import { cycleRepository } from '../repositories/cycleRepository';
@@ -106,7 +106,7 @@ export const saveActivePlan = async (uid: Id, before: Plan, after: Plan, activeC
   if (!activeCycle || !cycleNeedsRestart(before, pruned)) return { restarted: false };
   const { cycle: closed } = closeCycle(activeCycle);
   await cycleRepository.save(uid, closed);
-  const next = generateCycle(pruned, uid, activeCycle.number + 1, today());
+  const next = generateCycle(pruned, uid, nextCycleNumberAfter(closed), today());
   await cycleRepository.save(uid, next);
   await userRepository.update(uid, { activeCycleId: next.id });
   return { restarted: true };
@@ -119,7 +119,7 @@ export const saveActivePlan = async (uid: Id, before: Plan, after: Plan, activeC
  */
 export const startFreshCycle = async (uid: Id, plan: Plan, startDate: LocalDate = today()): Promise<Cycle> => {
   const previous = await cycleRepository.listForPlan(uid, plan.id);
-  const number = previous.length ? Math.max(...previous.map(c => c.number)) + 1 : 1;
+  const number = nextCycleNumber(previous);
   for (const c of previous.filter(c => c.status === 'active')) {
     await cycleRepository.save(uid, closeCycle(c).cycle);
   }

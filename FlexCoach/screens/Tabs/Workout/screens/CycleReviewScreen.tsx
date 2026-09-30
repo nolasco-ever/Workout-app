@@ -7,6 +7,7 @@ import { Cycle, Plan } from '../../../../data/models';
 import { formatDistance, formatDuration, formatWeight, toDisplayWeight } from '../../../../data/engine/units';
 import { CycleReview, getCycleReview, loadCycleForReview, startNextCycle } from '../../../../data/services/workoutService';
 import { countWorkingSets } from '../../../../data/engine/stats';
+import { nextCycleNumberAfter } from '../../../../data/engine/schedule';
 import { describeProgression } from '../../../../data/engine/progressionCopy';
 import { notificationRepository } from '../../../../data/repositories/notificationRepository';
 import { CustomText } from '../../../../components/text/customText';
@@ -191,7 +192,7 @@ export const CycleReviewScreen = () => {
         )}
         {cycle.status === 'active' && (
           <PrimaryButton
-            label={`Start cycle ${cycle.number + 1}`}
+            label={`Start cycle ${nextCycleNumberAfter(cycle)}`}
             busy={busy}
             onPress={async () => {
               if (!uid) return;

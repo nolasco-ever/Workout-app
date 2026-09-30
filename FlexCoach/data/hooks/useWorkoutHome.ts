@@ -6,6 +6,7 @@ import { getOccurrenceForDate, getOverdueOccurrences, getUpcomingOccurrences, is
 import { planRepository } from '../repositories/planRepository';
 import { cycleRepository } from '../repositories/cycleRepository';
 import { sessionRepository } from '../repositories/sessionRepository';
+import { repairCycleNumbers } from '../services/workoutService';
 
 export interface WorkoutHomeState {
   loading: boolean;
@@ -66,6 +67,12 @@ export const useWorkoutHome = (): WorkoutHomeState => {
   useEffect(() => {
     if (!uid) return;
     return sessionRepository.watchInProgress(uid, setInProgress);
+  }, [uid]);
+
+  // Once per sign-in: cycles numbered before the current rule get fixed.
+  useEffect(() => {
+    if (!uid) return;
+    repairCycleNumbers(uid).catch(err => console.warn('cycle renumber failed', err));
   }, [uid]);
 
   const todayDate = today();

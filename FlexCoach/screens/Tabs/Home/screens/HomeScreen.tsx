@@ -138,7 +138,7 @@ export const HomeScreen = () => {
     : home.inProgressSession
       ? { tone: colors.accent, kicker: 'In progress', headline: home.inProgressSession.workoutName, detail: 'Pick up where you left off.', action: 'Resume' }
       : home.cycle && home.todayDate < home.cycle.startDate
-        ? { tone: colors.inkMuted, kicker: 'Plan starts', headline: dateLabel(home.cycle.startDate), detail: home.upcoming[0] ? `First up: ${home.upcoming[0].workoutName}` : 'The cycle begins then.', action: 'Open' }
+        ? { tone: colors.inkMuted, kicker: home.cycle.number > 1 ? `Cycle ${home.cycle.number} starts` : 'Plan starts', headline: dateLabel(home.cycle.startDate), detail: home.upcoming[0] ? `First up: ${home.upcoming[0].workoutName}` : 'The cycle begins then.', action: 'Open' }
       : ins.todaySession
         ? { tone: colors.success, kicker: 'Done today', headline: ins.todaySession.workoutName, detail: `${countWorkingSets([ins.todaySession])} sets · ${fmtVolume(totalVolumeKg([ins.todaySession]))} ${unit} moved`, action: 'See workout' }
         : todayOcc && todayWorkout && todayOcc.status === 'scheduled'
