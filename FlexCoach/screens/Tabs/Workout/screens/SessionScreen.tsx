@@ -190,12 +190,25 @@ export const SessionScreen = () => {
   // A ref as well as state: two taps in the same frame would both see
   // `finishing` false and finish the session twice.
   const finishingRef = useRef(false);
-  const finish = async () => {
+  const finish = () => {
     if (!uid || finishingRef.current) return;
     if (completedSets === 0) {
       Alert.alert('Nothing logged yet', 'Mark at least one set done before finishing.');
       return;
     }
+    // A stray tap on Finish would end the workout for good, so ask first.
+    const open = totalSets - completedSets;
+    Alert.alert(
+      open > 0 ? 'Finish early?' : 'Finish workout?',
+      open > 0 ? `${completedSets} of ${totalSets} sets logged. The other ${open === 1 ? 'one stays' : `${open} stay`} unlogged.` : `All ${totalSets} sets logged. Nice work.`,
+      [
+        { text: 'Keep going', style: 'cancel' },
+        { text: 'Finish', onPress: () => { doFinish().catch(err => console.warn(err)); } },
+      ],
+    );
+  };
+  const doFinish = async () => {
+    if (!uid || finishingRef.current) return;
     finishingRef.current = true;
     setFinishing(true);
     try {
