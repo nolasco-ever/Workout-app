@@ -197,7 +197,9 @@ export const SessionScreen = () => {
   useLayoutEffect(() => {
     navigation.setOptions({
       headerTitle: () => <SessionTitle name={session.workoutName} startedAt={session.startedAt} />,
-      headerRight: () => <RestRing startedAt={restStartedAt} durationSec={restFor} onDismiss={dismissRest} />,
+      // No header item at all between rests: iOS 26 draws a glass circle
+      // around whatever sits in the slot, even an empty view.
+      headerRight: restStartedAt === null ? undefined : () => <RestRing startedAt={restStartedAt} durationSec={restFor} onDismiss={dismissRest} />,
     });
     // dismissRest is a stable setter.
     // eslint-disable-next-line react-hooks/exhaustive-deps

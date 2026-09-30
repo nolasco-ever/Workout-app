@@ -31,13 +31,15 @@ export const SessionTitle = ({ name, startedAt }: { name: string; startedAt: num
   );
 };
 
-const RING = 40;
+/** Small enough to sit inside the 44pt glass circle iOS 26 draws around header items. */
+const RING = 36;
 const STROKE = 3.5;
 
 /**
  * The rest countdown as a ring in the header: the arc drains as the rest
- * runs and the seconds sit in the middle. Tap to skip. When time is up it
- * turns green with a check and goes away on its own, or on a tap.
+ * runs and the seconds sit in the middle. The drained part stays visible
+ * as a faint track so it reads as a full circle. Tap to skip. When time is
+ * up it turns green with a check and goes away on its own, or on a tap.
  */
 export const RestRing = ({ startedAt, durationSec, onDismiss }: { startedAt: number | null; durationSec: number; onDismiss: () => void }) => {
   const { colors } = useTheme();
@@ -62,7 +64,7 @@ export const RestRing = ({ startedAt, durationSec, onDismiss }: { startedAt: num
   return (
     <TouchableOpacity onPress={onDismiss} hitSlop={10} accessibilityRole="button" accessibilityLabel={done ? 'Rest over, dismiss' : `Rest, ${remaining} seconds left. Skip`} style={{ width: RING, height: RING, alignItems: 'center', justifyContent: 'center' }}>
       <Svg width={RING} height={RING} style={{ position: 'absolute' }}>
-        <Circle cx={RING / 2} cy={RING / 2} r={r} stroke={done ? colors.successTint : colors.surfaceRaised} strokeWidth={STROKE} fill="none" />
+        <Circle cx={RING / 2} cy={RING / 2} r={r} stroke={tone} strokeOpacity={done ? 0.35 : 0.22} strokeWidth={STROKE} fill="none" />
         <Circle
           cx={RING / 2}
           cy={RING / 2}
