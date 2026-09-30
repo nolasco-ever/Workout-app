@@ -38,7 +38,7 @@ export const workoutTodayCopy = (workout: string, date: LocalDate): Copy =>
       { title: `${workout} day! 🔥`, body: "Big one today. Can't wait to see what you put up" },
       { title: `Good morning! ${workout} is on today`, body: "Your plan's got your back. Just show up and enjoy it 💪" },
       { title: `Today's ${workout}`, body: 'No pressure, just progress. See you at the gym 😄' },
-      { title: `It's ${workout} day 🎉`, body: "One of the good days. Bag's ready when you are" },
+      { title: `It's ${workout} day 🎉`, body: "One of the good ones. Grab your bag whenever you're ready" },
       { title: `${workout} today!`, body: 'Future you is already hyped about this one 🙌' },
       { title: `${workout} on deck`, body: "Let's make today one to be proud of ✨" },
       { title: `Rise and shine, it's ${workout} day`, body: 'Nothing fancy needed. Show up, move some weight, feel great' },
