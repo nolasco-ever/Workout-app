@@ -36,8 +36,11 @@ export const ProfileScreen = () => {
   const [photoOpen, setPhotoOpen] = useState(false);
   const [photoOrigin, setPhotoOrigin] = useState<PhotoOrigin | null>(null);
   const [avatarOpen, setAvatarOpen] = useState(false);
-  /** The photo sheet draws its own copy of the edit badge; ours hides while it's up so the two never overlap. */
-  const [badgeHidden, setBadgeHidden] = useState(false);
+  /**
+   * The photo sheet draws its own copy of the avatar and the edit badge; ours
+   * hide while it's up so nothing shows through when the big photo is dragged.
+   */
+  const [avatarHidden, setAvatarHidden] = useState(false);
   const avatarRef = useRef<React.ComponentRef<typeof View>>(null);
   /** Measure the avatar first so the big photo can grow out of it. */
   const openPhoto = () => {
@@ -63,10 +66,10 @@ export const ProfileScreen = () => {
       <ScrollView contentContainerStyle={{ padding: spacing.lg, gap: spacing.lg, paddingBottom: spacing.xxl + bottomInset }}>
         <TabHeader title="Profile" action={{ icon: generalIcons.users, accessibilityLabel: 'Buddies and my Iron Card', onPress: () => navigation.navigate('CardStack') }} />
         <View style={{ alignItems: 'center', gap: spacing.sm }}>
-          <TouchableOpacity ref={avatarRef} onPress={openPhoto} disabled={photo.busy} accessibilityRole="button" accessibilityLabel="View or change profile photo" style={{ width: AVATAR, height: AVATAR }}>
+          <TouchableOpacity ref={avatarRef} onPress={openPhoto} disabled={photo.busy} accessibilityRole="button" accessibilityLabel="View or change profile photo" style={{ width: AVATAR, height: AVATAR, opacity: avatarHidden ? 0 : 1 }}>
             <Avatar uri={profile?.photoUrl} name={profile?.displayName} size={AVATAR} fallback="icon" />
             {/* Edit badge so the avatar reads as tappable. */}
-            <View style={{ position: 'absolute', right: 0, bottom: 0, width: EDIT_BADGE, height: EDIT_BADGE, borderRadius: EDIT_BADGE / 2, backgroundColor: colors.accent, borderWidth: 3, borderColor: colors.ground, alignItems: 'center', justifyContent: 'center', opacity: badgeHidden ? 0 : 1 }}>
+            <View style={{ position: 'absolute', right: 0, bottom: 0, width: EDIT_BADGE, height: EDIT_BADGE, borderRadius: EDIT_BADGE / 2, backgroundColor: colors.accent, borderWidth: 3, borderColor: colors.ground, alignItems: 'center', justifyContent: 'center' }}>
               {photo.busy ? <ActivityIndicator size="small" color={colors.onAccent} /> : <Icon icon={generalIcons.pencil} size={18} color={colors.onAccent} strokeWidth={2.5} />}
             </View>
           </TouchableOpacity>
@@ -116,9 +119,9 @@ export const ProfileScreen = () => {
         busy={photo.busy}
         onClose={() => {
           setPhotoOpen(false);
-          setBadgeHidden(false);
+          setAvatarHidden(false);
         }}
-        onShown={() => setBadgeHidden(true)}
+        onShown={() => setAvatarHidden(true)}
         onChooseLibrary={() => photo.pick('library')}
         onTakePhoto={() => photo.pick('camera')}
         onChooseAvatar={() => {
