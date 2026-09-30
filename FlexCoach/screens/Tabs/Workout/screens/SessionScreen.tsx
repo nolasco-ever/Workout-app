@@ -23,6 +23,7 @@ import { useTheme } from '../../../../theme';
 import { WorkoutStackParams } from '../WorkoutStack';
 import { useTabBarInset } from '../../../../navigation/useTabBarInset';
 import { PrimaryButton } from '../../../../components/buttons/PrimaryButton';
+import { HeaderButton } from '../../../../components/headers/HeaderButton';
 import { MuscleMap } from '../../../../components/anatomy/MuscleMap';
 import { RestRing, SessionTitle } from '../components/SessionHeader';
 import { SetDraft, SetRow } from '../components/SetRow';
@@ -72,24 +73,42 @@ export const SessionScreen = () => {
   const totalSets = useMemo(() => session.exercises.reduce((n, ex) => n + ex.sets.length, 0), [session]);
 
   // Leaving the screen keeps the session in progress; Home offers Resume.
-  useEffect(() => {
-    return navigation.addListener('beforeRemove', e => {
-      if (finishing) return;
-      e.preventDefault();
-      Alert.alert('Leave workout?', 'Your sets are saved. You can resume from the Workout tab.', [
-        { text: 'Stay', style: 'cancel' },
-        { text: 'Leave', onPress: () => navigation.dispatch(e.data.action) },
-        {
-          text: 'Discard workout',
-          style: 'destructive',
-          onPress: async () => {
-            if (uid) await abandonSession(uid, sessionRef.current, cycle);
-            navigation.dispatch(e.data.action);
-          },
+  // The header's back button is our own rather than the native one, so the
+  // question is asked before anything pops: with the native button, a pop
+  // the dialog then cancelled could leave the stack and the screen
+  // disagreeing, and Resume on the Workout tab did nothing afterwards.
+  const leavingRef = useRef(false);
+  const confirmLeave = (leave: () => void) => {
+    Alert.alert('Leave workout?', 'Your sets are saved. You can resume from the Workout tab.', [
+      { text: 'Stay', style: 'cancel' },
+      {
+        text: 'Leave',
+        onPress: () => {
+          leavingRef.current = true;
+          leave();
         },
-      ]);
+      },
+      {
+        text: 'Discard workout',
+        style: 'destructive',
+        onPress: async () => {
+          if (uid) await abandonSession(uid, sessionRef.current, cycle);
+          leavingRef.current = true;
+          leave();
+        },
+      },
+    ]);
+  };
+  const confirmLeaveRef = useRef(confirmLeave);
+  confirmLeaveRef.current = confirmLeave;
+  useEffect(() => {
+    // Android's hardware back and anything else that removes the screen.
+    return navigation.addListener('beforeRemove', e => {
+      if (finishing || leavingRef.current) return;
+      e.preventDefault();
+      confirmLeaveRef.current(() => navigation.dispatch(e.data.action));
     });
-  }, [navigation, finishing, uid, cycle]);
+  }, [navigation, finishing]);
 
   const persist = async (ex: SessionExercise, set: LoggedSet) => {
     const next: Session = {
@@ -196,6 +215,8 @@ export const SessionScreen = () => {
   const dismissRest = () => setRestStartedAt(null);
   useLayoutEffect(() => {
     navigation.setOptions({
+      headerBackVisible: false,
+      headerLeft: () => <HeaderButton icon={directionIcons.angleLeft} accessibilityLabel="Back" onPress={() => confirmLeaveRef.current(() => navigation.goBack())} />,
       headerTitle: () => <SessionTitle name={session.workoutName} startedAt={session.startedAt} />,
       // No header item at all between rests: iOS 26 draws a glass circle
       // around whatever sits in the slot, even an empty view.
