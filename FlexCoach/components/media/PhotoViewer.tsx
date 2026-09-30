@@ -183,9 +183,10 @@ export const PhotoViewer = ({ images, captions = [], index, onClose }: Props) =>
             showsHorizontalScrollIndicator={false}
             onMomentumScrollEnd={e => onPageChange(e.nativeEvent.contentOffset.x)}
           >
-            {images.map(uri => (
+            {/* Only the page on screen takes the zoom and drag transforms; the others sit still behind it. */}
+            {images.map((uri, i) => (
               <View key={uri} style={{ width, height, justifyContent: 'center' }}>
-                <Animated.Image source={{ uri }} resizeMode="contain" style={[{ width, height: height * 0.7 }, photoStyle]} />
+                <Animated.Image source={{ uri }} resizeMode="contain" style={[{ width, height: height * 0.7 }, i === page ? photoStyle : null]} />
               </View>
             ))}
           </ScrollView>
