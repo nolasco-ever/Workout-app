@@ -3,6 +3,8 @@ import type { NavigatorScreenParams } from '@react-navigation/native';
 /** A person's Iron Card: by card code (a scan or a link) or by uid (a row in the list). */
 export type BuddyCardParams = { code?: string; uid?: string; displayName?: string | null };
 export type BuddyPlanParams = { ownerUid: string; planId: string; ownerName: string | null };
+/** One line of a buddy's activity, opened for its records and reactions. */
+export type BuddyWorkoutParams = { uid: string; activityId: string; displayName: string | null };
 
 /**
  * The Iron Card sheet: your card at the root, the scanner and whatever a
@@ -14,6 +16,7 @@ export type CardStackParams = {
   ScanCardScreen: undefined;
   BuddyCardScreen: BuddyCardParams;
   BuddyPlanScreen: BuddyPlanParams;
+  BuddyWorkoutScreen: BuddyWorkoutParams;
 };
 
 /** Routes the buddy screens add to the root stack, reachable from any tab. */
@@ -24,4 +27,5 @@ export type BuddyRoutes = {
   BuddyActivityScreen: undefined;
   BuddyPlansScreen: undefined;
   BuddyPlanScreen: BuddyPlanParams;
+  BuddyWorkoutScreen: BuddyWorkoutParams;
 };

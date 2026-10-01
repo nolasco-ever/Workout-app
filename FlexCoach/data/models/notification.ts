@@ -37,7 +37,11 @@ export type NotificationTarget =
   | { screen: 'buddies' }
   | { screen: 'buddy'; uid: Id; displayName?: string | null }
   | { screen: 'card'; code: string }
-  | { screen: 'buddy_activity' };
+  | { screen: 'buddy_activity' }
+  /** One finished workout of a buddy's, with its records and reactions. */
+  | { screen: 'buddy_workout'; uid: Id; activityId: Id; displayName?: string | null }
+  /** One of the user's own logged sessions. */
+  | { screen: 'session_detail'; sessionId: Id; workoutName?: string | null };
 
 export type FeedNotificationKind =
   | 'missed_workout'
@@ -49,6 +53,7 @@ export type FeedNotificationKind =
   | 'buddy_skipped'
   | 'buddy_streak'
   | 'buddy_achievement'
+  | 'buddy_reaction'
   | 'plan_synced'
   | 'plan_sync_ended';
 

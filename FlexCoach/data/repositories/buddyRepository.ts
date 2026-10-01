@@ -1,6 +1,7 @@
 import { paths } from '../firebase/paths';
-import { Activity, Buddy, Id, InviteCode, PublicProfile } from '../models';
-import { limit, listDocs, orderBy, readDoc, removeDoc, stamp, watchDoc, watchDocs, writeDoc, Unsubscribe } from './base';
+import { deleteField } from '@react-native-firebase/firestore';
+import { Activity, ActivityReaction, Buddy, Id, InviteCode, PublicProfile } from '../models';
+import { limit, listDocs, mergeDoc, orderBy, patchDoc, readDoc, removeDoc, stamp, watchDoc, watchDocs, where, writeDoc, Unsubscribe } from './base';
 
 /**
  * A buddy relationship is stored on both sides so each user's list is a
@@ -37,7 +38,17 @@ export const buddyRepository = {
   /** Most recent activity of one person, newest first. */
   listActivity: (uid: Id, max = 20) => listDocs<Activity>(paths.activity(uid), orderBy('at', 'desc'), limit(max)),
 
-  addActivity: (uid: Id, item: Activity) => writeDoc(paths.activityItem(uid, item.id), item),
+  /** Merged, so re-writing an event (same id) keeps any reactions it has collected. */
+  addActivity: (uid: Id, item: Activity) => mergeDoc<Activity>(paths.activityItem(uid, item.id), item),
+
+  getActivity: (uid: Id, activityId: Id) => readDoc<Activity>(paths.activityItem(uid, activityId)),
+
+  /** The lines one session produced (the workout, its records), for showing their reactions on the session itself. */
+  listActivityForSession: (uid: Id, sessionId: Id) => listDocs<Activity>(paths.activity(uid), where('sessionId', '==', sessionId)),
+
+  /** Set or clear one person's reaction on someone's activity line. Only their own key is touched. */
+  setReaction: (ownerUid: Id, activityId: Id, reactorUid: Id, reaction: ActivityReaction | null) =>
+    patchDoc(paths.activityItem(ownerUid, activityId), { [`reactions.${reactorUid}`]: reaction ?? deleteField() } as any),
 
   getInviteCode: (code: string) => readDoc<InviteCode>(paths.inviteCode(code)),
 

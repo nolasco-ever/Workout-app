@@ -1,7 +1,11 @@
 import React from 'react';
-import { View } from 'react-native';
+import { TouchableOpacity, View } from 'react-native';
+import { NavigationProp, useNavigation } from '@react-navigation/native';
 import { ActivityKind } from '../../data/models';
 import { ActivityEntry } from '../../data/hooks/useBuddyActivity';
+import { useAuth } from '../../data/auth/AuthProvider';
+import { BuddyRoutes } from '../../screens/Buddies/routes';
+import { Reactions } from './Reactions';
 import { CustomText } from '../text/customText';
 import { Icon, IconSource } from '../icons/Icon';
 import { generalIcons } from '../icons/icon-library';
@@ -42,13 +46,25 @@ export const whenLabel = (ts: number, now = Date.now()): string => {
   return new Date(ts).toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
 };
 
-/** One line of the buddy feed: who, what, when. */
-export const ActivityRow = ({ item, divider = false, compact = false }: { item: ActivityEntry; divider?: boolean; compact?: boolean }) => {
+/** The activity line a row opens: a finished workout opens itself, a record opens the workout it was set in. */
+const workoutLineOf = (item: ActivityEntry): string | null =>
+  item.kind === 'workout_done' ? item.id : item.kind === 'record' && item.sessionId ? `workout_done:${item.sessionId}` : null;
+
+/**
+ * One line of the buddy feed: who, what, when, and any reactions under it.
+ * Finished workouts and records open the workout's page (records and
+ * reactions in full); `onReact` adds the emoji picker to the line itself.
+ */
+export const ActivityRow = ({ item, divider = false, compact = false, onReact }: { item: ActivityEntry; divider?: boolean; compact?: boolean; onReact?: (emoji: string | null) => void }) => {
   const { colors, spacing } = useTheme();
+  const { uid } = useAuth();
+  const navigation = useNavigation<NavigationProp<BuddyRoutes>>();
   const who = item.isMe ? 'You' : item.actorName?.split(' ')[0] ?? 'A buddy';
   const tone = item.kind === 'workout_skipped' ? colors.inkMuted : item.kind === 'streak' || item.kind === 'record' ? colors.accent : colors.ink;
+  const opens = item.isMe ? null : workoutLineOf(item);
+  const open = opens ? () => navigation.navigate('BuddyWorkoutScreen', { uid: item.ownerId, activityId: opens, displayName: item.actorName }) : undefined;
   return (
-    <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.md, paddingVertical: compact ? spacing.sm : spacing.md, paddingHorizontal: compact ? 0 : spacing.lg, borderTopWidth: divider ? 1 : 0, borderTopColor: colors.line }}>
+    <TouchableOpacity disabled={!open} onPress={open} activeOpacity={0.7} accessibilityRole={open ? 'button' : undefined} style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.md, paddingVertical: compact ? spacing.sm : spacing.md, paddingHorizontal: compact ? 0 : spacing.lg, borderTopWidth: divider ? 1 : 0, borderTopColor: colors.line }}>
       <View>
         <Avatar uri={item.actorPhoto} name={item.isMe ? item.actorName ?? 'You' : item.actorName} size={compact ? 32 : 40} />
         <View style={{ position: 'absolute', right: -4, bottom: -4, width: 18, height: 18, borderRadius: 9, backgroundColor: colors.surface, alignItems: 'center', justifyContent: 'center' }}>
@@ -60,8 +76,9 @@ export const ActivityRow = ({ item, divider = false, compact = false }: { item: 
           {who} · {item.title}
         </CustomText>
         {item.detail && !compact ? <CustomText variant="caption" color={colors.inkMuted} numberOfLines={1}>{item.detail}</CustomText> : null}
+        {!item.isMe && <Reactions reactions={item.reactions} myUid={uid} onReact={onReact} compact={compact} />}
       </View>
       <CustomText variant="caption" color={colors.inkMuted}>{whenLabel(item.at)}</CustomText>
-    </View>
+    </TouchableOpacity>
   );
 };

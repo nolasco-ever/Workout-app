@@ -58,14 +58,18 @@ service cloud.firestore {
         allow read, write: if isOwner(uid);
         allow create: if signedIn() && request.auth.uid != uid
           && request.resource.data.ownerId == uid
-          && request.resource.data.kind in ['buddy_added', 'buddy_removed', 'buddy_streak', 'buddy_achievement']
+          && request.resource.data.kind in ['buddy_added', 'buddy_removed', 'buddy_streak', 'buddy_achievement', 'buddy_workout', 'buddy_skipped', 'buddy_reaction']
           && isAcceptedBuddyOf(uid);
       }
       // What the owner has been up to, in buddy-safe words. Buddies read it
-      // and merge everyone's into one feed.
+      // and merge everyone's into one feed. A buddy may also react: the only
+      // change they can make is their own key inside `reactions`.
       match /activity/{activityId} {
         allow read: if isOwner(uid) || isAcceptedBuddyOf(uid);
         allow write: if isOwner(uid);
+        allow update: if isAcceptedBuddyOf(uid)
+          && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['reactions'])
+          && request.resource.data.get('reactions', {}).diff(resource.data.get('reactions', {})).affectedKeys().hasOnly([request.auth.uid]);
       }
       // Push tokens, one per install. Only the owner and the server touch them.
       match /devices/{token} {

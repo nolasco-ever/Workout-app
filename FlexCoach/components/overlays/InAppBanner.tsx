@@ -92,7 +92,7 @@ export const InAppBannerHost = () => {
             }}
           >
             <View style={{ width: 36, height: 36, borderRadius: 18, backgroundColor: colors.accentTint, alignItems: 'center', justifyContent: 'center' }}>
-              <Icon icon={generalIcons.timer} color={colors.accent} size={20} />
+              <Icon icon={banner.target && banner.target.screen.startsWith('buddy') ? generalIcons.users : banner.target?.screen === 'session_detail' ? generalIcons.smile : generalIcons.timer} color={colors.accent} size={20} />
             </View>
             <View style={{ flex: 1 }}>
               <CustomText variant="bodyStrong" numberOfLines={1}>{banner.title}</CustomText>

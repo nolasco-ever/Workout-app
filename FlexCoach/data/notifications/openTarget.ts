@@ -31,6 +31,9 @@ export const openTarget = (target: NotificationTarget): void => {
     case 'session':
       nav.navigate('TabNavigator', { screen: 'WorkoutStack' });
       return;
+    case 'session_detail':
+      nav.navigate('TabNavigator', { screen: 'WorkoutStack', params: { screen: 'SessionDetailScreen', params: { sessionId: target.sessionId, workoutName: target.workoutName ?? undefined }, initial: false } });
+      return;
     case 'cycle_summary':
       nav.navigate('TabNavigator', { screen: 'WorkoutStack', params: { screen: 'CycleReviewScreen', params: { cycleId: target.cycleId }, initial: false } });
       return;
@@ -51,6 +54,9 @@ export const openTarget = (target: NotificationTarget): void => {
       return;
     case 'buddy_activity':
       nav.navigate('BuddyActivityScreen');
+      return;
+    case 'buddy_workout':
+      nav.navigate('BuddyWorkoutScreen', { uid: target.uid, activityId: target.activityId, displayName: target.displayName ?? null });
       return;
   }
 };

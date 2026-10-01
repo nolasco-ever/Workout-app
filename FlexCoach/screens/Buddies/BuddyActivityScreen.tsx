@@ -72,7 +72,7 @@ export const BuddyActivityScreen = () => {
             <CustomText variant="overline" color={colors.inkMuted}>{group.label}</CustomText>
             <SurfaceCard style={{ padding: 0 }}>
               {group.items.map((item, i) => (
-                <ActivityRow key={item.id} item={item} divider={i > 0} />
+                <ActivityRow key={item.id} item={item} divider={i > 0} onReact={emoji => feed.react(item, emoji)} />
               ))}
             </SurfaceCard>
           </View>

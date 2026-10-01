@@ -35,7 +35,7 @@ users/{uid}/sessions/{sessionId}      Session (sets embedded)
 users/{uid}/bodyWeight/{entryId}      BodyWeightEntry
 users/{uid}/achievements/{id}         AchievementUnlock
 users/{uid}/buddies/{otherUid}        Buddy                mirrored on both sides
-users/{uid}/activity/{id}             Activity             owner writes; accepted buddies read
+users/{uid}/activity/{id}             Activity             owner writes; accepted buddies read, and may set/clear their own key in `reactions`
 inviteCodes/{code}                    InviteCode           card copy; any signed-in user reads
 users/{uid}/customExercises/{id}      CustomExercise
 users/{uid}/notifications/{id}        FeedNotification     owner; server writes buddy items

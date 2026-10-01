@@ -7,6 +7,9 @@ import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useAuth } from '../../../../data/auth/AuthProvider';
 import { LoggedSet, Session, SessionExercise, SetTarget } from '../../../../data/models';
 import { sessionRepository } from '../../../../data/repositories/sessionRepository';
+import { buddyRepository } from '../../../../data/repositories/buddyRepository';
+import { Activity } from '../../../../data/models';
+import { OwnReactions } from '../../../../components/buddies/OwnReactions';
 import { targetRepsLabel, targetWeightRange } from '../../../../data/engine/progression';
 import { countWorkingSets, totalVolumeKg } from '../../../../data/engine/stats';
 import { formatDistance, formatDuration, formatWeight, toDisplayDistance, toDisplayWeight } from '../../../../data/engine/units';
@@ -91,6 +94,13 @@ export const SessionDetailScreen = () => {
   const [saving, setSaving] = useState(false);
   const [draftSession, setDraftSession] = useState<Session | null>(null);
   const [drafts, setDrafts] = useState<Record<string, SetDraft>>({});
+
+  // Buddies' reactions land on the activity lines this session wrote.
+  const [activity, setActivity] = useState<Activity[]>([]);
+  useEffect(() => {
+    if (!uid) return;
+    buddyRepository.listActivityForSession(uid, params.sessionId).then(setActivity).catch(() => undefined);
+  }, [uid, params.sessionId]);
 
   useEffect(() => {
     if (!uid) return;
@@ -199,6 +209,8 @@ export const SessionDetailScreen = () => {
               <Stat label={`Volume ${units.weight}`} value={Math.round(stats.volume).toLocaleString()} />
             </View>
           </View>
+
+          <OwnReactions items={activity} />
 
           {[...shown.exercises]
             .sort((a, b) => a.order - b.order)

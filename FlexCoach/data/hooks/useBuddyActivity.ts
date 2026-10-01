@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useAuth } from '../auth/AuthProvider';
 import { Activity } from '../models';
+import { reactToActivity } from '../services/buddyService';
 import { buddyRepository } from '../repositories/buddyRepository';
 import { BuddyWithCard } from './useBuddies';
 
@@ -18,8 +19,8 @@ export interface ActivityEntry extends Activity {
  * small reads, and it refreshes when the screen comes back or the buddy
  * list changes.
  */
-export const useBuddyActivity = (buddies: BuddyWithCard[], max = 20): { items: ActivityEntry[]; loading: boolean; refresh: () => Promise<void> } => {
-  const { uid } = useAuth();
+export const useBuddyActivity = (buddies: BuddyWithCard[], max = 20): { items: ActivityEntry[]; loading: boolean; refresh: () => Promise<void>; react: (item: Activity, emoji: string | null) => void } => {
+  const { uid, profile } = useAuth();
   const [raw, setRaw] = useState<Activity[] | null>(null);
   const key = buddies.map(b => b.userId).sort().join('|');
 
@@ -46,5 +47,27 @@ export const useBuddyActivity = (buddies: BuddyWithCard[], max = 20): { items: A
     });
   }, [raw, buddies]);
 
-  return useMemo(() => ({ items, loading: raw === null, refresh }), [items, raw, refresh]);
+  // Optimistic: the chip changes at once, the write follows; a failed write puts it back.
+  const react = useCallback(
+    (item: Activity, emoji: string | null) => {
+      if (!uid) return;
+      const apply = (list: Activity[] | null, value: string | null) =>
+        list?.map(a => {
+          if (a.id !== item.id) return a;
+          const reactions = { ...(a.reactions ?? {}) };
+          if (value) reactions[uid] = { emoji: value, at: Date.now(), name: profile?.displayName ?? null };
+          else delete reactions[uid];
+          return { ...a, reactions };
+        }) ?? null;
+      const before = item.reactions?.[uid]?.emoji ?? null;
+      setRaw(list => apply(list, emoji));
+      reactToActivity({ uid, displayName: profile?.displayName ?? null }, item, emoji).catch(err => {
+        console.warn('reaction failed', err);
+        setRaw(list => apply(list, before));
+      });
+    },
+    [uid, profile?.displayName],
+  );
+
+  return useMemo(() => ({ items, loading: raw === null, refresh, react }), [items, raw, refresh, react]);
 };

@@ -15,6 +15,7 @@ import { BuddyCardScreen } from '../screens/Buddies/BuddyCardScreen';
 import { BuddyActivityScreen } from '../screens/Buddies/BuddyActivityScreen';
 import { BuddyPlansScreen } from '../screens/Buddies/BuddyPlansScreen';
 import { BuddyPlanScreen } from '../screens/Buddies/BuddyPlanScreen';
+import { BuddyWorkoutScreen } from '../screens/Buddies/BuddyWorkoutScreen';
 import type { BuddyRoutes } from '../screens/Buddies/routes';
 import { HeaderButton } from '../components/headers/HeaderButton';
 import { generalIcons } from '../components/icons/icon-library';
@@ -84,6 +85,7 @@ export const AppStack = () => {
                     <Stack.Screen name="BuddyActivityScreen" component={BuddyActivityScreen} options={opts.screen('Buddy activity')} />
                     <Stack.Screen name="BuddyPlansScreen" component={BuddyPlansScreen} options={opts.screen('Plans from buddies')} />
                     <Stack.Screen name="BuddyPlanScreen" component={BuddyPlanScreen} options={opts.screen('Plan')} />
+                    <Stack.Screen name="BuddyWorkoutScreen" component={BuddyWorkoutScreen} options={({ route }) => opts.screen(route.params.displayName?.split(' ')[0] ?? 'Workout')} />
                     <Stack.Screen name="ExerciseDetailScreen" component={ExerciseDetailScreen} options={({ navigation }) => opts.modal('How to', () => <HeaderButton icon={generalIcons.xMark} accessibilityLabel="Close" onPress={() => navigation.goBack()} />)} />
                 </>
             )}

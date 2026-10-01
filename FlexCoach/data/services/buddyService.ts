@@ -1,4 +1,4 @@
-import { Activity, ActivityKind, Id, InviteCode, Occurrence, Plan, PublicProfile, Session, UserProfile } from '../models';
+import { Activity, ActivityKind, ActivityReaction, Id, InviteCode, Occurrence, Plan, PublicProfile, Session, UserProfile } from '../models';
 import { newId } from '../engine/ids';
 import { today } from '../engine/dates';
 import { buildPublicProfile, formatInviteCode, generateInviteCode, inviteUrl, isStreakMilestone } from '../engine/buddies';
@@ -11,7 +11,7 @@ import { achievementRepository } from '../repositories/achievementRepository';
 import { planRepository } from '../repositories/planRepository';
 import { cycleRepository } from '../repositories/cycleRepository';
 import { notificationRepository } from '../repositories/notificationRepository';
-import { PersonalRecord, WeightUnit } from '../models';
+import { NotificationTarget, PersonalRecord, WeightUnit } from '../models';
 
 /**
  * Buddies: the Iron Card people scan to add each other, the summary each
@@ -136,17 +136,22 @@ export const shareMessage = (code: string, displayName: string | null): string =
  * the same event twice (a double tap on Finish, a retried save) overwrites
  * one line instead of adding a second.
  */
-export const recordActivity = async (uid: Id, id: string, kind: ActivityKind, title: string, detail: string | null = null, at: number = Date.now()): Promise<void> => {
-  const item: Activity = { id, ownerId: uid, kind, title, detail, at, createdAt: at, updatedAt: at };
+export const recordActivity = async (uid: Id, id: string, kind: ActivityKind, title: string, detail: string | null = null, at: number = Date.now(), extra: Pick<Activity, 'sessionId' | 'records'> = {}): Promise<void> => {
+  const item: Activity = { id, ownerId: uid, kind, title, detail, at, createdAt: at, updatedAt: at, ...extra };
   await buddyRepository.addActivity(uid, item);
 };
 
-/** Put the same item in every accepted buddy's feed (and phone). */
-const notifyBuddies = async (uid: Id, idSuffix: string, kind: 'buddy_streak' | 'buddy_achievement', title: string, body: string, displayName: string | null): Promise<void> => {
+type BuddyNotificationKind = 'buddy_streak' | 'buddy_achievement' | 'buddy_workout' | 'buddy_skipped';
+
+/**
+ * Put the same item in every accepted buddy's feed. The server pushes it
+ * to their phones; if their app is open it shows as an in-app banner.
+ */
+const notifyBuddies = async (uid: Id, idSuffix: string, kind: BuddyNotificationKind, title: string, body: string, target: NotificationTarget): Promise<void> => {
   const buddies = (await buddyRepository.list(uid)).filter(b => b.status === 'accepted');
   await Promise.all(
     buddies.map(b =>
-      notificationRepository.createForUser(b.userId, { id: `${kind}:${uid}:${idSuffix}`, kind, title, body, target: { screen: 'buddy', uid, displayName }, push: true }).catch(err => console.warn('buddy notify failed', err)),
+      notificationRepository.createForUser(b.userId, { id: `${kind}:${uid}:${idSuffix}`, kind, title, body, target, push: true }).catch(err => console.warn('buddy notify failed', err)),
     ),
   );
 };
@@ -160,21 +165,46 @@ export const afterSessionFinished = async (uid: Id, profile: UserProfile | null,
   const card = await refreshPublicProfile(uid, profile, sessions);
   const sets = countWorkingSets([session]);
   const volume = totalVolumeKg([session]);
-  await recordActivity(uid, `workout_done:${session.id}`, 'workout_done', `Finished ${session.workoutName}`, `${sets} set${sets === 1 ? '' : 's'}${volume > 0 ? ` · ${formatWeight(volume, unit).replace(/\.0+ /, ' ')} moved` : ''}`, session.finishedAt ?? Date.now());
+  const name = firstName(profile?.displayName);
+  const displayName = profile?.displayName ?? null;
+  const recordLines = records.map(pr => ({ exerciseName: pr.exerciseName, value: pr.kind === 'weight' ? formatWeight(pr.value, unit) : pr.kind === 'reps' ? `${pr.value} reps` : `${pr.value}` }));
+  const detail = `${sets} set${sets === 1 ? '' : 's'}${volume > 0 ? ` · ${formatWeight(volume, unit).replace(/\.0+ /, ' ')} moved` : ''}`;
+  const activityId = `workout_done:${session.id}`;
+  await recordActivity(uid, activityId, 'workout_done', `Finished ${session.workoutName}`, detail, session.finishedAt ?? Date.now(), { sessionId: session.id, records: recordLines });
   for (const pr of records) {
     const value = pr.kind === 'weight' ? formatWeight(pr.value, unit) : pr.kind === 'reps' ? `${pr.value} reps` : `${pr.value}`;
-    await recordActivity(uid, `record:${session.id}:${pr.exerciseId}:${pr.kind}`, 'record', `New record: ${pr.exerciseName}`, value);
+    await recordActivity(uid, `record:${session.id}:${pr.exerciseId}:${pr.kind}`, 'record', `New record: ${pr.exerciseName}`, value, Date.now(), { sessionId: session.id });
   }
+  // Short on purpose: the sets and volume are on the line it opens.
+  const recordNote = records.length === 0 ? 'Tap to see how it went.' : records.length === 1 ? '1 new record' : `${records.length} new records`;
+  await notifyBuddies(uid, session.id, 'buddy_workout', `${name} finished ${session.workoutName}`, recordNote, { screen: 'buddy_workout', uid, activityId, displayName });
   if (isStreakMilestone(card.currentStreakDays)) {
-    const name = firstName(profile?.displayName);
     await recordActivity(uid, `streak:${card.currentStreakDays}:${session.date}`, 'streak', `${card.currentStreakDays}-day streak`, 'Every day counts.');
-    await notifyBuddies(uid, `${card.currentStreakDays}:${session.date}`, 'buddy_streak', `${name} is on a ${card.currentStreakDays}-day streak`, 'Send some encouragement, or go match it.', profile?.displayName ?? null);
+    await notifyBuddies(uid, `${card.currentStreakDays}:${session.date}`, 'buddy_streak', `${name} is on a ${card.currentStreakDays}-day streak`, 'Send some encouragement, or go match it.', { screen: 'buddy', uid, displayName });
   }
 };
 
 export const afterWorkoutSkipped = async (uid: Id, profile: UserProfile | null, occurrence: Occurrence): Promise<void> => {
-  await recordActivity(uid, `workout_skipped:${occurrence.id}`, 'workout_skipped', `Skipped ${occurrence.workoutName ?? 'a workout'}`, 'It happens. Next one counts double.');
+  const workout = occurrence.workoutName ?? 'a workout';
+  await recordActivity(uid, `workout_skipped:${occurrence.id}`, 'workout_skipped', `Skipped ${workout}`, 'It happens. Next one counts double.');
+  await notifyBuddies(uid, occurrence.id, 'buddy_skipped', `${firstName(profile?.displayName)} skipped ${workout}`, 'A nudge from you might get the next one done.', { screen: 'buddy', uid, displayName: profile?.displayName ?? null });
   refreshPublicProfile(uid, profile).catch(() => undefined);
+};
+
+/**
+ * React to a buddy's activity line, or take the reaction back with `null`.
+ * One reaction per person; a new emoji replaces the old one. The owner
+ * hears about it once per line, however often the emoji changes.
+ */
+export const reactToActivity = async (me: { uid: Id; displayName: string | null }, item: Activity, emoji: string | null): Promise<void> => {
+  const reaction: ActivityReaction | null = emoji ? { emoji, at: Date.now(), name: me.displayName } : null;
+  await buddyRepository.setReaction(item.ownerId, item.id, me.uid, reaction);
+  if (!reaction) return;
+  const what = item.kind === 'workout_done' ? item.title.replace(/^Finished /, 'your ') : item.kind === 'record' ? `your ${item.title.replace(/^New record: /, '')} record` : `your ${item.title.toLowerCase()}`;
+  const target: NotificationTarget = item.sessionId ? { screen: 'session_detail', sessionId: item.sessionId, workoutName: item.kind === 'workout_done' ? item.title.replace(/^Finished /, '') : null } : { screen: 'workout' };
+  await notificationRepository
+    .createForUser(item.ownerId, { id: `buddy_reaction:${me.uid}:${item.id}`, kind: 'buddy_reaction', title: `${firstName(me.displayName)} reacted ${emoji} to ${what}`, body: 'Tap to see that workout.', target, push: true })
+    .catch(() => undefined); // Only ever created once per line; a changed emoji is a silent update.
 };
 
 export const afterWorkoutPushed = async (uid: Id, occurrence: Occurrence, toDate: string): Promise<void> => {

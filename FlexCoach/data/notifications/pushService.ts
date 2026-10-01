@@ -11,7 +11,7 @@ import {
 } from '@react-native-firebase/messaging';
 import { Id } from '../models';
 import { notificationRepository } from '../repositories/notificationRepository';
-import { displayNow } from './notificationService';
+import { showInAppBanner } from './inAppBanner';
 import { openTarget, parseTarget } from './openTarget';
 
 /**
@@ -56,8 +56,8 @@ const handleRemoteMessage = (message: RemoteMessage | null) => {
 };
 
 /**
- * Foreground pushes are not shown by the OS, so they are displayed through
- * Notifee. Taps on background/quit pushes are routed to their target.
+ * A push that arrives while the app is open shows as an in-app banner, not
+ * a system notification. Taps on background/quit pushes go to their target.
  */
 export const startPushListeners = (uid: Id): (() => void) => {
   const offToken = onTokenRefresh(messaging(), token => {
@@ -68,7 +68,7 @@ export const startPushListeners = (uid: Id): (() => void) => {
     const title = message.notification?.title ?? (message.data?.title as string | undefined);
     const body = message.notification?.body ?? (message.data?.body as string | undefined);
     const target = parseTarget(message.data as Record<string, unknown> | undefined) ?? { screen: 'feed' as const };
-    if (title) await displayNow(title, body ?? '', target);
+    if (title) showInAppBanner({ title, body: body ?? '', target });
   });
   const offOpened = onNotificationOpenedApp(messaging(), handleRemoteMessage);
   getInitialNotification(messaging()).then(handleRemoteMessage).catch(() => undefined);
