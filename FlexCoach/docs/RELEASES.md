@@ -15,7 +15,7 @@ Build 15
 • React to buddy activity with emoji; see reactions on your own workouts
 • Glass header buttons on iOS 26
 • Android: weight box keeps the first digit, rest alert fires, exact-timing prompt
-• Fixes: feed photos, duplicate activity, how-to zoom, photo sheet, Stay then Resume
+• Fixes: feed photos, duplicate activity, how-to zoom, photo sheet, Stay/Resume
 
 ### Details
 
