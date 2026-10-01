@@ -12,6 +12,7 @@
   },
   "dependencies": {
     "@bottom-tabs/react-navigation": "^1.4.0",
+    "@callstack/liquid-glass": "^0.8.2",
     "@invertase/react-native-apple-authentication": "^2.5.1",
     "@kingstinct/react-native-healthkit": "^16.0.0",
     "@notifee/react-native": "^9.1.8",

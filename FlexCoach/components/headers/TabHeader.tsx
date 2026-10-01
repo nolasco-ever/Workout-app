@@ -1,7 +1,8 @@
 import React from 'react';
-import { TouchableOpacity, View } from 'react-native';
+import { View } from 'react-native';
 import { CustomText } from '../text/customText';
-import { Icon, IconSource } from '../icons/Icon';
+import { IconSource } from '../icons/Icon';
+import { GLASS_BUTTON_SIZE, GlassIconButton } from '../buttons/GlassIconButton';
 import { useTheme } from '../../theme';
 
 export type TabHeaderAction = {
@@ -17,35 +18,19 @@ export type TabHeaderAction = {
  * scroll view instead of the native large-title header. The native header
  * stacked a bar for the action button above the title, which read as dead
  * space; here the title and the action share one line.
+ *
+ * `leading` sits before the title (Profile's Iron Card button); `action` after it (Home's bell).
  */
-const ActionButton = ({ action }: { action: TabHeaderAction }) => {
-  const { colors, radius } = useTheme();
-  return (
-    <TouchableOpacity
-      onPress={action.onPress}
-      hitSlop={6}
-      accessibilityRole="button"
-      accessibilityLabel={action.badge ? `${action.accessibilityLabel}, unread` : action.accessibilityLabel}
-      style={{ width: 40, height: 40, borderRadius: radius.pill, backgroundColor: colors.surfaceRaised, alignItems: 'center', justifyContent: 'center' }}
-    >
-      <View>
-        <Icon icon={action.icon} color={colors.ink} size={22} />
-        {action.badge && <View style={{ position: 'absolute', top: -1, right: -1, width: 10, height: 10, borderRadius: 5, backgroundColor: colors.accent, borderWidth: 2, borderColor: colors.surfaceRaised }} />}
-      </View>
-    </TouchableOpacity>
-  );
-};
-
-/** `leading` sits before the title (Profile's Iron Card button); `action` after it (Home's bell). */
 export const TabHeader = ({ title, action, leading }: { title: string; action?: TabHeaderAction; leading?: TabHeaderAction }) => {
   const { spacing } = useTheme();
   return (
     <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: spacing.md, paddingTop: spacing.xs }}>
-      {leading && <ActionButton action={leading} />}
-      <CustomText variant="display" style={{ flex: 1 }} numberOfLines={1} accessibilityRole="header">
+      {leading && <GlassIconButton {...leading} />}
+      {/* The title's line box is the button's height, so the two centre on the same line. */}
+      <CustomText variant="display" style={{ flex: 1, lineHeight: GLASS_BUTTON_SIZE, includeFontPadding: false }} numberOfLines={1} accessibilityRole="header">
         {title}
       </CustomText>
-      {action && <ActionButton action={action} />}
+      {action && <GlassIconButton {...action} />}
     </View>
   );
 };
