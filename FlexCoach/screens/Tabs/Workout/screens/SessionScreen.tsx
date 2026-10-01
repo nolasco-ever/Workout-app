@@ -1,5 +1,5 @@
-import React, { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
-import { Alert, AppState, ScrollView, TouchableOpacity, Vibration, View } from 'react-native';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
+import { Alert, AppState, Platform, ScrollView, TouchableOpacity, Vibration, View } from 'react-native';
 import { KeyboardAvoiding } from '../../../../components/layout/KeyboardAvoiding';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { RouteProp, useIsFocused, useNavigation, useRoute } from '@react-navigation/native';
@@ -14,7 +14,8 @@ import { sessionRepository } from '../../../../data/repositories/sessionReposito
 import { subscribeSwap } from '../components/swapChannel';
 import { warmupRestSec } from '../../../../data/engine/progression';
 import { planRestOverNotification, withPrefDefaults } from '../../../../data/engine/notifications';
-import { cancelRestOver, scheduleRestOver } from '../../../../data/notifications/notificationService';
+import { cancelRestOver, exactAlarmsAllowed, openExactAlarmSettings, scheduleRestOver } from '../../../../data/notifications/notificationService';
+import { userRepository } from '../../../../data/repositories/userRepository';
 import { showInAppBanner } from '../../../../data/notifications/inAppBanner';
 import { CustomText } from '../../../../components/text/customText';
 import { Icon } from '../../../../components/icons/Icon';
@@ -23,9 +24,9 @@ import { useTheme } from '../../../../theme';
 import { WorkoutStackParams } from '../WorkoutStack';
 import { useTabBarInset } from '../../../../navigation/useTabBarInset';
 import { PrimaryButton } from '../../../../components/buttons/PrimaryButton';
-import { HeaderButton } from '../../../../components/headers/HeaderButton';
+import { GLASS_BUTTON_SIZE, GlassIconButton } from '../../../../components/buttons/GlassIconButton';
 import { MuscleMap } from '../../../../components/anatomy/MuscleMap';
-import { RestRing, SessionTitle } from '../components/SessionHeader';
+import { RestPill, SessionTitle } from '../components/SessionHeader';
 import { SetDraft, SetRow } from '../components/SetRow';
 import { SwipeToDelete } from '../../../../components/list-items/SwipeToDelete';
 import Animated, { SlideInLeft, SlideInRight } from 'react-native-reanimated';
@@ -223,21 +224,26 @@ export const SessionScreen = () => {
 
   const isLast = index === total - 1;
 
-  // The header carries the running clock and the rest ring, so neither
-  // takes room from the set rows.
   const dismissRest = () => setRestStartedAt(null);
-  useLayoutEffect(() => {
-    navigation.setOptions({
-      headerBackVisible: false,
-      headerLeft: () => <HeaderButton icon={directionIcons.angleLeft} accessibilityLabel="Back" onPress={() => confirmLeaveRef.current(() => navigation.goBack())} />,
-      headerTitle: () => <SessionTitle name={session.workoutName} startedAt={session.startedAt} />,
-      // No header item at all between rests: iOS 26 draws a glass circle
-      // around whatever sits in the slot, even an empty view.
-      headerRight: restStartedAt === null ? undefined : () => <RestRing startedAt={restStartedAt} durationSec={restFor} onDismiss={dismissRest} />,
-    });
-    // dismissRest is a stable setter.
+  // Android 14+ holds timers back unless the app may set exact alarms, and
+  // nobody finds the switch for it in Settings. Ask once, the first time a
+  // workout runs on a phone where it is off.
+  const exactPrompted = !!profile?.exactAlarmPromptedAt;
+  useEffect(() => {
+    if (Platform.OS !== 'android' || !uid || !profile || exactPrompted) return;
+    exactAlarmsAllowed()
+      .then(allowed => {
+        if (allowed) return;
+        userRepository.update(uid, { exactAlarmPromptedAt: Date.now() }).catch(() => undefined);
+        Alert.alert('Rest timer needs exact timing', 'Android delays alarms unless FlexCoach is allowed to set exact ones. Allow it and the rest-over alert lands on the second.', [
+          { text: 'Not now', style: 'cancel' },
+          { text: 'Allow', onPress: () => openExactAlarmSettings() },
+        ]);
+      })
+      .catch(() => undefined);
+    // profile identity changes often; the prompt only depends on whether it was shown.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [navigation, session.workoutName, session.startedAt, restStartedAt, restFor]);
+  }, [uid, exactPrompted]);
 
   // While the app is in front, the rest timer is handled here: this screen
   // counts down in its own strip, any other screen gets an in-app banner,
@@ -287,8 +293,23 @@ export const SessionScreen = () => {
   }, [restStartedAt, restFor, session.id, restOverEnabled]);
 
   return (
-    <SafeAreaView edges={['bottom', 'left', 'right']} style={{ flex: 1, backgroundColor: colors.ground }}>
+    <SafeAreaView edges={['top', 'bottom', 'left', 'right']} style={{ flex: 1, backgroundColor: colors.ground }}>
       <KeyboardAvoiding>
+        {/*
+          Our own header row instead of the native one: the title with the
+          running clock sits dead centre of the screen whatever is beside it.
+          The native bar centred it between the back button and the rest
+          pill, so the pill shoved it left.
+        */}
+        <View style={{ height: 56, justifyContent: 'center', paddingHorizontal: spacing.md }}>
+          <View pointerEvents="none" style={{ position: 'absolute', left: 0, right: 0, alignItems: 'center' }}>
+            <SessionTitle name={session.workoutName} startedAt={session.startedAt} />
+          </View>
+          <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+            <GlassIconButton icon={directionIcons.angleLeft} accessibilityLabel="Back" onPress={() => confirmLeaveRef.current(() => navigation.goBack())} />
+            {restStartedAt === null ? <View style={{ width: GLASS_BUTTON_SIZE }} /> : <RestPill startedAt={restStartedAt} durationSec={restFor} onDismiss={dismissRest} />}
+          </View>
+        </View>
         {/* Progress strip */}
         <View style={{ paddingHorizontal: spacing.lg, paddingTop: spacing.md, gap: spacing.sm }}>
           <View style={{ flexDirection: 'row', gap: 4 }}>

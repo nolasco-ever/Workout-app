@@ -35,7 +35,8 @@ export const WorkoutStack = () => {
     <Stack.Navigator screenOptions={opts.base}>
       <Stack.Screen name="WorkoutHomeScreen" component={WorkoutHomeScreen} options={opts.tabRoot('Workout')} />
       <Stack.Screen name="WorkoutPreviewScreen" component={WorkoutPreviewScreen} options={({ route }) => opts.screen(route.params.occurrence.workoutName ?? 'Workout')} />
-      <Stack.Screen name="SessionScreen" component={SessionScreen} options={({ route }) => ({ ...opts.screen(route.params.session.workoutName), gestureEnabled: false })} />
+      {/* Draws its own header row (see SessionScreen) so the title stays centred beside the rest pill. */}
+      <Stack.Screen name="SessionScreen" component={SessionScreen} options={({ route }) => ({ ...opts.screen(route.params.session.workoutName), headerShown: false, gestureEnabled: false })} />
       {/* A plain push, not a modal: popping a modal presented over the tab bar left the Workout home rendered as a sheet with no tabs. */}
       <Stack.Screen name="SessionCompleteScreen" component={SessionCompleteScreen} options={{ ...opts.base, headerShown: false, animation: 'fade', gestureEnabled: false }} />
       <Stack.Screen name="CycleReviewScreen" component={CycleReviewScreen} options={opts.screen('Cycle review')} />

@@ -26,6 +26,8 @@ export interface UserProfile extends BaseDocument {
    * "asked and refused" there.
    */
   notificationsPromptedAt?: Timestamp | null;
+  /** Android: when the one-time "allow exact timing" prompt for the rest timer was shown. */
+  exactAlarmPromptedAt?: Timestamp | null;
   /** The code on this account's Iron Card (see inviteCodes); made on first visit to Buddies. */
   inviteCode?: string | null;
 }
@@ -118,7 +120,27 @@ export interface Activity extends BaseDocument {
   detail: string | null;
   /** When it happened; createdAt is when it was written. */
   at: Timestamp;
+  /** The session behind a finished workout or a record, so the owner can be sent back to it. */
+  sessionId?: Id | null;
+  /** Records set in a finished workout, in display form ("Bench Press", "185 lb"). */
+  records?: { exerciseName: string; value: string }[];
+  /**
+   * Buddies' reactions, one per person, keyed by their uid. Buddies may
+   * write only their own key (see firestore.rules); everything else on
+   * the document stays the owner's.
+   */
+  reactions?: Record<Id, ActivityReaction>;
 }
+
+export interface ActivityReaction {
+  emoji: string;
+  at: Timestamp;
+  /** The reactor's name at the time, so a row can say who without another read. */
+  name: string | null;
+}
+
+/** The emoji a buddy can react with, in the order the picker shows them. */
+export const REACTION_EMOJI = ['🔥', '💪', '👏', '😮', '❤️'] as const;
 
 /** Stored at users/{uid}/bodyWeight/{entryId}. */
 export interface BodyWeightEntry extends BaseDocument {
