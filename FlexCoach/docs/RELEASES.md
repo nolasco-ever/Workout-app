@@ -11,11 +11,11 @@ Build 15
 • Cycle numbers count only cycles you trained in
 • Rest timer is a pill: Rest + time left, tap to skip
 • Finish asks before ending a workout
-• Buddies get a push when you finish or skip a workout; tap it to see the records
-• React to buddy activity with emoji, and see reactions on your own workouts
+• Buddies get a push when you finish or skip a workout; tap it for the records
+• React to buddy activity with emoji; see reactions on your own workouts
 • Glass header buttons on iOS 26
-• Android: weight box keeps the first digit, rest-over alert fires, exact-timing prompt
-• Fixes: buddy feed photos, duplicate activity, how-to zoom, photo sheet, Stay then Resume
+• Android: weight box keeps the first digit, rest alert fires, exact-timing prompt
+• Fixes: feed photos, duplicate activity, how-to zoom, photo sheet, Stay then Resume
 
 ### Details
 
