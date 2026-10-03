@@ -5,7 +5,6 @@ import {
   onMessage,
   onNotificationOpenedApp,
   onTokenRefresh,
-  registerDeviceForRemoteMessages,
   deleteToken,
   type RemoteMessage,
 } from '@react-native-firebase/messaging';
@@ -24,10 +23,13 @@ const messaging = () => getMessaging();
 
 let currentToken: string | null = null;
 
-/** Register this install for the user. Safe to call repeatedly. */
+/**
+ * Register this install for the user. Safe to call repeatedly. The device
+ * itself is registered with APNs automatically at launch (firebase.json
+ * leaves auto-registration on), so this only fetches the token.
+ */
 export const registerDevice = async (uid: Id): Promise<void> => {
   try {
-    await registerDeviceForRemoteMessages(messaging());
     const token = await getToken(messaging());
     if (!token) return;
     currentToken = token;
