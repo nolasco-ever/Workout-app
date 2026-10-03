@@ -41,8 +41,8 @@ export const SharingPrompt = () => {
 
   const lines: { icon: typeof generalIcons.check; text: string }[] = [
     { icon: generalIcons.check, text: 'Finished workouts, with the exercises, sets, reps and weight' },
-    { icon: generalIcons.trophy, text: 'New records, with a graph of that exercise over time' },
-    { icon: generalIcons.dumbbell, text: 'Sets and weight moved, on the feed and your Iron Card' },
+    { icon: generalIcons.trophy, text: 'New records' },
+    { icon: generalIcons.dumbbell, text: 'Total volume moved, in the feed and on your Iron Card' },
     { icon: generalIcons.calendarDay, text: 'Skipped and moved workouts' },
   ];
 
@@ -54,14 +54,12 @@ export const SharingPrompt = () => {
       footer={
         <View style={{ gap: spacing.sm }}>
           <PrimaryButton label="Choose what to share" onPress={review} />
-          <PrimaryButton label="Keep everything on" variant="outline" onPress={() => dismiss()} />
+          <PrimaryButton label="Keep defaults" variant="outline" onPress={() => dismiss()} />
         </View>
       }
     >
       <View style={{ gap: spacing.lg }}>
-        <CustomText variant="body" color={colors.inkMuted}>
-          Buddies see a summary of your training. All of it is on to begin with, and you can turn any of it off in Profile at any time.
-        </CustomText>
+        <CustomText variant="body" color={colors.inkMuted}>Buddies see a summary of your training and progress by default:</CustomText>
         <View style={{ gap: spacing.md }}>
           {lines.map(l => (
             <View key={l.text} style={{ flexDirection: 'row', gap: spacing.md, alignItems: 'center' }}>
@@ -70,6 +68,7 @@ export const SharingPrompt = () => {
             </View>
           ))}
         </View>
+        <CustomText variant="body" color={colors.inkMuted}>You can choose what to share with your buddies at any time in the Profile tab.</CustomText>
       </View>
     </BottomSheet>
   );
