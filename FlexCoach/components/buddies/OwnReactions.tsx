@@ -30,7 +30,7 @@ export const OwnReactions = ({ items }: { items: Activity[] }) => {
                 .sort((a, b) => a[1].at - b[1].at)
                 .map(([uid, r]) => (
                   <View key={uid} style={{ flexDirection: 'row', alignItems: 'center', gap: 4, paddingHorizontal: spacing.sm, height: 28, borderRadius: radius.pill, backgroundColor: colors.surfaceRaised }}>
-                    <CustomText variant="caption" style={{ fontSize: 15, lineHeight: 18 }}>{r.emoji}</CustomText>
+                    <CustomText variant="caption" style={{ fontSize: 15, lineHeight: 20 }}>{r.emoji}</CustomText>
                     <CustomText variant="caption" color={colors.inkMuted}>{r.name?.split(' ')[0] ?? 'A buddy'}</CustomText>
                   </View>
                 ))}

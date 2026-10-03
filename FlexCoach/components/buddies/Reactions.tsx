@@ -71,7 +71,7 @@ export const Reactions = ({ reactions, myUid, onReact, compact = false }: Props)
               borderColor: selected ? colors.accent : colors.transparent,
             }}
           >
-            <CustomText variant="caption" style={{ fontSize: 15, lineHeight: 18 }}>{emoji}</CustomText>
+            <CustomText variant="caption" style={{ fontSize: 15, lineHeight: 20 }}>{emoji}</CustomText>
             <CustomText variant="caption" color={selected ? colors.accent : colors.inkMuted}>{count}</CustomText>
           </TouchableOpacity>
         );
