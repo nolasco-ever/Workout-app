@@ -35,9 +35,15 @@ export const PhotoViewer = ({ images, captions = [], index, onClose }: Props) =>
   const { width, height } = useWindowDimensions();
   const pager = useRef<React.ComponentRef<typeof ScrollView>>(null);
   const [page, setPage] = useState(index ?? 0);
+  // The current page for the scroll callbacks, which can hold a stale `page`.
+  const pageRef = useRef(index ?? 0);
   // Mirrors the zoom on the JS side so the pager and the dismiss drag can be
   // switched off while zoomed in.
   const [zoomed, setZoomed] = useState(false);
+  // A pinch's fingers also move sideways, and the pager would take that as
+  // a scroll, snap back a moment later and reset the zoom on "page change".
+  // So the pager is frozen while a pinch is in progress.
+  const [pinching, setPinching] = useState(false);
   const open = index !== null;
 
   const scale = useSharedValue(1);
@@ -63,7 +69,9 @@ export const PhotoViewer = ({ images, captions = [], index, onClose }: Props) =>
   useEffect(() => {
     if (index === null) return;
     setPage(index);
+    pageRef.current = index;
     setZoomed(false);
+    setPinching(false);
     scale.value = 1;
     savedScale.value = 1;
     panX.value = 0;
@@ -81,11 +89,18 @@ export const PhotoViewer = ({ images, captions = [], index, onClose }: Props) =>
 
   const onPageChange = (x: number) => {
     const next = Math.round(x / width);
-    if (next !== page) {
+    if (next !== pageRef.current) {
+      pageRef.current = next;
       resetZoom();
       setZoomed(false);
       setPage(next);
     }
+  };
+
+  /** Put the pager back on its page after a pinch may have nudged it. */
+  const settlePager = () => {
+    setPinching(false);
+    pager.current?.scrollTo({ x: pageRef.current * width, animated: true });
   };
 
   const finish = () => {
@@ -96,6 +111,9 @@ export const PhotoViewer = ({ images, captions = [], index, onClose }: Props) =>
   };
 
   const pinch = Gesture.Pinch()
+    .onBegin(() => {
+      runOnJS(setPinching)(true);
+    })
     .onUpdate(e => {
       scale.value = Math.min(MAX_ZOOM, Math.max(1, savedScale.value * e.scale));
     })
@@ -107,6 +125,9 @@ export const PhotoViewer = ({ images, captions = [], index, onClose }: Props) =>
         savedScale.value = scale.value;
         runOnJS(setZoomed)(true);
       }
+    })
+    .onFinalize(() => {
+      runOnJS(settlePager)();
     });
 
   // Not zoomed: a mostly vertical drag moves the photo towards dismissal and
@@ -178,7 +199,7 @@ export const PhotoViewer = ({ images, captions = [], index, onClose }: Props) =>
             ref={pager}
             horizontal
             pagingEnabled
-            scrollEnabled={!zoomed && images.length > 1}
+            scrollEnabled={!zoomed && !pinching && images.length > 1}
             bounces={false}
             showsHorizontalScrollIndicator={false}
             onMomentumScrollEnd={e => onPageChange(e.nativeEvent.contentOffset.x)}
