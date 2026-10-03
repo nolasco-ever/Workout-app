@@ -1,4 +1,6 @@
 import {
+  AuthorizationRequestStatus,
+  getRequestStatusForAuthorization,
   isHealthDataAvailable,
   queryQuantitySamples,
   queryStatisticsCollectionForQuantity,
@@ -10,6 +12,9 @@ import { HealthService } from './types';
 
 const STEPS = 'HKQuantityTypeIdentifierStepCount' as const;
 const BODY_MASS = 'HKQuantityTypeIdentifierBodyMass' as const;
+
+/** Everything the app asks Apple Health for; the same set for asking and for checking. */
+const SCOPE = { toRead: [STEPS, BODY_MASS], toShare: [BODY_MASS] } as const;
 
 const startOfDay = (d: Date) => new Date(d.getFullYear(), d.getMonth(), d.getDate());
 
@@ -27,9 +32,21 @@ export const healthService: HealthService = {
 
   requestAccess: async () => {
     try {
-      return await requestAuthorization({ toRead: [STEPS, BODY_MASS], toShare: [BODY_MASS] });
+      return await requestAuthorization(SCOPE);
     } catch (err) {
       console.warn('HealthKit authorization failed', err);
+      return false;
+    }
+  },
+
+  // HealthKit never says whether reading was allowed (that would leak
+  // health data), but it does say whether the sheet still needs showing.
+  // That is the "Authorization not determined" case after a reinstall.
+  needsAccessRequest: async () => {
+    try {
+      return (await getRequestStatusForAuthorization(SCOPE)) === AuthorizationRequestStatus.shouldRequest;
+    } catch (err) {
+      console.warn('HealthKit request status failed', err);
       return false;
     }
   },

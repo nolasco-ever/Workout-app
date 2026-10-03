@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useAuth } from '../auth/AuthProvider';
 import { DailySteps, healthService } from '../health';
 import { connectHealth, importHealthWeights } from '../services/healthSync';
@@ -27,6 +27,10 @@ export const useSteps = (): StepsState => {
   const [days, setDays] = useState<DailySteps[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  // The permission sheet is re-shown at most once per launch: a reinstall
+  // forgets the grant while the profile still says connected, and the user
+  // already said yes once. Declining again lands on the card's Reconnect.
+  const reasked = useRef(false);
 
   useEffect(() => {
     healthService.isAvailable().then(setAvailable);
@@ -38,10 +42,15 @@ export const useSteps = (): StepsState => {
     if (!uid || !connected) return;
     setLoading(true);
     try {
+      if (!reasked.current && (await healthService.needsAccessRequest())) {
+        reasked.current = true;
+        await healthService.requestAccess();
+      }
       try {
         setDays(await healthService.getDailySteps(7));
         setError(null);
       } catch (err) {
+        console.warn('steps read failed', err);
         setError(err instanceof Error ? err.message : String(err));
       }
       try {
@@ -61,8 +70,10 @@ export const useSteps = (): StepsState => {
   const connect = useCallback(async () => {
     if (!uid) return false;
     const ok = await connectHealth(uid);
+    // Reconnecting from the card: read again right away so it fills in.
+    if (ok && connected) await refresh();
     return ok;
-  }, [uid]);
+  }, [uid, connected, refresh]);
 
   const todaySteps = days.length ? days[days.length - 1].steps : null;
   const weekAverage = days.length ? Math.round(days.reduce((n, d) => n + d.steps, 0) / days.length) : null;

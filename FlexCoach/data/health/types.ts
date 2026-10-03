@@ -26,6 +26,12 @@ export interface HealthService {
   isAvailable(): Promise<boolean>;
   /** Show the system permission sheet. Resolves true when the sheet completed. */
   requestAccess(): Promise<boolean>;
+  /**
+   * The store has never shown this install its permission sheet, so reads
+   * will fail until requestAccess runs again. True after a reinstall of an
+   * app whose profile says it is connected. Resolves false on any doubt.
+   */
+  needsAccessRequest(): Promise<boolean>;
   /** Step totals per day for the last `days` days, oldest first, today last. Rejects if the store can't be read. */
   getDailySteps(days: number): Promise<DailySteps[]>;
   /** Body weight samples on or after `sinceDate`. */

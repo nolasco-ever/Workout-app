@@ -1,4 +1,4 @@
-import { aggregateGroupByPeriod, getSdkStatus, initialize, insertRecords, readRecords, requestPermission, SdkAvailabilityStatus } from 'react-native-health-connect';
+import { aggregateGroupByPeriod, getGrantedPermissions, getSdkStatus, initialize, insertRecords, readRecords, requestPermission, SdkAvailabilityStatus } from 'react-native-health-connect';
 import { addDays, fromLocalDate, toLocalDate, today } from '../engine/dates';
 import { HealthService } from './types';
 
@@ -33,6 +33,19 @@ export const healthService: HealthService = {
       return granted.length > 0;
     } catch (err) {
       console.warn('Health Connect permission failed', err);
+      return false;
+    }
+  },
+
+  // Health Connect lists what is granted; no steps read means the sheet
+  // has to come back (a reinstall clears grants).
+  needsAccessRequest: async () => {
+    try {
+      if (!(await ready())) return false;
+      const granted = await getGrantedPermissions();
+      return !granted.some(p => 'recordType' in p && p.recordType === 'Steps' && p.accessType === 'read');
+    } catch (err) {
+      console.warn('Health Connect granted permissions failed', err);
       return false;
     }
   },

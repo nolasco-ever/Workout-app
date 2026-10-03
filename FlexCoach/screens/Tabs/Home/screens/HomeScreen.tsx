@@ -337,9 +337,20 @@ export const HomeScreen = () => {
                 <BarChart bars={steps.days.map(d => ({ label: shortDate(d.date).replace(' ', '\u00a0'), value: d.steps }))} format={v => compactNumber(v)} height={120} />
               )}
               {steps.days.length === 0 && !steps.loading && (
-                <CustomText variant="caption" color={colors.inkMuted}>
-                  {steps.error ? `Couldn't read steps from ${steps.platformName}: ${steps.error}` : `No step data yet. If you declined access, allow it in ${steps.platformName} settings.`}
-                </CustomText>
+                steps.error ? (
+                  <>
+                    <CustomText variant="body" color={colors.inkMuted}>
+                      {steps.platformName} isn't sharing steps right now. That can happen after reinstalling the app or a system update. Reconnect to pick it back up.
+                    </CustomText>
+                    <View style={{ marginTop: spacing.md }}>
+                      <PrimaryButton label={`Reconnect ${steps.platformName}`} icon={generalIcons.personRunning} onPress={() => steps.connect()} />
+                    </View>
+                  </>
+                ) : (
+                  <CustomText variant="caption" color={colors.inkMuted}>
+                    No step data yet. If you declined access, allow it in {steps.platformName} settings.
+                  </CustomText>
+                )
               )}
             </>
           )}
