@@ -27,7 +27,13 @@ export const niceTicks = (min: number, max: number, count = 4): number[] => {
   const step = (norm >= 5 ? 10 : norm >= 2 ? 5 : norm >= 1 ? 2 : 1) * mag;
   const start = Math.floor(min / step) * step;
   const ticks: number[] = [];
-  for (let v = start; v <= max + step * 0.5; v += step) ticks.push(Number(v.toFixed(6)));
+  // Always end on or above max: a chart that scales to the last tick must
+  // never draw a value past its top gridline (6 sets with a top tick of 5
+  // put the bar through its own label).
+  for (let v = start; ; v += step) {
+    ticks.push(Number(v.toFixed(6)));
+    if (v >= max - step * 1e-6) break;
+  }
   return ticks;
 };
 
