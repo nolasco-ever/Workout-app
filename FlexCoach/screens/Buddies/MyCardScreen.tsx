@@ -66,6 +66,7 @@ export const MyCardScreen = () => {
             <IronCard
               card={card}
               unit={unit}
+              distanceUnit={profile?.distanceUnit ?? 'mi'}
               footer={
                 <View style={{ alignItems: 'center', gap: spacing.sm, paddingTop: spacing.sm, borderTopWidth: 1, borderTopColor: colors.line }}>
                   <View style={{ padding: spacing.md, backgroundColor: '#FFFFFF', borderRadius: radius.md }}>

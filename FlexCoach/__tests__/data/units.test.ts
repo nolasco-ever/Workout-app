@@ -1,4 +1,4 @@
-import { formatDuration, formatWeight, fromDisplayWeight, parseNumber, toDisplayWeight } from '../../data/engine/units';
+import { formatDuration, formatRecordValue, formatWeight, fromDisplayWeight, parseNumber, toDisplayWeight } from '../../data/engine/units';
 
 describe('weight conversion', () => {
   it('rounds pounds to the nearest half and kilograms to the nearest quarter', () => {
@@ -27,5 +27,15 @@ describe('duration and input parsing', () => {
     expect(parseNumber('12,5')).toBe(12.5);
     expect(parseNumber('')).toBeNull();
     expect(parseNumber('abc')).toBeNull();
+  });
+});
+
+describe('formatRecordValue', () => {
+  it('formats each record kind in the user\'s units', () => {
+    expect(formatRecordValue('weight', 45.359237, 'lb', 'mi')).toBe('100 lb');
+    expect(formatRecordValue('reps', 12, 'lb', 'mi')).toBe('12 reps');
+    expect(formatRecordValue('duration', 90, 'lb', 'mi')).toBe('1:30');
+    expect(formatRecordValue('distance', 1480.59648, 'lb', 'mi')).toBe('0.92 mi');
+    expect(formatRecordValue('distance', 1480.59648, 'kg', 'km')).toBe('1.48 km');
   });
 });

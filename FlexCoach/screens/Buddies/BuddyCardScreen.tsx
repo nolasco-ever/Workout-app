@@ -166,7 +166,7 @@ export const BuddyCardScreen = () => {
         ) : card === null ? (
           <CustomText variant="body" color={colors.inkMuted} centered>{name ?? 'This person'} hasn't logged a workout yet, so there's no card to show.</CustomText>
         ) : (
-          <IronCard card={card} unit={unit} />
+          <IronCard card={card} unit={unit} distanceUnit={profile?.distanceUnit ?? 'mi'} />
         )}
 
         {!notFound && action()}

@@ -8,7 +8,7 @@ import { useInsights } from '../../../../data/hooks/useInsights';
 import { useWorkoutHome } from '../../../../data/hooks/useWorkoutHome';
 import { useSteps } from '../../../../data/hooks/useSteps';
 import { BarChart } from '../../../../components/charts/BarChart';
-import { formatWeight, kgToLb, toDisplayWeight } from '../../../../data/engine/units';
+import { formatRecordValue, formatWeight, kgToLb, toDisplayWeight } from '../../../../data/engine/units';
 import { findWorkout } from '../../../../data/engine/schedule';
 import { countWorkingSets, totalVolumeKg } from '../../../../data/engine/stats';
 import { CustomText } from '../../../../components/text/customText';
@@ -86,6 +86,7 @@ export const HomeScreen = () => {
   const bottomInset = useTabScrollInset();
   const { uid, profile } = useAuth();
   const unit = profile?.weightUnit ?? 'lb';
+  const dist = profile?.distanceUnit ?? 'mi';
   const ins = useInsights();
   const { unreadCount } = useNotificationFeed();
   const openNotifications = () => (navigation as unknown as NavigationProp<AppStackParams>).navigate('NotificationsScreen');
@@ -268,9 +269,9 @@ export const HomeScreen = () => {
                 <Icon icon={generalIcons.trophy} size={18} color={colors.warning} />
                 <View style={{ flex: 1 }}>
                   <CustomText variant="bodyStrong">{pr.exerciseName}</CustomText>
-                  <CustomText variant="caption" color={colors.inkMuted}>{dateLabel(pr.date)}{pr.previousValue !== null ? ` · up from ${pr.kind === 'weight' ? formatWeight(pr.previousValue, unit) : pr.previousValue}` : ' · first record'}</CustomText>
+                  <CustomText variant="caption" color={colors.inkMuted}>{dateLabel(pr.date)}{pr.previousValue !== null ? ` · up from ${formatRecordValue(pr.kind, pr.previousValue, unit, dist)}` : ' · first record'}</CustomText>
                 </View>
-                <CustomText variant="bodyStrong" color={colors.accent}>{pr.kind === 'weight' ? formatWeight(pr.value, unit) : pr.kind === 'reps' ? `${pr.value} reps` : `${pr.value}`}</CustomText>
+                <CustomText variant="bodyStrong" color={colors.accent}>{formatRecordValue(pr.kind, pr.value, unit, dist)}</CustomText>
               </TouchableOpacity>
             ))}
           </SurfaceCard>

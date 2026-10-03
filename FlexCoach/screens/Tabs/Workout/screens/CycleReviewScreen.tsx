@@ -4,7 +4,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { NavigationProp, RouteProp, useNavigation, useRoute } from '@react-navigation/native';
 import { useAuth } from '../../../../data/auth/AuthProvider';
 import { Cycle, Plan } from '../../../../data/models';
-import { formatDistance, formatDuration, formatWeight, toDisplayWeight } from '../../../../data/engine/units';
+import { formatDuration, formatRecordValue, toDisplayWeight } from '../../../../data/engine/units';
 import { CycleReview, getCycleReview, loadCycleForReview, startNextCycle } from '../../../../data/services/workoutService';
 import { countWorkingSets } from '../../../../data/engine/stats';
 import { nextCycleNumberAfter } from '../../../../data/engine/schedule';
@@ -132,7 +132,7 @@ export const CycleReviewScreen = () => {
             <View key={`${pr.exerciseId}-${pr.sessionId}`} style={{ flexDirection: 'row', justifyContent: 'space-between', paddingVertical: spacing.xs }}>
               <CustomText variant="body">{pr.exerciseName}</CustomText>
               <CustomText variant="bodyStrong" color={colors.accent}>
-                {pr.kind === 'weight' ? formatWeight(pr.value, unit) : pr.kind === 'reps' ? `${pr.value} reps` : pr.kind === 'duration' ? formatDuration(pr.value) : formatDistance(pr.value, dist)}
+                {formatRecordValue(pr.kind, pr.value, unit, dist)}
               </CustomText>
             </View>
           ))}

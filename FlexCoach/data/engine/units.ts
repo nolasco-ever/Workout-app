@@ -41,6 +41,24 @@ export const formatDistance = (m: number | null, unit: DistanceUnit): string => 
   return v === null ? '—' : `${v} ${unit}`;
 };
 
+/**
+ * A personal record's value in the user's units, by the kind of record:
+ * "100 lb", "12 reps", "1:30", "0.92 mi". The one place record values are
+ * formatted so the feed, the cards and the review screens agree.
+ */
+export const formatRecordValue = (kind: 'weight' | 'reps' | 'duration' | 'distance', value: number, weightUnit: WeightUnit, distanceUnit: DistanceUnit): string => {
+  switch (kind) {
+    case 'weight':
+      return formatWeight(value, weightUnit);
+    case 'reps':
+      return `${value} reps`;
+    case 'duration':
+      return formatDuration(value);
+    case 'distance':
+      return formatDistance(value, distanceUnit);
+  }
+};
+
 /** Seconds to m:ss, or h:mm:ss past an hour. */
 export const formatDuration = (sec: number | null): string => {
   if (sec === null) return '—';

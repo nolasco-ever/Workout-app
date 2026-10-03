@@ -1,7 +1,7 @@
 import React from 'react';
 import { View } from 'react-native';
-import { PublicProfile, WeightUnit } from '../../data/models';
-import { formatWeight, kgToLb } from '../../data/engine/units';
+import { DistanceUnit, PublicProfile, WeightUnit } from '../../data/models';
+import { formatRecordValue, kgToLb } from '../../data/engine/units';
 import { dateLabel } from '../charts/scale';
 import { toLocalDate } from '../../data/engine/dates';
 import { CustomText } from '../text/customText';
@@ -29,11 +29,11 @@ const Stat = ({ label, value, sub }: { label: string; value: string; sub?: strin
  * for your own card, a scanned card, and a buddy's page. Shows numbers,
  * never sets or body weight.
  */
-export const IronCard = ({ card, unit, footer }: { card: PublicProfile; unit: WeightUnit; footer?: React.ReactNode }) => {
+export const IronCard = ({ card, unit, distanceUnit = 'mi', footer }: { card: PublicProfile; unit: WeightUnit; distanceUnit?: DistanceUnit; footer?: React.ReactNode }) => {
   const { colors, spacing, radius } = useTheme();
   const since = card.trainingSince ? dateLabel(toLocalDate(new Date(card.trainingSince))) : null;
   const best = card.bestRecord ?? null;
-  const bestValue = best ? (best.kind === 'weight' ? formatWeight(best.value, unit) : best.kind === 'reps' ? `${best.value} reps` : best.kind === 'duration' ? `${Math.round(best.value)}s` : `${Math.round(best.value)} m`) : '—';
+  const bestValue = best ? formatRecordValue(best.kind, best.value, unit, distanceUnit) : '—';
   const volume = card.totalVolumeKg ?? 0;
   const volumeText = volume > 0 ? `${compact(unit === 'lb' ? kgToLb(volume) : volume)} ${unit}` : '—';
   return (

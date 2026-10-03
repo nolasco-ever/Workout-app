@@ -3,7 +3,7 @@ import { newId } from '../engine/ids';
 import { today } from '../engine/dates';
 import { buildPublicProfile, formatInviteCode, generateInviteCode, inviteUrl, isStreakMilestone } from '../engine/buddies';
 import { countWorkingSets, totalVolumeKg, summarizeCycle } from '../engine/stats';
-import { formatWeight } from '../engine/units';
+import { formatRecordValue, formatWeight } from '../engine/units';
 import { buddyRepository } from '../repositories/buddyRepository';
 import { userRepository } from '../repositories/userRepository';
 import { sessionRepository } from '../repositories/sessionRepository';
@@ -167,12 +167,13 @@ export const afterSessionFinished = async (uid: Id, profile: UserProfile | null,
   const volume = totalVolumeKg([session]);
   const name = firstName(profile?.displayName);
   const displayName = profile?.displayName ?? null;
-  const recordLines = records.map(pr => ({ exerciseName: pr.exerciseName, value: pr.kind === 'weight' ? formatWeight(pr.value, unit) : pr.kind === 'reps' ? `${pr.value} reps` : `${pr.value}` }));
+  const dist = profile?.distanceUnit ?? 'mi';
+  const recordLines = records.map(pr => ({ exerciseName: pr.exerciseName, value: formatRecordValue(pr.kind, pr.value, unit, dist) }));
   const detail = `${sets} set${sets === 1 ? '' : 's'}${volume > 0 ? ` · ${formatWeight(volume, unit).replace(/\.0+ /, ' ')} moved` : ''}`;
   const activityId = `workout_done:${session.id}`;
   await recordActivity(uid, activityId, 'workout_done', `Finished ${session.workoutName}`, detail, session.finishedAt ?? Date.now(), { sessionId: session.id, records: recordLines });
   for (const pr of records) {
-    const value = pr.kind === 'weight' ? formatWeight(pr.value, unit) : pr.kind === 'reps' ? `${pr.value} reps` : `${pr.value}`;
+    const value = formatRecordValue(pr.kind, pr.value, unit, dist);
     await recordActivity(uid, `record:${session.id}:${pr.exerciseId}:${pr.kind}`, 'record', `New record: ${pr.exerciseName}`, value, Date.now(), { sessionId: session.id });
   }
   // Short on purpose: the sets and volume are on the line it opens.
