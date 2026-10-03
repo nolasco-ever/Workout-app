@@ -132,6 +132,13 @@ export const startSession = async (uid: Id, plan: Plan, cycle: Cycle, occurrence
   return { session, cycle: updatedCycle };
 };
 
+/** Start a workout outside the plan, empty; exercises are added as it goes. */
+export const startQuickSession = async (uid: Id): Promise<Session> => {
+  const session = newQuickSession(uid, today(), newId);
+  await sessionRepository.save(uid, session);
+  return session;
+};
+
 /**
  * Reschedule a scheduled workout to a chosen day. A rest day there swaps
  * into the vacated slot; a workout already on that day is pushed forward
@@ -256,7 +263,8 @@ export const substituteExercise = (session: Session, sessionExerciseId: Id, repl
   return { ...session, exercises: session.exercises.map(e => (e.id === ex.id ? swapped : e)) };
 };
 
-export { addExerciseTo, removeExerciseFrom } from '../engine/sessionExtras';
+export { addExerciseTo, removeExerciseFrom, isQuickSession } from '../engine/sessionExtras';
+import { newQuickSession } from '../engine/sessionExtras';
 
 export const saveExercises = (uid: Id, session: Session): Promise<Session> => sessionRepository.saveExercises(uid, session);
 
@@ -274,17 +282,18 @@ export const saveSets = (uid: Id, session: Session, sessionExerciseId: Id): Prom
 
 export interface SessionResult {
   session: Session;
-  cycle: Cycle;
+  /** Null for a quick workout, which has no cycle. */
+  cycle: Cycle | null;
   durationSec: number;
   volumeKg: number;
   setsCompleted: number;
   personalRecords: PersonalRecord[];
 }
 
-export const finishSession = async (uid: Id, profile: UserProfile | null, session: Session, cycle: Cycle): Promise<SessionResult> => {
+export const finishSession = async (uid: Id, profile: UserProfile | null, session: Session, cycle: Cycle | null): Promise<SessionResult> => {
   const finished = await sessionRepository.finish(uid, session, 'completed');
-  const updatedCycle = session.occurrenceId ? markOccurrence(cycle, session.occurrenceId, 'completed', session.id) : cycle;
-  if (updatedCycle !== cycle) await cycleRepository.save(uid, updatedCycle);
+  const updatedCycle = cycle && session.occurrenceId ? markOccurrence(cycle, session.occurrenceId, 'completed', session.id) : cycle;
+  if (updatedCycle && updatedCycle !== cycle) await cycleRepository.save(uid, updatedCycle);
 
   const completed = await sessionRepository.listCompleted(uid);
   const history = completed.filter(s => s.id !== session.id);
@@ -301,9 +310,9 @@ export const finishSession = async (uid: Id, profile: UserProfile | null, sessio
   };
 };
 
-export const abandonSession = async (uid: Id, session: Session, cycle: Cycle): Promise<Cycle> => {
+export const abandonSession = async (uid: Id, session: Session, cycle: Cycle | null): Promise<Cycle | null> => {
   await sessionRepository.finish(uid, session, 'abandoned');
-  if (!session.occurrenceId) return cycle;
+  if (!cycle || !session.occurrenceId) return cycle;
   const updated: Cycle = {
     ...cycle,
     occurrences: cycle.occurrences.map(o => (o.id === session.occurrenceId ? { ...o, status: 'scheduled' as const, sessionId: null } : o)),

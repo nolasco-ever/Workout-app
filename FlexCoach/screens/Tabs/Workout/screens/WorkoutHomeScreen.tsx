@@ -8,7 +8,7 @@ import { useAuth } from '../../../../data/auth/AuthProvider';
 import { Occurrence, Plan } from '../../../../data/models';
 import { findWorkout } from '../../../../data/engine/schedule';
 import { fromLocalDate } from '../../../../data/engine/dates';
-import { pushWorkoutTo, seedSamplePlan, skipWorkout, startSession } from '../../../../data/services/workoutService';
+import { pushWorkoutTo, seedSamplePlan, skipWorkout, startQuickSession, startSession } from '../../../../data/services/workoutService';
 import { activatePlan, startFreshCycle, validatePlan } from '../../../../data/services/planService';
 import { CustomText } from '../../../../components/text/customText';
 import { Icon } from '../../../../components/icons/Icon';
@@ -89,6 +89,15 @@ export const WorkoutHomeScreen = () => {
   const todayWorkout = plan && state.todayOccurrence ? findWorkout(plan, state.todayOccurrence.workoutId) : undefined;
   const resume = state.inProgressSession;
 
+  /** Nothing planned, or not in the mood for what is: an empty workout to fill as it goes. */
+  const startQuick = () =>
+    run('quick', async () => {
+      if (!uid) return;
+      const session = await startQuickSession(uid);
+      navigation.navigate('SessionScreen', { plan: null, cycle: null, session });
+    });
+  const quickButton = <PrimaryButton label="Quick workout" variant="outline" icon={generalIcons.zap} busy={busy === 'quick'} onPress={startQuick} />;
+
   return (
     <SafeAreaView edges={['top', 'left', 'right']} style={{ flex: 1, backgroundColor: colors.ground }}>
       <ScrollView
@@ -100,12 +109,25 @@ export const WorkoutHomeScreen = () => {
         <TabHeader title="Workout" action={{ icon: generalIcons.list, accessibilityLabel: 'My plans', onPress: () => openPlans() }} />
         {loading && <ActivityIndicator color={colors.accent} style={{ marginTop: spacing.xxl }} />}
 
+        {/* Resume, whatever else is going on: a quick workout has no plan behind it. */}
+        {!loading && resume && (
+          <Card tone="accent">
+            <CustomText variant="overline" color={colors.accent}>In progress</CustomText>
+            <CustomText variant="heading" style={{ marginTop: spacing.xs }}>{resume.workoutName}</CustomText>
+            <CustomText variant="caption" color={colors.inkMuted} style={{ marginBottom: spacing.md }}>
+              Started {new Date(resume.startedAt).toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' })}
+            </CustomText>
+            <PrimaryButton label="Resume workout" icon={generalIcons.play} onPress={() => navigation.navigate('SessionScreen', { plan: resume.planId && plan ? plan : null, cycle: resume.cycleId && cycle ? cycle : null, session: resume })} />
+          </Card>
+        )}
+
         {!loading && plan && !cycle && (
           <View style={{ gap: spacing.lg, padding: spacing.sm, paddingTop: spacing.xl }}>
             <CustomText variant="overline" color={colors.inkMuted}>{plan.name}</CustomText>
             <CustomText variant="title">Ready when you are</CustomText>
             <CustomText variant="body" color={colors.inkMuted}>This plan is active but has no cycle running. Start one and today's workout appears here.</CustomText>
             <PrimaryButton label="Start cycle" busy={busy === 'cycle'} onPress={() => run('cycle', async () => { if (uid) await startFreshCycle(uid, plan); })} />
+            {!resume && quickButton}
           </View>
         )}
 
@@ -160,6 +182,7 @@ export const WorkoutHomeScreen = () => {
               </Card>
             )}
             <PrimaryButton label="Create a plan" variant={drafts.length ? 'outline' : 'filled'} onPress={() => openPlans()} />
+            {!resume && quickButton}
           </View>
         )}
 
@@ -190,18 +213,6 @@ export const WorkoutHomeScreen = () => {
               See how it went, then start the next one.
             </CustomText>
             <PrimaryButton label="Review cycle" onPress={() => navigation.navigate('CycleReviewScreen', { plan, cycle })} />
-          </Card>
-        )}
-
-        {/* Resume */}
-        {resume && (
-          <Card tone="accent">
-            <CustomText variant="overline" color={colors.accent}>In progress</CustomText>
-            <CustomText variant="heading" style={{ marginTop: spacing.xs }}>{resume.workoutName}</CustomText>
-            <CustomText variant="caption" color={colors.inkMuted} style={{ marginBottom: spacing.md }}>
-              Started {new Date(resume.startedAt).toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' })}
-            </CustomText>
-            <PrimaryButton label="Resume workout" icon={generalIcons.play} onPress={() => navigation.navigate('SessionScreen', { plan, cycle, session: resume })} />
           </Card>
         )}
 
@@ -283,6 +294,9 @@ export const WorkoutHomeScreen = () => {
             )}
           </Card>
         )}
+
+        {/* Off-plan, any day: a quick workout. */}
+        {!resume && quickButton}
 
         {/* Cycle list */}
         <View>

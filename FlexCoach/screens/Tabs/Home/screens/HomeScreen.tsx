@@ -30,6 +30,7 @@ import { AppStackParams } from '../../../../appNavigators/AppStack';
 import { devFlags } from '../../../../dev/flags';
 import { seedSampleWeights } from '../../../../data/services/devSeeds';
 import { askNotToday } from '../../Workout/components/notToday';
+import { startQuickSession } from '../../../../data/services/workoutService';
 import { useBuddies } from '../../../../data/hooks/useBuddies';
 import { useBuddyActivity } from '../../../../data/hooks/useBuddyActivity';
 import { useBuddyPlans } from '../../../../data/hooks/useBuddyPlans';
@@ -134,6 +135,14 @@ export const HomeScreen = () => {
     if (!uid || !home.plan || !home.cycle || !todayOcc) return;
     askNotToday(uid, home.plan, home.cycle, todayOcc, home.todayDate, profile, fn => { fn().catch(err => console.warn(err)); });
   };
+  // Nothing planned today and nothing done yet: offer a workout outside the plan.
+  const canQuick = !!uid && !home.loading && !home.inProgressSession && !ins.todaySession && (!home.plan || !todayOcc || todayOcc.status !== 'scheduled');
+  const quickWorkout = () => {
+    if (!uid) return;
+    startQuickSession(uid)
+      .then(session => (navigation as any).navigate('WorkoutStack', { screen: 'SessionScreen', params: { plan: null, cycle: null, session }, initial: false }))
+      .catch(err => console.warn('quick workout failed', err));
+  };
   const todayStatus = !home.plan
     ? { tone: colors.inkMuted, kicker: 'Today', headline: 'No plan yet', detail: 'Set up a plan and your daily workout shows here.', action: 'Set up a plan' }
     : home.inProgressSession
@@ -173,6 +182,11 @@ export const HomeScreen = () => {
                 {canDefer && (
                   <TouchableOpacity onPress={notToday} hitSlop={8} style={{ alignSelf: 'flex-start', marginTop: spacing.sm }}>
                     <CustomText variant="label" color={colors.inkMuted}>Not today? Move or skip</CustomText>
+                  </TouchableOpacity>
+                )}
+                {canQuick && (
+                  <TouchableOpacity onPress={quickWorkout} hitSlop={8} accessibilityRole="button" style={{ alignSelf: 'flex-start', marginTop: spacing.sm }}>
+                    <CustomText variant="label" color={colors.accent}>Still want to train? Quick workout</CustomText>
                   </TouchableOpacity>
                 )}
               </View>

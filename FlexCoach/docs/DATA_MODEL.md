@@ -49,6 +49,15 @@ The exercise catalog is bundled in the app, not stored in Firestore.
 
 Two schedule modes share one occurrence model:
 
+- **Quick workout** (build 16): a `Session` with `planId`, `cycleId`,
+  `occurrenceId` and `workoutId` all null and the name "Quick workout"
+  (`engine/sessionExtras.newQuickSession`, started by
+  `startQuickSession`). It starts empty; the session screen opens the
+  exercise picker at once and every exercise is session-only. It counts
+  like any session (history, streak, records, buddy feed, Iron Card) and
+  touches no occurrence, so the day's planned workout stays as it was.
+  Leaving one with nothing logged abandons it without asking. Offered on
+  the Workout tab in every state and on Home when nothing is planned.
 - **Missed workouts** (build 16): the in-app sheet `MissedWorkoutPrompt` (app root) asks on the first open after a workout day went by: Do it today (cascading push), Move to another day (calendar; `moveWorkoutToDate` pushes any workout on the chosen day forward first), or Skip. Only the most recent missed workout is asked about; `resolveMissed` marks older ones skipped with reason `missed` and stamps `Occurrence.missedPromptedAt` so the sheet shows once.
 - **Rotation**: an ordered list of slots repeated day after day. Pushing a
   missed workout shifts the remainder of the cycle forward and the cycle

@@ -17,6 +17,7 @@ import {
   Smile,
   SmilePlus,
   Share2,
+  Zap,
   UserPlus,
   ChartColumn,
   ChartLine,
@@ -110,6 +111,8 @@ export const generalIcons = {
   smile: Smile,
   smilePlus: SmilePlus,
   share: Share2,
+  /** A bolt: a quick workout, done on the spot. */
+  zap: Zap,
   swap: ArrowLeftRight,
   userPlus: UserPlus,
   check: Check,

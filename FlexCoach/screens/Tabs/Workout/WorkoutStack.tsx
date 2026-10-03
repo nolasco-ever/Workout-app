@@ -18,7 +18,8 @@ import { SessionExercisesScreen } from './screens/SessionExercisesScreen';
 export type WorkoutStackParams = {
   WorkoutHomeScreen: undefined;
   WorkoutPreviewScreen: { plan: Plan; cycle: Cycle; occurrence: Occurrence };
-  SessionScreen: { plan: Plan; cycle: Cycle; session: Session };
+  /** Plan and cycle are null for a quick workout. */
+  SessionScreen: { plan: Plan | null; cycle: Cycle | null; session: Session };
   SessionCompleteScreen: { result: SessionResult };
   /** Either the live objects, or just an id (from a notification or the feed). */
   CycleReviewScreen: { plan: Plan; cycle: Cycle; cycleId?: undefined } | { cycleId: string; plan?: undefined; cycle?: undefined };

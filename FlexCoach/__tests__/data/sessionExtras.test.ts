@@ -1,6 +1,6 @@
 import { Session } from '../../data/models';
 import { searchCatalog } from '../../data/catalog/exerciseCatalog';
-import { addExerciseTo, removeExerciseFrom } from '../../data/engine/sessionExtras';
+import { addExerciseTo, isQuickSession, newQuickSession, removeExerciseFrom } from '../../data/engine/sessionExtras';
 
 let n = 0;
 const makeId = () => `id-${++n}`;
@@ -48,5 +48,17 @@ describe('adding exercises to a running session', () => {
     const { session, exercise } = addExerciseTo(base, pullUp, null, [], 'lb', makeId);
     expect(removeExerciseFrom(session, exercise.id).exercises.map(e => e.id)).toEqual(['e1']);
     expect(removeExerciseFrom(base, 'e1')).toBe(base);
+  });
+
+  it('builds an empty quick workout outside any plan', () => {
+    const quick = newQuickSession('u', '2026-10-03', makeId, 42);
+    expect(quick.exercises).toEqual([]);
+    expect(quick.planId).toBeNull();
+    expect(quick.cycleId).toBeNull();
+    expect(quick.occurrenceId).toBeNull();
+    expect(quick.workoutName).toBe('Quick workout');
+    expect(quick.status).toBe('in_progress');
+    expect(isQuickSession(quick)).toBe(true);
+    expect(isQuickSession({ planId: 'p', cycleId: 'c' })).toBe(false);
   });
 });

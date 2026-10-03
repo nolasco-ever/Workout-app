@@ -42,3 +42,28 @@ export const addExerciseTo = (session: Session, exercise: Exercise, plan: Plan |
 /** Take an exercise back out of the session, e.g. one added by mistake. The last exercise stays. */
 export const removeExerciseFrom = (session: Session, sessionExerciseId: Id): Session =>
   session.exercises.length <= 1 ? session : { ...session, exercises: session.exercises.filter(e => e.id !== sessionExerciseId) };
+
+/**
+ * A workout with no plan behind it: nothing planned today, but something
+ * is going in. Starts empty; the session screen opens the picker at once.
+ * Counts like any other session (history, streak, records, buddies).
+ */
+export const newQuickSession = (uid: Id, date: string, makeId: () => Id, now: number = Date.now()): Session => ({
+  id: makeId(),
+  ownerId: uid,
+  planId: null,
+  cycleId: null,
+  occurrenceId: null,
+  workoutId: null,
+  workoutName: 'Quick workout',
+  date,
+  startedAt: now,
+  finishedAt: null,
+  status: 'in_progress',
+  exercises: [],
+  createdAt: now,
+  updatedAt: now,
+});
+
+/** A session that stands on its own, outside any plan. */
+export const isQuickSession = (session: Pick<Session, 'planId' | 'cycleId'>): boolean => session.planId === null && session.cycleId === null;

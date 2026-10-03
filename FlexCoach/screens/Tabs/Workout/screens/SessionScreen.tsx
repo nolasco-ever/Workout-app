@@ -9,7 +9,7 @@ import { LoggedSet, Session, SessionExercise } from '../../../../data/models';
 import { findWorkout } from '../../../../data/engine/schedule';
 import { newId } from '../../../../data/engine/ids';
 import { getCatalogExercise } from '../../../../data/catalog/exerciseCatalog';
-import { abandonSession, addExerciseTo, addSetTo, addWarmupSetTo, finishSession, logSet, removeExerciseFrom, removeSetFrom, saveExercises, saveSets, substituteExercise } from '../../../../data/services/workoutService';
+import { abandonSession, addExerciseTo, addSetTo, addWarmupSetTo, finishSession, isQuickSession, logSet, removeExerciseFrom, removeSetFrom, saveExercises, saveSets, substituteExercise } from '../../../../data/services/workoutService';
 import { sessionRepository } from '../../../../data/repositories/sessionRepository';
 import { subscribeAdd, subscribeSwap } from '../components/swapChannel';
 import { publishSession, subscribeSessionCommands } from '../components/sessionChannel';
@@ -66,10 +66,12 @@ export const SessionScreen = () => {
   const [restFor, setRestFor] = useState(90);
   const [finishing, setFinishing] = useState(false);
 
-  const exercise = session.exercises[index];
-  const workoutEntry = findWorkout(plan, session.workoutId)?.exercises.find(e => e.id === exercise.workoutExerciseId);
+  // Undefined only while a quick workout has nothing in it yet.
+  const exercise: SessionExercise | undefined = session.exercises[index];
+  const workoutEntry = plan && exercise ? findWorkout(plan, session.workoutId)?.exercises.find(e => e.id === exercise.workoutExerciseId) : undefined;
   const restSec = workoutEntry?.restSec ?? 90;
-  const catalog = getCatalogExercise(exercise.exerciseId);
+  const catalog = exercise ? getCatalogExercise(exercise.exerciseId) : null;
+  const quick = isQuickSession(session);
   const total = session.exercises.length;
   const completedSets = useMemo(() => session.exercises.reduce((n, ex) => n + ex.sets.filter(s => s.completed).length, 0), [session]);
   const totalSets = useMemo(() => session.exercises.reduce((n, ex) => n + ex.sets.length, 0), [session]);
@@ -81,6 +83,14 @@ export const SessionScreen = () => {
   // disagreeing, and Resume on the Workout tab did nothing afterwards.
   const leavingRef = useRef(false);
   const confirmLeave = (leave: () => void) => {
+    // A quick workout with nothing logged has nothing to keep: just drop it.
+    const current = sessionRef.current;
+    if (isQuickSession(current) && !current.exercises.some(ex => ex.sets.some(st => st.completed))) {
+      leavingRef.current = true;
+      if (uid) abandonSession(uid, current, cycle).catch(err => console.warn('abandon failed', err));
+      leave();
+      return;
+    }
     Alert.alert('Leave workout?', 'Your sets are saved. You can resume from the Workout tab.', [
       { text: 'Stay', style: 'cancel' },
       {
@@ -122,6 +132,7 @@ export const SessionScreen = () => {
   };
 
   const toggleDone = (set: LoggedSet) => {
+    if (!exercise) return;
     const merged = fromDraft(exercise, set, drafts[set.id], units);
     const done = !set.completed;
     persist(exercise, { ...merged, completed: done, completedAt: done ? Date.now() : null });
@@ -190,6 +201,17 @@ export const SessionScreen = () => {
   // session from the channel and sends back jumps and removals.
   useEffect(() => publishSession(session), [session]);
   const openList = () => navigation.navigate('SessionExercisesScreen', { workoutName: session.workoutName, currentIndex: index });
+  const addExercise = () => navigation.navigate('ExercisePickerScreen', { mode: 'session', excludeIds: sessionRef.current.exercises.map(e => e.exerciseId) });
+  // A quick workout starts empty: the first thing to do is pick something, so the picker opens itself once.
+  const pickerOpened = useRef(false);
+  useEffect(() => {
+    if (pickerOpened.current || session.exercises.length > 0) return;
+    pickerOpened.current = true;
+    const id = setTimeout(addExercise, 350);
+    return () => clearTimeout(id);
+    // Only on mount with an empty session.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
   const goToRef = useRef(goTo);
   goToRef.current = goTo;
   const askRemoveRef = useRef<(ex: SessionExercise) => void>(() => undefined);
@@ -232,6 +254,7 @@ export const SessionScreen = () => {
   askRemoveRef.current = askRemoveExercise;
 
   const addWarmupSet = () => {
+    if (!exercise) return;
     const { session: next, set } = addWarmupSetTo(session, exercise.id, units.weight, newId);
     setSession(next);
     setDrafts(d => ({ ...d, [set.id]: toDraft(exercise, set, units) }));
@@ -239,6 +262,7 @@ export const SessionScreen = () => {
   };
 
   const addSet = () => {
+    if (!exercise) return;
     const { session: next, set } = addSetTo(session, exercise.id, newId);
     setSession(next);
     setDrafts(d => ({ ...d, [set.id]: toDraft(exercise, set, units) }));
@@ -248,7 +272,7 @@ export const SessionScreen = () => {
   // Any set can be swiped away, down to the last one. Removing a completed
   // set also takes it out of the count and the volume.
   const removeSet = (set: LoggedSet) => {
-    if (exercise.sets.length <= 1) return;
+    if (!exercise || exercise.sets.length <= 1) return;
     const next = removeSetFrom(session, exercise.id, set.id);
     setSession(next);
     if (uid) saveSets(uid, next, exercise.id).catch(err => console.warn('removeSet failed', err));
@@ -333,7 +357,7 @@ export const SessionScreen = () => {
       cancelRestOver().catch(() => undefined);
       return;
     }
-    scheduleRestOver(planRestOverNotification(restStartedAt, restFor, session.id, exercise.exerciseName)).catch(err => console.warn('rest timer notification failed', err));
+    scheduleRestOver(planRestOverNotification(restStartedAt, restFor, session.id, exercise?.exerciseName ?? '')).catch(err => console.warn('rest timer notification failed', err));
     // exercise.exerciseName only changes with `index`, which also resets the timer.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [restStartedAt, restFor, session.id, restOverEnabled, inBackground]);
@@ -350,7 +374,7 @@ export const SessionScreen = () => {
       if (AppState.currentState !== 'active' || Date.now() - endAt > 2000) return;
       Vibration.vibrate();
       if (!focusedRef.current) {
-        const { title, body, target } = planRestOverNotification(restStartedAt, restFor, session.id, exercise.exerciseName);
+        const { title, body, target } = planRestOverNotification(restStartedAt, restFor, session.id, exercise?.exerciseName ?? '');
         showInAppBanner({ title, body, target });
       }
     }, Math.max(0, endAt - Date.now()));
@@ -386,12 +410,20 @@ export const SessionScreen = () => {
             })}
           </View>
           <CustomText variant="caption" color={colors.inkMuted}>
-            Exercise {index + 1} of {total} · {completedSets}/{totalSets} sets
+            {total === 0 ? 'No exercises yet' : `Exercise ${index + 1} of ${total} · ${completedSets}/${totalSets} sets`}
           </CustomText>
         </View>
 
         <ScrollView contentContainerStyle={{ padding: spacing.lg }} keyboardShouldPersistTaps="handled" keyboardDismissMode="on-drag">
           {/* Keyed by exercise so a change mounts fresh content that slides in from the side it came from. */}
+          {!exercise && (
+            <View style={{ alignItems: 'center', gap: spacing.md, paddingTop: spacing.xxl }}>
+              <Icon icon={generalIcons.dumbbell} size={36} color={colors.inactive} />
+              <CustomText variant="heading" centered>What are you doing today?</CustomText>
+              <CustomText variant="body" color={colors.inkMuted} centered>Add an exercise, a run, a stretch, whatever it is. It all counts.</CustomText>
+            </View>
+          )}
+          {exercise && (
           <Animated.View key={exercise.id} entering={(slideDir.current === 1 ? SlideInRight : SlideInLeft).duration(240)} style={{ gap: spacing.lg }}>
           {/* Only the How-to link opens the tutorial, so a stray tap on the header doesn't leave the workout. */}
           <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.md }}>
@@ -429,7 +461,7 @@ export const SessionScreen = () => {
                   In place of {exercise.substitutedFor.exerciseName} for this workout
                 </CustomText>
               )}
-              {exercise.workoutExerciseId === null && !exercise.substitutedFor && (
+              {!quick && exercise.workoutExerciseId === null && !exercise.substitutedFor && (
                 <CustomText variant="caption" color={colors.inkMuted} style={{ marginTop: spacing.xs }}>Added for this workout</CustomText>
               )}
             </View>
@@ -472,9 +504,12 @@ export const SessionScreen = () => {
             </View>
           </View>
           </Animated.View>
+          )}
         </ScrollView>
 
         <View style={{ padding: spacing.lg, paddingBottom: spacing.lg + tabBarInset, gap: spacing.sm, borderTopWidth: 1, borderTopColor: colors.line, backgroundColor: colors.ground }}>
+          {!exercise && <PrimaryButton label="Add exercise" icon={generalIcons.plus} onPress={addExercise} />}
+          {exercise && (
           <View style={{ flexDirection: 'row', gap: spacing.sm }}>
             <TouchableOpacity
               disabled={index === 0}
@@ -491,6 +526,7 @@ export const SessionScreen = () => {
               )}
             </View>
           </View>
+          )}
         </View>
 
       </KeyboardAvoiding>

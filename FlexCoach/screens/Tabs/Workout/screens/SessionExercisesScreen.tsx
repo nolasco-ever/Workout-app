@@ -59,7 +59,7 @@ export const SessionExercisesScreen = () => {
         {groups.map(group => (
           <View key={group.key} style={{ gap: spacing.sm }}>
             {group.label && <CustomText variant="overline" color={colors.inkMuted}>{group.label}</CustomText>}
-            <SurfaceCard style={{ padding: 0 }}>
+            <SurfaceCard style={{ padding: 0, overflow: 'hidden' }}>
               {group.items.map(({ ex, i }, rowIndex) => {
                 const cat = getCatalogExercise(ex.exerciseId);
                 const done = ex.sets.filter(s => s.completed).length;
