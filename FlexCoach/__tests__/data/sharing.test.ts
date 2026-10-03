@@ -44,7 +44,7 @@ describe('sharing', () => {
     expect(noSets[0].sets).toBeUndefined();
     expect(noSets[0].top).toEqual({ weightKg: 65, reps: 8, durationSec: null, distanceM: null });
     const namesOnly = sharedExercisesOf(session, { ...defaultSharingPrefs, sets: false, reps: false, weight: false })!;
-    expect(namesOnly).toEqual([{ name: 'Bench Press', measurement: 'weight_reps' }, { name: 'Row', measurement: 'weight_reps' }]);
+    expect(namesOnly).toEqual([{ name: 'Bench Press', exerciseId: 'bench', measurement: 'weight_reps' }, { name: 'Row', exerciseId: 'row', measurement: 'weight_reps' }]);
   });
 
   it('shares nothing when workouts are private', () => {

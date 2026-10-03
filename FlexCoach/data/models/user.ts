@@ -165,6 +165,8 @@ export interface Activity extends BaseDocument {
 /** One exercise of a shared workout. Only the fields the owner shares are present. */
 export interface SharedExercise {
   name: string;
+  /** Catalog id, for the muscle map; the catalog is bundled, so it reveals nothing. */
+  exerciseId?: Id;
   measurement: MeasurementType;
   /** Completed sets in order, when sets are shared. */
   sets?: SharedSet[];

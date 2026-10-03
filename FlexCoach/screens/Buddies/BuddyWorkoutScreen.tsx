@@ -3,8 +3,11 @@ import { ActivityIndicator, ScrollView, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { RouteProp, useRoute } from '@react-navigation/native';
 import { useAuth } from '../../data/auth/AuthProvider';
-import { Activity } from '../../data/models';
+import { Activity, SharedExercise, SharedSet } from '../../data/models';
 import { buddyRepository } from '../../data/repositories/buddyRepository';
+import { getCatalogExercise } from '../../data/catalog/exerciseCatalog';
+import { formatDuration, toDisplayDistance, toDisplayWeight } from '../../data/engine/units';
+import { MuscleMap } from '../../components/anatomy/MuscleMap';
 import { reactToActivity } from '../../data/services/buddyService';
 import { useBuddies } from '../../data/hooks/useBuddies';
 import { CustomText } from '../../components/text/customText';
@@ -18,10 +21,117 @@ import { BuddyRoutes } from './routes';
 
 const dateLine = (ts: number): string => new Date(ts).toLocaleDateString(undefined, { weekday: 'long', month: 'short', day: 'numeric' });
 
+type Units = { weight: 'kg' | 'lb'; distance: 'km' | 'mi' };
+
+/**
+ * The columns a shared exercise can show: field A is weight (or distance
+ * for cardio), field B is reps or time, each only when the owner shared
+ * it. A set that carries neither still lists as a row, so the count shows.
+ */
+const columnsOf = (ex: SharedExercise, u: Units): { a: string | null; b: string | null } => {
+  const sample = ex.sets?.find(set => !set.warmup) ?? ex.sets?.[0] ?? ex.top ?? {};
+  const hasWeight = 'weightKg' in sample;
+  const hasReps = 'reps' in sample;
+  switch (ex.measurement) {
+    case 'weight_reps':
+      return { a: hasWeight ? u.weight : null, b: hasReps ? 'reps' : null };
+    case 'reps':
+      return { a: hasWeight ? `+${u.weight}` : null, b: hasReps ? 'reps' : null };
+    case 'time':
+      return { a: hasWeight ? u.weight : null, b: hasReps ? 'min : sec' : null };
+    case 'distance_time':
+      return { a: hasReps ? u.distance : null, b: hasReps ? 'min : sec' : null };
+  }
+};
+
+/** A shared set's two values as display text, in the viewer's units; null when the owner hid that field. */
+const sharedValues = (ex: SharedExercise, set: SharedSet, u: Units): [string | null, string | null] => {
+  const weight = 'weightKg' in set ? (set.weightKg === null || set.weightKg === undefined ? '—' : String(toDisplayWeight(set.weightKg, u.weight))) : null;
+  const reps = 'reps' in set ? (set.reps === null || set.reps === undefined ? '—' : String(set.reps)) : null;
+  const time = 'durationSec' in set ? formatDuration(set.durationSec ?? null) : null;
+  const distance = 'distanceM' in set ? (set.distanceM === null || set.distanceM === undefined ? '—' : String(toDisplayDistance(set.distanceM, u.distance))) : null;
+  switch (ex.measurement) {
+    case 'weight_reps':
+      return [weight, reps];
+    case 'reps':
+      return ['weightKg' in set ? (set.weightKg ? `+${toDisplayWeight(set.weightKg, u.weight)}` : 'BW') : null, reps];
+    case 'time':
+      return [weight, time];
+    case 'distance_time':
+      return [distance, time];
+  }
+};
+
+/** "185 lb × 8", "+25 lb × 10", "2:00", "1.2 mi in 10:30": the best set in one line. */
+const topLine = (ex: SharedExercise, u: Units): string | null => {
+  if (!ex.top) return null;
+  const [a, b] = sharedValues(ex, ex.top, u);
+  const cols = columnsOf(ex, u);
+  const left = a && cols.a ? (ex.measurement === 'reps' ? a : `${a} ${cols.a}`) : null;
+  const right = b && cols.b ? (cols.b === 'reps' ? `${b} reps` : b) : null;
+  if (ex.measurement === 'distance_time') return left && right ? `${left} in ${right}` : left ?? right;
+  return left && right ? `${left} × ${right}` : left ?? right;
+};
+
+/** Set rows numbered like the owner's own view: W1, W2 for warm-ups, then 1, 2, 3. */
+const numbered = (sets: SharedSet[]): { set: SharedSet; label: string }[] => {
+  let warm = 0;
+  let work = 0;
+  return sets.map(set => ({ set, label: set.warmup ? `W${++warm}` : String(++work) }));
+};
+
+/** One exercise of a buddy's workout, read-only, showing only what they shared. */
+const SharedExerciseCard = ({ ex, units }: { ex: SharedExercise; units: Units }) => {
+  const { colors, spacing } = useTheme();
+  const catalog = ex.exerciseId ? getCatalogExercise(ex.exerciseId) : null;
+  const cols = columnsOf(ex, units);
+  const best = topLine(ex, units);
+  return (
+    <SurfaceCard style={{ padding: spacing.md, gap: spacing.sm }}>
+      <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.md }}>
+        {catalog && <MuscleMap primary={catalog.primaryMuscles} secondary={catalog.secondaryMuscles} height={56} views="auto" />}
+        <View style={{ flex: 1 }}>
+          <CustomText variant="bodyStrong">{ex.name}</CustomText>
+          {catalog?.primaryMuscles.length ? <CustomText variant="caption" color={colors.inkMuted}>{catalog.primaryMuscles.join(', ')}</CustomText> : null}
+          {best ? <CustomText variant="caption" color={colors.inkMuted}>Best set · {best}</CustomText> : null}
+        </View>
+      </View>
+      {ex.sets && ex.sets.length > 0 && (
+        <View>
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.md, paddingVertical: spacing.xs }}>
+            <View style={{ width: 28 }} />
+            {cols.a && <CustomText variant="overline" color={colors.inkMuted} style={{ flex: 1, textAlign: 'center' }}>{cols.a}</CustomText>}
+            {cols.b && <CustomText variant="overline" color={colors.inkMuted} style={{ flex: 1, textAlign: 'center' }}>{cols.b}</CustomText>}
+            {!cols.a && !cols.b && <CustomText variant="overline" color={colors.inkMuted} style={{ flex: 1 }}>Done</CustomText>}
+          </View>
+          {numbered(ex.sets).map(({ set, label }, i) => {
+            const [a, b] = sharedValues(ex, set, units);
+            return (
+              <View key={i} style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.md, paddingVertical: spacing.sm, borderTopWidth: 1, borderTopColor: colors.line }}>
+                <View style={{ width: 28 }}>
+                  <CustomText variant="label" color={set.warmup ? colors.accent : colors.inkMuted}>{label}</CustomText>
+                </View>
+                {cols.a && <CustomText variant="bodyStrong" style={{ flex: 1, textAlign: 'center' }}>{a ?? '—'}</CustomText>}
+                {cols.b && <CustomText variant="bodyStrong" style={{ flex: 1, textAlign: 'center' }}>{b ?? '—'}</CustomText>}
+                {!cols.a && !cols.b && (
+                  <View style={{ flex: 1 }}>
+                    <Icon icon={generalIcons.check} size={16} color={colors.success} strokeWidth={3} />
+                  </View>
+                )}
+              </View>
+            );
+          })}
+        </View>
+      )}
+    </SurfaceCard>
+  );
+};
+
 /**
  * One finished workout of a buddy's, opened from the feed or a push: what
- * they did, the records they set in it, and the reactions it has drawn.
- * Only what the activity line carries is shown; their sets stay private.
+ * they did (exercise by exercise, as far as they share it), the records
+ * they set in it, and the reactions it has drawn. Only what the activity
+ * line carries is shown; their sessions are never read.
  */
 export const BuddyWorkoutScreen = () => {
   const { params } = useRoute<RouteProp<BuddyRoutes, 'BuddyWorkoutScreen'>>();
@@ -30,6 +140,7 @@ export const BuddyWorkoutScreen = () => {
   const { buddies } = useBuddies();
   const buddy = buddies.find(b => b.userId === params.uid) ?? null;
   const name = buddy?.card?.displayName ?? buddy?.displayName ?? params.displayName ?? 'Your buddy';
+  const units: Units = { weight: profile?.weightUnit ?? 'lb', distance: profile?.distanceUnit ?? 'mi' };
   const [item, setItem] = useState<Activity | null | undefined>(undefined);
 
   const load = useCallback(async () => {
@@ -77,6 +188,18 @@ export const BuddyWorkoutScreen = () => {
                   {name.split(' ')[0]} · {dateLine(item.at)}{item.detail ? ` · ${item.detail}` : ''}
                 </CustomText>
               </View>
+            </View>
+
+            {/* The workout itself: as much of it as the owner shares. A private workout has no line at all; lines from before sharing existed carry nothing. */}
+            <View style={{ gap: spacing.sm }}>
+              <CustomText variant="overline" color={colors.inkMuted}>Workout</CustomText>
+              {item.exercises && item.exercises.length > 0 ? (
+                item.exercises.map((ex, i) => <SharedExerciseCard key={`${ex.name}-${i}`} ex={ex} units={units} />)
+              ) : (
+                <SurfaceCard>
+                  <CustomText variant="body" color={colors.inkMuted}>No details on this one.</CustomText>
+                </SurfaceCard>
+              )}
             </View>
 
             <View style={{ gap: spacing.sm }}>

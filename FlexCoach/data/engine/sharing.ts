@@ -72,7 +72,7 @@ export const sharedExercisesOf = (session: Session, prefs: SharingPrefs): Shared
     .sort((a, b) => a.order - b.order)
     .filter(ex => ex.sets.some(s => s.completed))
     .map(ex => {
-      const out: SharedExercise = { name: ex.exerciseName, measurement: ex.measurement };
+      const out: SharedExercise = { name: ex.exerciseName, exerciseId: ex.exerciseId, measurement: ex.measurement };
       if (prefs.sets) out.sets = ex.sets.filter(s => s.completed).map(s => pickSet(s, prefs));
       else if (prefs.reps || prefs.weight) {
         const top = topSet(ex, prefs);
