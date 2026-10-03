@@ -50,10 +50,15 @@ export const whenLabel = (ts: number, now = Date.now()): string => {
 const workoutLineOf = (item: ActivityEntry): string | null =>
   item.kind === 'workout_done' ? item.id : item.kind === 'record' && item.sessionId ? `workout_done:${item.sessionId}` : null;
 
+/** A shared-plan line carries the plan's id in its own id ("plan_shared:<planId>"). */
+const sharedPlanIdOf = (item: ActivityEntry): string | null =>
+  item.kind === 'plan_shared' && item.id.startsWith('plan_shared:') ? item.id.slice('plan_shared:'.length) : null;
+
 /**
  * One line of the buddy feed: who, what, when, and any reactions under it.
  * Finished workouts and records open the workout's page (records and
- * reactions in full); `onReact` adds the emoji picker to the line itself.
+ * reactions in full), a shared plan opens the plan; `onReact` adds the
+ * emoji picker to the line itself.
  */
 export const ActivityRow = ({ item, divider = false, compact = false, onReact }: { item: ActivityEntry; divider?: boolean; compact?: boolean; onReact?: (emoji: string | null) => void }) => {
   const { colors, spacing } = useTheme();
@@ -61,8 +66,13 @@ export const ActivityRow = ({ item, divider = false, compact = false, onReact }:
   const navigation = useNavigation<NavigationProp<BuddyRoutes>>();
   const who = item.isMe ? 'You' : item.actorName?.split(' ')[0] ?? 'A buddy';
   const tone = item.kind === 'workout_skipped' ? colors.inkMuted : item.kind === 'streak' || item.kind === 'record' ? colors.accent : colors.ink;
-  const opens = item.isMe ? null : workoutLineOf(item);
-  const open = opens ? () => navigation.navigate('BuddyWorkoutScreen', { uid: item.ownerId, activityId: opens, displayName: item.actorName }) : undefined;
+  const workoutLine = item.isMe ? null : workoutLineOf(item);
+  const planId = item.isMe ? null : sharedPlanIdOf(item);
+  const open = workoutLine
+    ? () => navigation.navigate('BuddyWorkoutScreen', { uid: item.ownerId, activityId: workoutLine, displayName: item.actorName })
+    : planId
+      ? () => navigation.navigate('BuddyPlanScreen', { ownerUid: item.ownerId, planId, ownerName: item.actorName })
+      : undefined;
   return (
     <TouchableOpacity disabled={!open} onPress={open} activeOpacity={0.7} accessibilityRole={open ? 'button' : undefined} style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.md, paddingVertical: compact ? spacing.sm : spacing.md, paddingHorizontal: compact ? 0 : spacing.lg, borderTopWidth: divider ? 1 : 0, borderTopColor: colors.line }}>
       <View>
