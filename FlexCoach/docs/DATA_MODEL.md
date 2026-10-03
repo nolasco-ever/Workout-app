@@ -49,6 +49,7 @@ The exercise catalog is bundled in the app, not stored in Firestore.
 
 Two schedule modes share one occurrence model:
 
+- **Missed workouts** (build 16): the in-app sheet `MissedWorkoutPrompt` (app root) asks on the first open after a workout day went by: Do it today (cascading push), Move to another day (calendar; `moveWorkoutToDate` pushes any workout on the chosen day forward first), or Skip. Only the most recent missed workout is asked about; `resolveMissed` marks older ones skipped with reason `missed` and stamps `Occurrence.missedPromptedAt` so the sheet shows once.
 - **Rotation**: an ordered list of slots repeated day after day. Pushing a
   missed workout shifts the remainder of the cycle forward and the cycle
   grows. The next cycle starts the day after the last occurrence.

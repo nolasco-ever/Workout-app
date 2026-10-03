@@ -205,6 +205,25 @@ export const getOccurrenceForDate = (cycle: Cycle, date: LocalDate): Occurrence 
 export const getOverdueOccurrences = (cycle: Cycle, todayDate: LocalDate): Occurrence[] =>
   sortByDate(cycle.occurrences.filter(o => o.status === 'scheduled' && o.date < todayDate));
 
+/**
+ * Which missed workout to ask about, and what to do with the rest. When
+ * several are overdue only the most recent one is worth a decision: the
+ * older ones are marked skipped (reason 'missed') and the latest gets
+ * `missedPromptedAt` so the sheet shows once. Returns the cycle unchanged
+ * and `ask: null` when there is nothing new to ask.
+ */
+export const resolveMissed = (cycle: Cycle, todayDate: LocalDate, now: number = Date.now()): { cycle: Cycle; ask: Occurrence | null; skipped: Occurrence[] } => {
+  const overdue = getOverdueOccurrences(cycle, todayDate);
+  const latest = overdue[overdue.length - 1];
+  if (!latest || latest.missedPromptedAt) return { cycle, ask: null, skipped: [] };
+  const olderIds = new Set(overdue.slice(0, -1).map(o => o.id));
+  const occurrences = cycle.occurrences.map(o =>
+    olderIds.has(o.id) ? { ...o, status: 'skipped' as const, skipReason: 'missed' as const } : o.id === latest.id ? { ...o, missedPromptedAt: now } : o,
+  );
+  const next = { ...cycle, occurrences, updatedAt: now };
+  return { cycle: next, ask: next.occurrences.find(o => o.id === latest.id) ?? null, skipped: next.occurrences.filter(o => olderIds.has(o.id)) };
+};
+
 export const getUpcomingOccurrences = (cycle: Cycle, todayDate: LocalDate): Occurrence[] =>
   sortByDate(cycle.occurrences.filter(o => o.status === 'scheduled' && o.date > todayDate));
 

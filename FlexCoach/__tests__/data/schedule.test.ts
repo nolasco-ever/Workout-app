@@ -1,5 +1,6 @@
-import { closeCycle, generateCycle, getOverdueOccurrences, moveOccurrenceToDate, nextCycleNumber, nextCycleNumberAfter, pushOccurrence, renumberCycles, skipOccurrence, markOccurrence } from '../../data/engine/schedule';
+import { closeCycle, generateCycle, getOverdueOccurrences, moveOccurrenceToDate, resolveMissed, nextCycleNumber, nextCycleNumberAfter, pushOccurrence, renumberCycles, skipOccurrence, markOccurrence } from '../../data/engine/schedule';
 import { summarizeCycle } from '../../data/engine/stats';
+import { addDays } from '../../data/engine/dates';
 import { rotationPlan, weeklyPlan } from './support/fixtures';
 
 const dates = (cycle: ReturnType<typeof generateCycle>) => cycle.occurrences.map(o => `${o.date}:${o.workoutId ?? 'rest'}:${o.status}`);
@@ -181,5 +182,34 @@ describe('cycle numbering', () => {
     const fixed = renumberCycles(cycles);
     expect(fixed.map(c => [c.createdAt, c.number])).toEqual([[20, 1], [25, 2], [30, 2]]);
     expect(renumberCycles([untouched(1, 10), trained(1, 20), trained(2, 30)])).toEqual([]);
+  });
+});
+
+describe('resolveMissed', () => {
+  it('skips every missed workout but the latest and flags that one as asked', () => {
+    const cycle = generateCycle(rotationPlan(), 'user-1', 1, '2026-09-21');
+    const workouts = cycle.occurrences.filter(o => o.workoutId);
+    expect(workouts.length).toBeGreaterThanOrEqual(2);
+    // Every workout of the cycle is behind us.
+    const last = workouts[workouts.length - 1];
+    const todayDate = addDays(last.date, 1);
+    const { cycle: next, ask, skipped } = resolveMissed(cycle, todayDate, 123);
+    expect(ask?.id).toBe(last.id);
+    expect(ask?.missedPromptedAt).toBe(123);
+    expect(ask?.status).toBe('scheduled');
+    expect(skipped.map(o => o.id)).toEqual(workouts.slice(0, -1).map(o => o.id));
+    expect(skipped.every(o => o.status === 'skipped' && o.skipReason === 'missed')).toBe(true);
+    expect(getOverdueOccurrences(next, todayDate).map(o => o.id)).toEqual([last.id]);
+  });
+
+  it('asks nothing when nothing is overdue or the latest was already asked about', () => {
+    const cycle = generateCycle(rotationPlan(), 'user-1', 1, '2026-09-21');
+    expect(resolveMissed(cycle, '2026-09-21').ask).toBeNull();
+    const workouts = cycle.occurrences.filter(o => o.workoutId);
+    const once = resolveMissed(cycle, workouts[1].date, 5);
+    expect(once.ask?.id).toBe(workouts[0].id);
+    const again = resolveMissed(once.cycle, workouts[1].date, 6);
+    expect(again.ask).toBeNull();
+    expect(again.cycle).toBe(once.cycle);
   });
 });

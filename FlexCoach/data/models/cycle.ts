@@ -1,4 +1,4 @@
-import { BaseDocument, Id, LocalDate } from './common';
+import { BaseDocument, Id, LocalDate, Timestamp } from './common';
 
 /**
  * - scheduled:   upcoming, or today and not yet started
@@ -9,7 +9,8 @@ import { BaseDocument, Id, LocalDate } from './common';
  */
 export type OccurrenceStatus = 'scheduled' | 'in_progress' | 'completed' | 'skipped' | 'rest';
 
-export type SkipReason = 'user' | 'pushed_out' | 'cycle_ended';
+/** 'missed': skipped by the app because a later workout was missed too and only the latest is asked about. */
+export type SkipReason = 'user' | 'pushed_out' | 'cycle_ended' | 'missed';
 
 /**
  * One planned day inside a cycle. Occurrences are materialised when the cycle
@@ -28,6 +29,8 @@ export interface Occurrence {
   pushCount: number;
   skipReason: SkipReason | null;
   sessionId: Id | null;
+  /** When the in-app "you missed this" sheet was shown for it; shown once. */
+  missedPromptedAt?: Timestamp | null;
 }
 
 export type CycleStatus = 'active' | 'completed';

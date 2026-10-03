@@ -25,6 +25,7 @@ import {
   generateCycle,
   markOccurrence,
   moveOccurrenceToDate,
+  resolveMissed,
   nextCycleNumberAfter,
   pushOccurrence,
   renumberCycles,
@@ -129,6 +130,39 @@ export const startSession = async (uid: Id, plan: Plan, cycle: Cycle, occurrence
   const updatedCycle = markOccurrence(cycle, occurrence.id, 'in_progress', session.id);
   await cycleRepository.save(uid, updatedCycle);
   return { session, cycle: updatedCycle };
+};
+
+/**
+ * Reschedule a scheduled workout to a chosen day. A rest day there swaps
+ * into the vacated slot; a workout already on that day is pushed forward
+ * first (cascading, like a missed workout), so nothing lands in the past.
+ * Buddies see it as moved.
+ */
+export const moveWorkoutToDate = async (uid: Id, plan: Plan, cycle: Cycle, occurrenceId: Id, targetDate: LocalDate, profile: UserProfile | null = null): Promise<Cycle> => {
+  let current = cycle;
+  const occupant = current.occurrences.find(o => o.id !== occurrenceId && o.date === targetDate && o.status === 'scheduled');
+  if (occupant) current = pushOccurrence(current, plan, occupant.id);
+  current = moveOccurrenceToDate(current, occurrenceId, targetDate);
+  await cycleRepository.save(uid, current);
+  const moved = current.occurrences.find(o => o.id === occurrenceId);
+  if (moved && current !== cycle) afterWorkoutPushed(uid, profile, moved, moved.date).catch(err => console.warn('buddy activity failed', err));
+  return current;
+};
+
+/** What a day holds for the move picker: the workout on it, if any, or a rest day, or nothing. */
+export const occupantOn = (cycle: Cycle, date: LocalDate, exceptId: Id): Occurrence | null =>
+  cycle.occurrences.find(o => o.id !== exceptId && o.date === date && (o.status === 'scheduled' || o.status === 'rest')) ?? null;
+
+/**
+ * The missed-workout sheet's first step: skip all but the latest missed
+ * workout, flag the latest as asked, save, and hand it back. Null when
+ * there is nothing new to ask about.
+ */
+export const beginMissedPrompt = async (uid: Id, cycle: Cycle, todayDate: LocalDate): Promise<{ cycle: Cycle; ask: Occurrence; skipped: Occurrence[] } | null> => {
+  const result = resolveMissed(cycle, todayDate);
+  if (!result.ask) return null;
+  await cycleRepository.save(uid, result.cycle);
+  return { cycle: result.cycle, ask: result.ask, skipped: result.skipped };
 };
 
 /**
