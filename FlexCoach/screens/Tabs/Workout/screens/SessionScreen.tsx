@@ -9,9 +9,10 @@ import { LoggedSet, Session, SessionExercise } from '../../../../data/models';
 import { findWorkout } from '../../../../data/engine/schedule';
 import { newId } from '../../../../data/engine/ids';
 import { getCatalogExercise } from '../../../../data/catalog/exerciseCatalog';
-import { abandonSession, addSetTo, addWarmupSetTo, finishSession, logSet, removeSetFrom, saveExercises, saveSets, substituteExercise } from '../../../../data/services/workoutService';
+import { abandonSession, addExerciseTo, addSetTo, addWarmupSetTo, finishSession, logSet, removeExerciseFrom, removeSetFrom, saveExercises, saveSets, substituteExercise } from '../../../../data/services/workoutService';
 import { sessionRepository } from '../../../../data/repositories/sessionRepository';
-import { subscribeSwap } from '../components/swapChannel';
+import { subscribeAdd, subscribeSwap } from '../components/swapChannel';
+import { publishSession, subscribeSessionCommands } from '../components/sessionChannel';
 import { warmupRestSec } from '../../../../data/engine/progression';
 import { planRestOverNotification, withPrefDefaults } from '../../../../data/engine/notifications';
 import { cancelRestOver, exactAlarmsAllowed, openExactAlarmSettings, scheduleRestOver } from '../../../../data/notifications/notificationService';
@@ -165,6 +166,71 @@ export const SessionScreen = () => {
     [uid],
   );
 
+  // A pick on the add screen joins the session on the end and comes into view.
+  useEffect(
+    () =>
+      subscribeAdd(async picked => {
+        if (!uid) return;
+        const history = await sessionRepository.listCompleted(uid).catch(() => [] as Session[]);
+        const { session: next, exercise: added } = addExerciseTo(sessionRef.current, picked, plan, history, units.weight, newId);
+        setSession(next);
+        setDrafts(d => {
+          const out = { ...d };
+          for (const set of added.sets) out[set.id] = toDraft(added, set, units);
+          return out;
+        });
+        saveExercises(uid, next).catch(err => console.warn('add exercise failed', err));
+      }),
+    // units and plan don't change during a session.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [uid],
+  );
+
+  // The exercise list is a modal screen over this one; it reads the live
+  // session from the channel and sends back jumps and removals.
+  useEffect(() => publishSession(session), [session]);
+  const openList = () => navigation.navigate('SessionExercisesScreen', { workoutName: session.workoutName, currentIndex: index });
+  const goToRef = useRef(goTo);
+  goToRef.current = goTo;
+  const askRemoveRef = useRef<(ex: SessionExercise) => void>(() => undefined);
+  useEffect(
+    () =>
+      subscribeSessionCommands(command => {
+        if (command.kind === 'jump') goToRef.current(command.index);
+        else {
+          const ex = sessionRef.current.exercises.find(e => e.id === command.sessionExerciseId);
+          if (ex) askRemoveRef.current(ex);
+        }
+      }),
+    [],
+  );
+
+  // An added exercise can be swiped out of the list again. Logged sets go with it, so ask first.
+  const removeExercise = (ex: SessionExercise) => {
+    const current = sessionRef.current;
+    const at = current.exercises.findIndex(e => e.id === ex.id);
+    if (at === -1 || current.exercises.length <= 1) return;
+    const next = removeExerciseFrom(current, ex.id);
+    setSession(next);
+    if (uid) saveExercises(uid, next).catch(err => console.warn('remove exercise failed', err));
+    // Keep the same exercise on screen: it may have moved up a slot.
+    if (at < index) setIndex(index - 1);
+    else if (at === index) goTo(Math.min(index, next.exercises.length - 1));
+  };
+  const askRemoveExercise = (ex: SessionExercise) => {
+    // Called from the list screen's command; see askRemoveRef.
+    const logged = ex.sets.filter(s => s.completed).length;
+    if (logged === 0) {
+      removeExercise(ex);
+      return;
+    }
+    Alert.alert(`Remove ${ex.exerciseName}?`, `The ${logged} set${logged === 1 ? '' : 's'} you logged for it will be dropped.`, [
+      { text: 'Keep', style: 'cancel' },
+      { text: 'Remove', style: 'destructive', onPress: () => removeExercise(ex) },
+    ]);
+  };
+  askRemoveRef.current = askRemoveExercise;
+
   const addWarmupSet = () => {
     const { session: next, set } = addWarmupSetTo(session, exercise.id, units.weight, newId);
     setSession(next);
@@ -302,12 +368,13 @@ export const SessionScreen = () => {
           pill, so the pill shoved it left.
         */}
         <View style={{ height: 56, justifyContent: 'center', paddingHorizontal: spacing.md }}>
-          <View pointerEvents="none" style={{ position: 'absolute', left: 0, right: 0, alignItems: 'center' }}>
-            <SessionTitle name={session.workoutName} startedAt={session.startedAt} />
-          </View>
-          <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+          {/* The row only passes touches to its buttons, so the title beneath it stays tappable. */}
+          <View pointerEvents="box-none" style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
             <GlassIconButton icon={directionIcons.angleLeft} nudgeX={-1} accessibilityLabel="Back" onPress={() => confirmLeaveRef.current(() => navigation.goBack())} />
             {restStartedAt === null ? <View style={{ width: GLASS_BUTTON_SIZE }} /> : <RestPill startedAt={restStartedAt} durationSec={restFor} onDismiss={dismissRest} />}
+          </View>
+          <View pointerEvents="box-none" style={{ position: 'absolute', left: 0, right: 0, alignItems: 'center' }}>
+            <SessionTitle name={session.workoutName} startedAt={session.startedAt} onPress={openList} />
           </View>
         </View>
         {/* Progress strip */}
@@ -348,7 +415,7 @@ export const SessionScreen = () => {
                   </TouchableOpacity>
                 )}
                 <TouchableOpacity
-                  onPress={() => navigation.navigate('SwapExerciseScreen', { sessionExerciseId: exercise.id, exerciseId: exercise.exerciseId, excludeIds: session.exercises.map(e => e.exerciseId) })}
+                  onPress={() => navigation.navigate('ExercisePickerScreen', { mode: 'swap', sessionExerciseId: exercise.id, exerciseId: exercise.exerciseId, excludeIds: session.exercises.map(e => e.exerciseId) })}
                   hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
                   accessibilityRole="link"
                   style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.xs }}
@@ -361,6 +428,9 @@ export const SessionScreen = () => {
                 <CustomText variant="caption" color={colors.inkMuted} style={{ marginTop: spacing.xs }}>
                   In place of {exercise.substitutedFor.exerciseName} for this workout
                 </CustomText>
+              )}
+              {exercise.workoutExerciseId === null && !exercise.substitutedFor && (
+                <CustomText variant="caption" color={colors.inkMuted} style={{ marginTop: spacing.xs }}>Added for this workout</CustomText>
               )}
             </View>
           </View>
@@ -421,14 +491,8 @@ export const SessionScreen = () => {
               )}
             </View>
           </View>
-          {!isLast && (
-            <TouchableOpacity onPress={finish} style={{ alignItems: 'center', paddingVertical: spacing.xs }}>
-              <CustomText variant="caption" color={colors.inkMuted}>
-                Finish early
-              </CustomText>
-            </TouchableOpacity>
-          )}
         </View>
+
       </KeyboardAvoiding>
     </SafeAreaView>
   );

@@ -256,6 +256,8 @@ export const substituteExercise = (session: Session, sessionExerciseId: Id, repl
   return { ...session, exercises: session.exercises.map(e => (e.id === ex.id ? swapped : e)) };
 };
 
+export { addExerciseTo, removeExerciseFrom } from '../engine/sessionExtras';
+
 export const saveExercises = (uid: Id, session: Session): Promise<Session> => sessionRepository.saveExercises(uid, session);
 
 /** Drop a set from an exercise mid-session; the remaining sets close the gap in their numbering. */

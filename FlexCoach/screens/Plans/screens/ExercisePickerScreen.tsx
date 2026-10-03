@@ -4,8 +4,9 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { RouteProp, useNavigation, useRoute } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { Equipment, Exercise, ExerciseCategory, MuscleGroup } from '../../../data/models';
-import { CATEGORY_OPTIONS, EQUIPMENT_OPTIONS, MUSCLE_GROUPS, searchCatalog } from '../../../data/catalog/exerciseCatalog';
+import { CATEGORY_OPTIONS, comparableExercises, EQUIPMENT_OPTIONS, getCatalogExercise, MUSCLE_GROUPS, searchCatalog } from '../../../data/catalog/exerciseCatalog';
 import { newEntry } from '../../../data/services/planService';
+import { pickAdd, pickSwap } from '../../Tabs/Workout/components/swapChannel';
 import { CustomText } from '../../../components/text/customText';
 import { TextField } from '../../../components/inputs/TextField';
 import { ChoiceChips } from '../../../components/inputs/ChoiceChips';
@@ -33,10 +34,12 @@ interface RowProps {
   muscle: MuscleGroup | 'all';
   onOpen: (ex: Exercise) => void;
   onAdd: (ex: Exercise) => void;
+  /** Swap mode: the action swaps rather than adds, and says so. */
+  swap?: boolean;
 }
 
 /** Memoised so the long list only re-renders rows whose data changed. */
-const ExerciseRow = React.memo(({ item, inWorkout, muscle, onOpen, onAdd }: RowProps) => {
+const ExerciseRow = React.memo(({ item, inWorkout, muscle, onOpen, onAdd, swap = false }: RowProps) => {
   const { colors, spacing, radius } = useTheme();
   const alsoHits = muscle !== 'all' && !item.primaryMuscles.includes(muscle);
   return (
@@ -58,15 +61,35 @@ const ExerciseRow = React.memo(({ item, inWorkout, muscle, onOpen, onAdd }: RowP
         hitSlop={8}
         style={{ width: 40, height: 40, borderRadius: radius.sm, backgroundColor: inWorkout ? colors.surfaceRaised : colors.accentTint, alignItems: 'center', justifyContent: 'center' }}
       >
-        <Icon icon={inWorkout ? generalIcons.check : generalIcons.plus} size={20} color={inWorkout ? colors.inkMuted : colors.accent} strokeWidth={2.5} />
+        <Icon icon={inWorkout ? generalIcons.check : swap ? generalIcons.swap : generalIcons.plus} size={20} color={inWorkout ? colors.inkMuted : colors.accent} strokeWidth={2.5} />
       </TouchableOpacity>
     </View>
   );
 });
 
+type PickerParams = {
+  /**
+   * Plan editor: add to this workout of the draft. Session: hand the pick
+   * to the running workout. Swap: a stand-in for one of its exercises.
+   */
+  ExercisePickerScreen:
+    | { workoutId: string; mode?: undefined; excludeIds?: undefined; sessionExerciseId?: undefined; exerciseId?: undefined }
+    | { mode: 'session'; excludeIds: string[]; workoutId?: undefined; sessionExerciseId?: undefined; exerciseId?: undefined }
+    | { mode: 'swap'; sessionExerciseId: string; exerciseId: string; excludeIds: string[]; workoutId?: undefined };
+};
+
+/**
+ * The one exercise picker: the catalog with search and filters. In the
+ * plan editor a pick joins the draft's workout; from a running session it
+ * goes back through swapChannel, either added on the end (mode 'session')
+ * or standing in for one exercise (mode 'swap', comparable ones first).
+ */
 export const ExercisePickerScreen = () => {
   const navigation = useNavigation<NativeStackNavigationProp<PlansStackParams>>();
-  const { params } = useRoute<RouteProp<PlansStackParams, 'ExercisePickerScreen'>>();
+  const { params } = useRoute<RouteProp<PickerParams, 'ExercisePickerScreen'>>();
+  const sessionMode = params.mode === 'session' || params.mode === 'swap';
+  const swapMode = params.mode === 'swap';
+  const swapping = swapMode && params.exerciseId ? getCatalogExercise(params.exerciseId) : null;
   const { colors, spacing, radius } = useTheme();
   const { draft, update } = usePlanEditor();
   const { profile } = useAuth();
@@ -76,36 +99,44 @@ export const ExercisePickerScreen = () => {
   const [equipment, setEquipment] = useState<Equipment | 'any'>('any');
   const [category, setCategory] = useState<ExerciseCategory | 'any'>('any');
   const [filtersOpen, setFiltersOpen] = useState(false);
-  const activeFilters = (equipment === 'any' ? 0 : 1) + (category === 'any' ? 0 : 1);
+  const activeFilters = (muscle === 'all' ? 0 : 1) + (equipment === 'any' ? 0 : 1) + (category === 'any' ? 0 : 1);
 
-  const workout = draft?.workouts.find(w => w.id === params.workoutId);
-  const already = useMemo(() => new Set(workout?.exercises.map(e => e.exerciseId) ?? []), [workout]);
+  const workout = params.workoutId ? draft?.workouts.find(w => w.id === params.workoutId) : undefined;
+  const already = useMemo(() => new Set(sessionMode ? params.excludeIds ?? [] : workout?.exercises.map(e => e.exerciseId) ?? []), [sessionMode, params.excludeIds, workout]);
 
-  const results = useMemo(
-    () =>
-      searchCatalog({
-        query,
-        muscle: muscle === 'all' ? undefined : muscle,
-        equipment: equipment === 'any' ? undefined : equipment,
-        category: category === 'any' ? undefined : category,
-      }).slice(0, 120),
-    [query, muscle, equipment, category],
-  );
+  const results = useMemo(() => {
+    const found = searchCatalog({
+      query,
+      muscle: muscle === 'all' ? undefined : muscle,
+      equipment: equipment === 'any' ? undefined : equipment,
+      category: category === 'any' ? undefined : category,
+    }).filter(e => !swapping || e.id !== swapping.id);
+    // Swapping: the closest stand-ins lead the list until a search or filter says otherwise.
+    if (swapping && !query && muscle === 'all' && equipment === 'any' && category === 'any') {
+      const lead = comparableExercises(swapping, already);
+      const leadIds = new Set(lead.map(e => e.id));
+      return [...lead, ...found.filter(e => !leadIds.has(e.id))].slice(0, 120);
+    }
+    return found.slice(0, 120);
+  }, [query, muscle, equipment, category, swapping, already]);
 
   const workoutId = params.workoutId;
   const add = useCallback(
     (ex: Exercise) => {
-      update(p => ({
-        ...p,
-        workouts: p.workouts.map(w => (w.id === workoutId ? { ...w, exercises: [...w.exercises, newEntry(ex, w.exercises.length, p.goal, unit)] } : w)),
-      }));
+      if (swapMode && params.sessionExerciseId) pickSwap(params.sessionExerciseId, ex);
+      else if (sessionMode) pickAdd(ex);
+      else
+        update(p => ({
+          ...p,
+          workouts: p.workouts.map(w => (w.id === workoutId ? { ...w, exercises: [...w.exercises, newEntry(ex, w.exercises.length, p.goal, unit)] } : w)),
+        }));
       navigation.goBack();
     },
-    [update, navigation, workoutId, unit],
+    [swapMode, params.sessionExerciseId, sessionMode, update, navigation, workoutId, unit],
   );
-  const open = useCallback((ex: Exercise) => navigation.navigate('ExerciseDetailScreen', { exerciseId: ex.id, addToWorkoutId: workoutId }), [navigation, workoutId]);
+  const open = useCallback((ex: Exercise) => navigation.navigate('ExerciseDetailScreen', sessionMode ? { exerciseId: ex.id } : { exerciseId: ex.id, addToWorkoutId: workoutId }), [navigation, sessionMode, workoutId]);
 
-  if (!draft || !workout) return null;
+  if (!sessionMode && (!draft || !workout)) return null;
 
   return (
     <SafeAreaView edges={['bottom', 'left', 'right']} style={{ flex: 1, backgroundColor: colors.ground }}>
@@ -128,16 +159,12 @@ export const ExercisePickerScreen = () => {
             )}
           </TouchableOpacity>
         </View>
-        <ChoiceChips<MuscleGroup | 'all'>
-          scroll
-          options={[{ value: 'all', label: 'All' }, ...MUSCLE_GROUPS.map(m => ({ value: m, label: title(m) }))]}
-          value={muscle}
-          onChange={setMuscle}
-        />
       </View>
-      <CustomText variant="caption" color={colors.inkMuted} style={{ paddingHorizontal: spacing.lg, paddingBottom: spacing.sm }}>
-        Tap an exercise to see how it's done, or + to add it straight away.
-      </CustomText>
+      {!swapMode && (
+        <CustomText variant="caption" color={colors.inkMuted} style={{ paddingHorizontal: spacing.lg, paddingBottom: spacing.sm }}>
+          {sessionMode ? "Tap an exercise to see how it's done, or + to add it to this workout. Your plan stays as it is." : "Tap an exercise to see how it's done, or + to add it straight away."}
+        </CustomText>
+      )}
       <FlatList
         data={results}
         keyExtractor={e => e.id}
@@ -150,7 +177,7 @@ export const ExercisePickerScreen = () => {
         maxToRenderPerBatch={8}
         windowSize={7}
         removeClippedSubviews
-        renderItem={({ item }) => <ExerciseRow item={item} inWorkout={already.has(item.id)} muscle={muscle} onOpen={open} onAdd={add} />}
+        renderItem={({ item }) => <ExerciseRow item={item} inWorkout={already.has(item.id)} muscle={muscle} onOpen={open} onAdd={add} swap={swapMode} />}
       />
 
       <BottomSheet
@@ -160,7 +187,7 @@ export const ExercisePickerScreen = () => {
         footer={
           <View style={{ flexDirection: 'row', gap: spacing.sm }}>
             <View style={{ flex: 1 }}>
-              <PrimaryButton label="Clear" variant="quiet" disabled={activeFilters === 0} onPress={() => { setEquipment('any'); setCategory('any'); }} />
+              <PrimaryButton label="Clear" variant="quiet" disabled={activeFilters === 0} onPress={() => { setMuscle('all'); setEquipment('any'); setCategory('any'); }} />
             </View>
             <View style={{ flex: 2 }}>
               <PrimaryButton label={`Show ${results.length === 120 ? '120+' : results.length} exercise${results.length === 1 ? '' : 's'}`} onPress={() => setFiltersOpen(false)} />
@@ -168,6 +195,10 @@ export const ExercisePickerScreen = () => {
           </View>
         }
       >
+        <View style={{ gap: spacing.sm }}>
+          <CustomText variant="overline" color={colors.inkMuted}>Muscle</CustomText>
+          <ChoiceChips<MuscleGroup | 'all'> options={[{ value: 'all', label: 'All' }, ...MUSCLE_GROUPS.map(m => ({ value: m, label: title(m) }))]} value={muscle} onChange={setMuscle} />
+        </View>
         <View style={{ gap: spacing.sm }}>
           <CustomText variant="overline" color={colors.inkMuted}>Equipment</CustomText>
           <ChoiceChips<Equipment | 'any'> options={[{ value: 'any', label: 'Any' }, ...EQUIPMENT_OPTIONS]} value={equipment} onChange={setEquipment} />

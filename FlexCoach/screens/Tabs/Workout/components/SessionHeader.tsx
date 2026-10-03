@@ -16,18 +16,25 @@ const useTick = (intervalMs: number) => {
   }, [intervalMs]);
 };
 
-/** Header title: the workout's name with how long it has been running underneath. */
-export const SessionTitle = ({ name, startedAt }: { name: string; startedAt: number }) => {
-  const { colors } = useTheme();
+/**
+ * Header title: the workout's name with how long it has been running
+ * underneath. With `onPress` it is a button (a small chevron says so) that
+ * opens the exercise list.
+ */
+export const SessionTitle = ({ name, startedAt, onPress }: { name: string; startedAt: number; onPress?: () => void }) => {
+  const { colors, spacing } = useTheme();
   useTick(1000);
   const elapsed = Math.max(0, Math.round((Date.now() - startedAt) / 1000));
   return (
-    <View style={{ alignItems: 'center' }}>
-      <CustomText variant="bodyStrong" numberOfLines={1}>{name}</CustomText>
+    <TouchableOpacity onPress={onPress} disabled={!onPress} hitSlop={8} accessibilityRole={onPress ? 'button' : undefined} accessibilityLabel={onPress ? `${name}, show exercises` : undefined} style={{ alignItems: 'center', paddingHorizontal: spacing.md }}>
+      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 2 }}>
+        <CustomText variant="bodyStrong" numberOfLines={1}>{name}</CustomText>
+        {onPress && <Icon icon={directionIcons.angleDown} size={14} color={colors.inkMuted} strokeWidth={2.5} />}
+      </View>
       <CustomText variant="caption" color={colors.inkMuted} style={{ fontVariant: ['tabular-nums'] }}>
         {formatDuration(elapsed)}
       </CustomText>
-    </View>
+    </TouchableOpacity>
   );
 };
 

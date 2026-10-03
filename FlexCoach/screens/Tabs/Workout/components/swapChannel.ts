@@ -17,3 +17,18 @@ export const subscribeSwap = (listener: Listener): (() => void) => {
     listeners.delete(listener);
   };
 };
+
+/** Same idea for the add-exercise mode of the picker: the pick joins the session. */
+type AddListener = (exercise: Exercise) => void;
+const addListeners = new Set<AddListener>();
+
+export const pickAdd = (exercise: Exercise): void => {
+  addListeners.forEach(l => l(exercise));
+};
+
+export const subscribeAdd = (listener: AddListener): (() => void) => {
+  addListeners.add(listener);
+  return () => {
+    addListeners.delete(listener);
+  };
+};
