@@ -1,5 +1,5 @@
 import { Session } from '../../data/models';
-import { defaultSharingPrefs, sharedDetail, sharedExercisesOf, withSharingDefaults } from '../../data/engine/sharing';
+import { defaultSharingPrefs, recordSeries, sharedDetail, sharedExercisesOf, withSharingDefaults } from '../../data/engine/sharing';
 
 const set = (n: number, weightKg: number | null, reps: number | null, completed = true, warmup = false) => ({
   id: `s${n}`, setNumber: n, weightKg, reps, durationSec: null, distanceM: null, completed, completedAt: completed ? 1 : null, warmup,
@@ -54,5 +54,20 @@ describe('sharing', () => {
   it('totals line follows the totals toggle', () => {
     expect(sharedDetail(session, defaultSharingPrefs, 'kg')).toBe('3 sets · 1270 kg moved');
     expect(sharedDetail(session, { ...defaultSharingPrefs, totals: false }, 'kg')).toBeNull();
+  });
+
+  it('builds the record series from the best working set of each completed session', () => {
+    const earlier: Session = { ...session, id: 'old', date: '2026-09-20', startedAt: 0, exercises: [{ ...session.exercises[1], sets: [set(1, 50, 8), set(2, 55, 6)] }] };
+    const abandoned: Session = { ...session, id: 'gone', date: '2026-09-25', startedAt: 0.5, status: 'abandoned' };
+    expect(recordSeries([session, abandoned, earlier], 'bench', 'weight')).toEqual([
+      { date: '2026-09-20', value: 55 },
+      { date: '2026-10-01', value: 65 },
+    ]);
+    expect(recordSeries([session, earlier], 'bench', 'reps')).toEqual([
+      { date: '2026-09-20', value: 8 },
+      { date: '2026-10-01', value: 8 },
+    ]);
+    expect(recordSeries([session, earlier], 'bench', 'weight', 1)).toEqual([{ date: '2026-10-01', value: 65 }]);
+    expect(recordSeries([session], 'nope', 'weight')).toEqual([]);
   });
 });

@@ -4,7 +4,7 @@ import { newId } from '../engine/ids';
 import { today } from '../engine/dates';
 import { buildPublicProfile, formatInviteCode, generateInviteCode, inviteUrl, isStreakMilestone } from '../engine/buddies';
 import { summarizeCycle } from '../engine/stats';
-import { sharedDetail, sharedExercisesOf, withSharingDefaults } from '../engine/sharing';
+import { recordSeries, sharedDetail, sharedExercisesOf, withSharingDefaults } from '../engine/sharing';
 import { formatRecordValue, formatWeight } from '../engine/units';
 import { buddyRepository } from '../repositories/buddyRepository';
 import { userRepository } from '../repositories/userRepository';
@@ -138,7 +138,7 @@ export const shareMessage = (code: string, displayName: string | null): string =
  * the same event twice (a double tap on Finish, a retried save) overwrites
  * one line instead of adding a second.
  */
-export const recordActivity = async (uid: Id, id: string, kind: ActivityKind, title: string, detail: string | null = null, at: number = Date.now(), extra: Pick<Activity, 'sessionId' | 'records' | 'exercises'> = {}): Promise<void> => {
+export const recordActivity = async (uid: Id, id: string, kind: ActivityKind, title: string, detail: string | null = null, at: number = Date.now(), extra: Pick<Activity, 'sessionId' | 'records' | 'exercises' | 'record'> = {}): Promise<void> => {
   const item: Activity = { id, ownerId: uid, kind, title, detail, at, createdAt: at, updatedAt: at, ...extra };
   await buddyRepository.addActivity(uid, item);
 };
@@ -170,7 +170,7 @@ export const afterSessionFinished = async (uid: Id, profile: UserProfile | null,
   const displayName = profile?.displayName ?? null;
   const dist = profile?.distanceUnit ?? 'mi';
   const shared = sharing.records ? records : [];
-  const recordLines = shared.map(pr => ({ exerciseName: pr.exerciseName, value: formatRecordValue(pr.kind, pr.value, unit, dist) }));
+  const recordLines = shared.map(pr => ({ exerciseName: pr.exerciseName, value: formatRecordValue(pr.kind, pr.value, unit, dist), exerciseId: pr.exerciseId, kind: pr.kind }));
   const activityId = `workout_done:${session.id}`;
   // The workout line and its notification only exist if the owner shares
   // finished workouts; what it carries follows the rest of their prefs.
@@ -180,8 +180,10 @@ export const afterSessionFinished = async (uid: Id, profile: UserProfile | null,
   }
   for (const pr of shared) {
     const value = formatRecordValue(pr.kind, pr.value, unit, dist);
-    // Without a workout line to open, the record line stands on its own.
-    await recordActivity(uid, `record:${session.id}:${pr.exerciseId}:${pr.kind}`, 'record', `New record: ${pr.exerciseName}`, value, Date.now(), { sessionId: sharing.workouts ? session.id : null });
+    // The line carries the exercise's history so buddies get the graph
+    // without reading sessions. Without a workout line it stands on its own.
+    const record = { exerciseId: pr.exerciseId, kind: pr.kind, value: pr.value, date: session.date, history: recordSeries(sessions, pr.exerciseId, pr.kind) };
+    await recordActivity(uid, `record:${session.id}:${pr.exerciseId}:${pr.kind}`, 'record', `New record: ${pr.exerciseName}`, value, Date.now(), { sessionId: sharing.workouts ? session.id : null, record });
   }
   if (sharing.workouts) {
     // Short on purpose: the sets and volume are on the line it opens.

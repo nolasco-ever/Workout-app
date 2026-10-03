@@ -1,4 +1,4 @@
-import { Session, SessionExercise, SharedExercise, SharedSet, SharingPrefs, WeightUnit } from '../models';
+import { Id, LocalDate, RecordKind, Session, SessionExercise, SharedExercise, SharedSet, SharingPrefs, WeightUnit } from '../models';
 import { countWorkingSets, totalVolumeKg } from './stats';
 import { formatWeight } from './units';
 
@@ -80,4 +80,27 @@ export const sharedExercisesOf = (session: Session, prefs: SharingPrefs): Shared
       }
       return out;
     });
+};
+
+/** How many sessions of history a record line carries. */
+export const RECORD_HISTORY_MAX = 60;
+
+/**
+ * The best of each completed session of an exercise, by the measure a
+ * record is judged on, oldest first. The series behind a record line's
+ * graph; the last point is the record itself.
+ */
+export const recordSeries = (sessions: Session[], exerciseId: Id, kind: RecordKind, max = RECORD_HISTORY_MAX): { date: LocalDate; value: number }[] => {
+  const field = (set: { weightKg: number | null; reps: number | null; durationSec: number | null; distanceM: number | null }): number | null =>
+    kind === 'weight' ? set.weightKg : kind === 'reps' ? set.reps : kind === 'duration' ? set.durationSec : set.distanceM;
+  const points = [...sessions]
+    .filter(s => s.status === 'completed')
+    .sort((a, b) => a.startedAt - b.startedAt)
+    .flatMap(s => {
+      const ex = s.exercises.find(e => e.exerciseId === exerciseId);
+      if (!ex) return [];
+      const vals = ex.sets.filter(set => set.completed && !set.warmup).map(field).filter((v): v is number => v !== null);
+      return vals.length ? [{ date: s.date, value: Math.max(...vals) }] : [];
+    });
+  return points.slice(-max);
 };

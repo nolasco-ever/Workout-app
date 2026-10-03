@@ -27,6 +27,8 @@ interface Props {
   reference?: { value: number; label: string } | null;
   /** Called while scrubbing with the active point, and null on release. */
   onScrub?: (point: LinePoint | null) => void;
+  /** A point to call out: ringed in the accent with a label above it, e.g. a new record. */
+  highlight?: { date: string; label: string } | null;
 }
 
 const PAD = { top: 12, right: 12, bottom: 22, left: 40 };
@@ -35,7 +37,7 @@ const PAD = { top: 12, right: 12, bottom: 22, left: 40 };
  * Single-series line with a scrub gesture: drag anywhere on the plot and a
  * hairline snaps to the nearest date, with the value shown above.
  */
-export const LineChart = ({ points, height = 180, format, reference = null, onScrub }: Props) => {
+export const LineChart = ({ points, height = 180, format, reference = null, onScrub, highlight = null }: Props) => {
   const { colors, fonts, spacing } = useTheme();
   const [width, setWidth] = useState(0);
   const [active, setActive] = useState<number | null>(null);
@@ -113,6 +115,9 @@ export const LineChart = ({ points, height = 180, format, reference = null, onSc
   const onLayout = (e: LayoutChangeEvent) => setWidth(e.nativeEvent.layout.width);
   const activePoint = active !== null ? points[active] : null;
   const last = points[points.length - 1];
+  // The latest point with the highlighted date (a date logged twice keeps the later one).
+  const hi = highlight ? points.map(p => p.date).lastIndexOf(highlight.date) : -1;
+  const hiLabelX = hi >= 0 ? Math.min(Math.max(plot.xs[hi], PAD.left + 36), PAD.left + plot.w - 36) : 0;
 
   return (
     <View onLayout={onLayout} style={{ width: '100%' }}>
@@ -155,6 +160,15 @@ export const LineChart = ({ points, height = 180, format, reference = null, onSc
                   <Circle cx={plot.xs[plot.xs.length - 1]} cy={plot.ys[plot.ys.length - 1]} r={6} fill={colors.surface} />
                   <Circle cx={plot.xs[plot.xs.length - 1]} cy={plot.ys[plot.ys.length - 1]} r={4} fill={colors.accent} />
                 </>
+              )}
+              {hi >= 0 && highlight && (
+                <G>
+                  <Circle cx={plot.xs[hi]} cy={plot.ys[hi]} r={11} fill={colors.accent} fillOpacity={0.18} />
+                  <Circle cx={plot.xs[hi]} cy={plot.ys[hi]} r={6} fill={colors.surface} stroke={colors.accent} strokeWidth={2.5} />
+                  <SvgText x={hiLabelX} y={Math.max(10, plot.ys[hi] - 16)} fontSize={10} fontFamily={fonts.body.bold} fill={colors.accent} textAnchor="middle">
+                    {highlight.label}
+                  </SvgText>
+                </G>
               )}
               <AnimatedLine animatedProps={hairline} y1={PAD.top} y2={PAD.top + plot.h} stroke={colors.ink} strokeWidth={1} />
               <AnimatedCircle animatedProps={dot} r={7} fill={colors.surface} stroke={colors.accent} strokeWidth={2.5} />

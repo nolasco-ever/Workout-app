@@ -167,6 +167,11 @@ rows keep each other's `inviteCode` so a card can be reopened any time.
   (`applySharingPrefs`), by rebuilding every past workout line from its
   session and removing lines of kinds now private. Buddies still never
   read sessions; everything they see is on the activity line. The
+  A record line also carries `record` (`SharedRecord`: exercise id, kind,
+  value, date and the exercise's best-per-session history, `recordSeries`,
+  at most 60 points) so the buddy workout page can graph it with the record
+  ringed; the workout line's `records` entries carry exercise id and kind
+  to pair with those lines. The
   Profile screen "What buddies see" edits the prefs; `SharingPrompt`
   (app root) shows a one-time sheet once the account has a buddy
   (`sharingPromptSeenAt`).

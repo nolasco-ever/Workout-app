@@ -4,7 +4,7 @@ import type { NavigatorScreenParams } from '@react-navigation/native';
 export type BuddyCardParams = { code?: string; uid?: string; displayName?: string | null };
 export type BuddyPlanParams = { ownerUid: string; planId: string; ownerName: string | null };
 /** One line of a buddy's activity, opened for its records and reactions. */
-export type BuddyWorkoutParams = { uid: string; activityId: string; displayName: string | null };
+export type BuddyWorkoutParams = { uid: string; activityId: string; displayName: string | null; /** A record line to open with its graph showing. */ focusRecordId?: string };
 
 /**
  * The Iron Card sheet: your card at the root, the scanner and whatever a

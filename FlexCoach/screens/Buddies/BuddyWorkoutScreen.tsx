@@ -1,12 +1,15 @@
 import React, { useCallback, useEffect, useState } from 'react';
-import { ActivityIndicator, ScrollView, View } from 'react-native';
+import { ActivityIndicator, ScrollView, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { RouteProp, useRoute } from '@react-navigation/native';
 import { useAuth } from '../../data/auth/AuthProvider';
-import { Activity, SharedExercise, SharedSet } from '../../data/models';
+import { Activity, RecordKind, SharedExercise, SharedSet } from '../../data/models';
 import { buddyRepository } from '../../data/repositories/buddyRepository';
 import { getCatalogExercise } from '../../data/catalog/exerciseCatalog';
-import { formatDuration, toDisplayDistance, toDisplayWeight } from '../../data/engine/units';
+import { formatDuration, formatRecordValue, toDisplayDistance, toDisplayWeight } from '../../data/engine/units';
+import { LineChart } from '../../components/charts/LineChart';
+import { shortDate } from '../../components/charts/scale';
+import { directionIcons } from '../../components/icons/icon-library';
 import { MuscleMap } from '../../components/anatomy/MuscleMap';
 import { reactToActivity } from '../../data/services/buddyService';
 import { useBuddies } from '../../data/hooks/useBuddies';
@@ -80,6 +83,57 @@ const numbered = (sets: SharedSet[]): { set: SharedSet; label: string }[] => {
   return sets.map(set => ({ set, label: set.warmup ? `W${++warm}` : String(++work) }));
 };
 
+/** Axis and tooltip text for a record graph, by kind, in the viewer's units. */
+const recordFormat = (kind: RecordKind, u: Units) => (v: number): string => {
+  switch (kind) {
+    case 'weight':
+      return String(Math.round((toDisplayWeight(v, u.weight) ?? 0) * 10) / 10);
+    case 'reps':
+      return String(Math.round(v));
+    case 'duration':
+      return formatDuration(v);
+    case 'distance':
+      return String(toDisplayDistance(v, u.distance));
+  }
+};
+
+/**
+ * One record of the workout: the exercise and the value, and on a tap the
+ * exercise's history with the record ringed. A line that carries no
+ * history (written before graphs existed, or the first time logged) just
+ * shows the value.
+ */
+const RecordRow = ({ name, value, line, units, open, onToggle, divider }: { name: string; value: string; line: Activity | null; units: Units; open: boolean; onToggle: () => void; divider: boolean }) => {
+  const { colors, spacing } = useTheme();
+  const rec = line?.record ?? null;
+  const points = rec?.history ?? [];
+  const canOpen = !!rec;
+  return (
+    <View style={{ borderTopWidth: divider ? 1 : 0, borderTopColor: colors.line }}>
+      <TouchableOpacity disabled={!canOpen} onPress={onToggle} activeOpacity={0.7} accessibilityRole={canOpen ? 'button' : undefined} accessibilityState={canOpen ? { expanded: open } : undefined} style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.md, padding: spacing.lg }}>
+        <Icon icon={generalIcons.trophy} size={18} color={colors.accent} />
+        <CustomText variant="body" style={{ flex: 1 }} numberOfLines={1}>{name}</CustomText>
+        <CustomText variant="bodyStrong" color={colors.accent}>{value}</CustomText>
+        {canOpen && <Icon icon={open ? directionIcons.angleUp : directionIcons.angleDown} size={16} color={colors.inkMuted} />}
+      </TouchableOpacity>
+      {open && rec && (
+        <View style={{ paddingHorizontal: spacing.lg, paddingBottom: spacing.lg, gap: spacing.sm }}>
+          {points.length >= 2 ? (
+            <>
+              <LineChart points={points} height={160} format={recordFormat(rec.kind, units)} highlight={{ date: rec.date, label: 'New record' }} />
+              <CustomText variant="caption" color={colors.inkMuted}>
+                Best {rec.kind === 'weight' ? 'weight' : rec.kind === 'reps' ? 'reps' : rec.kind === 'duration' ? 'time' : 'distance'} each session, {shortDate(points[0].date)} to {shortDate(points[points.length - 1].date)}.
+              </CustomText>
+            </>
+          ) : (
+            <CustomText variant="caption" color={colors.inkMuted}>First time logged, so no history to graph yet.</CustomText>
+          )}
+        </View>
+      )}
+    </View>
+  );
+};
+
 /** One exercise of a buddy's workout, read-only, showing only what they shared. */
 const SharedExerciseCard = ({ ex, units }: { ex: SharedExercise; units: Units }) => {
   const { colors, spacing } = useTheme();
@@ -142,10 +196,21 @@ export const BuddyWorkoutScreen = () => {
   const name = buddy?.card?.displayName ?? buddy?.displayName ?? params.displayName ?? 'Your buddy';
   const units: Units = { weight: profile?.weightUnit ?? 'lb', distance: profile?.distanceUnit ?? 'mi' };
   const [item, setItem] = useState<Activity | null | undefined>(undefined);
+  // The record lines this workout wrote, for their graphs; a record line opened on its own is its own list.
+  const [recordLines, setRecordLines] = useState<Activity[]>([]);
+  const [openRecord, setOpenRecord] = useState<string | null>(params.focusRecordId ?? null);
 
   const load = useCallback(async () => {
     try {
-      setItem(await buddyRepository.getActivity(params.uid, params.activityId));
+      const line = await buddyRepository.getActivity(params.uid, params.activityId);
+      setItem(line);
+      if (line?.kind === 'record') {
+        setRecordLines([line]);
+        setOpenRecord(line.id);
+      } else if (line?.sessionId) {
+        const lines = await buddyRepository.listActivityForSession(params.uid, line.sessionId).catch(() => [] as Activity[]);
+        setRecordLines(lines.filter(l => l.kind === 'record'));
+      }
     } catch (err) {
       console.warn('buddy workout load failed', err);
       setItem(null);
@@ -167,6 +232,20 @@ export const BuddyWorkoutScreen = () => {
       setItem(before);
     });
   };
+
+  // Each record on the workout line paired with its own line (by exercise and
+  // kind, falling back to the name for lines written before ids were kept).
+  // A record line opened on its own is the one record.
+  const records: { key: string; name: string; value: string; line: Activity | null }[] =
+    item?.kind === 'record'
+      ? [{ key: item.id, name: item.title.replace(/^New record: /, ''), value: item.record ? formatRecordValue(item.record.kind, item.record.value, units.weight, units.distance) : item.detail ?? '', line: item }]
+      : (item?.records ?? []).map((r, i) => {
+          const line =
+            recordLines.find(l => l.record && r.exerciseId && l.record.exerciseId === r.exerciseId && l.record.kind === r.kind) ??
+            recordLines.find(l => l.title === `New record: ${r.exerciseName}`) ??
+            null;
+          return { key: line?.id ?? `${r.exerciseName}-${i}`, name: r.exerciseName, value: r.value, line };
+        });
 
   return (
     <SafeAreaView edges={['bottom', 'left', 'right']} style={{ flex: 1, backgroundColor: colors.ground }}>
@@ -191,6 +270,7 @@ export const BuddyWorkoutScreen = () => {
             </View>
 
             {/* The workout itself: as much of it as the owner shares. A private workout has no line at all; lines from before sharing existed carry nothing. */}
+            {item.kind === 'workout_done' && (
             <View style={{ gap: spacing.sm }}>
               <CustomText variant="overline" color={colors.inkMuted}>Workout</CustomText>
               {item.exercises && item.exercises.length > 0 ? (
@@ -201,21 +281,18 @@ export const BuddyWorkoutScreen = () => {
                 </SurfaceCard>
               )}
             </View>
+            )}
 
             <View style={{ gap: spacing.sm }}>
               <CustomText variant="overline" color={colors.inkMuted}>Records</CustomText>
               <SurfaceCard style={{ padding: 0 }}>
-                {(item.records ?? []).length === 0 ? (
+                {records.length === 0 ? (
                   <View style={{ padding: spacing.lg }}>
                     <CustomText variant="body" color={colors.inkMuted}>No new records this time.</CustomText>
                   </View>
                 ) : (
-                  (item.records ?? []).map((r, i) => (
-                    <View key={`${r.exerciseName}-${i}`} style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.md, padding: spacing.lg, borderTopWidth: i > 0 ? 1 : 0, borderTopColor: colors.line }}>
-                      <Icon icon={generalIcons.trophy} size={18} color={colors.accent} />
-                      <CustomText variant="body" style={{ flex: 1 }} numberOfLines={1}>{r.exerciseName}</CustomText>
-                      <CustomText variant="bodyStrong" color={colors.accent}>{r.value}</CustomText>
-                    </View>
+                  records.map((r, i) => (
+                    <RecordRow key={r.key} name={r.name} value={r.value} line={r.line} units={units} open={openRecord === r.key} onToggle={() => setOpenRecord(openRecord === r.key ? null : r.key)} divider={i > 0} />
                   ))
                 )}
               </SurfaceCard>

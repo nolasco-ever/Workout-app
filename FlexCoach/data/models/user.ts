@@ -146,8 +146,14 @@ export interface Activity extends BaseDocument {
   at: Timestamp;
   /** The session behind a finished workout or a record, so the owner can be sent back to it. */
   sessionId?: Id | null;
-  /** Records set in a finished workout, in display form ("Bench Press", "185 lb"). */
-  records?: { exerciseName: string; value: string }[];
+  /** Records set in a finished workout, in display form ("Bench Press", "185 lb"); id and kind link them to their record lines. */
+  records?: { exerciseName: string; value: string; exerciseId?: Id; kind?: RecordKind }[];
+  /**
+   * On a record line: the record in numbers, with the exercise's history
+   * up to it (one point per session, stored units) so a buddy can see the
+   * graph without reading sessions. Written only when records are shared.
+   */
+  record?: SharedRecord;
   /**
    * What was done in a finished workout, as much of it as the owner's
    * sharing prefs allow (see engine/sharing.ts). Missing on lines written
@@ -160,6 +166,18 @@ export interface Activity extends BaseDocument {
    * the document stays the owner's.
    */
   reactions?: Record<Id, ActivityReaction>;
+}
+
+export type RecordKind = 'weight' | 'reps' | 'duration' | 'distance';
+
+export interface SharedRecord {
+  exerciseId: Id;
+  kind: RecordKind;
+  /** The record itself, in stored units (kg, reps, seconds, metres). */
+  value: number;
+  date: LocalDate;
+  /** Best of each session of this exercise, oldest first, ending on the record. */
+  history: { date: LocalDate; value: number }[];
 }
 
 /** One exercise of a shared workout. Only the fields the owner shares are present. */

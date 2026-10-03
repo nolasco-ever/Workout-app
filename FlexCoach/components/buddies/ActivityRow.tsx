@@ -46,9 +46,13 @@ export const whenLabel = (ts: number, now = Date.now()): string => {
   return new Date(ts).toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
 };
 
-/** The activity line a row opens: a finished workout opens itself, a record opens the workout it was set in. */
+/**
+ * The activity line a row opens: a finished workout opens itself, a record
+ * opens the workout it was set in with that record's graph showing, or
+ * itself when the owner doesn't share workouts.
+ */
 const workoutLineOf = (item: ActivityEntry): string | null =>
-  item.kind === 'workout_done' ? item.id : item.kind === 'record' && item.sessionId ? `workout_done:${item.sessionId}` : null;
+  item.kind === 'workout_done' ? item.id : item.kind === 'record' ? (item.sessionId ? `workout_done:${item.sessionId}` : item.id) : null;
 
 /** A shared-plan line carries the plan's id in its own id ("plan_shared:<planId>"). */
 const sharedPlanIdOf = (item: ActivityEntry): string | null =>
@@ -69,7 +73,7 @@ export const ActivityRow = ({ item, divider = false, compact = false, onReact }:
   const workoutLine = item.isMe ? null : workoutLineOf(item);
   const planId = item.isMe ? null : sharedPlanIdOf(item);
   const open = workoutLine
-    ? () => navigation.navigate('BuddyWorkoutScreen', { uid: item.ownerId, activityId: workoutLine, displayName: item.actorName })
+    ? () => navigation.navigate('BuddyWorkoutScreen', { uid: item.ownerId, activityId: workoutLine, displayName: item.actorName, focusRecordId: item.kind === 'record' ? item.id : undefined })
     : planId
       ? () => navigation.navigate('BuddyPlanScreen', { ownerUid: item.ownerId, planId, ownerName: item.actorName })
       : undefined;
