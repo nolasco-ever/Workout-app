@@ -3,6 +3,28 @@
 Newest build first. **Store notes** is the tester-facing text, identical for
 TestFlight and Google Play (under 500 characters). **Details** is for us.
 
+## Build 16 (2026-10-03)
+
+### Store notes
+
+Build 16
+• Tap the workout name during a session to see every exercise, jump around, and add extras
+• Quick workout: train even with nothing planned
+• Choose what buddies see (Profile > What buddies see)
+• Buddy workouts open in full; records show a graph
+• Missed a workout? The app asks: do it today, move it, or skip
+• History: Workouts / Cycles toggle
+• One exercise picker with filters for swap and add
+• Fixes: treadmill record, Health reconnect, chart labels, emoji clipping, how-to zoom
+
+### Details
+
+- Commits 9ec01da..0591a0c (build 15 TestFlight notes 1-11 and the user's 6 items), 2026-10-03.
+- No Firestore rule or Cloud Function changes. New data: `UserProfile.sharing` + `sharingPromptSeenAt`; activity lines carry `exercises` (shared snapshot) and `record` (history for the graph); `Occurrence.missedPromptedAt`; skip reason `missed`; quick sessions have null plan/cycle/occurrence/workout ids.
+- Native: no new native dependencies, pods unchanged. Removed the explicit APNs registration call (auto-registration is on).
+- Not device-tested by us (testers do): Health Connect grant check on Android, swipe-to-dismiss on sheets on Android, quick-workout resume, Move-to-date on weekly plans.
+- Deferred to backlog: progression deep dive (no set-to-set dips), in-app education docs, synced-plan buddy photos on the Today card, buddy stats screen for untappable feed rows, watch app.
+
 ## Build 15 (2026-09-30)
 
 ### Store notes
