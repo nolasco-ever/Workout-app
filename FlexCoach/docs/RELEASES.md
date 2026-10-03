@@ -8,13 +8,21 @@ TestFlight and Google Play (under 500 characters). **Details** is for us.
 ### Store notes
 
 Build 16
+
 • Tap the workout name during a session to see every exercise, jump around, and add extras
+
 • Quick workout: train even with nothing planned
-• Choose what buddies see (Profile > What buddies see)
+
+• Choose what buddies see, in Profile
+
 • Buddy workouts open in full; records show a graph
+
 • Missed a workout? The app asks: do it today, move it, or skip
+
 • History: Workouts / Cycles toggle
+
 • One exercise picker with filters for swap and add
+
 • Fixes: treadmill record, Health reconnect, chart labels, emoji clipping, how-to zoom
 
 ### Details
