@@ -91,7 +91,10 @@ export const BuddyPlanScreen = () => {
           {!alreadySynced && <PrimaryButton label="Use it and keep in sync" busy={busy === 'sync'} disabled={busy === 'copy'} onPress={() => save(true)} />}
           <PrimaryButton label={alreadyCopied ? 'Save another copy' : 'Save a copy'} variant={alreadySynced ? 'filled' : 'outline'} busy={busy === 'copy'} disabled={busy === 'sync'} onPress={() => save(false)} />
           <CustomText variant="caption" color={colors.inkMuted} centered>
-            In sync, edits {first} makes later show up in yours. A copy is yours to edit and never changes on its own.
+            In sync: any edits {first} makes to this workout will reflect for you as well. Skipping or moving a workout is always independent and will never affect either buddy's schedule.
+          </CustomText>
+          <CustomText variant="caption" color={colors.inkMuted} centered>
+            Copy: a copy is yours to edit. Any changes your buddy makes will not reflect on your plan.
           </CustomText>
         </View>
       )}

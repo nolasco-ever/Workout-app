@@ -195,6 +195,9 @@ rows keep each other's `inviteCode` so a card can be reopened any time.
     recipient can also "Stop syncing" from the plan overview; a synced
     plan has no Edit button. No rule change was needed: reading a shared
     plan was already allowed while it is visible and the pair are buddies.
+    Sync moves only the plan's substance; cycles and occurrences are per
+    user, so one buddy skipping or moving a workout never affects the
+    other's schedule (asked on build 15, 2026-10-03).
 
 ## Units
 
