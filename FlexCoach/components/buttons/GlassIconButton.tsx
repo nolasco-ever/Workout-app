@@ -13,6 +13,11 @@ interface Props {
   accessibilityLabel: string;
   /** Draws an unread dot on the icon. */
   badge?: boolean;
+  /**
+   * Optical correction in points. A chevron is centred by its box but read
+   * by its point, so a back chevron wants a nudge to the left (-1).
+   */
+  nudgeX?: number;
 }
 
 /**
@@ -20,7 +25,7 @@ interface Props {
  * 26 it is a real Liquid Glass circle, the same UIKit material the native
  * header buttons use; older iOS and Android get the raised surface disc.
  */
-export const GlassIconButton = ({ icon, onPress, accessibilityLabel, badge = false }: Props) => {
+export const GlassIconButton = ({ icon, onPress, accessibilityLabel, badge = false, nudgeX = 0 }: Props) => {
   const { colors } = useTheme();
   const size = GLASS_BUTTON_SIZE;
   return (
@@ -30,7 +35,7 @@ export const GlassIconButton = ({ icon, onPress, accessibilityLabel, badge = fal
         effect="regular"
         style={[{ width: size, height: size, borderRadius: size / 2, alignItems: 'center', justifyContent: 'center' }, !isLiquidGlassSupported && { backgroundColor: colors.surfaceRaised }]}
       >
-        <View>
+        <View style={nudgeX ? { transform: [{ translateX: nudgeX }] } : undefined}>
           <Icon icon={icon} color={colors.ink} size={22} />
           {badge && <View style={{ position: 'absolute', top: -1, right: -1, width: 10, height: 10, borderRadius: 5, backgroundColor: colors.accent, borderWidth: 2, borderColor: isLiquidGlassSupported ? colors.ground : colors.surfaceRaised }} />}
         </View>

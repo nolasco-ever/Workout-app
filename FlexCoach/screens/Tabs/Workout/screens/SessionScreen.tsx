@@ -306,7 +306,7 @@ export const SessionScreen = () => {
             <SessionTitle name={session.workoutName} startedAt={session.startedAt} />
           </View>
           <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
-            <GlassIconButton icon={directionIcons.angleLeft} accessibilityLabel="Back" onPress={() => confirmLeaveRef.current(() => navigation.goBack())} />
+            <GlassIconButton icon={directionIcons.angleLeft} nudgeX={-1} accessibilityLabel="Back" onPress={() => confirmLeaveRef.current(() => navigation.goBack())} />
             {restStartedAt === null ? <View style={{ width: GLASS_BUTTON_SIZE }} /> : <RestPill startedAt={restStartedAt} durationSec={restFor} onDismiss={dismissRest} />}
           </View>
         </View>
