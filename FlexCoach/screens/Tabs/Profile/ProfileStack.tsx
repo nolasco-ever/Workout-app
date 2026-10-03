@@ -5,6 +5,7 @@ import { HistoryScreen } from './screens/HistoryScreen';
 import { NotificationSettingsScreen } from './screens/NotificationSettingsScreen';
 import { SharingScreen } from './screens/SharingScreen';
 import { SessionDetailScreen } from '../Workout/screens/SessionDetailScreen';
+import { CycleReviewScreen } from '../Workout/screens/CycleReviewScreen';
 import { PlaceholderScreen } from '../../placeholderScreen';
 import { useStackOptions } from '../../../navigation/stackOptions';
 
@@ -14,6 +15,7 @@ export type ProfileStackParams = {
     NotificationSettingsScreen: undefined;
     SharingScreen: undefined;
     SessionDetailScreen: { sessionId: string; workoutName?: string };
+    CycleReviewScreen: { cycleId: string };
     PlaceholderScreen: { title: string };
 };
 
@@ -28,6 +30,7 @@ export const ProfileStack = () => {
             <Stack.Screen name="NotificationSettingsScreen" component={NotificationSettingsScreen} options={opts.screen('Notifications')} />
             <Stack.Screen name="SharingScreen" component={SharingScreen} options={opts.screen('What buddies see')} />
             <Stack.Screen name="SessionDetailScreen" component={SessionDetailScreen} options={({ route }) => opts.screen(route.params.workoutName ?? 'Workout')} />
+            <Stack.Screen name="CycleReviewScreen" component={CycleReviewScreen} options={opts.screen('Cycle review')} />
             <Stack.Screen name="PlaceholderScreen" component={PlaceholderScreen} options={({ route }) => opts.screen(route.params.title)} />
         </Stack.Navigator>
     );
