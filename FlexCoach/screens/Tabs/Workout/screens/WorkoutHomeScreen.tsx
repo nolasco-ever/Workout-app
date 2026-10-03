@@ -216,10 +216,10 @@ export const WorkoutHomeScreen = () => {
               </CustomText>
               <View style={{ flexDirection: 'row', gap: spacing.sm }}>
                 <View style={{ flex: 1 }}>
-                  <PrimaryButton label="Skip" variant="outline" busy={busy === `skip-${o.id}`} onPress={() => run(`skip-${o.id}`, async () => { if (uid) await skipWorkout(uid, cycle, o.id); })} />
+                  <PrimaryButton label="Skip" variant="outline" busy={busy === `skip-${o.id}`} onPress={() => run(`skip-${o.id}`, async () => { if (uid) await skipWorkout(uid, cycle, o.id, profile); })} />
                 </View>
                 <View style={{ flex: 1 }}>
-                  <PrimaryButton label="Do it today" busy={busy === `push-${o.id}`} onPress={() => run(`push-${o.id}`, async () => { if (uid) await pushWorkoutTo(uid, plan, cycle, o.id, state.todayDate); })} />
+                  <PrimaryButton label="Do it today" busy={busy === `push-${o.id}`} onPress={() => run(`push-${o.id}`, async () => { if (uid) await pushWorkoutTo(uid, plan, cycle, o.id, state.todayDate, profile); })} />
                 </View>
               </View>
             </Card>
@@ -266,7 +266,7 @@ export const WorkoutHomeScreen = () => {
                           label="Not today"
                           variant="quiet"
                           busy={busy === `not-today-${state.todayOccurrence.id}`}
-                          onPress={() => uid && askNotToday(uid, plan, cycle, state.todayOccurrence!, state.todayDate, fn => run(`not-today-${state.todayOccurrence!.id}`, fn))}
+                          onPress={() => uid && askNotToday(uid, plan, cycle, state.todayOccurrence!, state.todayDate, profile, fn => run(`not-today-${state.todayOccurrence!.id}`, fn))}
                         />
                       </View>
                     </View>

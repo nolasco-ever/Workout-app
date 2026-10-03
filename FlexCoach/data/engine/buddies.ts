@@ -1,6 +1,7 @@
 import { AchievementUnlock, BestRecord, Id, LocalDate, Plan, PublicProfile, Session, UserProfile } from '../models';
 import { addDays } from './dates';
 import { computeRecords, currentStreakDays, totalVolumeKg } from './stats';
+import { withSharingDefaults } from './sharing';
 import { workingSets } from './sets';
 
 /**
@@ -72,6 +73,7 @@ export interface CardInput {
 /** Build the Iron Card (public profile) from the owner's private data. */
 export const buildPublicProfile = (input: CardInput): PublicProfile => {
   const completed = input.sessions.filter(s => s.status === 'completed');
+  const sharing = withSharingDefaults(input.profile?.sharing);
   const dates = completed.map(s => s.date).sort();
   return {
     id: input.uid,
@@ -84,8 +86,9 @@ export const buildPublicProfile = (input: CardInput): PublicProfile => {
     lastCycleCompletionRate: input.lastCycleCompletionRate,
     skippedLastScheduled: input.skippedLastScheduled,
     achievementIds: input.unlocks.map(u => u.achievementId),
-    totalVolumeKg: totalVolumeKg(completed),
-    bestRecord: bestRecord(completed),
+    // Totals are the owner's to share; off, the card shows a dash for both.
+    totalVolumeKg: sharing.totals ? totalVolumeKg(completed) : 0,
+    bestRecord: sharing.totals ? bestRecord(completed) : null,
     favoriteExercise: favoriteExercise(completed),
     trainingSince: input.profile?.createdAt ?? null,
     sharedPlanCount: input.plans.filter(p => p.visibleToBuddies && p.status !== 'archived').length,

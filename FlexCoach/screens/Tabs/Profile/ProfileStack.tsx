@@ -3,6 +3,7 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { ProfileScreen } from './screens/ProfileScreen';
 import { HistoryScreen } from './screens/HistoryScreen';
 import { NotificationSettingsScreen } from './screens/NotificationSettingsScreen';
+import { SharingScreen } from './screens/SharingScreen';
 import { SessionDetailScreen } from '../Workout/screens/SessionDetailScreen';
 import { PlaceholderScreen } from '../../placeholderScreen';
 import { useStackOptions } from '../../../navigation/stackOptions';
@@ -11,6 +12,7 @@ export type ProfileStackParams = {
     ProfileScreen: undefined;
     HistoryScreen: undefined;
     NotificationSettingsScreen: undefined;
+    SharingScreen: undefined;
     SessionDetailScreen: { sessionId: string; workoutName?: string };
     PlaceholderScreen: { title: string };
 };
@@ -24,6 +26,7 @@ export const ProfileStack = () => {
             <Stack.Screen name="ProfileScreen" component={ProfileScreen} options={opts.tabRoot('Profile')} />
             <Stack.Screen name="HistoryScreen" component={HistoryScreen} options={opts.screen('History')} />
             <Stack.Screen name="NotificationSettingsScreen" component={NotificationSettingsScreen} options={opts.screen('Notifications')} />
+            <Stack.Screen name="SharingScreen" component={SharingScreen} options={opts.screen('What buddies see')} />
             <Stack.Screen name="SessionDetailScreen" component={SessionDetailScreen} options={({ route }) => opts.screen(route.params.workoutName ?? 'Workout')} />
             <Stack.Screen name="PlaceholderScreen" component={PlaceholderScreen} options={({ route }) => opts.screen(route.params.title)} />
         </Stack.Navigator>

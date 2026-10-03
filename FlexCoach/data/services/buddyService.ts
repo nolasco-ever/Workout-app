@@ -1,8 +1,10 @@
-import { Activity, ActivityKind, ActivityReaction, Id, InviteCode, Occurrence, Plan, PublicProfile, Session, UserProfile } from '../models';
+import { Activity, ActivityKind, ActivityReaction, Id, InviteCode, Occurrence, Plan, PublicProfile, Session, SharingPrefs, UserProfile } from '../models';
+import { deleteField } from '@react-native-firebase/firestore';
 import { newId } from '../engine/ids';
 import { today } from '../engine/dates';
 import { buildPublicProfile, formatInviteCode, generateInviteCode, inviteUrl, isStreakMilestone } from '../engine/buddies';
-import { countWorkingSets, totalVolumeKg, summarizeCycle } from '../engine/stats';
+import { summarizeCycle } from '../engine/stats';
+import { sharedDetail, sharedExercisesOf, withSharingDefaults } from '../engine/sharing';
 import { formatRecordValue, formatWeight } from '../engine/units';
 import { buddyRepository } from '../repositories/buddyRepository';
 import { userRepository } from '../repositories/userRepository';
@@ -136,7 +138,7 @@ export const shareMessage = (code: string, displayName: string | null): string =
  * the same event twice (a double tap on Finish, a retried save) overwrites
  * one line instead of adding a second.
  */
-export const recordActivity = async (uid: Id, id: string, kind: ActivityKind, title: string, detail: string | null = null, at: number = Date.now(), extra: Pick<Activity, 'sessionId' | 'records'> = {}): Promise<void> => {
+export const recordActivity = async (uid: Id, id: string, kind: ActivityKind, title: string, detail: string | null = null, at: number = Date.now(), extra: Pick<Activity, 'sessionId' | 'records' | 'exercises'> = {}): Promise<void> => {
   const item: Activity = { id, ownerId: uid, kind, title, detail, at, createdAt: at, updatedAt: at, ...extra };
   await buddyRepository.addActivity(uid, item);
 };
@@ -163,22 +165,29 @@ const notifyBuddies = async (uid: Id, idSuffix: string, kind: BuddyNotificationK
 export const afterSessionFinished = async (uid: Id, profile: UserProfile | null, session: Session, records: PersonalRecord[], unit: WeightUnit): Promise<void> => {
   const sessions = await sessionRepository.listAll(uid);
   const card = await refreshPublicProfile(uid, profile, sessions);
-  const sets = countWorkingSets([session]);
-  const volume = totalVolumeKg([session]);
+  const sharing = withSharingDefaults(profile?.sharing);
   const name = firstName(profile?.displayName);
   const displayName = profile?.displayName ?? null;
   const dist = profile?.distanceUnit ?? 'mi';
-  const recordLines = records.map(pr => ({ exerciseName: pr.exerciseName, value: formatRecordValue(pr.kind, pr.value, unit, dist) }));
-  const detail = `${sets} set${sets === 1 ? '' : 's'}${volume > 0 ? ` · ${formatWeight(volume, unit).replace(/\.0+ /, ' ')} moved` : ''}`;
+  const shared = sharing.records ? records : [];
+  const recordLines = shared.map(pr => ({ exerciseName: pr.exerciseName, value: formatRecordValue(pr.kind, pr.value, unit, dist) }));
   const activityId = `workout_done:${session.id}`;
-  await recordActivity(uid, activityId, 'workout_done', `Finished ${session.workoutName}`, detail, session.finishedAt ?? Date.now(), { sessionId: session.id, records: recordLines });
-  for (const pr of records) {
-    const value = formatRecordValue(pr.kind, pr.value, unit, dist);
-    await recordActivity(uid, `record:${session.id}:${pr.exerciseId}:${pr.kind}`, 'record', `New record: ${pr.exerciseName}`, value, Date.now(), { sessionId: session.id });
+  // The workout line and its notification only exist if the owner shares
+  // finished workouts; what it carries follows the rest of their prefs.
+  if (sharing.workouts) {
+    const exercises = sharedExercisesOf(session, sharing) ?? [];
+    await recordActivity(uid, activityId, 'workout_done', `Finished ${session.workoutName}`, sharedDetail(session, sharing, unit), session.finishedAt ?? Date.now(), { sessionId: session.id, records: recordLines, exercises });
   }
-  // Short on purpose: the sets and volume are on the line it opens.
-  const recordNote = records.length === 0 ? 'Tap to see how it went.' : records.length === 1 ? '1 new record' : `${records.length} new records`;
-  await notifyBuddies(uid, session.id, 'buddy_workout', `${name} finished ${session.workoutName}`, recordNote, { screen: 'buddy_workout', uid, activityId, displayName });
+  for (const pr of shared) {
+    const value = formatRecordValue(pr.kind, pr.value, unit, dist);
+    // Without a workout line to open, the record line stands on its own.
+    await recordActivity(uid, `record:${session.id}:${pr.exerciseId}:${pr.kind}`, 'record', `New record: ${pr.exerciseName}`, value, Date.now(), { sessionId: sharing.workouts ? session.id : null });
+  }
+  if (sharing.workouts) {
+    // Short on purpose: the sets and volume are on the line it opens.
+    const recordNote = shared.length === 0 ? 'Tap to see how it went.' : shared.length === 1 ? '1 new record' : `${shared.length} new records`;
+    await notifyBuddies(uid, session.id, 'buddy_workout', `${name} finished ${session.workoutName}`, recordNote, { screen: 'buddy_workout', uid, activityId, displayName });
+  }
   if (isStreakMilestone(card.currentStreakDays)) {
     await recordActivity(uid, `streak:${card.currentStreakDays}:${session.date}`, 'streak', `${card.currentStreakDays}-day streak`, 'Every day counts.');
     await notifyBuddies(uid, `${card.currentStreakDays}:${session.date}`, 'buddy_streak', `${name} is on a ${card.currentStreakDays}-day streak`, 'Send some encouragement, or go match it.', { screen: 'buddy', uid, displayName });
@@ -187,8 +196,10 @@ export const afterSessionFinished = async (uid: Id, profile: UserProfile | null,
 
 export const afterWorkoutSkipped = async (uid: Id, profile: UserProfile | null, occurrence: Occurrence): Promise<void> => {
   const workout = occurrence.workoutName ?? 'a workout';
-  await recordActivity(uid, `workout_skipped:${occurrence.id}`, 'workout_skipped', `Skipped ${workout}`, 'It happens. Next one counts double.');
-  await notifyBuddies(uid, occurrence.id, 'buddy_skipped', `${firstName(profile?.displayName)} skipped ${workout}`, 'A nudge from you might get the next one done.', { screen: 'buddy', uid, displayName: profile?.displayName ?? null });
+  if (withSharingDefaults(profile?.sharing).skips) {
+    await recordActivity(uid, `workout_skipped:${occurrence.id}`, 'workout_skipped', `Skipped ${workout}`, 'It happens. Next one counts double.');
+    await notifyBuddies(uid, occurrence.id, 'buddy_skipped', `${firstName(profile?.displayName)} skipped ${workout}`, 'A nudge from you might get the next one done.', { screen: 'buddy', uid, displayName: profile?.displayName ?? null });
+  }
   refreshPublicProfile(uid, profile).catch(() => undefined);
 };
 
@@ -208,8 +219,55 @@ export const reactToActivity = async (me: { uid: Id; displayName: string | null 
     .catch(() => undefined); // Only ever created once per line; a changed emoji is a silent update.
 };
 
-export const afterWorkoutPushed = async (uid: Id, occurrence: Occurrence, toDate: string): Promise<void> => {
+export const afterWorkoutPushed = async (uid: Id, profile: UserProfile | null, occurrence: Occurrence, toDate: string): Promise<void> => {
+  if (!withSharingDefaults(profile?.sharing).skips) return;
   await recordActivity(uid, `workout_pushed:${occurrence.id}:${toDate}`, 'workout_pushed', `Moved ${occurrence.workoutName ?? 'a workout'}`, toDate === today() ? 'Doing it today instead.' : `Now on ${toDate}.`);
+};
+
+/**
+ * Save new sharing prefs and bring every line the owner has already
+ * written in step with them: finished workouts are rebuilt from their
+ * sessions (so turning something back on restores it), lines of a kind
+ * that is now private are removed, and the card is refreshed. Past
+ * record and skip lines can't be recreated once removed.
+ */
+export const applySharingPrefs = async (uid: Id, profile: UserProfile | null, prefs: SharingPrefs): Promise<void> => {
+  await userRepository.update(uid, { sharing: prefs });
+  const updated: UserProfile | null = profile ? { ...profile, sharing: prefs } : null;
+  const unit = profile?.weightUnit ?? 'lb';
+  const lines = await buddyRepository.listAllActivity(uid);
+  for (const line of lines) {
+    try {
+      if (line.kind === 'workout_done') {
+        if (!prefs.workouts) {
+          await buddyRepository.removeActivity(uid, line.id);
+          continue;
+        }
+        const session = line.sessionId ? await sessionRepository.get(uid, line.sessionId) : null;
+        const patch: Record<string, unknown> = {
+          records: prefs.records ? line.records ?? [] : deleteField(),
+          updatedAt: Date.now(),
+        };
+        if (session) {
+          patch.detail = sharedDetail(session, prefs, unit);
+          patch.exercises = sharedExercisesOf(session, prefs) ?? [];
+        } else {
+          // The session is gone; keep what is allowed and strip the rest.
+          if (!prefs.totals) patch.detail = null;
+          if (!prefs.sets && !prefs.reps && !prefs.weight) patch.exercises = (line.exercises ?? []).map(e => ({ name: e.name, measurement: e.measurement }));
+        }
+        await buddyRepository.patchActivity(uid, line.id, patch);
+      } else if (line.kind === 'record') {
+        if (!prefs.records) await buddyRepository.removeActivity(uid, line.id);
+        else if (!prefs.workouts && line.sessionId) await buddyRepository.patchActivity(uid, line.id, { sessionId: null, updatedAt: Date.now() });
+      } else if ((line.kind === 'workout_skipped' || line.kind === 'workout_pushed') && !prefs.skips) {
+        await buddyRepository.removeActivity(uid, line.id);
+      }
+    } catch (err) {
+      console.warn('sharing rewrite failed for', line.id, err);
+    }
+  }
+  await refreshPublicProfile(uid, updated).catch(err => console.warn('card refresh failed', err));
 };
 
 export const afterCycleFinished = async (uid: Id, cycleId: Id, cycleNumber: number, completionRate: number): Promise<void> => {

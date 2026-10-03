@@ -1,5 +1,5 @@
 import { Alert } from 'react-native';
-import { Cycle, Id, Occurrence, Plan } from '../../../../data/models';
+import { Cycle, Id, Occurrence, Plan, UserProfile } from '../../../../data/models';
 import { addDays, fromLocalDate } from '../../../../data/engine/dates';
 import { pushWorkoutTo, skipWorkout } from '../../../../data/services/workoutService';
 
@@ -17,6 +17,7 @@ export const askNotToday = (
   cycle: Cycle,
   occurrence: Occurrence,
   todayDate: string,
+  profile: UserProfile | null,
   run: (fn: () => Promise<void>) => void,
 ): void => {
   const tomorrow = addDays(todayDate, 1);
@@ -29,7 +30,7 @@ export const askNotToday = (
         text: 'Move to tomorrow',
         onPress: () =>
           run(async () => {
-            const updated = await pushWorkoutTo(uid, plan, cycle, occurrence.id, tomorrow);
+            const updated = await pushWorkoutTo(uid, plan, cycle, occurrence.id, tomorrow, profile);
             const moved = updated.occurrences.find(o => o.id === occurrence.id);
             if (moved?.status === 'skipped') {
               Alert.alert('Nothing left in this cycle', 'Tomorrow is past the end of this cycle, so the workout was skipped instead. It comes back in the next cycle.');
@@ -42,7 +43,7 @@ export const askNotToday = (
         onPress: () =>
           Alert.alert('Skip for this cycle?', `${occurrence.workoutName ?? 'This workout'} is marked as skipped and the cycle carries on. Nothing moves.`, [
             { text: 'Cancel', style: 'cancel' },
-            { text: 'Skip', style: 'destructive', onPress: () => run(async () => { await skipWorkout(uid, cycle, occurrence.id); }) },
+            { text: 'Skip', style: 'destructive', onPress: () => run(async () => { await skipWorkout(uid, cycle, occurrence.id, profile); }) },
           ]),
       },
     ],

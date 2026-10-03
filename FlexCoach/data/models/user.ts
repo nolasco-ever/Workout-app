@@ -1,5 +1,6 @@
 import { BaseDocument, DistanceUnit, Id, LocalDate, Timestamp, WeightUnit } from './common';
 import { NotificationPrefs } from './notification';
+import { MeasurementType } from './exercise';
 
 export type AuthProvider = 'password' | 'apple' | 'google';
 
@@ -30,6 +31,29 @@ export interface UserProfile extends BaseDocument {
   exactAlarmPromptedAt?: Timestamp | null;
   /** The code on this account's Iron Card (see inviteCodes); made on first visit to Buddies. */
   inviteCode?: string | null;
+  /** What buddies get to see; missing means everything (see withSharingDefaults). */
+  sharing?: Partial<SharingPrefs> | null;
+  /** When the one-time "what buddies see" sheet was shown, after the first buddy. */
+  sharingPromptSeenAt?: Timestamp | null;
+}
+
+/**
+ * What of the owner's training their buddies can see. Everything is on
+ * by default. `workouts` off means a finished workout is not shared at
+ * all; on with `sets`, `reps` and `weight` all off shares that it was
+ * finished and which exercises were done, nothing more.
+ */
+export interface SharingPrefs {
+  workouts: boolean;
+  sets: boolean;
+  reps: boolean;
+  weight: boolean;
+  /** New records: feed lines, the records on a workout, the record graph. */
+  records: boolean;
+  /** Sets and weight moved on feed lines; best lift and weight moved on the card. */
+  totals: boolean;
+  /** Skipped and moved workouts as feed lines. */
+  skips: boolean;
 }
 
 /** The single best lift on record, for the card. */
@@ -125,11 +149,35 @@ export interface Activity extends BaseDocument {
   /** Records set in a finished workout, in display form ("Bench Press", "185 lb"). */
   records?: { exerciseName: string; value: string }[];
   /**
+   * What was done in a finished workout, as much of it as the owner's
+   * sharing prefs allow (see engine/sharing.ts). Missing on lines written
+   * before sharing details existed and when workout details are off.
+   */
+  exercises?: SharedExercise[];
+  /**
    * Buddies' reactions, one per person, keyed by their uid. Buddies may
    * write only their own key (see firestore.rules); everything else on
    * the document stays the owner's.
    */
   reactions?: Record<Id, ActivityReaction>;
+}
+
+/** One exercise of a shared workout. Only the fields the owner shares are present. */
+export interface SharedExercise {
+  name: string;
+  measurement: MeasurementType;
+  /** Completed sets in order, when sets are shared. */
+  sets?: SharedSet[];
+  /** The exercise's best completed working set, when sets are hidden but reps or weight are shared. */
+  top?: SharedSet;
+}
+
+export interface SharedSet {
+  warmup?: boolean;
+  weightKg?: number | null;
+  reps?: number | null;
+  durationSec?: number | null;
+  distanceM?: number | null;
 }
 
 export interface ActivityReaction {

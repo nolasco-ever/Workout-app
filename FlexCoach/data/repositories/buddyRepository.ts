@@ -43,6 +43,14 @@ export const buddyRepository = {
 
   getActivity: (uid: Id, activityId: Id) => readDoc<Activity>(paths.activityItem(uid, activityId)),
 
+  /** Every line the owner has ever written; for rewriting them when sharing prefs change. */
+  listAllActivity: (uid: Id) => listDocs<Activity>(paths.activity(uid), orderBy('at', 'desc')),
+
+  /** Change some fields of an own line; `deleteField()` values remove a field. */
+  patchActivity: (uid: Id, activityId: Id, patch: Record<string, unknown>) => patchDoc(paths.activityItem(uid, activityId), patch as any),
+
+  removeActivity: (uid: Id, activityId: Id) => removeDoc(paths.activityItem(uid, activityId)),
+
   /** The lines one session produced (the workout, its records), for showing their reactions on the session itself. */
   listActivityForSession: (uid: Id, sessionId: Id) => listDocs<Activity>(paths.activity(uid), where('sessionId', '==', sessionId)),
 

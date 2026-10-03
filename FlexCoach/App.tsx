@@ -11,6 +11,7 @@ import { useTheme } from './theme';
 import { navigationRef } from './navigation/navigationRef';
 import { NotificationBridge } from './data/notifications/NotificationBridge';
 import { PlanSyncBridge } from './data/notifications/PlanSyncBridge';
+import { SharingPrompt } from './components/buddies/SharingPrompt';
 import { useAuth } from './data/auth/AuthProvider';
 import { startInviteLinkListener } from './data/links/inviteLinks';
 import { InAppBannerHost } from './components/overlays/InAppBanner';
@@ -49,6 +50,7 @@ const Notifications = () => {
     <>
       <NotificationBridge />
       <PlanSyncBridge />
+      <SharingPrompt />
     </>
   ) : null;
 };

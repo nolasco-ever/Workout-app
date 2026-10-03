@@ -69,7 +69,7 @@ export const skipWorkout = async (uid: Id, cycle: Cycle, occurrenceId: Id, profi
  * today). Each step cascades through the engine, so anything in the way
  * moves too. Stops early if the workout gets pushed out of a weekly cycle.
  */
-export const pushWorkoutTo = async (uid: Id, plan: Plan, cycle: Cycle, occurrenceId: Id, targetDate: LocalDate): Promise<Cycle> => {
+export const pushWorkoutTo = async (uid: Id, plan: Plan, cycle: Cycle, occurrenceId: Id, targetDate: LocalDate, profile: UserProfile | null = null): Promise<Cycle> => {
   let updated = cycle;
   for (let guard = 0; guard < 60; guard++) {
     const occ = updated.occurrences.find(o => o.id === occurrenceId);
@@ -78,7 +78,7 @@ export const pushWorkoutTo = async (uid: Id, plan: Plan, cycle: Cycle, occurrenc
   }
   await cycleRepository.save(uid, updated);
   const moved = updated.occurrences.find(o => o.id === occurrenceId);
-  if (moved && updated !== cycle) afterWorkoutPushed(uid, moved, moved.date).catch(err => console.warn('buddy activity failed', err));
+  if (moved && updated !== cycle) afterWorkoutPushed(uid, profile, moved, moved.date).catch(err => console.warn('buddy activity failed', err));
   return updated;
 };
 

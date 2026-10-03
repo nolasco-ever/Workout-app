@@ -132,7 +132,7 @@ export const HomeScreen = () => {
   const canDefer = !!uid && !!home.plan && !!home.cycle && !!todayOcc && todayOcc.status === 'scheduled' && !home.inProgressSession;
   const notToday = () => {
     if (!uid || !home.plan || !home.cycle || !todayOcc) return;
-    askNotToday(uid, home.plan, home.cycle, todayOcc, home.todayDate, fn => { fn().catch(err => console.warn(err)); });
+    askNotToday(uid, home.plan, home.cycle, todayOcc, home.todayDate, profile, fn => { fn().catch(err => console.warn(err)); });
   };
   const todayStatus = !home.plan
     ? { tone: colors.inkMuted, kicker: 'Today', headline: 'No plan yet', detail: 'Set up a plan and your daily workout shows here.', action: 'Set up a plan' }

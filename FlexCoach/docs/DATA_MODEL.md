@@ -154,6 +154,22 @@ rows keep each other's `inviteCode` so a card can be reopened any time.
   out only for streak milestones (every fifth day) and, later,
   achievements. Feed items for finished/skipped workouts stay in the
   activity feed, not the notification tray.
+- **Sharing prefs** (added 2026-10-03, build 16): `UserProfile.sharing`
+  (`SharingPrefs`, everything on by default; `engine/sharing.ts`) decides
+  what the owner's lines carry. `workouts` off: no finished-workout line
+  or notification at all. On, the line carries `exercises`
+  (`SharedExercise[]`: name and measurement, plus completed sets with only
+  the fields `sets` / `reps` / `weight` allow, or the best set when sets
+  are hidden). `records` off: no record lines and no `records` on the
+  workout line. `totals` off: no sets/volume `detail`, and the card's
+  `totalVolumeKg` / `bestRecord` are blank. `skips` off: no skipped/moved
+  lines. Applied when a line is written and, when the prefs change
+  (`applySharingPrefs`), by rebuilding every past workout line from its
+  session and removing lines of kinds now private. Buddies still never
+  read sessions; everything they see is on the activity line. The
+  Profile screen "What buddies see" edits the prefs; `SharingPrompt`
+  (app root) shows a one-time sheet once the account has a buddy
+  (`sharingPromptSeenAt`).
 - **Shared plans**: `Plan.visibleToBuddies` (off by default). The rule lets
   an accepted buddy read a plan only when that flag is true, and a list
   query must filter on it (`planRepository.listSharedBy`). A buddy's plan
