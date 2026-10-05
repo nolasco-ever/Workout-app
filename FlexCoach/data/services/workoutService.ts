@@ -1,8 +1,6 @@
 import {
   Cycle,
   CycleSummary,
-  DEFAULT_PROGRESSION,
-  Exercise,
   Id,
   LocalDate,
   LoggedSet,
@@ -11,10 +9,8 @@ import {
   Plan,
   PublicProfile,
   Session,
-  SessionExercise,
   UserProfile,
   WeightUnit,
-  WorkoutExercise,
   wantsWarmup,
 } from '../models';
 import { addDays, today } from '../engine/dates';
@@ -227,43 +223,8 @@ export const addWarmupSetTo = (session: Session, sessionExerciseId: Id, unit: We
   };
 };
 
-/**
- * Stand in another exercise for one of the session's, for this session
- * only; the plan is untouched. The replacement starts fresh: its target
- * carries from its own last log when it has one, otherwise from the plan
- * entry's prescription, with warm-ups if the lift wants them. Any sets
- * logged for the old exercise are dropped.
- */
-export const substituteExercise = (session: Session, sessionExerciseId: Id, replacement: Exercise, plan: Plan | null, history: Session[], unit: WeightUnit, makeId: () => Id): Session => {
-  const ex = session.exercises.find(e => e.id === sessionExerciseId);
-  if (!ex) throw new Error('Unknown session exercise');
-  const planEntry = plan ? findWorkout(plan, session.workoutId)?.exercises.find(e => e.id === ex.workoutExerciseId) : undefined;
-  const entry: WorkoutExercise = {
-    ...(planEntry ?? { id: ex.workoutExerciseId ?? makeId(), order: ex.order, sets: ex.target.sets, repRangeMin: null, repRangeMax: null, startingWeightKg: null, startingDurationSec: null, startingDistanceM: null, restSec: 90, progression: DEFAULT_PROGRESSION, notes: null }),
-    exerciseId: replacement.id,
-    exerciseName: replacement.name,
-    measurement: replacement.measurement,
-    // The old exercise's target is the best starting point when the replacement is measured the same way.
-    ...(replacement.measurement === ex.measurement ? { startingWeightKg: ex.target.weightKg, startingDurationSec: ex.target.durationSec, startingDistanceM: ex.target.distanceM, repRangeMax: planEntry?.repRangeMax ?? ex.target.reps } : {}),
-  };
-  let fallback: SessionExercise | null = null;
-  const completed = history.filter(s => s.status === 'completed' && s.id !== session.id).sort((a, b) => a.startedAt - b.startedAt);
-  for (let i = completed.length - 1; i >= 0 && !fallback; i--) fallback = completed[i].exercises.find(e => e.exerciseId === replacement.id) ?? null;
-  const target = progressExercise(entry, [], fallback, unit).target;
-  const warmups = wantsWarmup(entry) ? buildWarmupSets(target, unit, makeId) : [];
-  const swapped: SessionExercise = {
-    ...ex,
-    exerciseId: replacement.id,
-    exerciseName: replacement.name,
-    measurement: replacement.measurement,
-    target,
-    sets: [...warmups, ...buildPlannedSets(target, makeId)],
-    substitutedFor: ex.substitutedFor ?? { exerciseId: ex.exerciseId, exerciseName: ex.exerciseName },
-  };
-  return { ...session, exercises: session.exercises.map(e => (e.id === ex.id ? swapped : e)) };
-};
 
-export { addExerciseTo, removeExerciseFrom, isQuickSession } from '../engine/sessionExtras';
+export { addExerciseTo, removeExerciseFrom, isQuickSession, substituteExercise } from '../engine/sessionExtras';
 import { newQuickSession } from '../engine/sessionExtras';
 
 export const saveExercises = (uid: Id, session: Session): Promise<Session> => sessionRepository.saveExercises(uid, session);

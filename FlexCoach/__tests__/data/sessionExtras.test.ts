@@ -1,6 +1,6 @@
 import { Session } from '../../data/models';
 import { searchCatalog } from '../../data/catalog/exerciseCatalog';
-import { addExerciseTo, isQuickSession, newQuickSession, removeExerciseFrom } from '../../data/engine/sessionExtras';
+import { addExerciseTo, isQuickSession, newQuickSession, removeExerciseFrom, substituteExercise } from '../../data/engine/sessionExtras';
 
 let n = 0;
 const makeId = () => `id-${++n}`;
@@ -60,5 +60,46 @@ describe('adding exercises to a running session', () => {
     expect(quick.status).toBe('in_progress');
     expect(isQuickSession(quick)).toBe(true);
     expect(isQuickSession({ planId: 'p', cycleId: 'c' })).toBe(false);
+  });
+});
+
+describe('swapping an exercise mid-session', () => {
+  const lift = (q: string) => searchCatalog({ query: q }).find(e => e.measurement === 'weight_reps')!;
+  const logged = (exerciseId: string, name: string, weightKg: number, reps: number): Session => ({
+    ...base, id: `old-${exerciseId}`, status: 'completed', startedAt: 1, finishedAt: 2,
+    exercises: [{ id: 'x', workoutExerciseId: null, exerciseId, exerciseName: name, measurement: 'weight_reps', order: 0, notes: null, target: { sets: 3, reps, weightKg, durationSec: null, distanceM: null }, sets: [
+      { id: 's1', setNumber: 1, weightKg, reps, durationSec: null, distanceM: null, completed: true, completedAt: 1 },
+      { id: 's2', setNumber: 2, weightKg, reps, durationSec: null, distanceM: null, completed: true, completedAt: 1 },
+      { id: 's3', setNumber: 3, weightKg, reps, durationSec: null, distanceM: null, completed: true, completedAt: 1 },
+    ] }],
+  });
+
+  it('leaves the weight blank for a lift never done, keeping the set count', () => {
+    const raise = lift('lateral raise');
+    const session = substituteExercise(base, 'e1', raise, null, [], 'lb', makeId);
+    const swapped = session.exercises[0];
+    expect(swapped.exerciseId).toBe(raise.id);
+    expect(swapped.substitutedFor).toEqual({ exerciseId: 'bench', exerciseName: 'Bench Press' });
+    const working = swapped.sets.filter(s => !s.warmup);
+    expect(working).toHaveLength(3);
+    expect(working.every(s => s.weightKg === null)).toBe(true);
+    expect(swapped.sets.some(s => s.warmup)).toBe(false);
+  });
+
+  it('starts from the user\'s last log of the replacement when there is one', () => {
+    const raise = lift('lateral raise');
+    const session = substituteExercise(base, 'e1', raise, null, [logged(raise.id, raise.name, 10, 12)], 'kg', makeId);
+    const working = session.exercises[0].sets.filter(s => !s.warmup);
+    expect(working.every(s => s.weightKg === 10)).toBe(true);
+    expect(working.every(s => s.reps === 12)).toBe(true);
+  });
+
+  it('gives a cardio replacement one set, not the lift\'s three', () => {
+    const bike = searchCatalog({ query: 'bike' }).find(e => e.measurement === 'distance_time') ?? searchCatalog({ query: 'treadmill' }).find(e => e.measurement === 'distance_time')!;
+    const session = substituteExercise(base, 'e1', bike, null, [], 'lb', makeId);
+    const swapped = session.exercises[0];
+    expect(swapped.measurement).toBe('distance_time');
+    expect(swapped.sets).toHaveLength(1);
+    expect(swapped.sets[0].weightKg).toBeNull();
   });
 });

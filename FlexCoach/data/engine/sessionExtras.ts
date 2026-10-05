@@ -1,6 +1,7 @@
 import { Exercise, Id, Plan, Session, SessionExercise, wantsWarmup, WeightUnit, WorkoutExercise } from '../models';
 import { newEntry } from './planDefaults';
 import { buildPlannedSets, buildWarmupSets, progressExercise } from './progression';
+import { findWorkout } from './schedule';
 
 /** Exercises added to a running session on the spot, outside the plan. */
 
@@ -37,6 +38,43 @@ export const addExerciseTo = (session: Session, exercise: Exercise, plan: Plan |
     notes: null,
   };
   return { session: { ...session, exercises: [...session.exercises, added] }, exercise: added };
+};
+
+/**
+ * Replace an exercise for the rest of this session only; the plan is
+ * untouched. Sets logged for the old one are dropped. The replacement
+ * starts from the user's last log of it when there is one. Without one it
+ * starts like a freshly added exercise: the old exercise's weight is no
+ * guide to a lift never done, so weight stays blank and only the plan
+ * entry's sets, rep range and rest carry over (when both are measured the
+ * same way).
+ */
+export const substituteExercise = (session: Session, sessionExerciseId: Id, replacement: Exercise, plan: Plan | null, history: Session[], unit: WeightUnit, makeId: () => Id): Session => {
+  const ex = session.exercises.find(e => e.id === sessionExerciseId);
+  if (!ex) throw new Error('Unknown session exercise');
+  const planEntry = plan ? findWorkout(plan, session.workoutId)?.exercises.find(e => e.id === ex.workoutExerciseId) : undefined;
+  const fresh = newEntry(replacement, ex.order, plan?.goal ?? null, unit);
+  const sameKind = replacement.measurement === ex.measurement;
+  const entry: WorkoutExercise = {
+    ...fresh,
+    id: ex.workoutExerciseId ?? makeId(),
+    restSec: planEntry?.restSec ?? fresh.restSec,
+    progression: planEntry?.progression ?? fresh.progression,
+    ...(sameKind && planEntry ? { sets: planEntry.sets, repRangeMin: planEntry.repRangeMin, repRangeMax: planEntry.repRangeMax } : {}),
+    ...(sameKind && !planEntry ? { sets: ex.target.sets, repRangeMax: ex.target.reps } : {}),
+  };
+  const target = progressExercise(entry, [], lastLogOf(replacement.id, history, session), unit).target;
+  const warmups = wantsWarmup(entry) ? buildWarmupSets(target, unit, makeId) : [];
+  const swapped: SessionExercise = {
+    ...ex,
+    exerciseId: replacement.id,
+    exerciseName: replacement.name,
+    measurement: replacement.measurement,
+    target,
+    sets: [...warmups, ...buildPlannedSets(target, makeId)],
+    substitutedFor: ex.substitutedFor ?? { exerciseId: ex.exerciseId, exerciseName: ex.exerciseName },
+  };
+  return { ...session, exercises: session.exercises.map(e => (e.id === ex.id ? swapped : e)) };
 };
 
 /** Take an exercise back out of the session, e.g. one added by mistake. The last exercise stays. */
