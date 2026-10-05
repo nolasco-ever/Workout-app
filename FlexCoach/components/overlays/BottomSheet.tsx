@@ -36,6 +36,12 @@ export const BottomSheet = ({ open, title, onClose, children, footer, headerRigh
   const { height: windowHeight } = useWindowDimensions();
   const [mounted, setMounted] = useState(open);
   const [sheetHeight, setSheetHeight] = useState(windowHeight);
+  // Content only scrolls when it is taller than the room the sheet can give
+  // it; a sheet whose content fits stays put, and dragging its content pulls
+  // the sheet down like the handle does.
+  const [contentHeight, setContentHeight] = useState(0);
+  const [viewportHeight, setViewportHeight] = useState(0);
+  const scrolls = contentHeight > viewportHeight + 1;
   const progress = useRef(new Animated.Value(0)).current;
   const dragY = useRef(new Animated.Value(0)).current;
   const onCloseRef = useRef(onClose);
@@ -92,16 +98,24 @@ export const BottomSheet = ({ open, title, onClose, children, footer, headerRigh
             )}
           </View>
         </View>
-        <ScrollView
-          contentContainerStyle={{ paddingHorizontal: spacing.lg, paddingBottom: spacing.md, gap: spacing.lg }}
-          keyboardShouldPersistTaps="handled"
-          // Pulling the content down past its top (the iOS bounce) also puts the sheet away.
-          onScrollEndDrag={e => {
-            if (e.nativeEvent.contentOffset.y < -60) onClose();
-          }}
-        >
-          {children}
-        </ScrollView>
+        <View style={{ flexShrink: 1 }} {...(scrolls ? {} : pan.panHandlers)}>
+          <ScrollView
+            style={{ flexGrow: 0 }}
+            contentContainerStyle={{ paddingHorizontal: spacing.lg, paddingBottom: spacing.md, gap: spacing.lg }}
+            keyboardShouldPersistTaps="handled"
+            scrollEnabled={scrolls}
+            bounces={scrolls}
+            alwaysBounceVertical={false}
+            onContentSizeChange={(_, h) => setContentHeight(h)}
+            onLayout={e => setViewportHeight(e.nativeEvent.layout.height)}
+            // Pulling the content down past its top (the iOS bounce) also puts the sheet away.
+            onScrollEndDrag={e => {
+              if (e.nativeEvent.contentOffset.y < -60) onClose();
+            }}
+          >
+            {children}
+          </ScrollView>
+        </View>
         {footer && <View style={{ paddingHorizontal: spacing.lg, paddingTop: spacing.md, borderTopWidth: 1, borderTopColor: colors.line }}>{footer}</View>}
       </Animated.View>
     </View>
