@@ -270,6 +270,10 @@ export const BuddyWorkoutScreen = () => {
                 </CustomText>
               </View>
             </View>
+            {/* Reactions right under the header, as a bare chip row: no label, no card, just the smile button when nobody has reacted yet. */}
+            <View style={{ marginTop: -spacing.sm }}>
+              <Reactions reactions={item.reactions} myUid={uid} onReact={react} />
+            </View>
 
             {/* The workout itself: as much of it as the owner shares. A private workout has no line at all; lines from before sharing existed carry nothing. */}
             {item.kind === 'workout_done' && (
@@ -297,13 +301,6 @@ export const BuddyWorkoutScreen = () => {
                     <RecordRow key={r.key} name={r.name} value={r.value} line={r.line} units={units} open={openRecords.has(r.key)} onToggle={() => toggleRecord(r.key)} divider={i > 0} />
                   ))
                 )}
-              </SurfaceCard>
-            </View>
-
-            <View style={{ gap: spacing.sm }}>
-              <CustomText variant="overline" color={colors.inkMuted}>Reactions</CustomText>
-              <SurfaceCard>
-                <Reactions reactions={item.reactions} myUid={uid} onReact={react} />
               </SurfaceCard>
             </View>
           </>
