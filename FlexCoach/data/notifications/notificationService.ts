@@ -10,7 +10,7 @@ import notifee, {
   type Notification,
 } from '@notifee/react-native';
 import { Id, NotificationTarget } from '../models';
-import { NOTIFICATION_ID_PREFIX, PlannedNotification, REST_OVER_ID } from '../engine/notifications';
+import { NOTIFICATION_ID_PREFIX, PlannedNotification, REST_OVER_ID, SESSION_TIMER_IDS, TIMER_DONE_ID } from '../engine/notifications';
 import { userRepository } from '../repositories/userRepository';
 import { openTarget, parseTarget } from './openTarget';
 
@@ -94,7 +94,10 @@ export const exactAlarmsAllowed = async (): Promise<boolean> => {
 
 export const openExactAlarmSettings = () => notifee.openAlarmPermissionSettings();
 
-const channelFor = (n: PlannedNotification) => (n.kind === 'rest_over' ? channels.rest : channels.reminders);
+/** The two in-session timers: rest over and a cardio countdown. Exact, on the rest channel. */
+const isSessionTimer = (n: PlannedNotification) => n.kind === 'rest_over' || n.kind === 'timer_done';
+
+const channelFor = (n: PlannedNotification) => (isSessionTimer(n) ? channels.rest : channels.reminders);
 
 const toNotification = (n: PlannedNotification): Notification => ({
   id: n.id,
@@ -105,7 +108,7 @@ const toNotification = (n: PlannedNotification): Notification => ({
     channelId: channelFor(n),
     pressAction: { id: 'default', launchActivity: 'default' },
     smallIcon: 'ic_notification',
-    timeoutAfter: n.kind === 'rest_over' ? 10 * 60 * 1000 : undefined,
+    timeoutAfter: isSessionTimer(n) ? 10 * 60 * 1000 : undefined,
   },
   ios: {
     sound: 'default',
@@ -129,7 +132,7 @@ const schedule = async (n: PlannedNotification): Promise<void> => {
   // Android 14+ installs start without the exact-alarm permission, and an
   // exact trigger without it never fires. Fall back to an inexact one,
   // which may land a little late, rather than not at all.
-  const exact = n.kind === 'rest_over' && (await exactAlarmsAllowed());
+  const exact = isSessionTimer(n) && (await exactAlarmsAllowed());
   try {
     await notifee.createTriggerNotification(toNotification(n), triggerFor(n, exact));
   } catch (err) {
@@ -151,7 +154,7 @@ export const syncScheduled = async (planned: PlannedNotification[]): Promise<voi
 
   for (const { notification, trigger } of existing) {
     const id = notification.id;
-    if (!id || !id.startsWith(NOTIFICATION_ID_PREFIX) || id === REST_OVER_ID) continue;
+    if (!id || !id.startsWith(NOTIFICATION_ID_PREFIX) || SESSION_TIMER_IDS.has(id)) continue;
     const want = wanted.get(id);
     const sameTime = trigger.type === TriggerType.TIMESTAMP && (trigger as TimestampTrigger).timestamp === want?.fireAt;
     if (want && sameTime && notification.title === want.title && notification.body === want.body) keep.add(id);
@@ -177,6 +180,15 @@ export const scheduleRestOver = async (n: PlannedNotification): Promise<void> =>
 
 export const cancelRestOver = async (): Promise<void> => {
   await notifee.cancelNotification(REST_OVER_ID);
+};
+
+export const scheduleTimerDone = async (n: PlannedNotification): Promise<void> => {
+  await cancelTimerDone();
+  if (n.fireAt > Date.now()) await schedule(n);
+};
+
+export const cancelTimerDone = async (): Promise<void> => {
+  await notifee.cancelNotification(TIMER_DONE_ID);
 };
 
 /** Show a notification right now, e.g. a push that arrived while the app was open. */

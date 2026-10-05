@@ -66,6 +66,9 @@ export const roundToLoadableKg = (kg: number, unit: WeightUnit): number => {
   return roundTo(kg, 1.25);
 };
 
+/** Timed holds and cardio are logged as one effort, never as sets. */
+export const isTimed = (entry: Pick<WorkoutExercise, 'measurement'>): boolean => entry.measurement === 'time' || entry.measurement === 'distance_time';
+
 /** The goal for working set `i`, falling back to the headline for older targets. */
 export const goalFor = (target: SetTarget, i: number): SetGoal => target.perSet?.[i] ?? { weightKg: target.weightKg, reps: target.reps };
 
@@ -116,7 +119,9 @@ const summary = (entry: WorkoutExercise, from: SetTarget | null, target: SetTarg
  * @param fallback the most recent earlier log of the exercise (any cycle or plan), when the cycle had none
  * @param unit     the user's weight unit, so an increase lands on a loadable number
  */
-export const progressExercise = (entry: WorkoutExercise, logs: SessionExercise[], fallback: SessionExercise | null, unit: WeightUnit): ExerciseProgression => {
+export const progressExercise = (prescribed: WorkoutExercise, logs: SessionExercise[], fallback: SessionExercise | null, unit: WeightUnit): ExerciseProgression => {
+  // A timed hold or a cardio effort is one go, not sets, whatever an older plan entry says.
+  const entry = isTimed(prescribed) ? { ...prescribed, sets: 1 } : prescribed;
   const judged = logs.filter(l => workingSets(l.sets).length > 0);
   if (judged.length === 0) {
     const base = logs[logs.length - 1] ?? fallback;
@@ -169,10 +174,11 @@ export const progressExercise = (entry: WorkoutExercise, logs: SessionExercise[]
     }
 
     case 'time': {
-      const targetSec = from.durationSec ?? entry.startingDurationSec ?? 30;
+      const minSec = minOf(done.flatMap(sets => sets.map(s => s.durationSec))) ?? 0;
+      // With no target yet, the shortest hold done is the bar: the next cycle asks for a step more.
+      const targetSec = from.durationSec ?? entry.startingDurationSec ?? minSec;
       const hitAll = done.every(sets => sets.length >= entry.sets && (minOf(sets.map(s => s.durationSec)) ?? 0) >= targetSec);
       const hits = done.filter(sets => sets.length >= entry.sets && (minOf(sets.map(s => s.durationSec)) ?? 0) >= targetSec).length;
-      const minSec = minOf(done.flatMap(sets => sets.map(s => s.durationSec))) ?? 0;
       const weight = maxOf(done[done.length - 1].map(s => s.weightKg)) ?? from.weightKg;
       const durationSec = hitAll ? targetSec + p.durationStepSec : Math.max(5, minSec);
       const target: SetTarget = { sets: entry.sets, reps: null, weightKg: weight, durationSec, distanceM: null };
@@ -235,7 +241,10 @@ export const progressPlan = (plan: Plan, sessions: Session[], judgedCycleId: Id 
 export const targetsForCycle = (plan: Plan, cycle: Cycle, sessions: Session[], unit: WeightUnit): Map<Id, ExerciseProgression> =>
   new Map(progressPlan(plan, sessions, previousCycleId(sessions, plan, cycle), unit, cycle.createdAt).map(p => [p.workoutExerciseId, p]));
 
-/** Build the empty set rows the logger shows when a session starts. */
+/**
+ * Build the empty set rows the logger shows when a session starts. Time is
+ * left blank: the stopwatch fills it, and the target shows as a hint.
+ */
 export const buildPlannedSets = (target: SetTarget, makeId: () => string): LoggedSet[] =>
   Array.from({ length: target.sets }, (_, i) => {
     const goal = goalFor(target, i);
@@ -244,7 +253,7 @@ export const buildPlannedSets = (target: SetTarget, makeId: () => string): Logge
       setNumber: i + 1,
       weightKg: goal.weightKg,
       reps: goal.reps,
-      durationSec: target.durationSec,
+      durationSec: null,
       distanceM: target.distanceM,
       completed: false,
       completedAt: null,

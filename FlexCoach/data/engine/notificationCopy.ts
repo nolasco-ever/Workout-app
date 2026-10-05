@@ -1,4 +1,5 @@
 import { LocalDate } from '../models';
+import { formatDuration } from './units';
 
 /**
  * Wording for the local reminders. Each kind has several variants so the
@@ -157,6 +158,12 @@ export const weighInCopy = (date: LocalDate): Copy =>
   );
 
 /** Rest timer done. Varies per set so a long session doesn't read like a broken record. */
+/** The countdown on a cardio or timed effort hit its target. */
+export const timerDoneCopy = (exerciseName: string, targetSec: number): Copy => ({
+  title: "Time's up ⏱️",
+  body: `${formatDuration(targetSec)} of ${exerciseName} done. Stop there or keep going.`,
+});
+
 export const restOverCopy = (nextExercise: string | null, seed: number): Copy => {
   const variants: Copy[] = nextExercise
     ? [

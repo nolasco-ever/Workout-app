@@ -160,7 +160,7 @@ export const NotificationSettingsScreen = () => {
         <View style={{ gap: spacing.sm }}>
           <CustomText variant="overline" color={colors.inkMuted}>During a workout</CustomText>
           <SurfaceCard style={{ padding: 0 }}>
-            <SwitchRow icon={generalIcons.timer} title="Rest over" description="Sound and vibration when your rest ends, even with the app in the background." value={prefs.restOver} onChange={restOver => save({ restOver })} disabled={off} />
+            <SwitchRow icon={generalIcons.timer} title="Rest over" description="Sound and vibration when your rest ends or a cardio countdown runs out, even with the app in the background." value={prefs.restOver} onChange={restOver => save({ restOver })} disabled={off} />
             {Platform.OS === 'android' && !exactAlarms && !off && (
               <Row title="Allow exact timing" description="Android delays timers unless FlexCoach may set exact alarms." divider onPress={() => openExactAlarmSettings()} />
             )}

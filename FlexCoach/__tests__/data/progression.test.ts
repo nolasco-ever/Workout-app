@@ -129,6 +129,20 @@ describe('progressExercise: timed and cardio', () => {
     expect(progressExercise(plank, logs, null, 'kg').target).toMatchObject({ durationSec: 45 });
   });
 
+  it('treats a timed hold as one effort even when the plan entry says three sets', () => {
+    const plank = entry({ measurement: 'time', sets: 3, repRangeMin: null, repRangeMax: null, startingWeightKg: null, startingDurationSec: 30 });
+    expect(progressExercise(plank, [], null, 'kg').target.sets).toBe(1);
+    const logs = [lastSession({ durationSec: 30 }, [set({ weightKg: null, reps: null, durationSec: 32 })], plank)];
+    expect(progressExercise(plank, logs, null, 'kg').target).toMatchObject({ sets: 1, durationSec: 40 });
+  });
+
+  it('with no target, asks for a step more than the hold that was done', () => {
+    const plank = entry({ measurement: 'time', sets: 1, repRangeMin: null, repRangeMax: null, startingWeightKg: null, startingDurationSec: null });
+    expect(progressExercise(plank, [], null, 'kg').target.durationSec).toBeNull();
+    const logs = [lastSession({ durationSec: null }, [set({ weightKg: null, reps: null, durationSec: 50 })], plank)];
+    expect(progressExercise(plank, logs, null, 'kg').target).toMatchObject({ durationSec: 60, reps: null });
+  });
+
   it('repeats last cardio distance and duration, plus the optional step', () => {
     const run = entry({ measurement: 'distance_time', sets: 1, startingDistanceM: 3000, startingDurationSec: 1200, progression: { weightIncrementKg: 0, repStep: 0, durationStepSec: 0, distanceStepM: 200 } });
     const logs = [lastSession({ distanceM: 3000, durationSec: 1200 }, [set({ weightKg: null, reps: null, distanceM: 3200, durationSec: 1250 })], run)];

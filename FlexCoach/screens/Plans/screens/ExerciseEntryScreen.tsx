@@ -42,10 +42,13 @@ export const ExerciseEntryScreen = () => {
   const catalog = getCatalogExercise(entry.exerciseId);
   const weighted = entry.measurement === 'weight_reps' || entry.measurement === 'reps' || entry.measurement === 'time';
   const repBased = entry.measurement === 'weight_reps' || entry.measurement === 'reps';
+  // A timed hold or cardio is one effort: no set count, no rest between sets.
+  const timed = entry.measurement === 'time' || entry.measurement === 'distance_time';
 
   const save = () => {
     const next: WorkoutExercise = {
       ...entry,
+      sets: timed ? 1 : entry.sets,
       startingWeightKg: weighted ? fromDisplayWeight(parseNumber(weight), unit) : null,
       startingDurationSec: entry.measurement === 'time' || entry.measurement === 'distance_time' ? parseNumber(duration) : null,
       startingDistanceM: entry.measurement === 'distance_time' ? fromDisplayDistance(parseNumber(distance), dist) : null,
@@ -70,6 +73,7 @@ export const ExerciseEntryScreen = () => {
             </View>
           </View>
 
+          {!timed && (
           <SurfaceCard>
             <CustomText variant="overline" color={colors.inkMuted} style={{ marginBottom: spacing.xs }}>Prescription</CustomText>
             <Stepper label="Sets" value={entry.sets} min={1} max={10} onChange={sets => setEntry({ ...entry, sets })} />
@@ -81,6 +85,7 @@ export const ExerciseEntryScreen = () => {
             )}
             <Stepper label="Rest between sets" value={entry.restSec} min={0} max={600} step={15} format={v => `${v}s`} onChange={restSec => setEntry({ ...entry, restSec })} />
           </SurfaceCard>
+          )}
 
           <SurfaceCard style={{ gap: spacing.md }}>
             <CustomText variant="overline" color={colors.inkMuted}>Starting point</CustomText>
@@ -96,10 +101,10 @@ export const ExerciseEntryScreen = () => {
               />
             )}
             {(entry.measurement === 'time' || entry.measurement === 'distance_time') && (
-              <DurationField id="entry-duration" label="Starting duration" seconds={duration} onChange={setDuration} />
+              <DurationField id="entry-duration" label="Target time (optional)" seconds={duration} onChange={setDuration} />
             )}
             {entry.measurement === 'distance_time' && (
-              <TextField id="entry-distance" label="Starting distance" value={distance} onChangeText={setDistance} keyboardType="decimal-pad" suffix={dist} />
+              <TextField id="entry-distance" label="Target distance (optional)" value={distance} onChangeText={setDistance} keyboardType="decimal-pad" suffix={dist} />
             )}
             {repBased && (
               <TextField

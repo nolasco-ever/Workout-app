@@ -7,10 +7,11 @@ import { directionIcons, generalIcons } from '../../../../components/icons/icon-
 import { formatDuration } from '../../../../data/engine/units';
 import { useTheme } from '../../../../theme';
 
-/** Re-renders once a second while mounted. */
-const useTick = (intervalMs: number) => {
+/** Re-renders every `intervalMs` while mounted; 0 ticks not at all. */
+export const useTick = (intervalMs: number) => {
   const [, setTick] = useState(0);
   useEffect(() => {
+    if (intervalMs <= 0) return;
     const id = setInterval(() => setTick(t => t + 1), intervalMs);
     return () => clearInterval(id);
   }, [intervalMs]);

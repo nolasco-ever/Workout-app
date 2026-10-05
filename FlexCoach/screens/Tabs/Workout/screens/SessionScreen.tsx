@@ -14,8 +14,8 @@ import { sessionRepository } from '../../../../data/repositories/sessionReposito
 import { subscribeAdd, subscribeSwap } from '../components/swapChannel';
 import { publishSession, subscribeSessionCommands } from '../components/sessionChannel';
 import { warmupRestSec } from '../../../../data/engine/progression';
-import { planRestOverNotification, withPrefDefaults } from '../../../../data/engine/notifications';
-import { cancelRestOver, exactAlarmsAllowed, openExactAlarmSettings, scheduleRestOver } from '../../../../data/notifications/notificationService';
+import { planRestOverNotification, planTimerDoneNotification, withPrefDefaults } from '../../../../data/engine/notifications';
+import { cancelRestOver, cancelTimerDone, exactAlarmsAllowed, openExactAlarmSettings, scheduleRestOver, scheduleTimerDone } from '../../../../data/notifications/notificationService';
 import { userRepository } from '../../../../data/repositories/userRepository';
 import { showInAppBanner } from '../../../../data/notifications/inAppBanner';
 import { CustomText } from '../../../../components/text/customText';
@@ -29,6 +29,7 @@ import { GLASS_BUTTON_SIZE, GlassIconButton } from '../../../../components/butto
 import { MuscleMap } from '../../../../components/anatomy/MuscleMap';
 import { RestPill, SessionTitle } from '../components/SessionHeader';
 import { SetDraft, SetRow } from '../components/SetRow';
+import { CardioSetCard, CardioTimer, timerElapsed } from '../components/CardioSetCard';
 import { SwipeToDelete } from '../../../../components/list-items/SwipeToDelete';
 import Animated, { SlideInLeft, SlideInRight } from 'react-native-reanimated';
 import { fromDraft, toDraft, Units, unitLabels } from '../components/setDrafts';
@@ -66,11 +67,14 @@ export const SessionScreen = () => {
   /** Length of the rest that is running: shorter after a warm-up set. */
   const [restFor, setRestFor] = useState(90);
   const [finishing, setFinishing] = useState(false);
+  /** The one stopwatch a timed or cardio set can run: which set, since when, and the target it counts down to, if any. */
+  const [cardioTimer, setCardioTimer] = useState<(CardioTimer & { setId: string; targetSec: number | null; exerciseName: string }) | null>(null);
 
   // Undefined only while a quick workout has nothing in it yet.
   const exercise: SessionExercise | undefined = session.exercises[index];
   const workoutEntry = plan && exercise ? findWorkout(plan, session.workoutId)?.exercises.find(e => e.id === exercise.workoutExerciseId) : undefined;
   const restSec = workoutEntry?.restSec ?? 90;
+  const timedExercise = exercise?.measurement === 'time' || exercise?.measurement === 'distance_time';
   const catalog = exercise ? getCatalogExercise(exercise.exerciseId) : null;
   const quick = isQuickSession(session);
   const total = session.exercises.length;
@@ -132,9 +136,9 @@ export const SessionScreen = () => {
     if (uid) logSet(uid, next, ex.id, set).catch(err => console.warn('logSet failed', err));
   };
 
-  const toggleDone = (set: LoggedSet) => {
+  const toggleDone = (set: LoggedSet, draft: SetDraft = drafts[set.id]) => {
     if (!exercise) return;
-    const merged = fromDraft(exercise, set, drafts[set.id], units);
+    const merged = fromDraft(exercise, set, draft, units);
     const done = !set.completed;
     persist(exercise, { ...merged, completed: done, completedAt: done ? Date.now() : null });
     // No rest after the workout's final set: there is nothing left to rest for.
@@ -142,6 +146,48 @@ export const SessionScreen = () => {
     setRestFor(set.warmup ? warmupRestSec(restSec) : restSec);
     setRestStartedAt(done && !workoutDone ? Date.now() : null);
   };
+
+  // The stopwatch for timed and cardio sets. Time comes only from it: the
+  // clock is not typed. Stopping writes the seconds into the set's draft and
+  // saves the set, so a stopped time survives leaving the screen. Starting
+  // another set's timer stops the running one first.
+  const stopCardioTimer = (): { setId: string; draft: SetDraft } | null => {
+    if (!cardioTimer) return null;
+    const seconds = timerElapsed(cardioTimer);
+    const draft: SetDraft = { ...(drafts[cardioTimer.setId] ?? { a: '', b: '' }), b: String(seconds) };
+    setDrafts(d => ({ ...d, [cardioTimer.setId]: draft }));
+    setCardioTimer(null);
+    const owner = session.exercises.find(ex => ex.sets.some(st => st.id === cardioTimer.setId));
+    const set = owner?.sets.find(st => st.id === cardioTimer.setId);
+    if (owner && set) persist(owner, fromDraft(owner, set, draft, units)).catch(err => console.warn('timer save failed', err));
+    return { setId: cardioTimer.setId, draft };
+  };
+  const startCardioTimer = (set: LoggedSet) => {
+    if (!exercise) return;
+    stopCardioTimer();
+    const baseSec = Math.max(0, Math.round(Number(drafts[set.id]?.b) || 0));
+    setCardioTimer({ setId: set.id, startedAt: Date.now(), baseSec, targetSec: exercise.target.durationSec, exerciseName: exercise.exerciseName });
+  };
+  const toggleCardioDone = (set: LoggedSet) => {
+    const stopped = cardioTimer?.setId === set.id ? stopCardioTimer() : null;
+    toggleDone(set, stopped?.draft ?? drafts[set.id]);
+  };
+  // A swap or a removed set can take the timed set away mid-run.
+  useEffect(() => {
+    if (cardioTimer && !session.exercises.some(ex => ex.sets.some(st => st.id === cardioTimer.setId))) setCardioTimer(null);
+  }, [session, cardioTimer]);
+  // A timed exercise is one effort, not sets. Older data (and plans that
+  // still say 3 × 30s) can carry extras: keep the logged one, or the first.
+  useEffect(() => {
+    if (!exercise || !timedExercise || exercise.sets.length <= 1) return;
+    const keep = exercise.sets.find(s => s.completed) ?? exercise.sets[0];
+    let next = session;
+    for (const s of exercise.sets) if (s.id !== keep.id) next = removeSetFrom(next, exercise.id, s.id);
+    setSession(next);
+    if (uid) saveSets(uid, next, exercise.id).catch(err => console.warn('trim timed sets failed', err));
+    // Runs when the exercise on screen changes; `session` is read, not depended on, to avoid a loop.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [exercise?.id, exercise?.sets.length, timedExercise]);
 
   // A pick on the swap screen replaces this exercise for the rest of the
   // session. Sets already logged for it are dropped, so ask first.
@@ -366,6 +412,35 @@ export const SessionScreen = () => {
     cancelRestOver().catch(() => undefined);
   }, []);
 
+  // The cardio countdown's "time's up", handled the same way as the rest timer:
+  // a system notification only for time spent in the background, a buzz and
+  // a banner when the app is in front. Nothing fires for a count-up.
+  const countdownEndAt = cardioTimer && cardioTimer.targetSec !== null && cardioTimer.baseSec < cardioTimer.targetSec ? cardioTimer.startedAt + (cardioTimer.targetSec - cardioTimer.baseSec) * 1000 : null;
+  const countdownPlan = () => (cardioTimer && countdownEndAt !== null ? planTimerDoneNotification(countdownEndAt, cardioTimer.targetSec ?? 0, session.id, cardioTimer.exerciseName) : null);
+  useEffect(() => {
+    const planned = countdownPlan();
+    if (!planned || !restOverEnabled || !inBackground) {
+      cancelTimerDone().catch(() => undefined);
+      return;
+    }
+    scheduleTimerDone(planned).catch(err => console.warn('timer notification failed', err));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [countdownEndAt, session.id, restOverEnabled, inBackground]);
+  useEffect(() => () => {
+    cancelTimerDone().catch(() => undefined);
+  }, []);
+  useEffect(() => {
+    if (countdownEndAt === null || !restOverEnabled) return;
+    const id = setTimeout(() => {
+      if (AppState.currentState !== 'active' || Date.now() - countdownEndAt > 2000) return;
+      Vibration.vibrate();
+      const planned = countdownPlan();
+      if (!focusedRef.current && planned) showInAppBanner({ title: planned.title, body: planned.body, target: planned.target });
+    }, Math.max(0, countdownEndAt - Date.now()));
+    return () => clearTimeout(id);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [countdownEndAt, session.id, restOverEnabled]);
+
   useEffect(() => {
     if (restStartedAt === null || !restOverEnabled) return;
     const endAt = restStartedAt + restFor * 1000;
@@ -433,7 +508,7 @@ export const SessionScreen = () => {
               <CustomText variant="title">{exercise.exerciseName}</CustomText>
               <CustomText variant="caption" color={colors.inkMuted}>
                 {catalog?.primaryMuscles.join(', ')}
-                {workoutEntry?.repRangeMin ? ` · ${workoutEntry.repRangeMin}–${workoutEntry.repRangeMax} reps` : ''} · rest {restSec}s
+                {workoutEntry?.repRangeMin ? ` · ${workoutEntry.repRangeMin}–${workoutEntry.repRangeMax} reps` : ''}{timedExercise ? '' : ` · rest ${restSec}s`}
               </CustomText>
               <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.lg, marginTop: spacing.xs }}>
                 {catalog && (
@@ -468,6 +543,19 @@ export const SessionScreen = () => {
             </View>
           </View>
 
+          {timedExercise ? (
+          <CardioSetCard
+            set={exercise.sets[0]}
+            draft={drafts[exercise.sets[0].id] ?? { a: '', b: '' }}
+            unitLabel={unitLabels(exercise, units).a}
+            timer={cardioTimer?.setId === exercise.sets[0].id ? cardioTimer : null}
+            targetSec={exercise.target.durationSec}
+            onChange={d => setDrafts(prev => ({ ...prev, [exercise.sets[0].id]: d }))}
+            onStart={() => startCardioTimer(exercise.sets[0])}
+            onStop={stopCardioTimer}
+            onToggleDone={() => toggleCardioDone(exercise.sets[0])}
+          />
+          ) : (
           <View style={{ backgroundColor: colors.surface, borderRadius: radius.lg, borderWidth: 1, borderColor: colors.line, paddingVertical: spacing.md, overflow: 'hidden' }}>
             {exercise.sets.map(set => {
               const row = (
@@ -504,6 +592,7 @@ export const SessionScreen = () => {
               </TouchableOpacity>
             </View>
           </View>
+          )}
           </Animated.View>
           )}
         </ScrollView>

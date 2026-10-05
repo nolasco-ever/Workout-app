@@ -64,6 +64,7 @@ import {
   Scale,
   Settings,
   SlidersHorizontal,
+  Square,
   SquarePen,
   ThumbsDown,
   ThumbsUp,
@@ -110,6 +111,7 @@ export const generalIcons = {
   idCard: IdCard,
   smile: Smile,
   smilePlus: SmilePlus,
+  square: Square,
   share: Share2,
   /** A bolt: a quick workout, done on the spot. */
   zap: Zap,

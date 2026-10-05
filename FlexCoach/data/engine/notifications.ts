@@ -1,7 +1,7 @@
 import { ClockTime, Cycle, LocalDate, NotificationPrefs, NotificationTarget, Occurrence, Session } from '../models';
 import { addDays, fromLocalDate, weekdayOf } from './dates';
 import { currentStreakDays } from './stats';
-import { cycleFinishedCopy, earlyFinishCopy, missedWorkoutCopy, planStartsCopy, restOverCopy, streakRiskCopy, weighInCopy, workoutNudgeCopy, workoutTodayCopy } from './notificationCopy';
+import { cycleFinishedCopy, earlyFinishCopy, missedWorkoutCopy, planStartsCopy, restOverCopy, streakRiskCopy, timerDoneCopy, weighInCopy, workoutNudgeCopy, workoutTodayCopy } from './notificationCopy';
 
 /**
  * Local (on-device) notifications are planned as pure data from the active
@@ -20,7 +20,8 @@ export type NotificationKind =
   | 'plan_starts'
   | 'cycle_finished'
   | 'weigh_in'
-  | 'rest_over';
+  | 'rest_over'
+  | 'timer_done';
 
 export const defaultNotificationPrefs: NotificationPrefs = {
   enabled: true,
@@ -208,6 +209,19 @@ export const planLocalNotifications = (input: PlanInput): PlannedNotification[] 
 };
 
 export const REST_OVER_ID = `${NOTIFICATION_ID_PREFIX}rest_over`;
+export const TIMER_DONE_ID = `${NOTIFICATION_ID_PREFIX}timer_done`;
+
+/** Ids of the two in-session timers, which the calendar reconcile leaves alone. */
+export const SESSION_TIMER_IDS: ReadonlySet<string> = new Set([REST_OVER_ID, TIMER_DONE_ID]);
+
+/** A cardio or timed effort's countdown reached its target. */
+export const planTimerDoneNotification = (endAt: number, targetSec: number, sessionId: string, exerciseName: string): PlannedNotification => ({
+  id: TIMER_DONE_ID,
+  kind: 'timer_done',
+  fireAt: endAt,
+  ...timerDoneCopy(exerciseName, targetSec),
+  target: { screen: 'session', sessionId },
+});
 
 /** The one notification that is not planned from the calendar: rest timer done. */
 export const planRestOverNotification = (
