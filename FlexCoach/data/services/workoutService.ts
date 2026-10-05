@@ -28,6 +28,8 @@ import {
 } from '../engine/schedule';
 import { ExerciseProgression, progressPlan, roundWarmupKg, targetsForCycle } from '../engine/progression';
 import { renumberSets } from '../engine/sets';
+import { settleCycleReport } from '../engine/cycleReport';
+import { withPrefDefaults } from '../engine/notifications';
 import { countWorkingSets, findPersonalRecords, summarizeCycle, totalVolumeKg } from '../engine/stats';
 import { cycleRepository } from '../repositories/cycleRepository';
 import { planRepository } from '../repositories/planRepository';
@@ -53,7 +55,7 @@ export const seedSamplePlan = async (uid: Id): Promise<{ plan: Plan; cycle: Cycl
 };
 
 export const skipWorkout = async (uid: Id, cycle: Cycle, occurrenceId: Id, profile: UserProfile | null = null): Promise<Cycle> => {
-  const updated = skipOccurrence(cycle, occurrenceId);
+  const updated = settleCycleReport(skipOccurrence(cycle, occurrenceId), Date.now(), withPrefDefaults(profile?.notifications).morningTime);
   await cycleRepository.save(uid, updated);
   const occ = updated.occurrences.find(o => o.id === occurrenceId);
   if (occ) afterWorkoutSkipped(uid, profile, occ).catch(err => console.warn('buddy activity failed', err));
@@ -250,7 +252,9 @@ export interface SessionResult {
 
 export const finishSession = async (uid: Id, profile: UserProfile | null, session: Session, cycle: Cycle | null): Promise<SessionResult> => {
   const finished = await sessionRepository.finish(uid, session, 'completed');
-  const updatedCycle = cycle && session.occurrenceId ? markOccurrence(cycle, session.occurrenceId, 'completed', session.id) : cycle;
+  const marked = cycle && session.occurrenceId ? markOccurrence(cycle, session.occurrenceId, 'completed', session.id) : cycle;
+  // The last workout of the cycle also sets when its report lands.
+  const updatedCycle = marked ? settleCycleReport(marked, Date.now(), withPrefDefaults(profile?.notifications).morningTime) : marked;
   if (updatedCycle && updatedCycle !== cycle) await cycleRepository.save(uid, updatedCycle);
 
   const completed = await sessionRepository.listCompleted(uid);
@@ -325,6 +329,22 @@ export const repairCycleNumbers = async (uid: Id): Promise<void> => {
   for (const cycles of byPlan.values()) {
     for (const fixed of renumberCycles(cycles)) await cycleRepository.save(uid, fixed);
   }
+};
+
+/** The owner opened the report: the next cycle may start. Stamped once. */
+export const markCycleReportReviewed = async (uid: Id, cycle: Cycle): Promise<Cycle> => {
+  if (cycle.reportReviewedAt) return cycle;
+  const updated = { ...cycle, reportReviewedAt: Date.now() };
+  await cycleRepository.save(uid, updated);
+  return updated;
+};
+
+/** The "report is ready" modal was shown; it won't show again for this cycle. */
+export const markCycleReportPrompted = async (uid: Id, cycle: Cycle): Promise<Cycle> => {
+  if (cycle.reportPromptedAt) return cycle;
+  const updated = { ...cycle, reportPromptedAt: Date.now() };
+  await cycleRepository.save(uid, updated);
+  return updated;
 };
 
 export const startNextCycle = async (uid: Id, plan: Plan, cycle: Cycle): Promise<Cycle> => {

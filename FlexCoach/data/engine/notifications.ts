@@ -1,6 +1,7 @@
 import { ClockTime, Cycle, LocalDate, NotificationPrefs, NotificationTarget, Occurrence, Session } from '../models';
-import { addDays, fromLocalDate, weekdayOf } from './dates';
+import { addDays, fromLocalDate, toLocalDate, weekdayOf } from './dates';
 import { currentStreakDays } from './stats';
+import { cycleReportReadyAt } from './cycleReport';
 import { cycleFinishedCopy, earlyFinishCopy, missedWorkoutCopy, planStartsCopy, restOverCopy, streakRiskCopy, timerDoneCopy, weighInCopy, workoutNudgeCopy, workoutTodayCopy } from './notificationCopy';
 
 /**
@@ -183,15 +184,6 @@ export const planLocalNotifications = (input: PlanInput): PlannedNotification[] 
         }
       }
 
-      if (prefs.cycleFinished && date === addDays(active.endDate, 1)) {
-        push({
-          id: idFor('cycle_finished', date),
-          kind: 'cycle_finished',
-          fireAt: at(date, prefs.morningTime),
-          ...cycleFinishedCopy(active.number, date),
-          target: { screen: 'cycle_summary', cycleId: active.id },
-        });
-      }
     }
 
     if (prefs.weighIn && weekdayOf(date) === prefs.weighInWeekday && lastWeighInDate !== date) {
@@ -203,6 +195,19 @@ export const planLocalNotifications = (input: PlanInput): PlannedNotification[] 
         target: { screen: 'body_weight' },
       });
     }
+  }
+
+  // The cycle report: two hours after the last workout (see engine/cycleReport), not a calendar slot.
+  const reportAt = active ? cycleReportReadyAt(active, prefs.morningTime) : null;
+  if (active && reportAt !== null && prefs.cycleFinished) {
+    const reportDate = toLocalDate(new Date(reportAt));
+    push({
+      id: idFor('cycle_finished', reportDate),
+      kind: 'cycle_finished',
+      fireAt: reportAt,
+      ...cycleFinishedCopy(active.number, reportDate),
+      target: { screen: 'cycle_summary', cycleId: active.id },
+    });
   }
 
   return out.sort((a, b) => a.fireAt - b.fireAt);

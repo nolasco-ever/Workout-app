@@ -8,7 +8,7 @@ import { useAuth } from '../../../../data/auth/AuthProvider';
 import { Occurrence, Plan } from '../../../../data/models';
 import { findWorkout } from '../../../../data/engine/schedule';
 import { fromLocalDate } from '../../../../data/engine/dates';
-import { pushWorkoutTo, seedSamplePlan, skipWorkout, startQuickSession, startSession } from '../../../../data/services/workoutService';
+import { pushWorkoutTo, seedSamplePlan, skipWorkout, startNextCycle, startQuickSession, startSession } from '../../../../data/services/workoutService';
 import { activatePlan, startFreshCycle, validatePlan } from '../../../../data/services/planService';
 import { CustomText } from '../../../../components/text/customText';
 import { Icon } from '../../../../components/icons/Icon';
@@ -205,14 +205,27 @@ export const WorkoutHomeScreen = () => {
           </View>
         </View>
 
-        {/* Finished cycle */}
-        {state.cycleFinished && (
+        {/* Finished cycle: the report must be reviewed before the next cycle can start. */}
+        {state.cycleFinished && !state.reportReviewed && (
+          <Card tone="accent">
+            <CustomText variant="overline" color={colors.accent}>Cycle {cycle.number}</CustomText>
+            <CustomText variant="heading">Your cycle report is ready</CustomText>
+            <CustomText variant="body" color={colors.inkMuted} style={{ marginTop: spacing.xs, marginBottom: spacing.md }}>
+              Review it to see your stats and any changes to your next cycle.
+            </CustomText>
+            <PrimaryButton label="Review report" onPress={() => navigation.navigate('CycleReviewScreen', { plan, cycle })} />
+          </Card>
+        )}
+        {state.cycleFinished && state.reportReviewed && (
           <Card tone="accent">
             <CustomText variant="heading">Cycle {cycle.number} is done</CustomText>
             <CustomText variant="body" color={colors.inkMuted} style={{ marginTop: spacing.xs, marginBottom: spacing.md }}>
-              See how it went, then start the next one.
+              Start the next one whenever you're ready.
             </CustomText>
-            <PrimaryButton label="Review cycle" onPress={() => navigation.navigate('CycleReviewScreen', { plan, cycle })} />
+            <View style={{ gap: spacing.sm }}>
+              <PrimaryButton label={`Start cycle ${cycle.number + 1}`} busy={busy === 'next-cycle'} onPress={() => run('next-cycle', async () => { if (uid) await startNextCycle(uid, plan, cycle); })} />
+              <PrimaryButton label="See the report again" variant="quiet" onPress={() => navigation.navigate('CycleReviewScreen', { plan, cycle })} />
+            </View>
           </Card>
         )}
 

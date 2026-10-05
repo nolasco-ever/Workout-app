@@ -31,7 +31,8 @@ import { AppStackParams } from '../../../../appNavigators/AppStack';
 import { devFlags } from '../../../../dev/flags';
 import { seedSampleWeights } from '../../../../data/services/devSeeds';
 import { askNotToday } from '../../Workout/components/notToday';
-import { startQuickSession } from '../../../../data/services/workoutService';
+import { markCycleReportPrompted, startQuickSession } from '../../../../data/services/workoutService';
+import { CycleReportModal } from '../../../../components/overlays/CycleReportModal';
 import { useBuddies } from '../../../../data/hooks/useBuddies';
 import { useBuddyActivity } from '../../../../data/hooks/useBuddyActivity';
 import { useBuddyPlans } from '../../../../data/hooks/useBuddyPlans';
@@ -102,6 +103,24 @@ export const HomeScreen = () => {
   useScrollToTop(scrollRef);
   const [refreshing, setRefreshing] = useState(false);
   const [streakInfo, setStreakInfo] = useState(false);
+  // The cycle report: a card on top while it's unreviewed, and a one-time modal the first time the app opens after it lands.
+  const reportCycle = home.cycleFinished && home.cycle && !home.reportReviewed ? home.cycle : null;
+  const [reportModal, setReportModal] = useState(false);
+  const promptedFor = useRef<string | null>(null);
+  useEffect(() => {
+    if (!reportCycle || reportCycle.reportPromptedAt || promptedFor.current === reportCycle.id) return;
+    promptedFor.current = reportCycle.id;
+    setReportModal(true);
+  }, [reportCycle]);
+  const openReport = () => {
+    if (!home.cycle) return;
+    setReportModal(false);
+    (navigation as any).navigate('WorkoutStack', { screen: 'CycleReviewScreen', params: { cycleId: home.cycle.id }, initial: false });
+  };
+  const reportLater = () => {
+    setReportModal(false);
+    if (uid && home.cycle) markCycleReportPrompted(uid, home.cycle).catch(() => undefined);
+  };
   const onRefresh = useCallback(async () => {
     setRefreshing(true);
     try {
@@ -172,7 +191,15 @@ export const HomeScreen = () => {
         {loading && <ActivityIndicator color={colors.accent} style={{ marginTop: spacing.xxl }} />}
         {!loading && (
         <>
-        <SectionHeader label="Today" first />
+        {reportCycle && (
+          <SurfaceCard tone="accent">
+            <CustomText variant="overline" color={colors.accent}>Cycle {reportCycle.number}</CustomText>
+            <CustomText variant="title">Your cycle report is ready</CustomText>
+            <CustomText variant="caption" color={colors.inkMuted} style={{ marginBottom: spacing.md }}>Review it to see your stats and any changes to your next cycle.</CustomText>
+            <PrimaryButton label="Review" onPress={openReport} />
+          </SurfaceCard>
+        )}
+        <SectionHeader label="Today" first={!reportCycle} />
         {/* Today */}
         <TouchableOpacity onPress={ins.todaySession && !home.inProgressSession ? () => goSession(ins.todaySession!.id, ins.todaySession!.workoutName) : goWorkout} activeOpacity={0.7}>
           <SurfaceCard tone={todayStatus.tone === colors.accent ? 'accent' : 'surface'}>
@@ -378,6 +405,7 @@ export const HomeScreen = () => {
           <CustomText variant="body" color={colors.inkMuted}>A day with nothing logged, including a rest day, ends it, so a walk in the park or a run on the treadmill will keep your streak going.</CustomText>
         </View>
       </BottomSheet>
+      <CycleReportModal open={reportModal} cycleNumber={home.cycle?.number ?? 0} onReview={() => { if (uid && home.cycle) markCycleReportPrompted(uid, home.cycle).catch(() => undefined); openReport(); }} onLater={reportLater} />
     </SafeAreaView>
   );
 };

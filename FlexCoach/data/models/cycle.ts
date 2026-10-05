@@ -46,6 +46,12 @@ export interface Cycle extends BaseDocument {
   endDate: LocalDate;
   status: CycleStatus;
   occurrences: Occurrence[];
+  /** When the cycle report is available: stamped two hours after the last workout is resolved (see engine/cycleReport). */
+  reportReadyAt?: Timestamp | null;
+  /** When the owner first opened the report; the next cycle can't start before. */
+  reportReviewedAt?: Timestamp | null;
+  /** When the "report is ready" modal was shown, so it shows once. */
+  reportPromptedAt?: Timestamp | null;
 }
 
 /** Computed at the end of a cycle for the "sprint review" screen. */

@@ -2,7 +2,9 @@ import { useEffect, useMemo, useState } from 'react';
 import { useAuth } from '../auth/AuthProvider';
 import { Cycle, Occurrence, Plan, Session } from '../models';
 import { today } from '../engine/dates';
-import { getOccurrenceForDate, getOverdueOccurrences, getUpcomingOccurrences, isCycleFinished } from '../engine/schedule';
+import { getOccurrenceForDate, getOverdueOccurrences, getUpcomingOccurrences } from '../engine/schedule';
+import { cycleReportReadyAt } from '../engine/cycleReport';
+import { withPrefDefaults } from '../engine/notifications';
 import { planRepository } from '../repositories/planRepository';
 import { cycleRepository } from '../repositories/cycleRepository';
 import { sessionRepository } from '../repositories/sessionRepository';
@@ -17,8 +19,12 @@ export interface WorkoutHomeState {
   todayOccurrence: Occurrence | null;
   upcoming: Occurrence[];
   inProgressSession: Session | null;
-  /** Every workout in the cycle has been resolved, or the end date has passed. */
+  /** The cycle's report is ready: every workout resolved and the report time has passed. The review screen (and the next cycle) opens from here. */
   cycleFinished: boolean;
+  /** When the report lands, once every workout is resolved; null while the cycle is still going. */
+  reportReadyAt: number | null;
+  /** The owner has opened the report, so the next cycle may start. */
+  reportReviewed: boolean;
   /** An active plan with no live cycle, e.g. after an interrupted activation. */
   needsCycle: boolean;
 }
@@ -76,6 +82,15 @@ export const useWorkoutHome = (): WorkoutHomeState => {
   }, [uid]);
 
   const todayDate = today();
+  const morning = withPrefDefaults(profile?.notifications).morningTime;
+  // A report that becomes ready while the tab is open flips the state without a reload.
+  const [, setTick] = useState(0);
+  const reportReadyAt = rawCycle && rawCycle.status === 'active' ? cycleReportReadyAt(rawCycle, morning) : null;
+  useEffect(() => {
+    if (reportReadyAt === null || reportReadyAt <= Date.now()) return;
+    const id = setTimeout(() => setTick(t => t + 1), reportReadyAt - Date.now() + 500);
+    return () => clearTimeout(id);
+  }, [reportReadyAt]);
 
   return useMemo(() => {
     const cycleMatches = !!rawCycle && !!plan && rawCycle.planId === plan.id && rawCycle.status === 'active';
@@ -83,7 +98,7 @@ export const useWorkoutHome = (): WorkoutHomeState => {
     const overdue = cycle ? getOverdueOccurrences(cycle, todayDate) : [];
     const todayOccurrence = cycle ? getOccurrenceForDate(cycle, todayDate) ?? null : null;
     const upcoming = cycle ? getUpcomingOccurrences(cycle, todayDate) : [];
-    const allResolved = cycle ? cycle.occurrences.every(o => o.status !== 'scheduled' && o.status !== 'in_progress') : false;
+    const reportReady = !!cycle && reportReadyAt !== null && reportReadyAt <= Date.now();
     return {
       loading: !ready || !planLoaded || !cycleLoaded,
       plan,
@@ -93,8 +108,11 @@ export const useWorkoutHome = (): WorkoutHomeState => {
       todayOccurrence,
       upcoming,
       inProgressSession: inProgress.find(s => s.cycleId === cycle?.id) ?? inProgress[0] ?? null,
-      cycleFinished: cycle ? isCycleFinished(cycle, todayDate) || allResolved : false,
+      cycleFinished: reportReady,
+      reportReadyAt,
+      reportReviewed: !!cycle?.reportReviewedAt,
       needsCycle: !!plan && plan.status === 'active' && !cycle,
     };
-  }, [ready, planLoaded, cycleLoaded, plan, rawCycle, todayDate, inProgress]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [ready, planLoaded, cycleLoaded, plan, rawCycle, todayDate, inProgress, reportReadyAt]);
 };

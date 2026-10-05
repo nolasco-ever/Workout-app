@@ -135,11 +135,11 @@ export const planStartsCopy = (first: string | null, date: LocalDate): Copy =>
 export const cycleFinishedCopy = (number: number, date: LocalDate): Copy =>
   pickVariant<Copy>(
     [
-      { title: `Cycle ${number} is done! 🎉`, body: "That's weeks of work banked. Check out your report" },
-      { title: `That's a wrap on cycle ${number} 👏`, body: 'Take a look at what you built' },
-      { title: `Cycle ${number} complete ✅`, body: 'Your report is ready. Go see how it went' },
-      { title: `You finished cycle ${number}! 💪`, body: 'Check out the numbers' },
-      { title: `Cycle ${number}: in the books 📖`, body: 'Your summary is waiting' },
+      { title: `Your cycle ${number} report is ready 🎉`, body: 'See your stats and what changes next cycle' },
+      { title: `Cycle ${number} report: ready 📖`, body: "That's weeks of work banked. Take a look at what you built" },
+      { title: `Cycle ${number} is in the books ✅`, body: 'Your report is ready. Go see how it went' },
+      { title: `The numbers are in for cycle ${number} 💪`, body: 'Open your report to see your records and next targets' },
+      { title: `Cycle ${number} report is waiting 👏`, body: 'Review it before you start the next one' },
     ],
     'cycle_finished',
     date,

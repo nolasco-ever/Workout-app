@@ -3,7 +3,8 @@ import { AppState } from 'react-native';
 import { useAuth } from '../auth/AuthProvider';
 import { Cycle } from '../models';
 import { today } from '../engine/dates';
-import { getOverdueOccurrences, isCycleFinished } from '../engine/schedule';
+import { getOverdueOccurrences } from '../engine/schedule';
+import { cycleReportReadyAt } from '../engine/cycleReport';
 import { planLocalNotifications, withPrefDefaults } from '../engine/notifications';
 import { cycleRepository } from '../repositories/cycleRepository';
 import { sessionRepository } from '../repositories/sessionRepository';
@@ -140,17 +141,23 @@ export const useNotificationSync = (): { permission: PermissionState } => {
         target: { screen: 'workout' },
       });
     }
-    const allResolved = cycle.occurrences.every(o => o.status !== 'scheduled' && o.status !== 'in_progress');
-    if (isCycleFinished(cycle, todayDate) || allResolved) {
+    // The report lands a couple of hours after the last workout; the feed item waits for it too.
+    const reportAt = cycleReportReadyAt(cycle, prefs.morningTime);
+    if (reportAt !== null && reportAt <= Date.now()) {
       ensure({
         id: `cycle_finished:${cycle.id}`,
         kind: 'cycle_finished',
-        title: `Cycle ${cycle.number} is done`,
-        body: 'See how it went, then start the next one.',
+        title: `Your cycle ${cycle.number} report is ready`,
+        body: 'See your stats and what changes next cycle.',
         target: { screen: 'cycle_summary', cycleId: cycle.id },
       });
     }
-  }, [uid, cycle, foregroundTick]);
+    // Re-check at the moment it becomes ready while the app is open.
+    if (reportAt !== null && reportAt > Date.now()) {
+      const id = setTimeout(() => setForegroundTick(t => t + 1), reportAt - Date.now() + 500);
+      return () => clearTimeout(id);
+    }
+  }, [uid, cycle, foregroundTick, prefs.morningTime]);
 
   // Push: register the device and route taps once the OS allows notifications.
   useEffect(() => {

@@ -5,7 +5,7 @@ import { NavigationProp, RouteProp, useNavigation, useRoute } from '@react-navig
 import { useAuth } from '../../../../data/auth/AuthProvider';
 import { Cycle, Plan } from '../../../../data/models';
 import { formatDuration, formatRecordValue, toDisplayWeight } from '../../../../data/engine/units';
-import { CycleReview, getCycleReview, loadCycleForReview, startNextCycle } from '../../../../data/services/workoutService';
+import { CycleReview, getCycleReview, loadCycleForReview, markCycleReportReviewed, startNextCycle } from '../../../../data/services/workoutService';
 import { countWorkingSets } from '../../../../data/engine/stats';
 import { nextCycleNumberAfter } from '../../../../data/engine/schedule';
 import { describeProgression } from '../../../../data/engine/progressionCopy';
@@ -74,8 +74,9 @@ export const CycleReviewScreen = () => {
   useEffect(() => {
     if (!uid || !loaded) return;
     getCycleReview(uid, loaded.plan, loaded.cycle, profile?.weightUnit ?? 'lb').then(setReview).catch(err => console.warn(err));
-    // Opening the review is what the feed item was for.
+    // Opening the review is what the feed item was for, and it unlocks the next cycle.
     notificationRepository.markRead(uid, `cycle_finished:${loaded.cycle.id}`).catch(() => undefined);
+    if (loaded.cycle.status === 'active' && !loaded.cycle.reportReviewedAt) markCycleReportReviewed(uid, loaded.cycle).catch(() => undefined);
     // The unit only changes the labels; no need to refetch for it.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [uid, loaded]);
