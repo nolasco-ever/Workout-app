@@ -207,8 +207,13 @@ export interface ActivityReaction {
   name: string | null;
 }
 
-/** The emoji a buddy can react with, in the order the picker shows them. */
-export const REACTION_EMOJI = ['🔥', '💪', '👏', '😮', '❤️'] as const;
+/**
+ * The emoji a buddy can react with, in the order the picker shows them:
+ * a row of cheers, then a row that fits a skipped workout or a soft bench.
+ */
+export const REACTION_EMOJI = ['🔥', '💪', '👏', '😮', '❤️', '🏆', '🎉', '🚀', '😤', '😴', '👎', '😬'] as const;
+/** Picker columns; the set wraps into rows of this many. */
+export const REACTION_COLUMNS = 6;
 
 /** Stored at users/{uid}/bodyWeight/{entryId}. */
 export interface BodyWeightEntry extends BaseDocument {

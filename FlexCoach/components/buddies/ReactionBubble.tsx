@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Modal, Pressable, TouchableOpacity, useWindowDimensions, View } from 'react-native';
 import Animated, { Easing, runOnJS, useAnimatedStyle, useSharedValue, withTiming } from 'react-native-reanimated';
-import { REACTION_EMOJI } from '../../data/models';
+import { REACTION_COLUMNS, REACTION_EMOJI } from '../../data/models';
 import { CustomText } from '../text/customText';
 import { useTheme } from '../../theme';
 
@@ -23,15 +23,20 @@ interface Props {
 
 const CELL = 44;
 const PAD = 6;
-const WIDTH = REACTION_EMOJI.length * CELL + PAD * 2;
-const HEIGHT = CELL + PAD * 2;
+/** The box's own border; width and height include it, so the cells must leave room for it. */
+const BORDER = 1;
+const COLS = Math.min(REACTION_COLUMNS, REACTION_EMOJI.length);
+const ROWS = Math.ceil(REACTION_EMOJI.length / COLS);
+const WIDTH = COLS * CELL + (PAD + BORDER) * 2;
+const HEIGHT = ROWS * CELL + (PAD + BORDER) * 2;
 const GAP = 8;
 const OPEN_MS = 160;
 const CLOSE_MS = 120;
 
 /**
- * The emoji picker as a floating bubble above the button that opened it.
- * Grows out of the button's spot and fades in; a tap anywhere else, or a
+ * The emoji picker as a floating bubble above the button that opened it,
+ * the set wrapped into rows of REACTION_COLUMNS. Grows out of the button's
+ * spot and fades in; a tap anywhere else, or a
  * pick, shrinks it back and closes. Lives in a transparent modal so it
  * floats over cards and scroll views instead of being clipped by them.
  */
@@ -85,9 +90,10 @@ export const ReactionBubble = ({ anchor, mine, onPick, onClose }: Props) => {
               height: HEIGHT,
               padding: PAD,
               flexDirection: 'row',
-              borderRadius: radius.pill,
+              flexWrap: 'wrap',
+              borderRadius: ROWS > 1 ? radius.lg : radius.pill,
               backgroundColor: colors.surfaceRaised,
-              borderWidth: 1,
+              borderWidth: BORDER,
               borderColor: colors.line,
               shadowColor: '#000',
               shadowOpacity: 0.25,
