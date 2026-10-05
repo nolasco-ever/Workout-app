@@ -302,13 +302,10 @@ export const HomeScreen = () => {
             buddyFeed.items.map(item => <ActivityRow key={item.id} item={item} compact />)
           )}
         </LinkCard>
-        {/* Plans buddies share: the newest three. */}
-        {buddies.length > 0 && (
+        {/* Plans buddies share: the newest three. Nothing shared, no card. */}
+        {buddyPlans.plans.length > 0 && (
           <LinkCard label="Plans from buddies" onPress={() => goBuddies('BuddyPlansScreen')}>
-            {buddyPlans.plans.length === 0 ? (
-              <CustomText variant="body" color={colors.inkMuted}>When a buddy shares a plan, it shows up here for you to use or copy.</CustomText>
-            ) : (
-              buddyPlans.plans.slice(0, 3).map((sp, i) => (
+            {buddyPlans.plans.slice(0, 3).map((sp, i) => (
                 <TouchableOpacity
                   key={`${sp.ownerUid}:${sp.plan.id}`}
                   onPress={() => (navigation as unknown as NavigationProp<BuddyRoutes>).navigate('BuddyPlanScreen', { ownerUid: sp.ownerUid, planId: sp.plan.id, ownerName: sp.ownerName })}
@@ -320,8 +317,7 @@ export const HomeScreen = () => {
                     <CustomText variant="caption" color={colors.inkMuted} numberOfLines={1}>by {sp.ownerName ?? 'a buddy'} · {sp.plan.workouts.length} workout{sp.plan.workouts.length === 1 ? '' : 's'}</CustomText>
                   </View>
                 </TouchableOpacity>
-              ))
-            )}
+            ))}
           </LinkCard>
         )}
 
