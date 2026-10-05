@@ -6,6 +6,21 @@ const DAY = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
 export const workoutName = (plan: Plan, id: string | null): string => (id ? plan.workouts.find(w => w.id === id)?.name ?? 'Untitled' : 'Rest');
 
+/**
+ * The schedule as rows for a two-column card: the day on the left, what
+ * happens on it on the right. Weekly plans list the seven weekdays from
+ * the cycle's start day; rotations list each slot as "Day n".
+ */
+export const scheduleRows = (plan: Plan): { day: string; workout: string | null }[] => {
+  const s = plan.schedule;
+  if (s.mode === 'rotation') return s.slots.map((id, i) => ({ day: `Day ${i + 1}`, workout: id ? workoutName(plan, id) : null }));
+  return Array.from({ length: 7 }, (_, i) => {
+    const weekday = (s.startWeekday + i) % 7;
+    const id = s.weekdays[weekday];
+    return { day: DAY[weekday], workout: id ? workoutName(plan, id) : null };
+  });
+};
+
 export const describeSchedule = (plan: Plan): string => {
   const s = plan.schedule;
   if (s.mode === 'rotation') {

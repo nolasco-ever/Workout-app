@@ -12,7 +12,7 @@ import { Icon } from '../../../components/icons/Icon';
 import { directionIcons, generalIcons } from '../../../components/icons/icon-library';
 import { useTheme } from '../../../theme';
 import { PlansStackParams } from '../PlansStack';
-import { cycleLengthDays, describeEntry, describeSchedule, GOAL_LABEL, muscleCoverage } from './planSummary';
+import { cycleLengthDays, describeEntry, GOAL_LABEL, muscleCoverage, scheduleRows } from './planSummary';
 
 const title = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
 
@@ -69,6 +69,7 @@ const WorkoutRow = ({ workout, first }: { workout: Workout; first: boolean }) =>
 /** Shared between the review step and the plan overview. */
 export const PlanSummaryCard = ({ plan }: { plan: Plan }) => {
   const { colors, spacing } = useTheme();
+  const schedule = scheduleRows(plan);
   const coverage = muscleCoverage(plan);
   const workouts = [...plan.workouts].sort((a, b) => a.order - b.order);
   return (
@@ -85,9 +86,23 @@ export const PlanSummaryCard = ({ plan }: { plan: Plan }) => {
       </SurfaceCard>
       <SurfaceCard>
         <CustomText variant="overline" color={colors.inkMuted}>Schedule</CustomText>
-        <CustomText variant="body" style={{ paddingTop: spacing.sm }}>{describeSchedule(plan)}</CustomText>
-        <CustomText variant="caption" color={colors.inkMuted}>
-          {plan.schedule.mode === 'rotation' ? 'Rotation' : 'Weekly'} · {cycleLengthDays(plan)}-day cycle{plan.goal ? ` · ${GOAL_LABEL[plan.goal]}` : ''}
+        {/* Two columns: the day, then the workout. Rest days stay in the list, muted, so the rhythm reads. */}
+        {schedule.length === 0 ? (
+          <CustomText variant="body" color={colors.inkMuted} style={{ paddingTop: spacing.sm }}>No schedule yet</CustomText>
+        ) : (
+          <View style={{ paddingTop: spacing.sm }}>
+            {schedule.map((row, i) => (
+              <View key={`${row.day}-${i}`} style={{ flexDirection: 'row', alignItems: 'center', paddingVertical: spacing.sm, borderTopWidth: i ? 1 : 0, borderTopColor: colors.line }}>
+                <CustomText variant="label" color={colors.inkMuted} style={{ width: 64 }}>{row.day}</CustomText>
+                <CustomText variant={row.workout ? 'bodyStrong' : 'body'} color={row.workout ? colors.ink : colors.inactive} style={{ flex: 1 }} numberOfLines={1}>
+                  {row.workout ?? 'Rest'}
+                </CustomText>
+              </View>
+            ))}
+          </View>
+        )}
+        <CustomText variant="caption" color={colors.inkMuted} style={{ paddingTop: spacing.sm }}>
+          {plan.schedule.mode === 'rotation' ? 'Rotation' : 'Weekly'} · {cycleLengthDays(plan)}-day cycle{plan.schedule.mode === 'rotation' && plan.schedule.passesPerCycle > 1 ? ` · ${plan.schedule.passesPerCycle}× per cycle` : ''}{plan.goal ? ` · ${GOAL_LABEL[plan.goal]}` : ''}
         </CustomText>
       </SurfaceCard>
       <SurfaceCard>
