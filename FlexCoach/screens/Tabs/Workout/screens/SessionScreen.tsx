@@ -56,9 +56,10 @@ export const SessionScreen = () => {
   });
   /** Which way the last exercise change went, so the new one slides in from that side. */
   const slideDir = useRef<1 | -1>(1);
+  // The rest timer belongs to the set just finished, not to the exercise on
+  // screen, so moving between exercises leaves it running.
   const goTo = (next: number) => {
     slideDir.current = next > index ? 1 : -1;
-    setRestStartedAt(null);
     setIndex(next);
   };
   const [restStartedAt, setRestStartedAt] = useState<number | null>(null);
