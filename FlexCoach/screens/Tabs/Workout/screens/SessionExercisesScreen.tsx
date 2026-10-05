@@ -17,8 +17,9 @@ import { WorkoutStackParams } from '../WorkoutStack';
 import { currentSession, sendSessionCommand, subscribeSession } from '../components/sessionChannel';
 
 /**
- * The running workout at a glance, opened from the session's title: every
- * exercise with how many sets are done, the current one marked. Tap one to
+ * The running workout at a glance, opened from the session's title: the
+ * progress strip, then every exercise with how many sets are done, the
+ * current one marked. Tap one to
  * jump to it; the plus in the header adds an extra exercise (the picker
  * opens above this screen and comes back to it); extras swipe away.
  */
@@ -42,6 +43,8 @@ export const SessionExercisesScreen = () => {
   }, [navigation]);
 
   if (!session) return null;
+  const completedSets = session.exercises.reduce((n, ex) => n + ex.sets.filter(s => s.completed).length, 0);
+  const totalSets = session.exercises.reduce((n, ex) => n + ex.sets.length, 0);
   const jump = (index: number) => {
     sendSessionCommand({ kind: 'jump', index });
     navigation.goBack();
@@ -56,6 +59,18 @@ export const SessionExercisesScreen = () => {
   return (
     <SafeAreaView edges={['bottom', 'left', 'right']} style={{ flex: 1, backgroundColor: colors.ground }}>
       <ScrollView contentContainerStyle={{ padding: spacing.lg, gap: spacing.lg, paddingBottom: spacing.xl }}>
+        {/* Progress at a glance: one segment per exercise, green when all its sets are in, the current one in accent. */}
+        <View style={{ gap: spacing.sm }}>
+          <View style={{ flexDirection: 'row', gap: 4 }}>
+            {session.exercises.map((ex, i) => {
+              const done = ex.sets.length > 0 && ex.sets.every(s => s.completed);
+              return <View key={ex.id} style={{ flex: 1, height: 4, borderRadius: 2, backgroundColor: done ? colors.success : i === params.currentIndex ? colors.accent : colors.surfaceRaised }} />;
+            })}
+          </View>
+          <CustomText variant="caption" color={colors.inkMuted}>
+            {session.exercises.length === 0 ? 'No exercises yet' : `Exercise ${params.currentIndex + 1} of ${session.exercises.length} · ${completedSets}/${totalSets} sets`}
+          </CustomText>
+        </View>
         {groups.map(group => (
           <View key={group.key} style={{ gap: spacing.sm }}>
             {group.label && <CustomText variant="overline" color={colors.inkMuted}>{group.label}</CustomText>}

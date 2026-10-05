@@ -477,18 +477,6 @@ export const SessionScreen = () => {
             <SessionTitle name={session.workoutName} startedAt={session.startedAt} onPress={openList} />
           </View>
         </View>
-        {/* Progress strip */}
-        <View style={{ paddingHorizontal: spacing.lg, paddingTop: spacing.md, gap: spacing.sm }}>
-          <View style={{ flexDirection: 'row', gap: 4 }}>
-            {session.exercises.map((ex, i) => {
-              const done = ex.sets.length > 0 && ex.sets.every(s => s.completed);
-              return <View key={ex.id} style={{ flex: 1, height: 4, borderRadius: 2, backgroundColor: done ? colors.success : i === index ? colors.accent : colors.surfaceRaised }} />;
-            })}
-          </View>
-          <CustomText variant="caption" color={colors.inkMuted}>
-            {total === 0 ? 'No exercises yet' : `Exercise ${index + 1} of ${total} · ${completedSets}/${totalSets} sets`}
-          </CustomText>
-        </View>
 
         <ScrollView contentContainerStyle={{ padding: spacing.lg }} keyboardShouldPersistTaps="handled" keyboardDismissMode="on-drag">
           {/* Keyed by exercise so a change mounts fresh content that slides in from the side it came from. */}
