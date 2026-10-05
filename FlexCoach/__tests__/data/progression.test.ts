@@ -228,9 +228,10 @@ describe('describeProgression', () => {
   it('explains a weight increase with the reason', () => {
     const logs = [lastSession({ reps: 10, weightKg: 30 }, three(30, 10)), lastSession({ reps: 10, weightKg: 30 }, three(30, 10))];
     const p = progressExercise(entry(), logs, null, 'kg');
-    const { headline, reason } = describeProgression(p, 'kg');
-    expect(headline).toBe('30 kg → 32.5 kg, 8 reps');
-    expect(reason).toContain('every set in all 2 sessions');
+    const { next, previous, reason } = describeProgression(p, 'kg');
+    expect(next).toBe('3 × 8 reps @ 32.5 kg');
+    expect(previous).toBe('3 × 10 reps @ 30 kg');
+    expect(reason).toBe('You hit 10 reps on every set in 2 of 2 sessions');
   });
 });
 

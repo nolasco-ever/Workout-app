@@ -16,16 +16,28 @@ import { directionIcons, generalIcons } from '../../../../components/icons/icon-
 import { dateLabel } from '../../../../components/charts/scale';
 import { useTheme } from '../../../../theme';
 import { WorkoutStackParams } from '../WorkoutStack';
-import { useTabScrollInset } from '../../../../navigation/useTabBarInset';
+import { useTabBarInset } from '../../../../navigation/useTabBarInset';
 import { SurfaceCard as Card } from '../../../../components/cards/SurfaceCard';
 import { PrimaryButton } from '../../../../components/buttons/PrimaryButton';
 
-const Stat = ({ label, value, tone }: { label: string; value: string; tone?: string }) => {
+/** One of the three headline numbers: the value big, the label under it. */
+const Hero = ({ label, value, tone }: { label: string; value: string; tone?: string }) => {
   const { colors } = useTheme();
   return (
-    <View style={{ width: '47%' }}>
-      <CustomText variant="overline" color={colors.inkMuted}>{label}</CustomText>
-      <CustomText variant="display" color={tone}>{value}</CustomText>
+    <View style={{ flex: 1 }}>
+      <CustomText variant="display" color={tone} style={{ fontVariant: ['tabular-nums'] }}>{value}</CustomText>
+      <CustomText variant="caption" color={colors.inkMuted}>{label}</CustomText>
+    </View>
+  );
+};
+
+/** A secondary stat as a list row: label left, value right. */
+const DetailRow = ({ label, value, tone, first = false }: { label: string; value: string; tone?: string; first?: boolean }) => {
+  const { colors, spacing } = useTheme();
+  return (
+    <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingVertical: spacing.sm, borderTopWidth: first ? 0 : 1, borderTopColor: colors.line }}>
+      <CustomText variant="body" color={colors.inkMuted}>{label}</CustomText>
+      <CustomText variant="bodyStrong" color={tone} style={{ fontVariant: ['tabular-nums'] }}>{value}</CustomText>
     </View>
   );
 };
@@ -40,7 +52,7 @@ export const CycleReviewScreen = () => {
   const navigation = useNavigation<NavigationProp<WorkoutStackParams>>();
   const { params } = useRoute<RouteProp<WorkoutStackParams, 'CycleReviewScreen'>>();
   const { colors, spacing } = useTheme();
-  const bottomInset = useTabScrollInset();
+  const bottomInset = useTabBarInset();
   const { uid, profile } = useAuth();
   const [loaded, setLoaded] = useState<{ plan: Plan; cycle: Cycle } | null>(params.cycle ? { plan: params.plan, cycle: params.cycle } : null);
   const [missing, setMissing] = useState(false);
@@ -88,64 +100,80 @@ export const CycleReviewScreen = () => {
 
   const { plan, cycle } = loaded;
   const { summary } = review;
-  const headline =
-    summary.completed === summary.totalWorkouts && summary.pushed === 0
-      ? 'Every workout, on schedule.'
-      : summary.completed === summary.totalWorkouts
-        ? 'Every workout done.'
-        : summary.completed === 0
-          ? 'A cycle to leave behind.'
-          : `${summary.completed} of ${summary.totalWorkouts} workouts done.`;
+  const records = summary.personalRecords.length;
   const volume = Math.round(toDisplayWeight(review.volumeKg, unit) ?? 0);
   const sessions = [...review.sessions].sort((a, b) => b.startedAt - a.startedAt);
+  const avgSec = review.sessions.length ? Math.round(review.durationSec / review.sessions.length) : 0;
+  const startNext = async () => {
+    if (!uid) return;
+    setBusy(true);
+    try {
+      await startNextCycle(uid, plan, cycle);
+      navigation.navigate('WorkoutHomeScreen');
+    } finally {
+      setBusy(false);
+    }
+  };
 
   return (
-    <SafeAreaView edges={['left', 'right']} style={{ flex: 1, backgroundColor: colors.ground }}>
-      <ScrollView contentContainerStyle={{ padding: spacing.lg, gap: spacing.lg, paddingBottom: spacing.xl + bottomInset }}>
-        <View>
-          <CustomText variant="overline" color={colors.inkMuted}>
-            {plan.name} · Cycle {cycle.number} · {dateLabel(cycle.startDate)} to {dateLabel(cycle.endDate)}
-          </CustomText>
-          <CustomText variant="title">{headline}</CustomText>
-        </View>
+    <SafeAreaView edges={['left', 'right', 'bottom']} style={{ flex: 1, backgroundColor: colors.ground }}>
+      <ScrollView contentContainerStyle={{ padding: spacing.lg, gap: spacing.lg, paddingBottom: spacing.xl }}>
+        {/* Which cycle, then the three numbers that matter, then the rest a size down. */}
+        <CustomText variant="overline" color={colors.inkMuted}>
+          {plan.name} · Cycle {cycle.number} · {dateLabel(cycle.startDate)} to {dateLabel(cycle.endDate)}
+        </CustomText>
         <Card>
-          <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: spacing.lg, justifyContent: 'space-between' }}>
-            <Stat label="Completed" value={`${summary.completed}/${summary.totalWorkouts}`} tone={colors.success} />
-            <Stat label="On time" value={String(summary.completedOnTime)} />
-            <Stat label="Pushed" value={String(summary.pushed)} tone={summary.pushed ? colors.warning : undefined} />
-            <Stat label="Skipped" value={String(summary.skipped)} tone={summary.skipped ? colors.error : undefined} />
+          <View style={{ flexDirection: 'row', gap: spacing.md }}>
+            <Hero label="workouts" value={`${summary.completed}/${summary.totalWorkouts}`} tone={summary.completed === summary.totalWorkouts && summary.totalWorkouts > 0 ? colors.success : undefined} />
+            <Hero label={records === 1 ? 'record' : 'records'} value={String(records)} tone={records > 0 ? colors.accent : undefined} />
+            <Hero label={`${unit} moved`} value={volume ? volume.toLocaleString() : '—'} />
           </View>
         </Card>
-        <Card>
-          <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: spacing.lg, justifyContent: 'space-between' }}>
-            <Stat label="Volume" value={volume ? `${volume.toLocaleString()} ${unit}` : '—'} />
-            <Stat label="Time trained" value={review.durationSec ? formatDuration(review.durationSec) : '—'} />
-            <Stat label="Sets" value={String(review.setsCompleted)} />
-            <Stat label="Per workout" value={review.sessions.length ? formatDuration(Math.round(review.durationSec / review.sessions.length)) : '—'} />
-          </View>
-        </Card>
-        <Card>
-          <CustomText variant="heading" style={{ marginBottom: spacing.sm }}>
-            {summary.personalRecords.length ? `${summary.personalRecords.length} personal record${summary.personalRecords.length > 1 ? 's' : ''}` : 'No new records this cycle'}
-          </CustomText>
-          {summary.personalRecords.map(pr => (
-            <View key={`${pr.exerciseId}-${pr.sessionId}`} style={{ flexDirection: 'row', justifyContent: 'space-between', paddingVertical: spacing.xs }}>
-              <CustomText variant="body">{pr.exerciseName}</CustomText>
-              <CustomText variant="bodyStrong" color={colors.accent}>
-                {formatRecordValue(pr.kind, pr.value, unit, dist)}
-              </CustomText>
+        {/* The rest as a quiet list in two groups, so "on time" and "pushed" read as schedule facts. */}
+        <View style={{ gap: spacing.sm }}>
+          <CustomText variant="overline" color={colors.inkMuted}>Stats</CustomText>
+          <Card style={{ paddingVertical: spacing.sm, gap: spacing.md }}>
+            <View>
+              <CustomText variant="overline" color={colors.accent} style={{ paddingTop: spacing.xs, paddingBottom: spacing.xs }}>Training</CustomText>
+              <DetailRow first label="Total time trained" value={review.durationSec ? formatDuration(review.durationSec) : '—'} />
+              <DetailRow label="Avg per workout" value={avgSec ? formatDuration(avgSec) : '—'} />
+              <DetailRow label="Total sets" value={String(review.setsCompleted)} />
             </View>
-          ))}
-        </Card>
+            <View>
+              <CustomText variant="overline" color={colors.accent} style={{ paddingTop: spacing.xs, paddingBottom: spacing.xs }}>Schedule</CustomText>
+              <DetailRow first label="Done on time" value={String(summary.completedOnTime)} />
+              <DetailRow label="Pushed to another day" value={String(summary.pushed)} tone={summary.pushed ? colors.warning : undefined} />
+              <DetailRow label="Skipped" value={String(summary.skipped)} tone={summary.skipped ? colors.error : undefined} />
+            </View>
+          </Card>
+        </View>
+
+        {records > 0 && (
+          <View style={{ gap: spacing.sm }}>
+            <CustomText variant="overline" color={colors.inkMuted}>New records</CustomText>
+            <Card style={{ padding: 0 }}>
+              {summary.personalRecords.map((pr, i) => (
+                <View key={`${pr.exerciseId}-${pr.sessionId}-${pr.kind}`} style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.md, paddingHorizontal: spacing.lg, paddingVertical: spacing.md, borderTopWidth: i ? 1 : 0, borderTopColor: colors.line }}>
+                  <Icon icon={generalIcons.trophy} size={18} color={colors.accent} />
+                  <View style={{ flex: 1 }}>
+                    <CustomText variant="bodyStrong">{pr.exerciseName}</CustomText>
+                    <CustomText variant="caption" color={colors.inkMuted}>
+                      {pr.previousValue !== null ? `Up from ${formatRecordValue(pr.kind, pr.previousValue, unit, dist)}` : 'First record'}
+                    </CustomText>
+                  </View>
+                  <CustomText variant="bodyStrong" color={colors.accent}>{formatRecordValue(pr.kind, pr.value, unit, dist)}</CustomText>
+                </View>
+              ))}
+            </Card>
+          </View>
+        )}
+
         {review.nextTargets.length > 0 && (
           <View style={{ gap: spacing.sm }}>
-            <CustomText variant="overline" color={colors.inkMuted}>Next cycle's targets</CustomText>
-            <CustomText variant="caption" color={colors.inkMuted}>
-              Targets hold for a whole cycle. Each one moves only on what every session of the cycle showed.
-            </CustomText>
+            <CustomText variant="overline" color={colors.inkMuted}>Next cycle</CustomText>
             <Card style={{ padding: 0 }}>
               {review.nextTargets.map((p, i) => {
-                const { headline, reason } = describeProgression(p, unit);
+                const { next, previous, reason } = describeProgression(p, unit);
                 const tone = p.change === 'increase' ? colors.success : p.change === 'climb' ? colors.accent : p.change === 'drop' ? colors.warning : colors.inkMuted;
                 const icon = p.change === 'increase' || p.change === 'climb' ? directionIcons.angleUp : p.change === 'drop' ? directionIcons.angleDown : generalIcons.minus;
                 return (
@@ -153,9 +181,19 @@ export const CycleReviewScreen = () => {
                     <View style={{ width: 32, height: 32, borderRadius: 16, backgroundColor: colors.surfaceRaised, alignItems: 'center', justifyContent: 'center' }}>
                       <Icon icon={icon} size={18} color={tone} strokeWidth={2.5} />
                     </View>
-                    <View style={{ flex: 1 }}>
+                    <View style={{ flex: 1, gap: spacing.xs }}>
                       <CustomText variant="bodyStrong">{p.exerciseName}</CustomText>
-                      <CustomText variant="label" color={tone}>{headline}</CustomText>
+                      {/* Two columns: the coming target and the one it replaces. */}
+                      <View style={{ flexDirection: 'row', gap: spacing.md }}>
+                        <View style={{ flex: 1 }}>
+                          <CustomText variant="overline" color={colors.inkMuted}>Updated</CustomText>
+                          <CustomText variant="label" color={tone}>{next}</CustomText>
+                        </View>
+                        <View style={{ flex: 1 }}>
+                          <CustomText variant="overline" color={colors.inkMuted}>Previously</CustomText>
+                          <CustomText variant="label" color={colors.inkMuted}>{previous ?? '—'}</CustomText>
+                        </View>
+                      </View>
                       <CustomText variant="caption" color={colors.inkMuted}>{reason}</CustomText>
                     </View>
                   </View>
@@ -164,6 +202,7 @@ export const CycleReviewScreen = () => {
             </Card>
           </View>
         )}
+
         {sessions.length > 0 && (
           <View style={{ gap: spacing.sm }}>
             <CustomText variant="overline" color={colors.inkMuted}>Workouts</CustomText>
@@ -190,23 +229,13 @@ export const CycleReviewScreen = () => {
             </Card>
           </View>
         )}
-        {cycle.status === 'active' && (
-          <PrimaryButton
-            label={`Start cycle ${nextCycleNumberAfter(cycle)}`}
-            busy={busy}
-            onPress={async () => {
-              if (!uid) return;
-              setBusy(true);
-              try {
-                await startNextCycle(uid, plan, cycle);
-                navigation.navigate('WorkoutHomeScreen');
-              } finally {
-                setBusy(false);
-              }
-            }}
-          />
-        )}
       </ScrollView>
+      {/* Pinned, so starting the next cycle is one tap from anywhere in the review. */}
+      {cycle.status === 'active' && (
+        <View style={{ padding: spacing.lg, paddingBottom: spacing.lg + bottomInset, borderTopWidth: 1, borderTopColor: colors.line, backgroundColor: colors.ground }}>
+          <PrimaryButton label={`Start cycle ${nextCycleNumberAfter(cycle)}`} busy={busy} onPress={() => { startNext().catch(err => console.warn(err)); }} />
+        </View>
+      )}
     </SafeAreaView>
   );
 };

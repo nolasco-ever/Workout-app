@@ -1,6 +1,6 @@
 import { WeightUnit } from '../models';
 import { ExerciseProgression, targetRepsLabel, targetWeightRange } from './progression';
-import { formatDuration, formatWeight } from './units';
+import { formatDistance, formatDuration, formatWeight } from './units';
 
 /** "55 lb" or "25–35 lb" for a target's working weights. */
 export const weightSpan = (p: ExerciseProgression['target'], unit: WeightUnit): string | null => {
@@ -9,62 +9,50 @@ export const weightSpan = (p: ExerciseProgression['target'], unit: WeightUnit): 
   return range.min === range.max ? formatWeight(range.max, unit) : `${formatWeight(range.min, unit).replace(` ${unit}`, '')}–${formatWeight(range.max, unit)}`;
 };
 
+/** "3 × 8–12 reps @ 70 lb", "0:45", "2.5 mi in 20:00": a target in one line. */
+const targetLine = (t: ExerciseProgression['target'], measurement: ExerciseProgression['measurement'], unit: WeightUnit): string => {
+  if (measurement === 'time') return formatDuration(t.durationSec);
+  if (measurement === 'distance_time') {
+    const distance = t.distanceM !== null ? formatDistance(t.distanceM, unit === 'kg' ? 'km' : 'mi') : null;
+    const time = t.durationSec !== null ? formatDuration(t.durationSec) : null;
+    return distance && time ? `${distance} in ${time}` : distance ?? time ?? '—';
+  }
+  const weight = weightSpan(t, unit);
+  return `${t.sets} × ${targetRepsLabel(t)} reps${weight ? ` @ ${weight}` : ''}`;
+};
+
 /**
- * What changed for one exercise going into the next cycle, and why, in
- * plain words for the cycle review.
+ * What changed for one exercise going into the next cycle, and why, for
+ * the cycle review: the new target, the one it replaces (null the first
+ * time), and the cause in one short sentence.
  */
-export const describeProgression = (p: ExerciseProgression, unit: WeightUnit): { headline: string; reason: string } => {
+export const describeProgression = (p: ExerciseProgression, unit: WeightUnit): { next: string; previous: string | null; reason: string } => {
   const sessionsWord = `${p.sessions} session${p.sessions === 1 ? '' : 's'}`;
-  const reps = targetRepsLabel(p.target);
+  const next = targetLine(p.target, p.measurement, unit);
+  const previous = p.from ? targetLine(p.from, p.measurement, unit) : null;
+  const missed = `${p.sessions - p.hits} of ${sessionsWord}`;
+  const hit = `${p.hits} of ${sessionsWord}`;
 
-  if (p.measurement === 'time') {
-    const to = formatDuration(p.target.durationSec);
+  const reason = (() => {
+    if (p.change === 'start') return 'First cycle for this exercise';
+    if (p.sessions === 0) return 'Not trained last cycle';
+    if (p.measurement === 'time') {
+      const held = formatDuration(p.from?.durationSec ?? p.target.durationSec);
+      return p.change === 'increase' ? `You held ${held} every time in ${hit}` : p.change === 'drop' ? `You fell short of ${held} in ${missed}` : 'Same target as last cycle';
+    }
+    if (p.measurement === 'distance_time') return p.change === 'increase' ? 'A step further after a completed cycle' : 'Repeats what you last did';
+    const reps = p.from ? targetRepsLabel(p.from) : targetRepsLabel(p.target);
     switch (p.change) {
       case 'increase':
-        return { headline: `Holds go up to ${to}`, reason: `Every set reached ${formatDuration(p.from?.durationSec ?? null)} in all ${sessionsWord}` };
+        return `You hit ${reps} reps on every set in ${hit}`;
+      case 'climb':
+        return `You hit every rep in ${hit}`;
       case 'drop':
-        return { headline: `Holds ease back to ${to}`, reason: `The target was missed in ${p.sessions - p.hits} of ${sessionsWord}` };
-      case 'start':
-        return { headline: `Starts at ${to}`, reason: 'First cycle for this exercise' };
+        return `You missed the reps in ${missed}`;
       default:
-        return { headline: `Stays at ${to}`, reason: p.sessions === 0 ? 'Not trained last cycle' : 'Same target as last cycle' };
+        return 'Same target as last cycle';
     }
-  }
+  })();
 
-  if (p.measurement === 'distance_time') {
-    switch (p.change) {
-      case 'increase':
-        return { headline: 'A little further next cycle', reason: 'Distance steps up after each completed cycle' };
-      case 'start':
-        return { headline: 'Starts from the plan', reason: 'First cycle for this exercise' };
-      default:
-        return { headline: 'Same distance and time', reason: p.sessions === 0 ? 'Not trained last cycle' : 'Repeats what you last completed' };
-    }
-  }
-
-  const weight = weightSpan(p.target, unit);
-  const fromWeight = p.from ? weightSpan(p.from, unit) : null;
-  const fromReps = p.from ? targetRepsLabel(p.from) : null;
-  const at = weight ? ` @ ${weight}` : '';
-  switch (p.change) {
-    case 'increase':
-      return {
-        headline: fromWeight && fromWeight !== weight ? `${fromWeight} → ${weight}, ${reps} reps` : `${reps} reps${at}`,
-        reason: `You hit ${fromReps ?? reps} reps on every set in all ${sessionsWord}, so the weight goes up and reps restart at the bottom of the range`,
-      };
-    case 'climb':
-      return {
-        headline: `${fromReps && fromReps !== reps ? `${fromReps} → ${reps}` : reps} reps${at}`,
-        reason: p.target.weightKg ? `Every set hit its reps in all ${sessionsWord}; reps climb before the weight does` : `Every set hit its reps in all ${sessionsWord}, so the rep target keeps growing`,
-      };
-    case 'drop':
-      return {
-        headline: `${fromReps && fromReps !== reps ? `${fromReps} → ${reps}` : reps} reps${at}`,
-        reason: `The target was missed in ${p.sessions - p.hits} of ${sessionsWord}; the reps ease back to what you managed`,
-      };
-    case 'start':
-      return { headline: `${reps} reps${at}`, reason: 'First cycle for this exercise' };
-    default:
-      return { headline: `${reps} reps${at}`, reason: p.sessions === 0 ? 'Not trained last cycle, so nothing changes' : 'Same target as last cycle' };
-  }
+  return { next, previous, reason };
 };
