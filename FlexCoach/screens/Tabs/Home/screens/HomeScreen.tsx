@@ -243,8 +243,9 @@ export const HomeScreen = () => {
             <LinkCard label="Volume" onPress={() => navigation.navigate('ProgressScreen')}>
               <CustomText variant="display">{fmtVolume(ins.week.volumeKg)}</CustomText>
               <CustomText variant="caption" color={colors.inkMuted}>{unit} this week</CustomText>
-              <CustomText variant="caption" color={ins.week.volumeChange === null ? colors.inkMuted : ins.week.volumeChange >= 0 ? colors.success : colors.error}>
-                {ins.week.volumeChange === null ? 'No last week yet' : `${ins.week.volumeChange >= 0 ? '+' : ''}${Math.round(ins.week.volumeChange * 100)}% vs last week`}
+              {/* No comparison until something is logged: "-100%" on a Monday says nothing. */}
+              <CustomText variant="caption" color={ins.week.volumeKg === 0 || ins.week.volumeChange === null ? colors.inkMuted : ins.week.volumeChange >= 0 ? colors.success : colors.error}>
+                {ins.week.volumeKg === 0 ? 'Nothing logged yet' : ins.week.volumeChange === null ? 'No last week yet' : `${ins.week.volumeChange >= 0 ? '+' : ''}${Math.round(ins.week.volumeChange * 100)}% vs last week`}
               </CustomText>
             </LinkCard>
           </View>
