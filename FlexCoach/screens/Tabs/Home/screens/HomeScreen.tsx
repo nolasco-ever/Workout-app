@@ -17,6 +17,7 @@ import { PrimaryButton } from '../../../../components/buttons/PrimaryButton';
 import { Icon } from '../../../../components/icons/Icon';
 import { directionIcons, generalIcons } from '../../../../components/icons/icon-library';
 import { StatTile } from '../../../../components/charts/StatTile';
+import { BottomSheet } from '../../../../components/overlays/BottomSheet';
 import { compactNumber, dateLabel, shortDate } from '../../../../components/charts/scale';
 import { MuscleMap } from '../../../../components/anatomy/MuscleMap';
 import { MuscleRow } from '../components/MuscleRow';
@@ -100,6 +101,7 @@ export const HomeScreen = () => {
   const scrollRef = useRef<React.ComponentRef<typeof ScrollView>>(null);
   useScrollToTop(scrollRef);
   const [refreshing, setRefreshing] = useState(false);
+  const [streakInfo, setStreakInfo] = useState(false);
   const onRefresh = useCallback(async () => {
     setRefreshing(true);
     try {
@@ -206,7 +208,7 @@ export const HomeScreen = () => {
 
         {/* This week */}
         <View style={{ flexDirection: 'row', gap: spacing.sm }}>
-          <StatTile label="Streak" value={`${ins.streakDays}d`} delta={ins.streakDays > 0 ? 'Keep it going' : 'Train to start one'} />
+          <StatTile label="Streak" value={`${ins.streakDays}d`} delta={ins.streakDays > 0 ? 'Keep it going' : 'Train to start one'} onPress={() => setStreakInfo(true)} accessibilityLabel={`Streak ${ins.streakDays} days, what counts`} />
           <StatTile
             label="This week"
             value={String(ins.week.sessionsDone)}
@@ -369,6 +371,13 @@ export const HomeScreen = () => {
         </>
         )}
       </ScrollView>
+
+      <BottomSheet open={streakInfo} title="Your streak" onClose={() => setStreakInfo(false)}>
+        <View style={{ gap: spacing.md }}>
+          <CustomText variant="body">A streak tracks the days in a row with a finished workout.</CustomText>
+          <CustomText variant="body" color={colors.inkMuted}>A day with nothing logged, including a rest day, ends it, so a walk in the park or a run on the treadmill will keep your streak going.</CustomText>
+        </View>
+      </BottomSheet>
     </SafeAreaView>
   );
 };
