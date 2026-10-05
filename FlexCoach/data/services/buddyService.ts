@@ -143,7 +143,7 @@ export const recordActivity = async (uid: Id, id: string, kind: ActivityKind, ti
   await buddyRepository.addActivity(uid, item);
 };
 
-type BuddyNotificationKind = 'buddy_streak' | 'buddy_achievement' | 'buddy_workout' | 'buddy_skipped';
+type BuddyNotificationKind = 'buddy_streak' | 'buddy_achievement' | 'buddy_workout' | 'buddy_skipped' | 'buddy_plan_shared';
 
 /**
  * Put the same item in every accepted buddy's feed. The server pushes it
@@ -276,10 +276,19 @@ export const afterCycleFinished = async (uid: Id, cycleId: Id, cycleNumber: numb
   await recordActivity(uid, `cycle_done:${cycleId}`, 'cycle_done', `Finished cycle ${cycleNumber}`, `${Math.round(completionRate * 100)}% of workouts done`);
 };
 
-/** Flip a plan's buddy visibility; sharing it is worth a line in the feed. */
+/** Flip a plan's buddy visibility; sharing it is worth a line in the feed and a push to every buddy. */
 export const setPlanVisibleToBuddies = async (uid: Id, profile: UserProfile | null, plan: Plan, visible: boolean): Promise<void> => {
   await planRepository.setVisibleToBuddies(uid, plan.id, visible);
-  if (visible && !plan.visibleToBuddies) await recordActivity(uid, `plan_shared:${plan.id}`, 'plan_shared', `Shared a plan: ${plan.name}`, `${plan.workouts.length} workout${plan.workouts.length === 1 ? '' : 's'}`);
+  if (visible && !plan.visibleToBuddies) {
+    const workouts = `${plan.workouts.length} workout${plan.workouts.length === 1 ? '' : 's'}`;
+    await recordActivity(uid, `plan_shared:${plan.id}`, 'plan_shared', `Shared a plan: ${plan.name}`, workouts);
+    await notifyBuddies(uid, plan.id, 'buddy_plan_shared', `${firstName(profile?.displayName)} shared a plan: ${plan.name}`, `${workouts}. Use it in sync or save a copy.`, {
+      screen: 'buddy_plan',
+      ownerUid: uid,
+      planId: plan.id,
+      ownerName: profile?.displayName ?? null,
+    });
+  }
   refreshPublicProfile(uid, profile).catch(() => undefined);
 };
 

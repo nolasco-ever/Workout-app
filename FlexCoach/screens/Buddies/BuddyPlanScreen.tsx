@@ -10,6 +10,9 @@ import { copyBuddyPlan } from '../../data/services/buddyService';
 import { usePlans } from '../../data/hooks/usePlans';
 import { CustomText } from '../../components/text/customText';
 import { PrimaryButton } from '../../components/buttons/PrimaryButton';
+import { HeaderButton } from '../../components/headers/HeaderButton';
+import { BottomSheet } from '../../components/overlays/BottomSheet';
+import { generalIcons } from '../../components/icons/icon-library';
 import { PlanSummaryCard } from '../Plans/components/PlanSummaryCard';
 import { AppStackParams } from '../../appNavigators/AppStack';
 import { useTheme } from '../../theme';
@@ -39,8 +42,13 @@ export const BuddyPlanScreen = () => {
       .catch(() => setPlan(null));
   }, [params.ownerUid, params.planId]);
 
+  // What sync and copy mean lives behind the info button, not under the buttons.
+  const [infoOpen, setInfoOpen] = useState(false);
   useLayoutEffect(() => {
-    (navigation as any).setOptions({ title: plan?.name ?? 'Plan' });
+    (navigation as any).setOptions({
+      title: plan?.name ?? 'Plan',
+      headerRight: () => <HeaderButton icon={generalIcons.info} accessibilityLabel="What sync and copy mean" onPress={() => setInfoOpen(true)} />,
+    });
   }, [navigation, plan?.name]);
 
   const save = async (synced: boolean) => {
@@ -77,7 +85,6 @@ export const BuddyPlanScreen = () => {
           <>
             <View>
               <CustomText variant="overline" color={colors.accent}>Created by {params.ownerName ?? 'a buddy'}</CustomText>
-              <CustomText variant="title">{plan.name}</CustomText>
               {plan.description ? <CustomText variant="body" color={colors.inkMuted}>{plan.description}</CustomText> : null}
             </View>
             <PlanSummaryCard plan={plan} />
@@ -90,14 +97,25 @@ export const BuddyPlanScreen = () => {
           {!alreadySynced && alreadyCopied && <CustomText variant="caption" color={colors.inkMuted} centered>You already have a copy: "{alreadyCopied.name}" in My plans.</CustomText>}
           {!alreadySynced && <PrimaryButton label="Use it and keep in sync" busy={busy === 'sync'} disabled={busy === 'copy'} onPress={() => save(true)} />}
           <PrimaryButton label={alreadyCopied ? 'Save another copy' : 'Save a copy'} variant={alreadySynced ? 'filled' : 'outline'} busy={busy === 'copy'} disabled={busy === 'sync'} onPress={() => save(false)} />
-          <CustomText variant="caption" color={colors.inkMuted} centered>
-            In sync: any edits {first} makes to this workout will reflect for you as well. Skipping or moving a workout is always independent and will never affect either buddy's schedule.
-          </CustomText>
-          <CustomText variant="caption" color={colors.inkMuted} centered>
-            Copy: a copy is yours to edit. Any changes your buddy makes will not reflect on your plan.
-          </CustomText>
         </View>
       )}
+
+      <BottomSheet open={infoOpen} title="Using a buddy's plan" onClose={() => setInfoOpen(false)}>
+        <View style={{ gap: spacing.lg }}>
+          <View style={{ gap: spacing.xs }}>
+            <CustomText variant="bodyStrong">Keep in sync</CustomText>
+            <CustomText variant="body" color={colors.inkMuted}>
+              Any edits {first} makes to the plan show up in yours too. Skipping or moving a workout won't affect the other person's schedule.
+            </CustomText>
+          </View>
+          <View style={{ gap: spacing.xs }}>
+            <CustomText variant="bodyStrong">Save a copy</CustomText>
+            <CustomText variant="body" color={colors.inkMuted}>
+              The copy is yours to edit. Changes {first} makes later stay on their plan, not yours.
+            </CustomText>
+          </View>
+        </View>
+      </BottomSheet>
     </SafeAreaView>
   );
 };

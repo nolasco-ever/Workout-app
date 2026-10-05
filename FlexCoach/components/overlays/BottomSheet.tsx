@@ -85,7 +85,8 @@ export const BottomSheet = ({ open, title, onClose, children, footer, headerRigh
         onLayout={e => setSheetHeight(e.nativeEvent.layout.height)}
         style={{ maxHeight: '85%', backgroundColor: colors.surface, borderTopLeftRadius: radius.xl, borderTopRightRadius: radius.xl, paddingBottom: insets.bottom + spacing.md, transform: [{ translateY }] }}
       >
-        <View {...pan.panHandlers}>
+        {/* collapsable={false}: Android flattens a plain View away, and a flattened view gets no touches. */}
+        <View collapsable={false} {...pan.panHandlers}>
           <View style={{ alignItems: 'center', paddingTop: spacing.sm }}>
             <View style={{ width: 36, height: 4, borderRadius: 2, backgroundColor: colors.line }} />
           </View>
@@ -98,7 +99,7 @@ export const BottomSheet = ({ open, title, onClose, children, footer, headerRigh
             )}
           </View>
         </View>
-        <View style={{ flexShrink: 1 }} {...(scrolls ? {} : pan.panHandlers)}>
+        <View collapsable={false} style={{ flexShrink: 1 }} {...(scrolls ? {} : pan.panHandlers)}>
           <ScrollView
             style={{ flexGrow: 0 }}
             contentContainerStyle={{ paddingHorizontal: spacing.lg, paddingBottom: spacing.md, gap: spacing.lg }}

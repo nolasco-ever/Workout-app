@@ -29,6 +29,7 @@ const iconFor = (kind: FeedNotificationKind): IconSource => {
       return generalIcons.users;
     case 'plan_synced':
     case 'plan_sync_ended':
+    case 'buddy_plan_shared':
       return generalIcons.dumbbell;
     default:
       return generalIcons.users;

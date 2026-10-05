@@ -58,6 +58,9 @@ export const openTarget = (target: NotificationTarget): void => {
     case 'buddy_workout':
       nav.navigate('BuddyWorkoutScreen', { uid: target.uid, activityId: target.activityId, displayName: target.displayName ?? null });
       return;
+    case 'buddy_plan':
+      nav.navigate('BuddyPlanScreen', { ownerUid: target.ownerUid, planId: target.planId, ownerName: target.ownerName ?? null });
+      return;
   }
 };
 

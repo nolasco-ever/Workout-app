@@ -58,7 +58,7 @@ service cloud.firestore {
         allow read, write: if isOwner(uid);
         allow create: if signedIn() && request.auth.uid != uid
           && request.resource.data.ownerId == uid
-          && request.resource.data.kind in ['buddy_added', 'buddy_removed', 'buddy_streak', 'buddy_achievement', 'buddy_workout', 'buddy_skipped', 'buddy_reaction']
+          && request.resource.data.kind in ['buddy_added', 'buddy_removed', 'buddy_streak', 'buddy_achievement', 'buddy_workout', 'buddy_skipped', 'buddy_reaction', 'buddy_plan_shared']
           && isAcceptedBuddyOf(uid);
       }
       // What the owner has been up to, in buddy-safe words. Buddies read it

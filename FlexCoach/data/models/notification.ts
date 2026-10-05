@@ -40,6 +40,8 @@ export type NotificationTarget =
   | { screen: 'buddy_activity' }
   /** One finished workout of a buddy's, with its records and reactions. */
   | { screen: 'buddy_workout'; uid: Id; activityId: Id; displayName?: string | null }
+  /** A plan a buddy shared, to use in sync or copy. */
+  | { screen: 'buddy_plan'; ownerUid: Id; planId: Id; ownerName?: string | null }
   /** One of the user's own logged sessions. */
   | { screen: 'session_detail'; sessionId: Id; workoutName?: string | null };
 
@@ -51,6 +53,7 @@ export type FeedNotificationKind =
   | 'buddy_removed'
   | 'buddy_workout'
   | 'buddy_skipped'
+  | 'buddy_plan_shared'
   | 'buddy_streak'
   | 'buddy_achievement'
   | 'buddy_reaction'
