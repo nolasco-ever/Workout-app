@@ -1,5 +1,5 @@
 import React, { useEffect, useLayoutEffect, useMemo, useState } from 'react';
-import { ActivityIndicator, Alert, ScrollView, View } from 'react-native';
+import { ActivityIndicator, Alert, RefreshControl, ScrollView, View } from 'react-native';
 import { KeyboardAvoiding } from '../../../../components/layout/KeyboardAvoiding';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { RouteProp, useNavigation, useRoute } from '@react-navigation/native';
@@ -96,11 +96,26 @@ export const SessionDetailScreen = () => {
   const [drafts, setDrafts] = useState<Record<string, SetDraft>>({});
 
   // Buddies' reactions land on the activity lines this session wrote.
+  // Pull to refresh re-reads them (and the session), for reactions that arrived since.
   const [activity, setActivity] = useState<Activity[]>([]);
+  const [refreshing, setRefreshing] = useState(false);
+  const loadActivity = () => (uid ? buddyRepository.listActivityForSession(uid, params.sessionId).then(setActivity).catch(() => undefined) : Promise.resolve());
   useEffect(() => {
-    if (!uid) return;
-    buddyRepository.listActivityForSession(uid, params.sessionId).then(setActivity).catch(() => undefined);
+    loadActivity();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [uid, params.sessionId]);
+  const refresh = async () => {
+    if (!uid || editing) return;
+    setRefreshing(true);
+    try {
+      const [fresh] = await Promise.all([sessionRepository.get(uid, params.sessionId), loadActivity()]);
+      if (fresh) setSession(fresh);
+    } catch (err) {
+      console.warn('refresh failed', err);
+    } finally {
+      setRefreshing(false);
+    }
+  };
 
   useEffect(() => {
     if (!uid) return;
@@ -200,7 +215,12 @@ export const SessionDetailScreen = () => {
   return (
     <SafeAreaView edges={['left', 'right']} style={{ flex: 1, backgroundColor: colors.ground }}>
       <KeyboardAvoiding>
-        <ScrollView contentContainerStyle={{ padding: spacing.lg, gap: spacing.lg, paddingBottom: (editing ? spacing.lg : spacing.xl + bottomInset) }} keyboardShouldPersistTaps="handled" keyboardDismissMode="on-drag">
+        <ScrollView
+          contentContainerStyle={{ padding: spacing.lg, gap: spacing.lg, paddingBottom: (editing ? spacing.lg : spacing.xl + bottomInset) }}
+          keyboardShouldPersistTaps="handled"
+          keyboardDismissMode="on-drag"
+          refreshControl={editing ? undefined : <RefreshControl refreshing={refreshing} onRefresh={() => { refresh().catch(() => undefined); }} tintColor={colors.accent} />}
+        >
           <View>
             <CustomText variant="overline" color={colors.inkMuted}>{longDate(shown.date)}</CustomText>
             <View style={{ flexDirection: 'row', gap: spacing.lg, marginTop: spacing.sm }}>
