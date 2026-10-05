@@ -1,6 +1,7 @@
 import { Session } from '../../data/models';
 import { searchCatalog } from '../../data/catalog/exerciseCatalog';
-import { addExerciseTo, isQuickSession, newQuickSession, removeExerciseFrom, substituteExercise } from '../../data/engine/sessionExtras';
+import { Workout } from '../../data/models';
+import { addExerciseTo, fillFromWorkout, isQuickSession, newQuickSession, removeExerciseFrom, substituteExercise } from '../../data/engine/sessionExtras';
 
 let n = 0;
 const makeId = () => `id-${++n}`;
@@ -101,5 +102,43 @@ describe('swapping an exercise mid-session', () => {
     expect(swapped.measurement).toBe('distance_time');
     expect(swapped.sets).toHaveLength(1);
     expect(swapped.sets[0].weightKg).toBeNull();
+  });
+});
+
+describe('copying a plan workout into a quick workout', () => {
+  const bench = searchCatalog({ query: 'bench press' }).find(e => e.measurement === 'weight_reps')!;
+  const plank = searchCatalog({ query: 'plank' }).find(e => e.measurement === 'time')!;
+  const workout: Workout = {
+    id: 'w', name: 'Upper', order: 0,
+    exercises: [
+      { id: 'we2', exerciseId: plank.id, exerciseName: plank.name, measurement: 'time', order: 1, sets: 1, repRangeMin: null, repRangeMax: null, startingWeightKg: null, startingDurationSec: 45, startingDistanceM: null, restSec: 60, progression: { weightIncrementKg: 2.5, repStep: 1, durationStepSec: 10, distanceStepM: 0 }, notes: null },
+      { id: 'we1', exerciseId: bench.id, exerciseName: bench.name, measurement: 'weight_reps', order: 0, sets: 3, repRangeMin: 8, repRangeMax: 12, startingWeightKg: null, startingDurationSec: null, startingDistanceM: null, restSec: 90, progression: { weightIncrementKg: 2.5, repStep: 1, durationStepSec: 0, distanceStepM: 0 }, notes: null },
+    ],
+  };
+
+  it('takes the name and exercises in order, unlinked from the plan', () => {
+    const quick = newQuickSession('u', '2026-10-05', makeId, 42);
+    const filled = fillFromWorkout(quick, workout, () => null, [], 'lb', makeId);
+    expect(filled.workoutName).toBe('Upper');
+    expect(filled.planId).toBeNull();
+    expect(filled.exercises.map(e => e.exerciseId)).toEqual([bench.id, plank.id]);
+    expect(filled.exercises.every(e => e.workoutExerciseId === null)).toBe(true);
+    expect(filled.exercises[0].sets.filter(s => !s.warmup)).toHaveLength(3);
+    expect(filled.exercises[1].sets).toHaveLength(1);
+    expect(filled.exercises[1].target.durationSec).toBe(45);
+  });
+
+  it('uses the cycle target when given, else the last log', () => {
+    const quick = newQuickSession('u', '2026-10-05', makeId, 42);
+    const earlier: Session = {
+      ...base, id: 'old', status: 'completed', startedAt: 1, finishedAt: 2,
+      exercises: [{ id: 'x', workoutExerciseId: null, exerciseId: bench.id, exerciseName: bench.name, measurement: 'weight_reps', order: 0, notes: null, target: { sets: 3, reps: 10, weightKg: 80, durationSec: null, distanceM: null }, sets: [
+        { id: 's1', setNumber: 1, weightKg: 80, reps: 10, durationSec: null, distanceM: null, completed: true, completedAt: 1 },
+      ] }],
+    };
+    const fromLog = fillFromWorkout(quick, workout, () => null, [earlier], 'kg', makeId);
+    expect(fromLog.exercises[0].sets.filter(s => !s.warmup)[0].weightKg).toBe(80);
+    const fromCycle = fillFromWorkout(quick, workout, entry => (entry.id === 'we1' ? { sets: 3, reps: 8, weightKg: 100, durationSec: null, distanceM: null } : null), [earlier], 'kg', makeId);
+    expect(fromCycle.exercises[0].sets.filter(s => !s.warmup)[0].weightKg).toBe(100);
   });
 });

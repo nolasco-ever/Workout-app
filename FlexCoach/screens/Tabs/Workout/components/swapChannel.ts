@@ -18,6 +18,21 @@ export const subscribeSwap = (listener: Listener): (() => void) => {
   };
 };
 
+/** And for the picker's "copy a workout from my plan" link: the whole workout fills the empty session. */
+type CopyListener = (workoutId: string) => void;
+const copyListeners = new Set<CopyListener>();
+
+export const pickCopyWorkout = (workoutId: string): void => {
+  copyListeners.forEach(l => l(workoutId));
+};
+
+export const subscribeCopyWorkout = (listener: CopyListener): (() => void) => {
+  copyListeners.add(listener);
+  return () => {
+    copyListeners.delete(listener);
+  };
+};
+
 /** Same idea for the add-exercise mode of the picker: the pick joins the session. */
 type AddListener = (exercise: Exercise) => void;
 const addListeners = new Set<AddListener>();

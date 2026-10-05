@@ -3,7 +3,7 @@ import { FlatList, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { RouteProp, useNavigation, useRoute } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { Equipment, Exercise, ExerciseCategory, MuscleGroup } from '../../../data/models';
+import { Equipment, Exercise, ExerciseCategory, MuscleGroup, Workout } from '../../../data/models';
 import { CATEGORY_OPTIONS, comparableExercises, EQUIPMENT_OPTIONS, getCatalogExercise, MUSCLE_GROUPS, searchCatalog } from '../../../data/catalog/exerciseCatalog';
 import { newEntry } from '../../../data/services/planService';
 import { pickAdd, pickSwap } from '../../Tabs/Workout/components/swapChannel';
@@ -73,9 +73,10 @@ type PickerParams = {
    * to the running workout. Swap: a stand-in for one of its exercises.
    */
   ExercisePickerScreen:
-    | { workoutId: string; mode?: undefined; excludeIds?: undefined; sessionExerciseId?: undefined; exerciseId?: undefined }
-    | { mode: 'session'; excludeIds: string[]; workoutId?: undefined; sessionExerciseId?: undefined; exerciseId?: undefined }
-    | { mode: 'swap'; sessionExerciseId: string; exerciseId: string; excludeIds: string[]; workoutId?: undefined };
+    | { workoutId: string; mode?: undefined; excludeIds?: undefined; planWorkouts?: undefined; sessionExerciseId?: undefined; exerciseId?: undefined }
+    /** `planWorkouts`: an empty quick workout can be filled with one of them from a link at the top. */
+    | { mode: 'session'; excludeIds: string[]; planWorkouts?: Workout[]; workoutId?: undefined; sessionExerciseId?: undefined; exerciseId?: undefined }
+    | { mode: 'swap'; sessionExerciseId: string; exerciseId: string; excludeIds: string[]; planWorkouts?: undefined; workoutId?: undefined };
 };
 
 /**
@@ -99,6 +100,7 @@ export const ExercisePickerScreen = () => {
   const [equipment, setEquipment] = useState<Equipment | 'any'>('any');
   const [category, setCategory] = useState<ExerciseCategory | 'any'>('any');
   const [filtersOpen, setFiltersOpen] = useState(false);
+  const planWorkouts = params.mode === 'session' ? params.planWorkouts ?? [] : [];
   const activeFilters = (muscle === 'all' ? 0 : 1) + (equipment === 'any' ? 0 : 1) + (category === 'any' ? 0 : 1);
 
   const workout = params.workoutId ? draft?.workouts.find(w => w.id === params.workoutId) : undefined;
@@ -160,6 +162,12 @@ export const ExercisePickerScreen = () => {
           </TouchableOpacity>
         </View>
       </View>
+      {planWorkouts.length > 0 && (
+        <View style={{ paddingHorizontal: spacing.lg, paddingBottom: spacing.md }}>
+          {/* Session mode runs in the Workout stack, where this modal lives; the Plans stack never shows the button. */}
+          <PrimaryButton label="Copy a workout from my plan" icon={generalIcons.copy} variant="outline" onPress={() => (navigation as any).navigate('ActivePlanWorkoutsScreen', { workouts: planWorkouts })} />
+        </View>
+      )}
       {!swapMode && (
         <CustomText variant="caption" color={colors.inkMuted} style={{ paddingHorizontal: spacing.lg, paddingBottom: spacing.sm }}>
           {sessionMode ? "Tap an exercise to see how it's done, or + to add it to this workout. Your plan stays as it is." : "Tap an exercise to see how it's done, or + to add it straight away."}

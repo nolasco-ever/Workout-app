@@ -11,7 +11,6 @@ import {
   Session,
   UserProfile,
   WeightUnit,
-  wantsWarmup,
 } from '../models';
 import { addDays, today } from '../engine/dates';
 import { newId } from '../engine/ids';
@@ -27,7 +26,7 @@ import {
   renumberCycles,
   skipOccurrence,
 } from '../engine/schedule';
-import { buildPlannedSets, buildWarmupSets, ExerciseProgression, progressExercise, progressPlan, roundWarmupKg, targetsForCycle } from '../engine/progression';
+import { ExerciseProgression, progressPlan, roundWarmupKg, targetsForCycle } from '../engine/progression';
 import { renumberSets } from '../engine/sets';
 import { countWorkingSets, findPersonalRecords, summarizeCycle, totalVolumeKg } from '../engine/stats';
 import { cycleRepository } from '../repositories/cycleRepository';
@@ -102,23 +101,7 @@ export const startSession = async (uid: Id, plan: Plan, cycle: Cycle, occurrence
     startedAt: now,
     finishedAt: null,
     status: 'in_progress',
-    exercises: [...workout.exercises]
-      .sort((a, b) => a.order - b.order)
-      .map((entry, i) => {
-        const target = targets.get(entry.id)?.target ?? progressExercise(entry, [], null, unit).target;
-        const warmups = wantsWarmup(entry) ? buildWarmupSets(target, unit, newId) : [];
-        return {
-          id: newId(),
-          workoutExerciseId: entry.id,
-          exerciseId: entry.exerciseId,
-          exerciseName: entry.exerciseName,
-          measurement: entry.measurement,
-          order: i,
-          target,
-          sets: [...warmups, ...buildPlannedSets(target, newId)],
-          notes: null,
-        };
-      }),
+    exercises: buildWorkoutExercises(workout, entry => targets.get(entry.id)?.target ?? null, [], { id: '' }, unit, newId, true),
     createdAt: now,
     updatedAt: now,
   };
@@ -126,6 +109,20 @@ export const startSession = async (uid: Id, plan: Plan, cycle: Cycle, occurrence
   const updatedCycle = markOccurrence(cycle, occurrence.id, 'in_progress', session.id);
   await cycleRepository.save(uid, updatedCycle);
   return { session, cycle: updatedCycle };
+};
+
+/**
+ * Copy one of the plan's workouts into an empty quick workout. Targets are
+ * the cycle's when one is running, else each exercise starts from the
+ * user's last log of it. The session stays outside the plan.
+ */
+export const copyWorkoutIntoQuickSession = async (uid: Id, session: Session, plan: Plan, cycle: Cycle | null, workoutId: Id, unit: WeightUnit): Promise<Session> => {
+  const workout = findWorkout(plan, workoutId);
+  if (!workout) throw new Error('Unknown workout');
+  const history = await sessionRepository.listCompleted(uid);
+  const targets = cycle ? targetsForCycle(plan, cycle, history, unit) : null;
+  const next = fillFromWorkout(session, workout, entry => targets?.get(entry.id)?.target ?? null, history, unit, newId);
+  return sessionRepository.saveExercises(uid, next);
 };
 
 /** Start a workout outside the plan, empty; exercises are added as it goes. */
@@ -225,7 +222,7 @@ export const addWarmupSetTo = (session: Session, sessionExerciseId: Id, unit: We
 
 
 export { addExerciseTo, removeExerciseFrom, isQuickSession, substituteExercise } from '../engine/sessionExtras';
-import { newQuickSession } from '../engine/sessionExtras';
+import { buildWorkoutExercises, fillFromWorkout, newQuickSession } from '../engine/sessionExtras';
 
 export const saveExercises = (uid: Id, session: Session): Promise<Session> => sessionRepository.saveExercises(uid, session);
 

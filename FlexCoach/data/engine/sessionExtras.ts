@@ -1,4 +1,4 @@
-import { Exercise, Id, Plan, Session, SessionExercise, wantsWarmup, WeightUnit, WorkoutExercise } from '../models';
+import { Exercise, Id, Plan, Session, SessionExercise, SetTarget, wantsWarmup, WeightUnit, Workout, WorkoutExercise } from '../models';
 import { newEntry } from './planDefaults';
 import { buildPlannedSets, buildWarmupSets, progressExercise } from './progression';
 import { findWorkout } from './schedule';
@@ -76,6 +76,51 @@ export const substituteExercise = (session: Session, sessionExerciseId: Id, repl
   };
   return { ...session, exercises: session.exercises.map(e => (e.id === ex.id ? swapped : e)) };
 };
+
+/**
+ * The session exercises for a plan workout, in order, each with its target
+ * and the empty sets to log. `targetFor` is the cycle's fixed target for an
+ * entry, or null to start it from the user's last log (or from scratch).
+ * `linked` ties each one to its plan entry; a copy into a quick workout
+ * leaves them free-standing, since no cycle will judge them.
+ */
+export const buildWorkoutExercises = (
+  workout: Workout,
+  targetFor: (entry: WorkoutExercise) => SetTarget | null,
+  history: Session[],
+  session: Pick<Session, 'id'>,
+  unit: WeightUnit,
+  makeId: () => Id,
+  linked: boolean,
+): SessionExercise[] =>
+  [...workout.exercises]
+    .sort((a, b) => a.order - b.order)
+    .map((entry, i) => {
+      const target = targetFor(entry) ?? progressExercise(entry, [], lastLogOf(entry.exerciseId, history, session as Session), unit).target;
+      const warmups = wantsWarmup(entry) ? buildWarmupSets(target, unit, makeId) : [];
+      return {
+        id: makeId(),
+        workoutExerciseId: linked ? entry.id : null,
+        exerciseId: entry.exerciseId,
+        exerciseName: entry.exerciseName,
+        measurement: entry.measurement,
+        order: i,
+        target,
+        sets: [...warmups, ...buildPlannedSets(target, makeId)],
+        notes: null,
+      };
+    });
+
+/**
+ * Fill an empty quick workout with a copy of one of the plan's workouts.
+ * It takes the workout's name and exercises but stays outside the plan: no
+ * cycle, no occurrence, and nothing it logs moves the plan's targets.
+ */
+export const fillFromWorkout = (session: Session, workout: Workout, targetFor: (entry: WorkoutExercise) => SetTarget | null, history: Session[], unit: WeightUnit, makeId: () => Id): Session => ({
+  ...session,
+  workoutName: workout.name,
+  exercises: buildWorkoutExercises(workout, targetFor, history, session, unit, makeId, false),
+});
 
 /** Take an exercise back out of the session, e.g. one added by mistake. The last exercise stays. */
 export const removeExerciseFrom = (session: Session, sessionExerciseId: Id): Session =>

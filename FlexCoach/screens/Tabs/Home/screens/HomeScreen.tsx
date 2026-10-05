@@ -140,7 +140,7 @@ export const HomeScreen = () => {
   const quickWorkout = () => {
     if (!uid) return;
     startQuickSession(uid)
-      .then(session => (navigation as any).navigate('WorkoutStack', { screen: 'SessionScreen', params: { plan: null, cycle: null, session }, initial: false }))
+      .then(session => (navigation as any).navigate('WorkoutStack', { screen: 'SessionScreen', params: { plan: null, cycle: null, session, activePlan: home.plan ? { plan: home.plan, cycle: home.cycle } : undefined }, initial: false }))
       .catch(err => console.warn('quick workout failed', err));
   };
   const todayStatus = !home.plan

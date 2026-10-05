@@ -42,7 +42,7 @@ export const sessionRepository = {
 
   /** Persist the whole exercise list, e.g. after one exercise was swapped for another. */
   saveExercises: async (uid: Id, session: Session): Promise<Session> => {
-    await patchDoc<Session>(paths.session(uid, session.id), { exercises: session.exercises, updatedAt: Date.now() });
+    await patchDoc<Session>(paths.session(uid, session.id), { exercises: session.exercises, workoutName: session.workoutName, updatedAt: Date.now() });
     return touch(session);
   },
 

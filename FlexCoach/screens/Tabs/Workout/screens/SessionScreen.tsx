@@ -9,9 +9,9 @@ import { LoggedSet, Session, SessionExercise } from '../../../../data/models';
 import { findWorkout } from '../../../../data/engine/schedule';
 import { newId } from '../../../../data/engine/ids';
 import { getCatalogExercise } from '../../../../data/catalog/exerciseCatalog';
-import { abandonSession, addExerciseTo, addSetTo, addWarmupSetTo, finishSession, isQuickSession, logSet, removeExerciseFrom, removeSetFrom, saveExercises, saveSets, substituteExercise } from '../../../../data/services/workoutService';
+import { abandonSession, addExerciseTo, addSetTo, addWarmupSetTo, copyWorkoutIntoQuickSession, finishSession, isQuickSession, logSet, removeExerciseFrom, removeSetFrom, saveExercises, saveSets, substituteExercise } from '../../../../data/services/workoutService';
 import { sessionRepository } from '../../../../data/repositories/sessionRepository';
-import { subscribeAdd, subscribeSwap } from '../components/swapChannel';
+import { subscribeAdd, subscribeCopyWorkout, subscribeSwap } from '../components/swapChannel';
 import { publishSession, subscribeSessionCommands } from '../components/sessionChannel';
 import { warmupRestSec } from '../../../../data/engine/progression';
 import { planRestOverNotification, planTimerDoneNotification, withPrefDefaults } from '../../../../data/engine/notifications';
@@ -37,7 +37,7 @@ import { fromDraft, toDraft, Units, unitLabels } from '../components/setDrafts';
 export const SessionScreen = () => {
   const navigation = useNavigation<NativeStackNavigationProp<WorkoutStackParams>>();
   const { params } = useRoute<RouteProp<WorkoutStackParams, 'SessionScreen'>>();
-  const { plan, cycle } = params;
+  const { plan, cycle, activePlan } = params;
   const { colors, spacing, radius } = useTheme();
   const tabBarInset = useTabBarInset();
   const { uid, profile } = useAuth();
@@ -248,7 +248,39 @@ export const SessionScreen = () => {
   // session from the channel and sends back jumps and removals.
   useEffect(() => publishSession(session), [session]);
   const openList = () => navigation.navigate('SessionExercisesScreen', { workoutName: session.workoutName, currentIndex: index });
-  const addExercise = () => navigation.navigate('ExercisePickerScreen', { mode: 'session', excludeIds: sessionRef.current.exercises.map(e => e.exerciseId) });
+  // An empty quick workout can also start as a copy of one of the plan's
+  // workouts, from a link at the top of the picker: same exercises and
+  // targets, but outside the plan. The link only shows while it is empty.
+  const planWorkouts = activePlan ? [...activePlan.plan.workouts].sort((a, b) => a.order - b.order).filter(w => w.exercises.length > 0) : [];
+  const addExercise = () =>
+    navigation.navigate('ExercisePickerScreen', {
+      mode: 'session',
+      excludeIds: sessionRef.current.exercises.map(e => e.exerciseId),
+      planWorkouts: sessionRef.current.exercises.length === 0 && planWorkouts.length > 0 ? planWorkouts : undefined,
+    });
+  const copyingRef = useRef(false);
+  const copyWorkout = async (workoutId: string) => {
+    if (!uid || !activePlan || copyingRef.current) return;
+    copyingRef.current = true;
+    try {
+      const next = await copyWorkoutIntoQuickSession(uid, sessionRef.current, activePlan.plan, activePlan.cycle, workoutId, units.weight);
+      setSession(next);
+      setDrafts(() => {
+        const out: Record<string, SetDraft> = {};
+        for (const ex of next.exercises) for (const s of ex.sets) out[s.id] = toDraft(ex, s, units);
+        return out;
+      });
+      setIndex(0);
+    } catch (err) {
+      console.warn('copy workout failed', err);
+      Alert.alert('Could not copy that workout', 'Give it another try.');
+    } finally {
+      copyingRef.current = false;
+    }
+  };
+  const copyWorkoutRef = useRef(copyWorkout);
+  copyWorkoutRef.current = copyWorkout;
+  useEffect(() => subscribeCopyWorkout(id => { copyWorkoutRef.current(id).catch(() => undefined); }), []);
   // A quick workout starts empty: the first thing to do is pick something, so the picker opens itself once.
   const pickerOpened = useRef(false);
   useEffect(() => {

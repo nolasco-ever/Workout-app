@@ -94,7 +94,7 @@ export const WorkoutHomeScreen = () => {
     run('quick', async () => {
       if (!uid) return;
       const session = await startQuickSession(uid);
-      navigation.navigate('SessionScreen', { plan: null, cycle: null, session });
+      navigation.navigate('SessionScreen', { plan: null, cycle: null, session, activePlan: plan ? { plan, cycle } : undefined });
     });
   const quickButton = <PrimaryButton label="Quick workout" variant="outline" icon={generalIcons.zap} busy={busy === 'quick'} onPress={startQuick} />;
 
