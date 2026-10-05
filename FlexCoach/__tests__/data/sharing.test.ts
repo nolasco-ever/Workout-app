@@ -1,5 +1,5 @@
 import { Session } from '../../data/models';
-import { defaultSharingPrefs, recordSeries, sharedDetail, sharedExercisesOf, withSharingDefaults } from '../../data/engine/sharing';
+import { defaultSharingPrefs, finishedWorkoutNotice, recordSeries, sharedDetail, sharedExercisesOf, withSharingDefaults } from '../../data/engine/sharing';
 
 const set = (n: number, weightKg: number | null, reps: number | null, completed = true, warmup = false) => ({
   id: `s${n}`, setNumber: n, weightKg, reps, durationSec: null, distanceM: null, completed, completedAt: completed ? 1 : null, warmup,
@@ -69,5 +69,24 @@ describe('sharing', () => {
     ]);
     expect(recordSeries([session, earlier], 'bench', 'weight', 1)).toEqual([{ date: '2026-10-01', value: 65 }]);
     expect(recordSeries([session], 'nope', 'weight')).toEqual([]);
+  });
+});
+
+describe('finishedWorkoutNotice', () => {
+  it('names a planned workout as before', () => {
+    expect(finishedWorkoutNotice('Eli', { ...session, planId: 'p', cycleId: 'c' }, defaultSharingPrefs, 0)).toEqual({ title: 'Eli finished Upper', body: 'Tap to see how it went.' });
+    expect(finishedWorkoutNotice('Eli', { ...session, planId: 'p', cycleId: 'c' }, defaultSharingPrefs, 3).body).toBe('3 new records');
+  });
+
+  it('says what an ad-hoc quick workout was', () => {
+    const quick: Session = { ...session, workoutName: 'Quick workout' };
+    expect(finishedWorkoutNotice('Eli', quick, defaultSharingPrefs, 1)).toEqual({ title: 'Eli got a quick workout in', body: 'Bench Press, Row · 1 new record' });
+    const more: Session = { ...quick, exercises: [...quick.exercises, { ...quick.exercises[0], id: 'e4', exerciseId: 'x', exerciseName: 'Curl', order: 4 }, { ...quick.exercises[0], id: 'e5', exerciseId: 'y', exerciseName: 'Shrug', order: 5 }] };
+    expect(finishedWorkoutNotice('Eli', more, defaultSharingPrefs, 0).body).toBe('Bench Press, Row + 2 more');
+    expect(finishedWorkoutNotice('Eli', { ...quick, exercises: [] }, defaultSharingPrefs, 0).body).toBe('Tap to see how it went.');
+  });
+
+  it('keeps the plan name for a quick workout copied from the plan', () => {
+    expect(finishedWorkoutNotice('Eli', { ...session, workoutName: 'Upper' }, defaultSharingPrefs, 0).title).toBe('Eli finished Upper');
   });
 });

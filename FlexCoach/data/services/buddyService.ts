@@ -4,7 +4,7 @@ import { newId } from '../engine/ids';
 import { today } from '../engine/dates';
 import { buildPublicProfile, formatInviteCode, generateInviteCode, inviteUrl, isStreakMilestone } from '../engine/buddies';
 import { summarizeCycle } from '../engine/stats';
-import { recordSeries, sharedDetail, sharedExercisesOf, withSharingDefaults } from '../engine/sharing';
+import { finishedWorkoutNotice, recordSeries, sharedDetail, sharedExercisesOf, withSharingDefaults } from '../engine/sharing';
 import { formatRecordValue, formatWeight } from '../engine/units';
 import { buddyRepository } from '../repositories/buddyRepository';
 import { userRepository } from '../repositories/userRepository';
@@ -187,8 +187,8 @@ export const afterSessionFinished = async (uid: Id, profile: UserProfile | null,
   }
   if (sharing.workouts) {
     // Short on purpose: the sets and volume are on the line it opens.
-    const recordNote = shared.length === 0 ? 'Tap to see how it went.' : shared.length === 1 ? '1 new record' : `${shared.length} new records`;
-    await notifyBuddies(uid, session.id, 'buddy_workout', `${name} finished ${session.workoutName}`, recordNote, { screen: 'buddy_workout', uid, activityId, displayName });
+    const { title, body } = finishedWorkoutNotice(name, session, sharing, shared.length);
+    await notifyBuddies(uid, session.id, 'buddy_workout', title, body, { screen: 'buddy_workout', uid, activityId, displayName });
   }
   if (isStreakMilestone(card.currentStreakDays)) {
     await recordActivity(uid, `streak:${card.currentStreakDays}:${session.date}`, 'streak', `${card.currentStreakDays}-day streak`, 'Every day counts.');

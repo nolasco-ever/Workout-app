@@ -82,6 +82,25 @@ export const sharedExercisesOf = (session: Session, prefs: SharingPrefs): Shared
     });
 };
 
+/** The name an ad-hoc quick workout starts with; one copied from a plan takes that workout's name. */
+const QUICK_WORKOUT_NAME = 'Quick workout';
+
+/**
+ * The push buddies get when someone finishes a workout. A planned workout
+ * reads "Eli finished Upper". An ad-hoc quick workout has no name worth
+ * saying, so it reads "Eli got a quick workout in" and the body says what
+ * it was: the first exercises, then the records.
+ */
+export const finishedWorkoutNotice = (firstName: string, session: Session, prefs: SharingPrefs, recordCount: number): { title: string; body: string } => {
+  const records = recordCount === 0 ? null : recordCount === 1 ? '1 new record' : `${recordCount} new records`;
+  const quick = session.planId === null && session.cycleId === null && session.workoutName === QUICK_WORKOUT_NAME;
+  if (!quick) return { title: `${firstName} finished ${session.workoutName}`, body: records ?? 'Tap to see how it went.' };
+  const names = (sharedExercisesOf(session, prefs) ?? []).map(ex => ex.name);
+  const what = names.length === 0 ? null : names.slice(0, 2).join(', ') + (names.length > 2 ? ` + ${names.length - 2} more` : '');
+  const parts = [what, records].filter((p): p is string => p !== null);
+  return { title: `${firstName} got a quick workout in`, body: parts.length ? parts.join(' · ') : 'Tap to see how it went.' };
+};
+
 /** How many sessions of history a record line carries. */
 export const RECORD_HISTORY_MAX = 60;
 
