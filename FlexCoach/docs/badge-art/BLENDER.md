@@ -41,11 +41,38 @@ pick another from the dropdown to try a tier.
 - **Save:** Cmd-S saves over the file. Blender also keeps `badges.blend1`
   as the previous version next to it.
 
+## Changing the convex (the bow)
+
+The bow is not baked into the geometry in this file. Each pin has a cage
+object, `medallion__bow`, `hex__bow`, `shield__bow` (a Lattice, 7 x 7 x 2
+points), and every part of the pin follows the cage through a Lattice
+modifier. The cage is already lifted in the middle to the current bow.
+
+To change it:
+
+1. Click `hex__bow` in the outliner (or the pin's cage of your choice).
+   It shows as a grid of points over the pin.
+2. Tab for Edit Mode. The points light up.
+3. Select the ones to move: click one, shift-click more, or B then drag a
+   box, or A for all. The centre points make the dome; the ring of points
+   around them shapes the slope; the outermost ring is the edge and should
+   stay put.
+4. G, then Z, then drag up or down (or type a number, e.g. `0.1`, Enter).
+   The pin bends live as you move.
+5. Tab to leave Edit Mode. F12 to render.
+
+Tip: with all points selected, turn on Proportional Editing (the O key)
+and grab only the very centre point up; the falloff makes a smooth dome
+for you. Scroll while dragging to widen or narrow the falloff.
+
+The cage is not rendered and not exported. When you export glTF, tick
+**Apply Modifiers** so the bend is baked into the mesh.
+
 ## Units and proportions
 
 The badge is 1 unit wide. Everything here is relative to that: the plate
 is 0.028 thick, the border 0.10 wide, the lines stand 0.0025 above the
-enamel, the stones are 0.022 in radius, the bow is 0.15 at the centre.
+enamel, the stones are 0.022 in radius, the bow is 0.15 at the centre (set by the cage).
 
 ## Getting changes back into the app
 

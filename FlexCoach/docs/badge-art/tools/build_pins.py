@@ -17,6 +17,7 @@ ART, OUT = argv[0], argv[1]
 RENDER = len(argv) > 2 and argv[2] == 'render'
 ENV_MAP = argv[3] if len(argv) > 3 else None
 TURNTABLE = len(argv) > 4 and argv[4] == 'turntable'
+BLEND = len(argv) > 2 and argv[2] == 'blend'
 os.makedirs(OUT, exist_ok=True)
 
 SHAPES = ['medallion', 'hex', 'shield']
@@ -30,7 +31,8 @@ BORDER_IN = 0.90     # inner edge of the metal border, as a scale of the outline
 WALL_H = 0.007       # border and mark lines stand this far above the plate
 WALL_BEVEL = 0.0035
 ENAMEL_T = 0.0045    # enamel sits this far above the plate; the lines stand only a hair above it
-BOW = 0.15           # the whole plate bows up by this much at the centre
+BOW_TARGET = 0.15    # the whole plate bows up by this much at the centre
+BOW = 0.0 if BLEND else BOW_TARGET   # the .blend keeps the geometry flat and bows it with a lattice you can edit
 STONE_R = 0.022
 STONES_PER_SHAPE = {'medallion': 16, 'hex': 12, 'shield': 14}
 
@@ -323,6 +325,24 @@ if len(argv) > 2 and argv[2] == 'blend':
                 o.location.x = x
                 o.hide_viewport = o.hide_render   # hidden marks stay hidden; the eye icon in the outliner shows them
                 o.hide_set(o.hide_render)
+    # The bow, as a lattice per pin: a 7 x 7 x 2 cage whose points are lifted by the bow curve.
+    # Every part of the pin follows the cage, so editing the cage edits the bow.
+    for shape, (x, tier, family, enamel_key) in layout.items():
+        lat_data = bpy.data.lattices.new(f'{shape}_bow')
+        lat_data.points_u = lat_data.points_v = 7; lat_data.points_w = 2
+        lat_data.interpolation_type_u = lat_data.interpolation_type_v = lat_data.interpolation_type_w = 'KEY_BSPLINE'
+        lat = bpy.data.objects.new(f'{shape}__bow', lat_data)
+        bpy.data.collections[shape].objects.link(lat)
+        size = (1.3, 1.3, 0.5)
+        lat.location = (x, 0, 0.1); lat.scale = size
+        for pt in lat_data.points:
+            px, py = pt.co_deform.x * size[0], pt.co_deform.y * size[1]
+            d2 = (px * px + py * py) / 0.25
+            pt.co_deform.z += BOW_TARGET * (1.0 - min(1.0, d2)) / size[2]
+        for o in bpy.data.objects:
+            if o.name.startswith(f'{shape}__') and o.type == 'MESH':
+                mod = o.modifiers.new('bow', 'LATTICE'); mod.object = lat
+        lat.hide_render = True
     aim(cam, (0.0, -3.4, 2.6), target=(0, 0, 0.05))
     bpy.context.scene.render.resolution_x = 1600; bpy.context.scene.render.resolution_y = 720
     # A ground to see the bow and shadows against.
