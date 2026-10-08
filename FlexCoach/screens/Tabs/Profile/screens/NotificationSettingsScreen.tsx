@@ -18,6 +18,7 @@ import { ChoiceChips } from '../../../../components/inputs/ChoiceChips';
 import { Icon } from '../../../../components/icons/Icon';
 import { generalIcons } from '../../../../components/icons/icon-library';
 import { useTheme } from '../../../../theme';
+import { features } from '../../../../config/features';
 import { useTabScrollInset } from '../../../../navigation/useTabBarInset';
 
 const formatTime = ({ hour, minute }: ClockTime): string => {
@@ -174,7 +175,9 @@ export const NotificationSettingsScreen = () => {
             <SwitchRow title="Plan starts tomorrow" description="The evening before a new plan begins." value={prefs.planStarts} onChange={planStarts => save({ planStarts })} disabled={off} divider />
             <SwitchRow title="Cycle finished" description="A summary when a cycle wraps up." value={prefs.cycleFinished} onChange={cycleFinished => save({ cycleFinished })} disabled={off} divider />
             <SwitchRow title="Buddy activity" description="Requests, and when a buddy finishes or skips a workout." value={prefs.buddies} onChange={buddies => save({ buddies })} disabled={off} divider />
-            <SwitchRow title="Buddy badges" description="When a buddy unlocks or upgrades a badge." value={prefs.buddyAchievements} onChange={buddyAchievements => save({ buddyAchievements })} disabled={off || !prefs.buddies} divider />
+            {features.achievements && (
+              <SwitchRow title="Buddy badges" description="When a buddy unlocks or upgrades a badge." value={prefs.buddyAchievements} onChange={buddyAchievements => save({ buddyAchievements })} disabled={off || !prefs.buddies} divider />
+            )}
           </SurfaceCard>
         </View>
 

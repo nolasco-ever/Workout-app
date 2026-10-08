@@ -15,4 +15,11 @@ export const features = {
    * the picker is hidden until the character set gets its own design pass.
    */
   avatars: false,
+  /**
+   * Badges (achievements). Built, but the artwork is still being designed,
+   * so the grid, the celebration, the judging and the Iron Card row stay
+   * off. The Cloud Functions have their own switch: `config/features`
+   * in Firestore, field `achievements`. Flip both together.
+   */
+  achievements: false,
 };

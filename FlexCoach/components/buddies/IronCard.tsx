@@ -10,6 +10,7 @@ import { generalIcons } from '../icons/icon-library';
 import { useTheme } from '../../theme';
 import { Avatar } from './Avatar';
 import { Badge } from '../achievements/Badge';
+import { features } from '../../config/features';
 import { ACHIEVEMENT_FAMILIES, parseAchievementId } from '../../data/engine/achievements';
 
 /** Big numbers read better rounded: 43,210 → "43k". */
@@ -76,7 +77,7 @@ export const IronCard = ({ card, unit, distanceUnit = 'mi', footer }: { card: Pu
       {card.lastCycleCompletionRate !== null && (
         <CustomText variant="caption" color={colors.inkMuted}>Last cycle: {Math.round(card.lastCycleCompletionRate * 100)}% of workouts done</CustomText>
       )}
-      {badges.length > 0 && (
+      {features.achievements && badges.length > 0 && (
         <View style={{ gap: spacing.sm }}>
           <CustomText variant="overline" color={colors.inkMuted}>Badges</CustomText>
           <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm }}>

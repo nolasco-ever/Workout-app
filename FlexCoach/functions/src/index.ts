@@ -97,9 +97,16 @@ const tierLabel = (family: ServerFamily, threshold: number): string =>
   family === 'buddies' ? plural(threshold, 'buddy', 'buddies') : `${plural(threshold, 'buddy', 'buddies')} on your plans`;
 const firstName = (name: unknown): string => (typeof name === 'string' && name.trim() ? name.trim().split(/\s+/)[0] : 'Your buddy');
 
+/** Badges ship behind a switch: `config/features.achievements` in Firestore, flipped with the app's own flag. */
+const achievementsOn = async (): Promise<boolean> => (await db.doc('config/features').get()).get('achievements') === true;
+
 const awardServerBadges = async (uid: string, family: ServerFamily, value: number): Promise<void> => {
   const reached = tiersReached(family, value);
   if (reached.length === 0) return;
+  if (!(await achievementsOn())) {
+    logger.info('badges off, skipping', { uid, family, value });
+    return;
+  }
   const profile = await db.doc(`users/${uid}`).get();
   if (!profile.exists) return;
   const displayName = (profile.get('displayName') as string | null) ?? null;
