@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+  <!-- hex: outer outline is the rim, inner outline is the face. Platinum, ruby, sapphire, emerald. Mark scaled to 0.95. -->
+  <path id="rim" d="M50 3 L91 26.5 V73.5 L50 97 L9 73.5 V26.5 Z" fill="none" stroke="#000" stroke-width="1"/>
+  <path id="face" d="M50 13 L82 31.5 V68.5 L50 87 L18 68.5 V31.5 Z" fill="none" stroke="#000" stroke-width="1"/>
+</svg>

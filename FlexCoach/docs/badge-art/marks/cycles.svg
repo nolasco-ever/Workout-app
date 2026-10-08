@@ -1,0 +1,4 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+  <!-- cycles: line mark, stroke 3, kept inside 27..73. Engrave this into the badge face. -->
+  <g fill="none" stroke="#000" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M32 45 A19 19 0 0 1 65 38"/><path d="M65 29 V38 H56"/><path d="M68 55 A19 19 0 0 1 35 62"/><path d="M35 71 V62 H44"/></g>
+</svg>

@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+  <!-- medallion: outer outline is the rim, inner outline is the face. Bronze, silver, gold. Rim 4..13 is the bevel; face inside r=37. Tiny ridges around the rim at r=42. -->
+  <path id="rim" d="M50 4 A46 46 0 1 1 49.99 4 Z" fill="none" stroke="#000" stroke-width="1"/>
+  <path id="face" d="M50 13 A37 37 0 1 1 49.99 13 Z" fill="none" stroke="#000" stroke-width="1"/>
+</svg>

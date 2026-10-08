@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+  <!-- shield: outer outline is the rim, inner outline is the face. Diamond only. Mark scaled to 0.86 and raised 3 units so it clears the point. -->
+  <path id="rim" d="M50 3 L90 16 V50 C90 73 72 90 50 97 C28 90 10 73 10 50 V16 Z" fill="none" stroke="#000" stroke-width="1"/>
+  <path id="face" d="M50 12 L82 22.5 V50 C82 68 68 82 50 88 C32 82 18 68 18 50 V22.5 Z" fill="none" stroke="#000" stroke-width="1"/>
+</svg>
