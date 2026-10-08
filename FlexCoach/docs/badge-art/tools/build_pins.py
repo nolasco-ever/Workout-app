@@ -26,12 +26,12 @@ MARK_FIT = {'medallion': (1.0, 0.0), 'hex': (1.0, 0.0), 'shield': (0.9, 0.03)}
 # Proportions, in badge units (badge width = 1)
 PLATE_T = 0.028      # the metal plate
 PLATE_BEVEL = 0.006
-BORDER_IN = 0.93     # inner edge of the metal border, as a scale of the outline
-WALL_H = 0.009       # border and mark lines stand this far above the plate
+BORDER_IN = 0.90     # inner edge of the metal border, as a scale of the outline
+WALL_H = 0.007       # border and mark lines stand this far above the plate
 WALL_BEVEL = 0.0035
-ENAMEL_T = 0.003     # enamel sits this far above the plate
-BOW = 0.07           # the whole plate bows up by this much at the centre
-STONE_R = 0.024
+ENAMEL_T = 0.0045    # enamel sits this far above the plate; the lines stand only a hair above it
+BOW = 0.15           # the whole plate bows up by this much at the centre
+STONE_R = 0.022
 STONES_PER_SHAPE = {'medallion': 16, 'hex': 12, 'shield': 14}
 
 def hexrgb(h):
@@ -49,8 +49,8 @@ TIER_NAMES = ['bronze', 'silver', 'gold', 'platinum', 'ruby', 'sapphire', 'emera
 STONES = {'ruby': '#E0163F', 'sapphire': '#2458E6', 'emerald': '#17A85C', 'diamond': '#E6F6FF'}
 # Enamel fills to compare: one graphite for all, the brand orange, or a colour per family.
 ENAMEL = {
-    'graphite': '#1C1C21',
-    'orange': '#E2602A',
+    'black': '#0A0A0C',
+    'orange': '#A83A12',
 }
 FAMILY_ENAMEL = {
     'workouts': '#E2602A', 'streak': '#D7262A', 'volume': '#2F5C9E', 'records': '#D99400', 'cycles': '#15877A',
@@ -67,6 +67,8 @@ def make_material(name, color, metallic, roughness, coat=0.0):
     if coat:
         b.inputs['Coat Weight'].default_value = coat
         b.inputs['Coat Roughness'].default_value = 0.08
+    if metallic == 0.0:
+        b.inputs['Specular IOR Level'].default_value = 0.35
     return m
 
 # ---------------------------------------------------------------- curves
@@ -166,7 +168,7 @@ def build(shape):
     stones = []
     for p in pts:
         sx, sy = p.x * (1 + BORDER_IN) / 2, p.y * (1 + BORDER_IN) / 2
-        bpy.ops.mesh.primitive_uv_sphere_add(radius=STONE_R, segments=20, ring_count=10, location=(sx, sy, PLATE_T + WALL_H - STONE_R * 0.35))
+        bpy.ops.mesh.primitive_uv_sphere_add(radius=STONE_R, segments=20, ring_count=10, location=(sx, sy, PLATE_T + WALL_H - STONE_R * 0.6))
         o = bpy.context.view_layer.objects.active; bpy.ops.object.shade_smooth(); stones.append(o)
     bpy.ops.object.select_all(action='DESELECT')
     for o in stones: o.select_set(True)
@@ -212,21 +214,21 @@ def export_glb(objs, path):
 def setup_render(size=480):
     scene = bpy.context.scene
     scene.render.engine = 'CYCLES'; scene.cycles.samples = 64; scene.cycles.use_denoising = True; scene.cycles.device = 'CPU'
-    scene.view_settings.view_transform = 'Standard'; scene.view_settings.look = 'None'
+    scene.view_settings.view_transform = 'AgX'; scene.view_settings.look = 'AgX - Punchy'
     scene.render.resolution_x = size; scene.render.resolution_y = size
     scene.render.film_transparent = True
     world = bpy.data.worlds.new('studio'); scene.world = world; world.use_nodes = True
     nt = world.node_tree; bg = nt.nodes['Background']
     if ENV_MAP and os.path.exists(ENV_MAP):
         env = nt.nodes.new('ShaderNodeTexEnvironment'); env.image = bpy.data.images.load(ENV_MAP)
-        nt.links.new(env.outputs['Color'], bg.inputs['Color']); bg.inputs['Strength'].default_value = 0.45
+        nt.links.new(env.outputs['Color'], bg.inputs['Color']); bg.inputs['Strength'].default_value = 0.35
     else:
         bg.inputs['Color'].default_value = (0.1, 0.1, 0.11, 1)
     def light(name, loc, energy, size, color=(1, 1, 1)):
         d = bpy.data.lights.new(name, 'AREA'); d.energy = energy; d.size = size; d.color = color
         o = bpy.data.objects.new(name, d); bpy.context.collection.objects.link(o); o.location = loc
         o.rotation_euler = (Vector(loc) * -1).to_track_quat('-Z', 'Y').to_euler()
-    light('key', (-1.0, -1.4, 2.4), 120, 2.0, (1.0, 0.97, 0.92))
+    light('key', (-1.0, -1.4, 2.4), 90, 2.0, (1.0, 0.97, 0.92))
     light('rim', (1.5, 1.0, 1.4), 50, 1.2, (0.9, 0.94, 1.0))
     light('fill', (1.4, -1.4, 0.8), 25, 2.0)
     cam_data = bpy.data.cameras.new('cam'); cam_data.lens = 55
@@ -243,13 +245,13 @@ def render_to(path):
 bpy.ops.wm.read_factory_settings(use_empty=True)
 metal_mats = {k: make_material(k, v['color'], v['metallic'], v['roughness']) for k, v in METALS.items()}
 stone_mats = {k: make_material(f'stone_{k}', v, 0.0, 0.15, coat=1.0) for k, v in STONES.items()}
-enamel_mats = {k: make_material(f'enamel_{k}', v, 0.0, 0.3, coat=0.35) for k, v in ENAMEL.items()}
-family_enamel = {k: make_material(f'enamel_{k}', v, 0.0, 0.3, coat=0.35) for k, v in FAMILY_ENAMEL.items()}
+enamel_mats = {k: make_material(f'enamel_{k}', v, 0.0, 0.5, coat=0.1) for k, v in ENAMEL.items()}
+family_enamel = {k: make_material(f'enamel_{k}', v, 0.0, 0.42, coat=0.12) for k, v in FAMILY_ENAMEL.items()}
 
 built = {}
 for shape in SHAPES:
     plate, border, enamel, stones, marks = build(shape)
-    set_material(plate, metal_mats['bronze']); set_material(border, metal_mats['bronze']); set_material(enamel, enamel_mats['graphite']); set_material(stones, stone_mats['ruby'])
+    set_material(plate, metal_mats['bronze']); set_material(border, metal_mats['bronze']); set_material(enamel, enamel_mats['black']); set_material(stones, stone_mats['ruby'])
     for m in marks: set_material(m, metal_mats['bronze'])
     export_glb([plate, border, enamel, stones] + marks, os.path.join(OUT, f'{shape}.glb'))
     for o in [plate, border, enamel, stones] + marks:
@@ -275,17 +277,17 @@ if RENDER:
     cam = setup_render()
     front, low = (0.0, -1.35, 1.1), (0.9, -1.1, 0.35)
     shots = [
-        (1, 'workouts', 'graphite', front), (2, 'streak', 'graphite', front), (3, 'records', 'graphite', front), (4, 'cycles', 'graphite', front),
-        (5, 'volume', 'graphite', front), (6, 'night_owl', 'graphite', front), (7, 'early_bird', 'graphite', front), (8, 'perfect_cycles', 'graphite', front),
-        (3, 'records', 'orange', front), (6, 'night_owl', 'orange', front), (3, 'records', 'family', front), (6, 'night_owl', 'family', front),
-        (1, 'buddies', 'graphite', low), (3, 'plan_uses', 'orange', low), (5, 'streak', 'graphite', low), (8, 'workouts', 'family', low),
+        (1, 'workouts', 'black', front), (2, 'streak', 'black', front), (3, 'records', 'black', front), (4, 'cycles', 'black', front),
+        (5, 'volume', 'black', front), (6, 'night_owl', 'black', front), (7, 'early_bird', 'black', front), (8, 'perfect_cycles', 'black', front),
+        (1, 'workouts', 'orange', front), (3, 'records', 'orange', front), (6, 'night_owl', 'orange', front), (8, 'perfect_cycles', 'orange', front),
+        (1, 'buddies', 'black', low), (3, 'plan_uses', 'orange', low), (5, 'streak', 'black', low), (8, 'workouts', 'orange', low),
     ]
     for i, (tier, family, enamel_key, loc) in enumerate(shots):
         dress(shape_of(tier), tier, family, enamel_key)
         aim(cam, tuple(c * 1.45 for c in loc))
         render_to(os.path.join(OUT, f'shot_{i:02d}_{TIER_NAMES[tier - 1]}_{enamel_key}_{family}.png'))
     if TURNTABLE:
-        objs = dress('hex', 6, 'night_owl', 'graphite')
+        objs = dress('hex', 6, 'night_owl', 'black')
         pivot = bpy.data.objects.new('pivot', None); bpy.context.collection.objects.link(pivot)
         for o in objs: o.parent = pivot
         bpy.context.scene.render.resolution_x = bpy.context.scene.render.resolution_y = 420
