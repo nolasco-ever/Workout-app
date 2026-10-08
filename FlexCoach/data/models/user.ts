@@ -35,6 +35,8 @@ export interface UserProfile extends BaseDocument {
   sharing?: Partial<SharingPrefs> | null;
   /** When the one-time "what buddies see" sheet was shown, after the first buddy. */
   sharingPromptSeenAt?: Timestamp | null;
+  /** When badges already earned were granted in one go, on the first launch with achievements. */
+  achievementsBackfilledAt?: Timestamp | null;
 }
 
 /**
@@ -130,7 +132,7 @@ export interface Buddy extends BaseDocument {
   viaCode?: string | null;
 }
 
-export type ActivityKind = 'workout_done' | 'workout_skipped' | 'workout_pushed' | 'streak' | 'record' | 'cycle_done' | 'plan_shared' | 'joined';
+export type ActivityKind = 'workout_done' | 'workout_skipped' | 'workout_pushed' | 'streak' | 'record' | 'cycle_done' | 'plan_shared' | 'joined' | 'achievement';
 
 /**
  * Stored at users/{uid}/activity/{id}: what the owner has been up to, in
@@ -225,15 +227,46 @@ export interface BodyWeightEntry extends BaseDocument {
   externalId?: string | null;
 }
 
-/** Stored at users/{uid}/achievements/{achievementId}. */
+/** The badge families. Each has tiers; see engine/achievements.ts for the ladders. */
+export type AchievementFamilyId = 'workouts' | 'streak' | 'volume' | 'records' | 'cycles' | 'perfect_cycles' | 'early_bird' | 'night_owl' | 'buddies' | 'plan_uses';
+
+/**
+ * Stored at users/{uid}/achievements/{achievementId}, one document per
+ * tier reached; the id is `<family>:<tier>` so re-unlocking is a no-op.
+ * Most families are judged on the device after a workout or a cycle
+ * report; the buddy ones are judged by a Cloud Function so they unlock
+ * while the app is closed. The celebration is shown once, then stamped.
+ */
 export interface AchievementUnlock extends BaseDocument {
   achievementId: Id;
+  family: AchievementFamilyId;
+  /** 1-based tier within the family. */
+  tier: number;
+  /** The number that earned it, in the family's own unit (workouts, days, lb or kg moved...). */
+  threshold: number;
+  /** The value measured when it unlocked. */
+  value: number;
   unlockedAt: Timestamp;
-  /** What triggered it, for the share card. */
+  /** Who judged it: the app, the server, or the one-time catch-up on the first launch with badges. */
+  source: 'device' | 'server' | 'backfill';
+  /** When the owner saw the celebration; null until then. */
+  celebratedAt: Timestamp | null;
+  /** What triggered it. */
   context: {
     sessionId?: Id;
     cycleId?: Id;
     exerciseId?: Id;
     value?: number;
   };
+}
+
+/**
+ * Stored at users/{ownerUid}/planUses/{buddyUid}: a buddy who copied or
+ * synced one of the owner's shared plans. The buddy writes it; it is
+ * never removed, so the count only grows.
+ */
+export interface PlanUse extends BaseDocument {
+  buddyUid: Id;
+  planIds: Id[];
+  firstAt: Timestamp;
 }

@@ -25,6 +25,8 @@ export interface NotificationPrefs {
   eveningTime: ClockTime;
   /** Buddy requests and activity, delivered by push once buddies exist. */
   buddies: boolean;
+  /** A buddy unlocking a badge. */
+  buddyAchievements: boolean;
 }
 
 /** What the app opens when a notification is tapped. */
@@ -43,7 +45,9 @@ export type NotificationTarget =
   /** A plan a buddy shared, to use in sync or copy. */
   | { screen: 'buddy_plan'; ownerUid: Id; planId: Id; ownerName?: string | null }
   /** One of the user's own logged sessions. */
-  | { screen: 'session_detail'; sessionId: Id; workoutName?: string | null };
+  | { screen: 'session_detail'; sessionId: Id; workoutName?: string | null }
+  /** A badge of the user's own: the celebration if it hasn't been seen, else the badge in the grid. */
+  | { screen: 'achievement'; achievementId: Id };
 
 export type FeedNotificationKind =
   | 'missed_workout'

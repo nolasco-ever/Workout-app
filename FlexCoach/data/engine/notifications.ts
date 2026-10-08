@@ -38,6 +38,7 @@ export const defaultNotificationPrefs: NotificationPrefs = {
   morningTime: { hour: 9, minute: 0 },
   eveningTime: { hour: 18, minute: 0 },
   buddies: true,
+  buddyAchievements: true,
 };
 
 /** Older profiles have no prefs, or are missing keys added later. */
