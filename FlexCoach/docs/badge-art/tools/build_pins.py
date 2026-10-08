@@ -297,3 +297,33 @@ if RENDER:
             pivot.rotation_euler = (0, math.radians(360 * i / 36), 0)
             render_to(os.path.join(OUT, f'turn_{i:02d}.png'))
 print('done')
+
+# ---------------------------------------------------------------- hand-editable .blend
+if len(argv) > 2 and argv[2] == 'blend':
+    """Lay the three pins out side by side, dressed, with lights and camera, and save a .blend to edit by hand."""
+    cam = setup_render(900)
+    bpy.context.scene.cycles.samples = 128
+    layout = {'medallion': (-1.3, 1, 'workouts', 'black'), 'hex': (0.0, 6, 'night_owl', 'black'), 'shield': (1.3, 8, 'perfect_cycles', 'orange')}
+    for shape, (x, tier, family, enamel_key) in layout.items():
+        objs = dress(shape, tier, family, enamel_key)
+        col = bpy.data.collections.new(shape)
+        bpy.context.scene.collection.children.link(col)
+        for o in bpy.data.objects:
+            if o.name.startswith(f'{shape}__'):
+                for c in list(o.users_collection): c.objects.unlink(o)
+                col.objects.link(o)
+                o.location.x = x
+                o.hide_viewport = o.hide_render   # hidden marks stay hidden; the eye icon in the outliner shows them
+                o.hide_set(o.hide_render)
+    aim(cam, (0.0, -3.4, 2.6), target=(0, 0, 0.05))
+    bpy.context.scene.render.resolution_x = 1600; bpy.context.scene.render.resolution_y = 720
+    # A ground to see the bow and shadows against.
+    bpy.ops.mesh.primitive_plane_add(size=8, location=(0, 0, -0.001))
+    ground = bpy.context.view_layer.objects.active; ground.name = 'ground'
+    set_material(ground, make_material('ground', '#1B1B1E', 0.0, 0.9))
+    # Spare materials, so every tier is a dropdown pick in the material slot.
+    for m in list(metal_mats.values()) + list(stone_mats.values()) + list(enamel_mats.values()) + list(family_enamel.values()):
+        m.use_fake_user = True
+    path = os.path.join(OUT, 'badges.blend')
+    bpy.ops.wm.save_as_mainfile(filepath=path)
+    print('saved', path)
