@@ -70,9 +70,13 @@ python3 -m venv .venv && .venv/bin/pip install shapely trimesh mapbox_earcut svg
 ## 3D badges (`3d/`), built in Blender
 
 `medallion.glb`, `hex.glb`, `shield.glb`: one `body` mesh (bevelled ring rim
-plus recessed face) and ten `mark_<family>` meshes in relief on the face, in
-badge units (1 wide, Y up, front +Z). Materials in the files are bronze
-placeholders; the app applies the real ones. Built headless by
+plus recessed face), one `stones` mesh (a ring of round stones set into the
+rim, shown only on tiers 5-8) and ten `mark_<family>` meshes in relief on
+the face, in badge units (1 wide, Y up, front +Z). Materials in the files
+are placeholders; the app applies the real ones. Tiers, decided 2026-10-08:
+bronze, silver, gold, platinum, then platinum with ruby, sapphire, emerald
+and diamond stones. Each mark has its own colour (`MARK_COLORS` in the
+script). Built headless by
 `tools/build_badges.py` from `shapes/` and `meshes/`:
 
 ```sh

@@ -37,36 +37,44 @@ MARK_BEVEL = 0.003
 def hexrgb(h):
     h = h.lstrip('#'); return tuple(int(h[i:i + 2], 16) / 255 for i in (0, 2, 4)) + (1.0,)
 
-MATERIALS = {
-    'bronze':   dict(color='#C9843F', metallic=1.0, roughness=0.30, gem=False),
-    'silver':   dict(color='#C7CAD2', metallic=1.0, roughness=0.22, gem=False),
-    'gold':     dict(color='#F0C449', metallic=1.0, roughness=0.24, gem=False),
-    'platinum': dict(color='#DCE4EB', metallic=1.0, roughness=0.18, gem=False),
-    'ruby':     dict(color='#B8203F', metallic=0.0, roughness=0.05, gem=True),
-    'sapphire': dict(color='#2A55C4', metallic=0.0, roughness=0.05, gem=True),
-    'emerald':  dict(color='#1E8F5E', metallic=0.0, roughness=0.05, gem=True),
-    'diamond':  dict(color='#BFE0F7', metallic=0.0, roughness=0.02, gem=True),
+# Stylised, not photoreal: broad soft highlights (higher roughness), a little less metallic, saturated colour.
+BODY_MATERIALS = {
+    'bronze':   dict(color='#C9762E', metallic=0.9, roughness=0.32),
+    'silver':   dict(color='#B9C0CA', metallic=0.9, roughness=0.28),
+    'gold':     dict(color='#F0B21A', metallic=0.9, roughness=0.28),
+    'platinum': dict(color='#D9E1EA', metallic=0.9, roughness=0.26),
 }
-MARK_TONE = {  # the relief, a darker tone of the material
-    'bronze': '#5E3512', 'silver': '#5B5F69', 'gold': '#7A540F', 'platinum': '#62737F',
-    'ruby': '#7E0B24', 'sapphire': '#143693', 'emerald': '#0C633F', 'diamond': '#4A86B3',
+# Tier -> body material and the stones on the rim (None below tier 5).
+TIERS = [
+    ('bronze', None), ('silver', None), ('gold', None), ('platinum', None),
+    ('platinum', 'ruby'), ('platinum', 'sapphire'), ('platinum', 'emerald'), ('platinum', 'diamond'),
+]
+TIER_NAMES = ['bronze', 'silver', 'gold', 'platinum', 'ruby', 'sapphire', 'emerald', 'diamond']
+# Candy stones: bright, glossy, opaque.
+STONES = {
+    'ruby': '#D8143F', 'sapphire': '#1F56E0', 'emerald': '#12A35A', 'diamond': '#DDF3FF',
 }
+# One colour per family for the mark, so every badge reads at a glance.
+MARK_COLORS = {
+    'workouts': '#E8532B', 'streak': '#D7262A', 'volume': '#2F5C9E', 'records': '#D99400', 'cycles': '#15877A',
+    'perfect_cycles': '#7E3FC9', 'early_bird': '#E9A800', 'night_owl': '#2E3FA8', 'buddies': '#D6388F', 'plan_uses': '#1E8BE0',
+}
+STONES_PER_SHAPE = {'medallion': 16, 'hex': 12, 'shield': 14}
+STONE_R = 0.034
 
 def clear_scene():
     bpy.ops.wm.read_factory_settings(use_empty=True)
 
-def make_material(name, color, metallic, roughness, gem):
+def make_material(name, color, metallic, roughness, coat=0.0):
     m = bpy.data.materials.new(name)
     m.use_nodes = True
     bsdf = m.node_tree.nodes['Principled BSDF']
     bsdf.inputs['Base Color'].default_value = hexrgb(color)
     bsdf.inputs['Metallic'].default_value = metallic
     bsdf.inputs['Roughness'].default_value = roughness
-    if gem:
-        bsdf.inputs['Transmission Weight'].default_value = 0.65
-        bsdf.inputs['IOR'].default_value = 1.75
-        bsdf.inputs['Coat Weight'].default_value = 0.6
-        bsdf.inputs['Coat Roughness'].default_value = 0.03
+    if coat:
+        bsdf.inputs['Coat Weight'].default_value = coat
+        bsdf.inputs['Coat Roughness'].default_value = 0.05
     return m
 
 def import_shape_curves(shape):
@@ -150,10 +158,50 @@ def ring_from(rim, face):
         new.use_cyclic_u = True
     return ring
 
+def outline_points(curve, n):
+    """n points evenly spaced by arc length along a closed bezier outline."""
+    from mathutils.geometry import interpolate_bezier
+    verts = []
+    for sp in curve.data.splines:
+        bp = sp.bezier_points
+        for i in range(len(bp)):
+            p0, p1 = bp[i], bp[(i + 1) % len(bp)]
+            verts.extend(interpolate_bezier(p0.co, p0.handle_right, p1.handle_left, p1.co, 24)[:-1])
+    pts = [Vector(v) for v in verts] + [Vector(verts[0])]
+    seg = [(pts[i + 1] - pts[i]).length for i in range(len(pts) - 1)]
+    total = sum(seg)
+    out, acc, i = [], 0.0, 0
+    for k in range(n):
+        target = total * k / n
+        while i < len(seg) - 1 and acc + seg[i] < target:
+            acc += seg[i]; i += 1
+        t = (target - acc) / seg[i] if seg[i] else 0
+        out.append(pts[i].lerp(pts[i + 1], t))
+    return out
+
+def build_stones(rim_outline, shape):
+    """A ring of round stones set into the rim band, as one mesh named `stones`."""
+    n = STONES_PER_SHAPE[shape]
+    pts = outline_points(rim_outline, n)
+    stones = []
+    for p in pts:
+        bpy.ops.mesh.primitive_uv_sphere_add(radius=STONE_R, segments=24, ring_count=12, location=(p.x * 0.895, p.y * 0.895, RIM_H - STONE_R * 0.25))
+        o = bpy.context.view_layer.objects.active
+        bpy.ops.object.shade_smooth()
+        stones.append(o)
+    bpy.ops.object.select_all(action='DESELECT')
+    for o in stones: o.select_set(True)
+    bpy.context.view_layer.objects.active = stones[0]
+    bpy.ops.object.join()
+    ring = bpy.context.view_layer.objects.active
+    ring.name = 'stones'
+    return ring
+
 def build_body(shape):
     rim_outline, face = import_shape_curves(shape)
     normalise_svg_import([rim_outline, face])
     rim = ring_from(rim_outline, face)
+    stones = build_stones(rim_outline, shape)
     bpy.data.objects.remove(rim_outline, do_unlink=True)
     print('DBG after normalise rim dims', tuple(round(d,4) for d in rim.dimensions), 'face', tuple(round(d,4) for d in face.dimensions))
     rim_solid = curve_to_solid(rim, RIM_H, RIM_BEVEL, 'rim')
@@ -169,7 +217,7 @@ def build_body(shape):
     body.name = 'body'
     bpy.ops.object.shade_smooth()
     print(f'BODY {shape} dims', tuple(round(d, 3) for d in body.dimensions))
-    return body
+    return body, stones
 
 def import_mark(family, shape):
     before = set(bpy.data.objects)
@@ -222,6 +270,8 @@ def setup_render(size=480):
     scene.cycles.samples = 64
     scene.cycles.use_denoising = True
     scene.cycles.device = 'CPU'
+    scene.view_settings.view_transform = 'Standard'
+    scene.view_settings.look = 'None'
     scene.render.resolution_x = size
     scene.render.resolution_y = size
     scene.render.film_transparent = False
@@ -235,7 +285,7 @@ def setup_render(size=480):
         env = nt.nodes.new('ShaderNodeTexEnvironment')
         env.image = bpy.data.images.load(hdri)
         nt.links.new(env.outputs['Color'], bg.inputs['Color'])
-        bg.inputs['Strength'].default_value = 1.0
+        bg.inputs['Strength'].default_value = 0.55
         # The badge sits on a dark ground; the environment lights it but isn't seen behind it.
         scene.render.film_transparent = True
     else:
@@ -253,9 +303,9 @@ def setup_render(size=480):
         o.location = loc
         o.rotation_euler = (Vector(loc) * -1).to_track_quat('-Z', 'Y').to_euler()
         return o
-    light('key', 'AREA', (-1.2, -1.6, 2.2), 180, 1.6, (1.0, 0.96, 0.9))
-    light('rim', 'AREA', (1.6, 1.2, 1.4), 90, 1.0, (0.85, 0.92, 1.0))
-    light('fill', 'AREA', (1.4, -1.4, 0.9), 40, 2.0)
+    light('key', 'AREA', (-1.2, -1.6, 2.2), 110, 1.6, (1.0, 0.96, 0.9))
+    light('rim', 'AREA', (1.6, 1.2, 1.4), 60, 1.0, (0.85, 0.92, 1.0))
+    light('fill', 'AREA', (1.4, -1.4, 0.9), 25, 2.0)
     cam_data = bpy.data.cameras.new('cam')
     cam_data.lens = 55
     cam = bpy.data.objects.new('cam', cam_data)
@@ -273,63 +323,63 @@ def render_to(path):
 
 # ---------------------------------------------------------------- build
 clear_scene()
-mats = {k: make_material(k, **v) for k, v in MATERIALS.items()}
-tones = {k: make_material(f'{k}_mark', v, 1.0 if not MATERIALS[k]['gem'] else 0.0, 0.35, False) for k, v in MARK_TONE.items()}
+body_mats = {k: make_material(k, v['color'], v['metallic'], v['roughness']) for k, v in BODY_MATERIALS.items()}
+stone_mats = {k: make_material(f'stone_{k}', v, 0.0, 0.1, coat=0.4) for k, v in STONES.items()}
+mark_mats = {k: make_material(f'mark_{k}', v, 0.0, 0.45) for k, v in MARK_COLORS.items()}
+
+def dress(shape, tier, family):
+    """Give the objects of `shape` the materials for `tier` and show only `family`'s mark."""
+    body_name, stone_name = TIERS[tier - 1]
+    body = bpy.data.objects[f'{shape}__body']
+    stones = bpy.data.objects[f'{shape}__stones']
+    set_material(body, body_mats[body_name])
+    body.hide_render = False
+    stones.hide_render = stone_name is None
+    if stone_name: set_material(stones, stone_mats[stone_name])
+    for f in FAMILIES:
+        m = bpy.data.objects[f'{shape}__mark_{f}']
+        m.hide_render = f != family
+        set_material(m, mark_mats[f])
+    return body, stones, bpy.data.objects[f'{shape}__mark_{family}']
 
 for shape in SHAPES:
-    body = build_body(shape)
+    body, stones = build_body(shape)
     marks = [import_mark(f, shape) for f in FAMILIES]
-    set_material(body, mats['bronze'])
+    set_material(body, body_mats['bronze'])
+    set_material(stones, stone_mats['ruby'])
     for m in marks:
-        set_material(m, tones['bronze'])
-    export_glb([body] + marks, os.path.join(OUT, f'{shape}.glb'))
-    # Keep the objects around for rendering; hide marks except one per render.
-    for o in [body] + marks:
+        set_material(m, mark_mats[m.name.replace('mark_', '')])
+    export_glb([body, stones] + marks, os.path.join(OUT, f'{shape}.glb'))
+    for o in [body, stones] + marks:
         o.name = f'{shape}__{o.name}'
         o.hide_render = True
         o.hide_viewport = True
 
 if RENDER:
     cam = setup_render()
-    shots = [  # (shape, material, family, camera)
-        ('medallion', 'bronze', 'workouts', (0.0, -1.35, 1.1)),
-        ('medallion', 'silver', 'streak', (0.0, -1.35, 1.1)),
-        ('medallion', 'gold', 'records', (0.0, -1.35, 1.1)),
-        ('hex', 'platinum', 'cycles', (0.0, -1.35, 1.1)),
-        ('hex', 'ruby', 'volume', (0.0, -1.35, 1.1)),
-        ('hex', 'sapphire', 'night_owl', (0.0, -1.35, 1.1)),
-        ('hex', 'emerald', 'early_bird', (0.0, -1.35, 1.1)),
-        ('shield', 'diamond', 'perfect_cycles', (0.0, -1.35, 1.1)),
-        ('medallion', 'bronze', 'buddies', (0.9, -1.1, 0.35)),   # low angle, shows the bevel and relief
-        ('medallion', 'gold', 'plan_uses', (-0.9, -1.0, 0.5)),
-        ('hex', 'ruby', 'streak', (0.9, -1.1, 0.35)),
-        ('shield', 'diamond', 'workouts', (0.9, -1.1, 0.35)),
+    front, low = (0.0, -1.35, 1.1), (0.9, -1.1, 0.35)
+    shots = [  # (tier, family, camera)
+        (1, 'workouts', front), (2, 'streak', front), (3, 'records', front), (4, 'cycles', front),
+        (5, 'volume', front), (6, 'night_owl', front), (7, 'early_bird', front), (8, 'perfect_cycles', front),
+        (1, 'buddies', low), (3, 'plan_uses', low), (5, 'streak', low), (8, 'workouts', low),
     ]
-    for i, (shape, material, family, loc) in enumerate(shots):
+    for i, (tier, family, loc) in enumerate(shots):
         for o in bpy.data.objects:
-            if '__' in o.name:
-                o.hide_render = True
-        body = bpy.data.objects[f'{shape}__body']
-        mark = bpy.data.objects[f'{shape}__mark_{family}']
-        set_material(body, mats[material]); set_material(mark, tones[material])
-        body.hide_render = False; mark.hide_render = False
+            if '__' in o.name: o.hide_render = True
+        shape = ['medallion'] * 3 + ['hex'] * 4 + ['shield']
+        shape = shape[tier - 1]
+        dress(shape, tier, family)
         aim(cam, tuple(c * 1.45 for c in loc))
-        render_to(os.path.join(OUT, f'shot_{i:02d}_{shape}_{material}_{family}.png'))
-print('done')
+        render_to(os.path.join(OUT, f'shot_{i:02d}_{shape}_{TIER_NAMES[tier - 1]}_{family}.png'))
 
 # ---------------------------------------------------------------- turntable
 if RENDER and len(argv) > 4 and argv[4] == 'turntable':
-    shape, material, family = 'medallion', 'gold', 'records'
     for o in bpy.data.objects:
-        if '__' in o.name:
-            o.hide_render = True
-    body = bpy.data.objects[f'{shape}__body']
-    mark = bpy.data.objects[f'{shape}__mark_{family}']
-    set_material(body, mats[material]); set_material(mark, tones[material])
-    body.hide_render = False; mark.hide_render = False
+        if '__' in o.name: o.hide_render = True
+    body, stones, mark = dress('hex', 6, 'night_owl')
     pivot = bpy.data.objects.new('pivot', None)
     bpy.context.collection.objects.link(pivot)
-    body.parent = pivot; mark.parent = pivot
+    for o in (body, stones, mark): o.parent = pivot
     bpy.context.scene.render.resolution_x = 420
     bpy.context.scene.render.resolution_y = 420
     bpy.context.scene.cycles.samples = 48
