@@ -22,16 +22,22 @@ describe('progressExercise: weighted lifts, judged per cycle', () => {
     expect(p.hits).toBe(2);
   });
 
-  it('moves only the sets that hit in every session; a missed set eases back', () => {
+  it('asks the same reps of every set: one missed set eases the whole exercise back', () => {
     const logs = [lastSession({ reps: 10, weightKg: 30 }, three(30, 10)), lastSession({ reps: 10, weightKg: 30 }, [set({ reps: 10 }), set({ reps: 9 }), set({ reps: 8 })])];
     const p = progressExercise(entry(), logs, null, 'kg');
-    expect(p.change).toBe('increase');
-    expect(p.target.perSet).toEqual([
-      { weightKg: 32.5, reps: 8 },
-      { weightKg: 30, reps: 9 },
-      { weightKg: 30, reps: 8 },
-    ]);
+    expect(p.change).toBe('drop');
+    expect(p.target).toEqual({ sets: 3, reps: 8, weightKg: 30, durationSec: null, distanceM: null });
     expect(p.hits).toBe(1);
+  });
+
+  it('judges a legacy per-set target set by set, then climbs from its lowest ask', () => {
+    // Targets written before reps were uniform: 15, 13, 13. Every set hit what it was asked.
+    const e = { ...entry(), repRangeMin: 12, repRangeMax: 15 };
+    const logs = [lastSession({ reps: 15, weightKg: 7, perSet: [{ weightKg: 7, reps: 15 }, { weightKg: 7, reps: 13 }, { weightKg: 7, reps: 13 }] }, [set({ weightKg: 7, reps: 15 }), set({ weightKg: 7, reps: 13 }), set({ weightKg: 7, reps: 13 })])];
+    const p = progressExercise(e, logs, null, 'kg');
+    expect(p.hits).toBe(1);
+    expect(p.change).toBe('climb');
+    expect(p.target).toEqual({ sets: 3, reps: 14, weightKg: 7, durationSec: null, distanceM: null });
   });
 
   it('holds everything when every set missed in some session', () => {
@@ -66,27 +72,30 @@ describe('progressExercise: weighted lifts, judged per cycle', () => {
     expect(p.target).toMatchObject({ reps: 9, weightKg: 35 });
   });
 
-  it('progresses each set on its own, so a ramp stays a ramp', () => {
-    const logs = [
-      lastSession({ reps: 10, weightKg: 25, perSet: [{ weightKg: 25, reps: 10 }, { weightKg: 30, reps: 10 }, { weightKg: 35, reps: 10 }] }, [set({ weightKg: 25, reps: 10 }), set({ weightKg: 30, reps: 10 }), set({ weightKg: 35, reps: 8 })]),
-    ];
-    const p = progressExercise(entry(), logs, null, 'kg');
-    expect(p.target.perSet).toEqual([
-      { weightKg: 27.5, reps: 8 },
-      { weightKg: 32.5, reps: 8 },
+  it('keeps weights with their sets, so a ramp stays a ramp', () => {
+    const ramp = { reps: 10, weightKg: 25, perSet: [{ weightKg: 25, reps: 10 }, { weightKg: 30, reps: 10 }, { weightKg: 35, reps: 10 }] };
+    const missed = progressExercise(entry(), [lastSession(ramp, [set({ weightKg: 25, reps: 10 }), set({ weightKg: 30, reps: 10 }), set({ weightKg: 35, reps: 8 })])], null, 'kg');
+    expect(missed.change).toBe('drop');
+    expect(missed.target.perSet).toEqual([
+      { weightKg: 25, reps: 8 },
+      { weightKg: 30, reps: 8 },
       { weightKg: 35, reps: 8 },
     ]);
-    expect(p.change).toBe('increase');
+    const hit = progressExercise(entry(), [lastSession(ramp, [set({ weightKg: 25, reps: 10 }), set({ weightKg: 30, reps: 10 }), set({ weightKg: 35, reps: 10 })])], null, 'kg');
+    expect(hit.change).toBe('increase');
+    expect(hit.target.perSet).toEqual([
+      { weightKg: 27.5, reps: 8 },
+      { weightKg: 32.5, reps: 8 },
+      { weightKg: 37.5, reps: 8 },
+    ]);
   });
 
-  it('treats a set that was never done as a miss for that set only', () => {
+  it('treats a set that was never done as a miss', () => {
     const logs = [lastSession({ reps: 10, weightKg: 30 }, [set({ reps: 10 }), set({ reps: 10 })])];
     const p = progressExercise(entry(), logs, null, 'kg');
-    expect(p.target.perSet).toEqual([
-      { weightKg: 32.5, reps: 8 },
-      { weightKg: 32.5, reps: 8 },
-      { weightKg: 30, reps: 8 },
-    ]);
+    expect(p.change).toBe('drop');
+    expect(p.target).toEqual({ sets: 3, reps: 8, weightKg: 30, durationSec: null, distanceM: null });
+    expect(p.hits).toBe(0);
   });
 
   it('carries the last target forward when the exercise was not trained in the cycle', () => {

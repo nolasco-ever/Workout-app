@@ -6,20 +6,21 @@ import { KG_PER_LB } from './units';
  * Double progression, judged once per cycle.
  *
  * Targets are fixed for a whole cycle. When the cycle ends, every session
- * of an exercise in it is looked at together and the next cycle's targets
- * come out of that, set by set:
+ * of an exercise in it is looked at together and the next cycle's target
+ * comes out of that. The reps target is one number for the whole exercise,
+ * judged across every set of every session:
  *
- * - Every session hit the target reps on this set, and the target was
- *   already the top of the range: weight goes up by the increment and the
- *   reps target drops to the bottom of the range. A heavier weight is not
- *   expected at the same reps straight away.
- * - Every session hit the target reps, target below the top: reps climb,
- *   to at least one step up and to whatever was managed every time.
- * - Any session missed: the reps target drops to the fewest reps managed
- *   (never below the bottom of the range), weight stays.
+ * - Every set of every session hit the target reps, and the target was
+ *   already the top of the range: weight goes up by the increment on every
+ *   set and the reps target drops to the bottom of the range. A heavier
+ *   weight is not expected at the same reps straight away.
+ * - Every set hit, target below the top: reps climb, to at least one step
+ *   up and to whatever was managed on every set.
+ * - Any set of any session missed: the reps target drops to the fewest reps
+ *   managed on any set (never below the bottom of the range), weight stays.
  * - Not trained in the cycle: everything stays.
  *
- * Sets progress independently, so someone who ramps 25, 30, 35 keeps
+ * Weights still belong to each set, so someone who ramps 25, 30, 35 keeps
  * ramping instead of being pushed to 40 on every set. Bodyweight reps grow
  * past the top of the range instead of adding weight. Timed holds add a
  * step when every set of every session reached the target; cardio repeats
@@ -139,38 +140,37 @@ export const progressExercise = (prescribed: WorkoutExercise, logs: SessionExerc
     case 'reps': {
       const rangeMin = entry.repRangeMin ?? 1;
       const rangeMax = entry.repRangeMax ?? rangeMin;
-      const changes: ProgressionChange[] = [];
-      const goals: SetGoal[] = [];
-      for (let i = 0; i < entry.sets; i++) {
-        const prev = goalFor(from, i);
-        const targetReps = prev.reps ?? rangeMax;
-        const attempts: (LoggedSet | undefined)[] = done.map(sets => sets[i]);
-        const hit = attempts.every(s => s !== undefined && (s.reps ?? 0) >= targetReps);
-        const lastWeight = maxOf([[...attempts].reverse().find(s => s !== undefined)?.weightKg]) ?? prev.weightKg ?? entry.startingWeightKg;
-        const minReps = Math.min(...attempts.map(s => s?.reps ?? 0));
+      const indices = Array.from({ length: entry.sets }, (_, i) => i);
+      // Each set is judged against what it was asked for (older targets may differ per set);
+      // the exercise's own target is the lowest ask, so a legacy 15/13/13 climbs from 13.
+      const asked = indices.map(i => goalFor(from, i).reps ?? rangeMax);
+      const targetReps = Math.min(...asked);
+      const sessionHit = (sets: LoggedSet[]) => indices.every(i => sets[i] !== undefined && (sets[i].reps ?? 0) >= asked[i]);
+      const hits = done.filter(sessionHit).length;
+      const hitAll = hits === done.length;
+      // A set never done counts as zero reps: the exercise missed.
+      const minReps = Math.min(...done.flatMap(sets => indices.map(i => sets[i]?.reps ?? 0)));
+      // Weights stay with their set: the last weight each set was done at.
+      const lastWeights = indices.map(i => {
+        const attempts = done.map(sets => sets[i]);
+        return maxOf([[...attempts].reverse().find(s => s !== undefined)?.weightKg]) ?? goalFor(from, i).weightKg ?? entry.startingWeightKg;
+      });
 
-        if (!hit) {
-          const reps = Math.max(rangeMin, Math.min(minReps, rangeMax));
-          goals.push({ weightKg: lastWeight, reps });
-          changes.push(reps < targetReps ? 'drop' : 'hold');
-        } else if (targetReps < rangeMax) {
-          const reps = Math.max(rangeMin, Math.min(rangeMax, Math.max(targetReps + p.repStep, minReps)));
-          goals.push({ weightKg: lastWeight, reps });
-          changes.push(reps > targetReps ? 'climb' : 'hold');
-        } else {
-          const canAddWeight = entry.measurement === 'weight_reps' || (lastWeight !== null && lastWeight > 0);
-          if (canAddWeight && lastWeight !== null) {
-            goals.push({ weightKg: roundToLoadableKg(lastWeight + p.weightIncrementKg, unit), reps: rangeMin });
-            changes.push('increase');
-          } else {
-            goals.push({ weightKg: lastWeight, reps: rangeMax + p.repStep });
-            changes.push('climb');
-          }
-        }
+      const changeFor = (reps: number): ProgressionChange => (reps > targetReps ? 'climb' : reps < targetReps ? 'drop' : 'hold');
+      if (!hitAll) {
+        const reps = Math.max(rangeMin, Math.min(minReps, rangeMax));
+        return summary(entry, from, withPerSet(entry.sets, lastWeights.map(weightKg => ({ weightKg, reps }))), changeFor(reps), judged.length, hits);
       }
-      const change: ProgressionChange = changes.includes('increase') ? 'increase' : changes.includes('climb') ? 'climb' : changes.includes('drop') ? 'drop' : 'hold';
-      const hits = judged.filter((_, j) => Array.from({ length: entry.sets }, (_, i) => done[j][i]).every((s, i) => s !== undefined && (s.reps ?? 0) >= (goalFor(from, i).reps ?? rangeMax))).length;
-      return summary(entry, from, withPerSet(entry.sets, goals), change, judged.length, hits);
+      if (targetReps < rangeMax) {
+        const reps = Math.max(rangeMin, Math.min(rangeMax, Math.max(targetReps + p.repStep, minReps)));
+        return summary(entry, from, withPerSet(entry.sets, lastWeights.map(weightKg => ({ weightKg, reps }))), changeFor(reps), judged.length, hits);
+      }
+      const canAddWeight = entry.measurement === 'weight_reps' || lastWeights.every(w => w !== null && w > 0);
+      if (canAddWeight) {
+        const goals = lastWeights.map(w => ({ weightKg: w !== null ? roundToLoadableKg(w + p.weightIncrementKg, unit) : null, reps: rangeMin }));
+        return summary(entry, from, withPerSet(entry.sets, goals), 'increase', judged.length, hits);
+      }
+      return summary(entry, from, withPerSet(entry.sets, lastWeights.map(weightKg => ({ weightKg, reps: rangeMax + p.repStep }))), 'climb', judged.length, hits);
     }
 
     case 'time': {
