@@ -70,7 +70,8 @@ export const startPushListeners = (uid: Id): (() => void) => {
     const title = message.notification?.title ?? (message.data?.title as string | undefined);
     const body = message.notification?.body ?? (message.data?.body as string | undefined);
     const target = parseTarget(message.data as Record<string, unknown> | undefined) ?? { screen: 'feed' as const };
-    if (title) showInAppBanner({ title, body: body ?? '', target });
+    // The owner's own badge push lands while the celebration is opening; a banner would only double it.
+    if (title && message.data?.kind !== 'achievement') showInAppBanner({ title, body: body ?? '', target });
   });
   const offOpened = onNotificationOpenedApp(messaging(), handleRemoteMessage);
   getInitialNotification(messaging()).then(handleRemoteMessage).catch(() => undefined);

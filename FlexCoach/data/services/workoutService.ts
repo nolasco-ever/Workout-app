@@ -39,6 +39,7 @@ import { userRepository } from '../repositories/userRepository';
 import { buildSamplePlan } from './samplePlan';
 import { activatePlan } from './planService';
 import { afterCycleFinished, afterSessionFinished, afterWorkoutPushed, afterWorkoutSkipped } from './buddyService';
+import { judgeAchievements } from './achievementService';
 
 /**
  * Use-case layer for the Workout tab. Screens call these; they compose the
@@ -260,7 +261,11 @@ export const finishSession = async (uid: Id, profile: UserProfile | null, sessio
   const completed = await sessionRepository.listCompleted(uid);
   const history = completed.filter(s => s.id !== session.id);
   const personalRecords = findPersonalRecords([finished], history);
-  afterSessionFinished(uid, profile, finished, personalRecords, profile?.weightUnit ?? 'lb').catch(err => console.warn('buddy update failed', err));
+  afterSessionFinished(uid, profile, finished, personalRecords, profile?.weightUnit ?? 'lb')
+    .catch(err => console.warn('buddy update failed', err))
+    // Badges are judged once the workout is in the books, never mid-session.
+    .then(() => judgeAchievements(uid, profile, { sessionId: session.id }))
+    .catch(err => console.warn('achievement judging failed', err));
 
   return {
     session: finished,
@@ -336,6 +341,8 @@ export const markCycleReportReviewed = async (uid: Id, cycle: Cycle): Promise<Cy
   if (cycle.reportReviewedAt) return cycle;
   const updated = { ...cycle, reportReviewedAt: Date.now() };
   await cycleRepository.save(uid, updated);
+  // A reviewed cycle counts towards the cycle badges.
+  judgeAchievements(uid, null, { cycleId: cycle.id }).catch(err => console.warn('achievement judging failed', err));
   return updated;
 };
 

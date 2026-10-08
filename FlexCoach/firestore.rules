@@ -42,8 +42,19 @@ service cloud.firestore {
       match /bodyWeight/{entryId} {
         allow read, write: if isOwner(uid);
       }
+      // Badges. The owner and the server write them (the server with the
+      // admin SDK, outside these rules).
       match /achievements/{achievementId} {
         allow read, write: if isOwner(uid);
+      }
+      // A buddy who copied or synced one of the owner's plans writes their
+      // own row here; the server counts the rows for the Plans-used badge.
+      match /planUses/{buddyUid} {
+        allow read, write: if isOwner(uid);
+        allow read: if signedIn() && request.auth.uid == buddyUid;
+        allow create, update: if signedIn() && request.auth.uid == buddyUid
+          && request.resource.data.buddyUid == buddyUid
+          && isAcceptedBuddyOf(uid);
       }
       match /customExercises/{exerciseId} {
         allow read, write: if isOwner(uid);

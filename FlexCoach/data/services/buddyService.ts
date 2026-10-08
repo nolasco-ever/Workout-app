@@ -1,4 +1,5 @@
-import { Activity, ActivityKind, ActivityReaction, Id, InviteCode, Occurrence, Plan, PublicProfile, Session, SharingPrefs, UserProfile } from '../models';
+import { AchievementUnlock, Activity, ActivityKind, ActivityReaction, Id, InviteCode, Occurrence, Plan, PublicProfile, Session, SharingPrefs, UserProfile } from '../models';
+import { buddyUnlockCopy, familyOf, materialFor, tierLabel } from '../engine/achievements';
 import { deleteField } from '@react-native-firebase/firestore';
 import { newId } from '../engine/ids';
 import { today } from '../engine/dates';
@@ -276,6 +277,26 @@ export const afterCycleFinished = async (uid: Id, cycleId: Id, cycleNumber: numb
   await recordActivity(uid, `cycle_done:${cycleId}`, 'cycle_done', `Finished cycle ${cycleNumber}`, `${Math.round(completionRate * 100)}% of workouts done`);
 };
 
+/**
+ * Badges the device just unlocked: a line in the activity list and a push
+ * to every buddy per tier, then the card picks up the new badge ids. The
+ * one-time catch-up (`quiet`) only refreshes the card, so nobody gets a
+ * dozen pushes about badges earned months ago.
+ */
+export const afterAchievementsUnlocked = async (uid: Id, profile: UserProfile | null, unlocks: AchievementUnlock[], unit: WeightUnit, quiet: boolean): Promise<void> => {
+  if (!quiet) {
+    const name = firstName(profile?.displayName);
+    const displayName = profile?.displayName ?? null;
+    for (const unlock of unlocks) {
+      const label = tierLabel(unlock.family, unlock.threshold, unit);
+      await recordActivity(uid, `achievement:${unlock.achievementId}`, 'achievement', `Unlocked a badge: ${label}`, `${familyOf(unlock.family).name} · ${materialFor(unlock.tier)}`, unlock.unlockedAt);
+      const { title, body } = buddyUnlockCopy(name, unlock, unit);
+      await notifyBuddies(uid, unlock.achievementId, 'buddy_achievement', title, body, { screen: 'buddy', uid, displayName });
+    }
+  }
+  await refreshPublicProfile(uid, profile);
+};
+
 /** Flip a plan's buddy visibility; sharing it is worth a line in the feed and a push to every buddy. */
 export const setPlanVisibleToBuddies = async (uid: Id, profile: UserProfile | null, plan: Plan, visible: boolean): Promise<void> => {
   await planRepository.setVisibleToBuddies(uid, plan.id, visible);
@@ -292,8 +313,12 @@ export const setPlanVisibleToBuddies = async (uid: Id, profile: UserProfile | nu
   refreshPublicProfile(uid, profile).catch(() => undefined);
 };
 
-/** Copy a buddy's shared plan into my account as an editable draft that remembers who made it. */
 /** Save a buddy's plan under My plans: an independent copy, or one that keeps following their edits. */
-export const copyBuddyPlan = (uid: Id, plan: Plan, owner: { uid: Id; displayName: string | null }, synced = false): Promise<Plan> => planRepository.copyTo(uid, plan, owner, newId, synced);
+export const copyBuddyPlan = async (uid: Id, plan: Plan, owner: { uid: Id; displayName: string | null }, synced = false): Promise<Plan> => {
+  const copy = await planRepository.copyTo(uid, plan, owner, newId, synced);
+  // The owner's tree gets a note that I use their plan; their Plans-used badge counts these.
+  achievementRepository.recordPlanUse(owner.uid, uid, plan.id).catch(err => console.warn('plan use note failed', err));
+  return copy;
+};
 
 export { formatInviteCode };
