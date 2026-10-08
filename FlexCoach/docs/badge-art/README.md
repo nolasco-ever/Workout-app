@@ -66,3 +66,21 @@ Regenerate after editing a mark SVG:
 python3 -m venv .venv && .venv/bin/pip install shapely trimesh mapbox_earcut svgpathtools numpy
 .venv/bin/python docs/badge-art/tools/marks_to_glb.py docs/badge-art/marks docs/badge-art/meshes
 ```
+
+## 3D badges (`3d/`), built in Blender
+
+`medallion.glb`, `hex.glb`, `shield.glb`: one `body` mesh (bevelled ring rim
+plus recessed face) and ten `mark_<family>` meshes in relief on the face, in
+badge units (1 wide, Y up, front +Z). Materials in the files are bronze
+placeholders; the app applies the real ones. Built headless by
+`tools/build_badges.py` from `shapes/` and `meshes/`:
+
+```sh
+/Applications/Blender.app/Contents/MacOS/Blender -b -P docs/badge-art/tools/build_badges.py -- \
+  docs/badge-art <out_dir> render \
+  /Applications/Blender.app/Contents/Resources/5.0/datafiles/studiolights/world/studio.exr
+```
+
+Proportions (rim height, face height, bevels, relief) and the eight
+materials are constants at the top of the script. `renders/` keeps the
+review contact sheets.
