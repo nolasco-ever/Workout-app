@@ -48,3 +48,21 @@ One `.glb` per shape with the ten marks as separately named meshes
 origin, one unit across, glTF metallic-roughness materials, under about
 300 KB. The app picks the mark and swaps the material; see
 `components/achievements/` for the SVG fallback that stays for small sizes.
+
+## Meshes for Spline (`meshes/`)
+
+Spline can't import SVG, so the ten marks are also here as solid meshes:
+`mark_<family>.glb` (and the same as `.obj`), plus `marks_all.glb` with all
+ten in one file as separately named objects. Each is the stroke made into a
+ribbon of width 3 with round caps and joins, extruded 2 units thick, in
+badge units: the badge is 1 unit wide, Y is up, the front faces +Z, and the
+badge centre is the origin. Drop a mesh onto a 1-unit-wide badge body and
+it lands in the right place; sink it into the face or leave it proud, the
+same way for all ten. `preview.png` shows the ten meshes from the front.
+
+Regenerate after editing a mark SVG:
+
+```sh
+python3 -m venv .venv && .venv/bin/pip install shapely trimesh mapbox_earcut svgpathtools numpy
+.venv/bin/python docs/badge-art/tools/marks_to_glb.py docs/badge-art/marks docs/badge-art/meshes
+```
