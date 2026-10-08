@@ -9,6 +9,8 @@ import { Icon } from '../icons/Icon';
 import { generalIcons } from '../icons/icon-library';
 import { useTheme } from '../../theme';
 import { Avatar } from './Avatar';
+import { Badge } from '../achievements/Badge';
+import { ACHIEVEMENT_FAMILIES, parseAchievementId } from '../../data/engine/achievements';
 
 /** Big numbers read better rounded: 43,210 → "43k". */
 const compact = (n: number): string => (n >= 100_000 ? `${Math.round(n / 1000)}k` : n >= 10_000 ? `${(n / 1000).toFixed(1)}k` : Math.round(n).toLocaleString());
@@ -24,6 +26,16 @@ const Stat = ({ label, value, sub }: { label: string; value: string; sub?: strin
   );
 };
 
+/** The highest tier of each badge family on the card, in catalog order. */
+const highestBadges = (ids: string[]): { family: (typeof ACHIEVEMENT_FAMILIES)[number]['id']; tier: number }[] => {
+  const best = new Map<string, number>();
+  for (const id of ids) {
+    const parsed = parseAchievementId(id);
+    if (parsed) best.set(parsed.family, Math.max(best.get(parsed.family) ?? 0, parsed.tier));
+  }
+  return ACHIEVEMENT_FAMILIES.filter(f => best.has(f.id)).map(f => ({ family: f.id, tier: best.get(f.id)! }));
+};
+
 /**
  * The Iron Card: a person's training summary the way buddies see it. Used
  * for your own card, a scanned card, and a buddy's page. Shows numbers,
@@ -36,6 +48,7 @@ export const IronCard = ({ card, unit, distanceUnit = 'mi', footer }: { card: Pu
   const bestValue = best ? formatRecordValue(best.kind, best.value, unit, distanceUnit) : '—';
   const volume = card.totalVolumeKg ?? 0;
   const volumeText = volume > 0 ? `${compact(unit === 'lb' ? kgToLb(volume) : volume)} ${unit}` : '—';
+  const badges = highestBadges(card.achievementIds ?? []);
   return (
     <View style={{ backgroundColor: colors.surface, borderRadius: radius.xl, borderWidth: 1, borderColor: colors.line, padding: spacing.lg, gap: spacing.lg, overflow: 'hidden' }}>
       {/* Accent band so the card reads as a card, not a settings group. */}
@@ -62,6 +75,16 @@ export const IronCard = ({ card, unit, distanceUnit = 'mi', footer }: { card: Pu
       </View>
       {card.lastCycleCompletionRate !== null && (
         <CustomText variant="caption" color={colors.inkMuted}>Last cycle: {Math.round(card.lastCycleCompletionRate * 100)}% of workouts done</CustomText>
+      )}
+      {badges.length > 0 && (
+        <View style={{ gap: spacing.sm }}>
+          <CustomText variant="overline" color={colors.inkMuted}>Badges</CustomText>
+          <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm }}>
+            {badges.map(b => (
+              <Badge key={b.family} family={b.family} tier={b.tier} size={44} />
+            ))}
+          </View>
+        </View>
       )}
       {footer}
     </View>

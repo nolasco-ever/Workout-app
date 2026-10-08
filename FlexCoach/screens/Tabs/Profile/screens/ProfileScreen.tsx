@@ -10,7 +10,8 @@ import { CustomText } from '../../../../components/text/customText';
 import { SurfaceCard } from '../../../../components/cards/SurfaceCard';
 import { Row } from '../../../../components/list-items/Row';
 import { Icon } from '../../../../components/icons/Icon';
-import { generalIcons } from '../../../../components/icons/icon-library';
+import { directionIcons, generalIcons } from '../../../../components/icons/icon-library';
+import { useAchievements } from '../../../../data/hooks/useAchievements';
 import { useTheme } from '../../../../theme';
 import { ProfileStackParams } from '../ProfileStack';
 import { useTabScrollInset } from '../../../../navigation/useTabBarInset';
@@ -28,6 +29,7 @@ const AVATAR = 120;
 
 export const ProfileScreen = () => {
   const navigation = useNavigation<NavigationProp<ProfileStackParams & AppStackParams>>();
+  const achievements = useAchievements(false);
   const { colors, spacing } = useTheme();
   const bottomInset = useTabScrollInset();
   const { profile, user } = useAuth();
@@ -77,17 +79,24 @@ export const ProfileScreen = () => {
           <CustomText variant="caption" color={colors.inkMuted}>{joined ? `Training since ${joined}` : ' '}</CustomText>
         </View>
 
-        <SurfaceCard>
-          <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.md }}>
-            <View style={{ width: 40, height: 40, borderRadius: 20, backgroundColor: colors.accentTint, alignItems: 'center', justifyContent: 'center' }}>
-              <Icon icon={generalIcons.trophy} size={20} color={colors.accent} />
+        <TouchableOpacity onPress={() => navigation.navigate('AchievementsScreen')} activeOpacity={0.7} accessibilityRole="button" accessibilityLabel="Achievements">
+          <SurfaceCard>
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.md }}>
+              <View style={{ width: 40, height: 40, borderRadius: 20, backgroundColor: colors.accentTint, alignItems: 'center', justifyContent: 'center' }}>
+                <Icon icon={generalIcons.award} size={20} color={colors.accent} />
+              </View>
+              <View style={{ flex: 1 }}>
+                <CustomText variant="bodyStrong">Achievements</CustomText>
+                <CustomText variant="caption" color={colors.inkMuted}>
+                  {achievements.unlocks.length === 0
+                    ? 'Finish a workout to earn your first badge.'
+                    : `${achievements.earned} of ${achievements.progress.length} badges · ${achievements.unlocks.length} tier${achievements.unlocks.length === 1 ? '' : 's'} earned`}
+                </CustomText>
+              </View>
+              <Icon icon={directionIcons.angleRight} size={18} color={colors.inactive} />
             </View>
-            <View style={{ flex: 1 }}>
-              <CustomText variant="bodyStrong">Achievements</CustomText>
-              <CustomText variant="caption" color={colors.inkMuted}>Milestones for streaks, volume, and records land in a later update.</CustomText>
-            </View>
-          </View>
-        </SurfaceCard>
+          </SurfaceCard>
+        </TouchableOpacity>
 
         <View style={{ gap: spacing.sm }}>
           <CustomText variant="overline" color={colors.inkMuted}>Training</CustomText>

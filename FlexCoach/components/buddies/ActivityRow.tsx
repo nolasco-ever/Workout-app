@@ -28,6 +28,8 @@ export const activityIcon = (kind: ActivityKind): IconSource => {
       return generalIcons.medal;
     case 'plan_shared':
       return generalIcons.dumbbell;
+    case 'achievement':
+      return generalIcons.award;
     default:
       return generalIcons.users;
   }
@@ -69,7 +71,7 @@ export const ActivityRow = ({ item, divider = false, compact = false, onReact }:
   const { uid } = useAuth();
   const navigation = useNavigation<NavigationProp<BuddyRoutes>>();
   const who = item.isMe ? 'You' : item.actorName?.split(' ')[0] ?? 'A buddy';
-  const tone = item.kind === 'workout_skipped' ? colors.inkMuted : item.kind === 'streak' || item.kind === 'record' ? colors.accent : colors.ink;
+  const tone = item.kind === 'workout_skipped' ? colors.inkMuted : item.kind === 'streak' || item.kind === 'record' || item.kind === 'achievement' ? colors.accent : colors.ink;
   const workoutLine = item.isMe ? null : workoutLineOf(item);
   const planId = item.isMe ? null : sharedPlanIdOf(item);
   const open = workoutLine

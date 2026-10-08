@@ -174,6 +174,7 @@ export const NotificationSettingsScreen = () => {
             <SwitchRow title="Plan starts tomorrow" description="The evening before a new plan begins." value={prefs.planStarts} onChange={planStarts => save({ planStarts })} disabled={off} divider />
             <SwitchRow title="Cycle finished" description="A summary when a cycle wraps up." value={prefs.cycleFinished} onChange={cycleFinished => save({ cycleFinished })} disabled={off} divider />
             <SwitchRow title="Buddy activity" description="Requests, and when a buddy finishes or skips a workout." value={prefs.buddies} onChange={buddies => save({ buddies })} disabled={off} divider />
+            <SwitchRow title="Buddy badges" description="When a buddy unlocks or upgrades a badge." value={prefs.buddyAchievements} onChange={buddyAchievements => save({ buddyAchievements })} disabled={off || !prefs.buddies} divider />
           </SurfaceCard>
         </View>
 

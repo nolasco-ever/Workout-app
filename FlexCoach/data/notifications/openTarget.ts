@@ -61,6 +61,10 @@ export const openTarget = (target: NotificationTarget): void => {
     case 'buddy_plan':
       nav.navigate('BuddyPlanScreen', { ownerUid: target.ownerUid, planId: target.planId, ownerName: target.ownerName ?? null });
       return;
+    case 'achievement':
+      // The celebration host shows the badge itself if it hasn't been seen; the grid is where it lives after.
+      nav.navigate('AchievementsScreen', { achievementId: target.achievementId });
+      return;
   }
 };
 

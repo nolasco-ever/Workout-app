@@ -13,6 +13,7 @@ import { NotificationBridge } from './data/notifications/NotificationBridge';
 import { PlanSyncBridge } from './data/notifications/PlanSyncBridge';
 import { SharingPrompt } from './components/buddies/SharingPrompt';
 import { MissedWorkoutPrompt } from './screens/Tabs/Workout/components/MissedWorkoutPrompt';
+import { AchievementCelebration } from './components/achievements/AchievementCelebration';
 import { useAuth } from './data/auth/AuthProvider';
 import { startInviteLinkListener } from './data/links/inviteLinks';
 import { InAppBannerHost } from './components/overlays/InAppBanner';
@@ -53,6 +54,7 @@ const Notifications = () => {
       <PlanSyncBridge />
       <SharingPrompt />
       <MissedWorkoutPrompt />
+      <AchievementCelebration />
     </>
   ) : null;
 };
