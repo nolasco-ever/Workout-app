@@ -3,6 +3,30 @@
 Newest build first. **Store notes** is the tester-facing text, identical for
 TestFlight and Google Play (under 500 characters). **Details** is for us.
 
+## Build 17 (2026-10-08)
+
+### Store notes
+
+Build 17
+• Rest timer keeps running when you switch exercise
+• Timed and cardio: one stopwatch card with a countdown
+• Quick workout can copy a workout from your plan
+• Cycle report redesigned; lands 2h after your last workout. Review it to start the next cycle
+• Next cycle keeps its calendar when started late
+• One rep target per exercise, no dips set to set
+• 12 reaction emoji; hold a chip to see who reacted
+• Schedule card redesign, pull to refresh
+• Fixes: swap presets, empty tiles
+
+### Details
+
+- Commits b37821d..2e3481e (build 16 TestFlight notes 1-20, 2026-10-05) plus the second build-16 round (d3c6cac, 9822541, 5fe83b3, 2026-10-08): next cycle keeps the block that follows the last one when started late, missed-workout sheet copy, one rep target per exercise.
+- Achievements (roadmap item 12) are in this build but OFF: `features.achievements` in config/features.ts and the Firestore switch `config/features.achievements` for the Cloud Functions. Nothing shows and nothing is judged until both are flipped. The badge artwork is being designed in the meantime.
+- Firestore rules deployed by the user 2026-10-08 (`planUses` rows, `buddy_plan_shared` kind). Cloud Functions deployed the same day; the badge switch (75b9825) needs ONE more `firebase deploy --only functions` before this build reaches testers, or buddy badge pushes could go out.
+- Native: no new native dependencies, pods unchanged.
+- Not device-tested by us (testers do): report timing after the last workout, the late-start cycle rule (needs a real cycle end), the progression change at the next cycle review.
+- Parked: badge art, unit switch in settings, share image, Dynamic Island rest timer, widgets.
+
 ## Build 16 (2026-10-03)
 
 ### Store notes
