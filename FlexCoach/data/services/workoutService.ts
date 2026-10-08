@@ -16,6 +16,7 @@ import { addDays, today } from '../engine/dates';
 import { newId } from '../engine/ids';
 import {
   closeCycle,
+  nextCycleStart,
   findWorkout,
   generateCycle,
   markOccurrence,
@@ -45,7 +46,6 @@ import { afterCycleFinished, afterSessionFinished, afterWorkoutPushed, afterWork
  * step. Nothing here holds state.
  */
 
-const laterOf = (a: LocalDate, b: LocalDate): LocalDate => (a > b ? a : b);
 
 /** Development helper: write and activate the sample plan for this user. */
 export const seedSamplePlan = async (uid: Id): Promise<{ plan: Plan; cycle: Cycle }> => {
@@ -348,10 +348,10 @@ export const markCycleReportPrompted = async (uid: Id, cycle: Cycle): Promise<Cy
 };
 
 export const startNextCycle = async (uid: Id, plan: Plan, cycle: Cycle): Promise<Cycle> => {
-  const { cycle: closed, nextStart } = closeCycle(cycle);
+  const { cycle: closed } = closeCycle(cycle);
   await cycleRepository.save(uid, closed);
   afterCycleFinished(uid, closed.id, closed.number, summarizeCycle(closed, [], []).completionRate).catch(err => console.warn('buddy activity failed', err));
-  const next = generateCycle(plan, uid, nextCycleNumberAfter(closed), laterOf(nextStart, today()));
+  const next = generateCycle(plan, uid, nextCycleNumberAfter(closed), nextCycleStart(plan, closed, today()));
   await cycleRepository.save(uid, next);
   await userRepository.update(uid, { activeCycleId: next.id });
   return next;

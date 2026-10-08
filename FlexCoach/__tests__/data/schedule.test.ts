@@ -1,4 +1,4 @@
-import { closeCycle, generateCycle, getOverdueOccurrences, moveOccurrenceToDate, resolveMissed, nextCycleNumber, nextCycleNumberAfter, pushOccurrence, renumberCycles, skipOccurrence, markOccurrence } from '../../data/engine/schedule';
+import { closeCycle, generateCycle, nextCycleStart, getOverdueOccurrences, moveOccurrenceToDate, resolveMissed, nextCycleNumber, nextCycleNumberAfter, pushOccurrence, renumberCycles, skipOccurrence, markOccurrence } from '../../data/engine/schedule';
 import { summarizeCycle } from '../../data/engine/stats';
 import { addDays } from '../../data/engine/dates';
 import { rotationPlan, weeklyPlan } from './support/fixtures';
@@ -35,6 +35,50 @@ describe('generateCycle', () => {
       '2026-09-30:pull:scheduled',
       '2026-10-02:legs:scheduled',
     ]);
+  });
+});
+
+describe('nextCycleStart', () => {
+  // Weekly plan, Monday start, one week per cycle. Previous cycle ran Sep 28 to Oct 4.
+  const previous = { endDate: '2026-10-04' };
+
+  it('keeps the block that follows when the next cycle is started inside it', () => {
+    expect(nextCycleStart(weeklyPlan(), previous, '2026-10-05')).toBe('2026-10-05');
+    expect(nextCycleStart(weeklyPlan(), previous, '2026-10-07')).toBe('2026-10-05');
+    expect(nextCycleStart(weeklyPlan(), previous, '2026-10-11')).toBe('2026-10-05');
+  });
+
+  it('skips whole blocks that have already passed', () => {
+    expect(nextCycleStart(weeklyPlan(), previous, '2026-10-12')).toBe('2026-10-12');
+    expect(nextCycleStart(weeklyPlan(), previous, '2026-10-15')).toBe('2026-10-12');
+    expect(nextCycleStart(weeklyPlan(), previous, '2026-10-28')).toBe('2026-10-26');
+  });
+
+  it('never starts before the previous cycle ended', () => {
+    expect(nextCycleStart(weeklyPlan(), previous, '2026-10-01')).toBe('2026-10-05');
+  });
+
+  it('measures blocks in whole cycles for multi-week plans', () => {
+    const plan = weeklyPlan();
+    plan.schedule = { ...plan.schedule, mode: 'weekly', weeksPerCycle: 2 } as typeof plan.schedule;
+    expect(nextCycleStart(plan, previous, '2026-10-16')).toBe('2026-10-05');
+    expect(nextCycleStart(plan, previous, '2026-10-19')).toBe('2026-10-19');
+  });
+
+  it('realigns to the start weekday when the previous cycle ended off-grid', () => {
+    expect(nextCycleStart(weeklyPlan(), { endDate: '2026-10-06' }, '2026-10-08')).toBe('2026-10-12');
+  });
+
+  it('starts a rotation plan on the later of the day after and today', () => {
+    expect(nextCycleStart(rotationPlan(), previous, '2026-10-01')).toBe('2026-10-05');
+    expect(nextCycleStart(rotationPlan(), previous, '2026-10-07')).toBe('2026-10-07');
+  });
+
+  it('feeds generateCycle a start the generator keeps as is', () => {
+    const cycle = generateCycle(weeklyPlan(), 'user-1', 2, nextCycleStart(weeklyPlan(), previous, '2026-10-07'));
+    expect(cycle.startDate).toBe('2026-10-05');
+    expect(cycle.endDate).toBe('2026-10-11');
+    expect(getOverdueOccurrences(cycle, '2026-10-07').map(o => o.date)).toEqual(['2026-10-05']);
   });
 });
 

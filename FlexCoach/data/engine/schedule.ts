@@ -70,6 +70,26 @@ export const generateCycle = (
   };
 };
 
+/**
+ * Where the cycle after `previous` begins when it is started on `todayDate`.
+ *
+ * Weekly plans keep their calendar: the next cycle is the block that
+ * follows the previous one, even if its start weekday has already gone by.
+ * Started on a Wednesday, the cycle that began on Monday still runs from
+ * that Monday, and any workout days already past are handled as missed.
+ * Only when the whole block has passed does it skip ahead to the block
+ * that contains today. Rotation plans have no calendar, so they start on
+ * the later of the day after the previous cycle and today.
+ */
+export const nextCycleStart = (plan: Plan, previous: Pick<Cycle, 'endDate'>, todayDate: LocalDate): LocalDate => {
+  const after = addDays(previous.endDate, 1);
+  if (plan.schedule.mode !== 'weekly') return after > todayDate ? after : todayDate;
+  const length = 7 * Math.max(1, plan.schedule.weeksPerCycle);
+  let start = nextWeekday(after, plan.schedule.startWeekday);
+  while (addDays(start, length - 1) < todayDate) start = addDays(start, length);
+  return start;
+};
+
 /** A cycle counts towards the numbering once a workout was actually done in it. */
 export const cycleCounts = (cycle: Cycle): boolean => cycle.occurrences.some(o => o.status === 'completed');
 
