@@ -174,6 +174,11 @@ def build(shape):
     for o in stones: o.select_set(True)
     bpy.context.view_layer.objects.active = stones[0]; bpy.ops.object.join()
     stones = bpy.context.view_layer.objects.active; stones.name = 'stones'
+    # The join keeps the first stone's location as the object origin; bake it so vertex
+    # coordinates are badge coordinates (the bow is computed from them).
+    mw = stones.matrix_world.copy()
+    for v in stones.data.vertices: v.co = mw @ v.co
+    stones.matrix_world.identity()
     for c in (rim, inner):
         bpy.data.objects.remove(c, do_unlink=True)
     # Marks: raised metal lines on the enamel.
@@ -304,8 +309,11 @@ if len(argv) > 2 and argv[2] == 'blend':
     cam = setup_render(900)
     bpy.context.scene.cycles.samples = 128
     layout = {'medallion': (-1.3, 1, 'workouts', 'black'), 'hex': (0.0, 6, 'night_owl', 'black'), 'shield': (1.3, 8, 'perfect_cycles', 'orange')}
+    shown = []
     for shape, (x, tier, family, enamel_key) in layout.items():
-        objs = dress(shape, tier, family, enamel_key)
+        shown += dress(shape, tier, family, enamel_key)
+    for o in shown: o.hide_render = False
+    for shape, (x, tier, family, enamel_key) in layout.items():
         col = bpy.data.collections.new(shape)
         bpy.context.scene.collection.children.link(col)
         for o in bpy.data.objects:
