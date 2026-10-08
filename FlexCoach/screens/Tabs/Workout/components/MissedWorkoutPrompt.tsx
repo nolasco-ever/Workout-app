@@ -3,17 +3,14 @@ import { Alert, View } from 'react-native';
 import { useAuth } from '../../../../data/auth/AuthProvider';
 import { Cycle, LocalDate, Occurrence, Plan } from '../../../../data/models';
 import { addDays, fromLocalDate } from '../../../../data/engine/dates';
-import { missedWorkoutCopy } from '../../../../data/engine/notificationCopy';
 import { useWorkoutHome } from '../../../../data/hooks/useWorkoutHome';
 import { beginMissedPrompt, moveWorkoutToDate, occupantOn, pushWorkoutTo, skipWorkout } from '../../../../data/services/workoutService';
 import { BottomSheet } from '../../../../components/overlays/BottomSheet';
 import { CalendarPicker } from '../../../../components/inputs/CalendarPicker';
 import { PrimaryButton } from '../../../../components/buttons/PrimaryButton';
-import { SurfaceCard } from '../../../../components/cards/SurfaceCard';
 import { CustomText } from '../../../../components/text/customText';
 import { useTheme } from '../../../../theme';
 
-const longDate = (d: LocalDate) => fromLocalDate(d).toLocaleDateString(undefined, { weekday: 'long', month: 'short', day: 'numeric' });
 const shortDate = (d: LocalDate) => fromLocalDate(d).toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric' });
 
 const listNames = (names: string[]): string => (names.length <= 1 ? names.join('') : `${names.slice(0, -1).join(', ')} and ${names[names.length - 1]}`);
@@ -88,11 +85,17 @@ export const MissedWorkoutPrompt = () => {
 
   if (!pending || !uid) return null;
   const { plan, cycle, ask, skipped, todayDate, todaysName } = pending;
-  const name = ask.workoutName ?? 'Your workout';
-  const copy = missedWorkoutCopy(name, todaysName, todayDate);
+  const name = ask.workoutName ?? 'your';
   const weeklyEnd = plan.schedule.mode === 'weekly' ? cycle.endDate : undefined;
   const tomorrow = addDays(todayDate, 1);
   const canMove = !weeklyEnd || weeklyEnd >= tomorrow;
+  // Doing it today bumps today's workout a day; on a weekly cycle's last day there is no day left for it.
+  const options = todaysName
+    ? `Do it today and ${todaysName} ${canMove ? 'moves to tomorrow' : 'drops out of this cycle'}. Or skip it and stay on schedule.`
+    : canMove
+      ? 'Do it today, pick another day, or skip it for this cycle.'
+      : 'Do it today, or skip it for this cycle.';
+  const body = `Looks like you missed your ${name} workout. ${options}`;
   const occupant = occupantOn(cycle, date, ask.id);
   const moveNote =
     occupant?.status === 'scheduled'
@@ -104,13 +107,13 @@ export const MissedWorkoutPrompt = () => {
   return (
     <BottomSheet
       open={open}
-      title={mode === 'ask' ? copy.title : 'Pick a new day'}
+      title={mode === 'ask' ? 'Missed workout' : 'Pick a new day'}
       onClose={close}
       footer={
         mode === 'ask' ? (
           <View style={{ gap: spacing.sm }}>
             <PrimaryButton label="Do it today" busy={busy === 'today'} disabled={!!busy} onPress={() => run('today', async () => { await pushWorkoutTo(uid, plan, cycle, ask.id, todayDate, profile); })} />
-            {canMove && <PrimaryButton label="Move to another day" variant="outline" disabled={!!busy} onPress={() => setMode('move')} />}
+            {canMove && <PrimaryButton label="Pick another day" variant="outline" disabled={!!busy} onPress={() => setMode('move')} />}
             <PrimaryButton label="Skip it" variant="quiet" busy={busy === 'skip'} disabled={!!busy} onPress={() => run('skip', async () => { await skipWorkout(uid, cycle, ask.id, profile); })} />
           </View>
         ) : (
@@ -123,12 +126,7 @@ export const MissedWorkoutPrompt = () => {
     >
       {mode === 'ask' ? (
         <>
-          <CustomText variant="body" color={colors.inkMuted}>{copy.body}</CustomText>
-          <SurfaceCard>
-            <CustomText variant="overline" color={colors.warning}>Missed</CustomText>
-            <CustomText variant="heading" style={{ marginTop: spacing.xs }}>{name}</CustomText>
-            <CustomText variant="caption" color={colors.inkMuted}>Was scheduled for {longDate(ask.date)}</CustomText>
-          </SurfaceCard>
+          <CustomText variant="body" color={colors.inkMuted}>{body}</CustomText>
           {skipped.length > 0 && (
             <CustomText variant="caption" color={colors.inkMuted}>
               {listNames(skipped.map(o => o.workoutName ?? 'a workout'))} {skipped.length === 1 ? 'was' : 'were'} missed before it and {skipped.length === 1 ? 'has' : 'have'} been skipped for this cycle.
