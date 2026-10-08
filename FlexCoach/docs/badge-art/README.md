@@ -67,25 +67,28 @@ python3 -m venv .venv && .venv/bin/pip install shapely trimesh mapbox_earcut svg
 .venv/bin/python docs/badge-art/tools/marks_to_glb.py docs/badge-art/marks docs/badge-art/meshes
 ```
 
-## 3D badges (`3d/`), built in Blender
+## 3D badges (`3d/`), built in Blender as enamel pins
 
-`medallion.glb`, `hex.glb`, `shield.glb`: one `body` mesh (bevelled ring rim
-plus recessed face), one `stones` mesh (a ring of round stones set into the
-rim, shown only on tiers 5-8), one `outline` mesh (an inverted hull 1.2%
-outside the body, black, back faces only: the cartoon line) and ten
-`mark_<family>` meshes in relief on the face, in badge units (1 wide, Y up, front +Z). Materials in the files
-are placeholders; the app applies the real ones. Tiers, decided 2026-10-08:
-bronze, silver, gold, platinum, then platinum with ruby, sapphire, emerald
-and diamond stones. Marks are black (round 6); the face is domed (`DOME_H`) and marks and
-stones follow the dome. Built headless by
-`tools/build_badges.py` from `shapes/` and `meshes/`:
+Direction from the user's references (`renders/badge-reference-01.webp`,
+`badge_reference_02.webp`, 2026-10-08): enamel pins. `medallion.glb`,
+`hex.glb`, `shield.glb` each hold: `plate` (a thin metal plate, the whole
+pin bows up `BOW` at the centre), `border` (a raised metal ring along the
+edge), `enamel` (the glossy fill inside the border), `stones` (a ring of
+round stones on the border, shown only on tiers 5-8) and ten
+`mark_<family>` meshes (the mark as raised metal lines on the enamel).
+Badge units: 1 wide, Y up, front +Z. Materials in the files are
+placeholders; the app applies the tier's metal to plate, border and mark,
+the enamel colour to the fill, and the stone colour to the stones.
+
+Built headless by `tools/build_pins.py` from `shapes/` and `meshes/`
+(`tools/build_badges.py` is the earlier medal construction, kept for
+reference):
 
 ```sh
-/Applications/Blender.app/Contents/MacOS/Blender -b -P docs/badge-art/tools/build_badges.py -- \
+/Applications/Blender.app/Contents/MacOS/Blender -b -P docs/badge-art/tools/build_pins.py -- \
   docs/badge-art <out_dir> render \
   /Applications/Blender.app/Contents/Resources/5.0/datafiles/studiolights/world/studio.exr
 ```
 
-Proportions (rim height, face height, bevels, relief) and the eight
-materials are constants at the top of the script. `renders/` keeps the
-review contact sheets.
+Proportions and materials are constants at the top of the script.
+`renders/` keeps the review contact sheets by round.
