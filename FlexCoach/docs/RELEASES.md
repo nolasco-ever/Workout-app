@@ -8,14 +8,23 @@ TestFlight and Google Play (under 500 characters). **Details** is for us.
 ### Store notes
 
 Build 17
+
 • Rest timer keeps running when you switch exercise
+
 • Timed and cardio: one stopwatch card with a countdown
+
 • Quick workout can copy a workout from your plan
+
 • Cycle report redesigned; lands 2h after your last workout. Review it to start the next cycle
+
 • Next cycle keeps its calendar when started late
+
 • One rep target per exercise, no dips set to set
+
 • 12 reaction emoji; hold a chip to see who reacted
+
 • Schedule card redesign, pull to refresh
+
 • Fixes: swap presets, empty tiles
 
 ### Details
