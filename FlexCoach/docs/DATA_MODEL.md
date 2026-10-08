@@ -33,7 +33,8 @@ users/{uid}/plans/{planId}            Plan (workouts embedded)
 users/{uid}/cycles/{cycleId}          Cycle (occurrences embedded)
 users/{uid}/sessions/{sessionId}      Session (sets embedded)
 users/{uid}/bodyWeight/{entryId}      BodyWeightEntry
-users/{uid}/achievements/{id}         AchievementUnlock
+users/{uid}/achievements/{id}         AchievementUnlock    one per tier, id `<family>:<tier>`; owner and server write
+users/{uid}/planUses/{buddyUid}       PlanUse              written by the buddy who copied/synced a plan
 users/{uid}/buddies/{otherUid}        Buddy                mirrored on both sides
 users/{uid}/activity/{id}             Activity             owner writes; accepted buddies read, and may set/clear their own key in `reactions`
 inviteCodes/{code}                    InviteCode           card copy; any signed-in user reads
@@ -261,3 +262,32 @@ cold launch. `useNotificationSync` (mounted in `App.tsx` for signed-in,
 onboarded accounts) owns all of this plus FCM token registration; a tap on
 any notification routes through `openTarget` using a `NotificationTarget`
 stored in the payload.
+
+## Achievements (badges)
+
+Ten families (`engine/achievements.ts`), each a ladder of tiers; the same
+badge upgrades through bronze, silver, gold, platinum, then gems. Ladders
+only grow: appending a threshold unlocks it on the next judge for anyone
+past it. Volume has a pound and a kilogram ladder; the user's unit picks
+one, and a stored tier is never taken away.
+
+- **Judging** is a pure function of history: `measureAchievements` then
+  `computeNewUnlocks`. The app runs it (`services/achievementService.ts`)
+  after a finished workout and when a cycle report is opened, and once
+  per account as a catch-up (`UserProfile.achievementsBackfilledAt`)
+  that grants everything already earned without telling buddies.
+- **Server judging**: the Buddies and Plans-used families change while
+  the app is closed, so `functions/src/index.ts` counts them on writes to
+  `buddies/` and `planUses/` and writes the same documents the app would,
+  taking its ladders from `functions/src/ladders.ts`, which the app's
+  catalog imports.
+- **Each tier** writes: the unlock (`celebratedAt: null`), an `achievement`
+  feed line for the owner (pushed only when the server wrote it), an
+  `achievement` activity line, a `buddy_achievement` feed line per buddy
+  (gated by `NotificationPrefs.buddyAchievements`), and the id onto the
+  Iron Card's `achievementIds`.
+- **Celebration**: `AchievementCelebration` watches for unlocks without
+  `celebratedAt` and shows a full-screen page per tier, held while a
+  workout, its summary or a report is open; Done stamps them. A tapped
+  push opens the grid; the celebration shows on its own if unseen.
+
