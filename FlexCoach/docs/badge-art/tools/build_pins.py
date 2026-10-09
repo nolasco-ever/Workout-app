@@ -329,7 +329,7 @@ if len(argv) > 2 and argv[2] == 'blend':
     # Every part of the pin follows the cage, so editing the cage edits the bow.
     for shape, (x, tier, family, enamel_key) in layout.items():
         lat_data = bpy.data.lattices.new(f'{shape}_bow')
-        lat_data.points_u = lat_data.points_v = 7; lat_data.points_w = 2
+        lat_data.points_u = lat_data.points_v = 7; lat_data.points_w = 1
         lat_data.interpolation_type_u = lat_data.interpolation_type_v = lat_data.interpolation_type_w = 'KEY_BSPLINE'
         lat = bpy.data.objects.new(f'{shape}__bow', lat_data)
         bpy.data.collections[shape].objects.link(lat)

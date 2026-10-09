@@ -44,8 +44,8 @@ pick another from the dropdown to try a tier.
 ## Changing the convex (the bow)
 
 The bow is not baked into the geometry in this file. Each pin has a cage
-object, `medallion__bow`, `hex__bow`, `shield__bow` (a Lattice, 7 x 7 x 2
-points), and every part of the pin follows the cage through a Lattice
+object, `medallion__bow`, `hex__bow`, `shield__bow` (a Lattice, 7 x 7
+points, one layer, so every part at a spot lifts by the same amount), and every part of the pin follows the cage through a Lattice
 modifier. The cage is already lifted in the middle to the current bow.
 
 To change it:
@@ -67,6 +67,27 @@ for you. Scroll while dragging to widen or narrow the falloff.
 
 The cage is not rendered and not exported. When you export glTF, tick
 **Apply Modifiers** so the bend is baked into the mesh.
+
+## Changing colours
+
+1. Click the part (the enamel, the border, the stones...). Its name shows
+   in the outliner.
+2. In the Properties panel (bottom right), click the **Material** tab: the
+   red checkered sphere, last icon in the column.
+3. At the top is the material's name. Click the sphere icon just left of
+   the name for a dropdown of every saved material: `bronze`, `silver`,
+   `gold`, `platinum`, `stone_ruby` ..., `enamel_black`, `enamel_orange`,
+   and one `enamel_<family>` per family. Pick one and the part changes.
+4. To change what a colour actually is: in the same tab, under
+   **Surface**, click the **Base Color** swatch and pick a colour. That
+   edits the material itself, so every part using it changes too; that
+   is what you want for a tier (all `gold` turns together). For a
+   one-off, click the number next to the material name first, which
+   makes a private copy, then change the colour.
+
+Metals look right with **Metallic** at 1 and **Roughness** around 0.3;
+enamel with Metallic 0 and Roughness around 0.5. Both are sliders in the
+same Surface section.
 
 ## Units and proportions
 
