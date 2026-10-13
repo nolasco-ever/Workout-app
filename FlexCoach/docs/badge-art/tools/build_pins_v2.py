@@ -33,8 +33,10 @@ MARK_FIT = {'medallion': (1.0, 0.0), 'hex': (1.0, 0.0), 'shield': (0.9, -3.0)}
 
 # Heights, in badge units (badge = 1 wide; the 2D work is in the 100 box and scaled at the end)
 # Real relief: the metal stands 3% of the badge width above the enamel, the mark a little more, the stones higher still.
-Z = dict(plate=(0.0, 0.030), enamel=(0.030, 0.040), line=(0.030, 0.070), border=(0.030, 0.072), scallop=0.06,
-         mark_metal=(0.030, 0.078), mark_channel=(0.030, 0.056), bezel=(0.030, 0.080), gem_base=0.072, gem_top=0.104)
+Z = dict(plate=(0.0, 0.040), enamel=(0.040, 0.050), line=(0.040, 0.085), border=(0.040, 0.088), scallop=0.07,
+         mark_metal=(0.040, 0.092), mark_channel=(0.040, 0.064), bezel=(0.040, 0.092), gem_base=0.084, gem_top=0.118)
+DOME = float(os.environ.get('DOME', '0.10'))   # the whole badge bows up by this much at the centre (badge units)
+PILLOW_LAYERS = 6
 STEP = 0.35
 
 # ---------------------------------------------------------------- 2D helpers
@@ -132,10 +134,10 @@ def layout_tier(t):
     border = outline.difference(face)
     lines = []
     if d['segments'] != 'none':
-        for _, l in wedges(d['segments']): lines.append(l.buffer(0.6))
-    if d['panel'] != 'none': lines.append(PANEL[d['panel']][0].buffer(1.0))
-    if d['inner'] in ('ring', 'band'): lines.append(about_centre(outline, 0.76).exterior.buffer(0.9))
-    if d['inner'] == 'double': lines.append(about_centre(outline, 0.80).exterior.buffer(0.7)); lines.append(about_centre(outline, 0.72).exterior.buffer(0.5))
+        for _, l in wedges(d['segments']): lines.append(l.buffer(1.0))
+    if d['panel'] != 'none': lines.append(PANEL[d['panel']][0].buffer(1.3))
+    if d['inner'] in ('ring', 'band'): lines.append(about_centre(outline, 0.76).exterior.buffer(1.3))
+    if d['inner'] == 'double': lines.append(about_centre(outline, 0.80).exterior.buffer(1.1)); lines.append(about_centre(outline, 0.72).exterior.buffer(0.9))
     lines = unary_union(lines).intersection(face) if lines else Polygon()
     scallops = Polygon()
     if d['bleed'] != 'none':
@@ -180,6 +182,19 @@ def extrude(poly, z0, z1):
     if not meshes: return None
     return trimesh.util.concatenate(meshes)
 
+def pillow(poly, z0, z1, half_width, layers=PILLOW_LAYERS):
+    """Extrude with a rounded top: stacked layers that inset as they rise, following a quarter circle."""
+    base_h = (z1 - z0) * 0.45; round_h = (z1 - z0) - base_h
+    parts = [extrude(poly, z0, z0 + base_h)]
+    for k in range(layers):
+        t0, t1 = k / layers, (k + 1) / layers
+        inset = half_width * (1 - math.cos(t0 * math.pi / 2))
+        shrunk = poly.buffer(-inset, join_style='round')
+        if shrunk.is_empty: break
+        parts.append(extrude(shrunk, z0 + base_h + round_h * math.sin(t0 * math.pi / 2), z0 + base_h + round_h * math.sin(t1 * math.pi / 2)))
+    parts = [m for m in parts if m is not None]
+    return trimesh.util.concatenate(parts) if parts else None
+
 def gem_mesh(cx, cy, r):
     """A cut stone: octagonal crown from base to a smaller table."""
     base_z, top_z = Z['gem_base'] * 100, Z['gem_top'] * 100
@@ -205,7 +220,10 @@ def finish(mesh, mat):
     mesh.visual = trimesh.visual.TextureVisuals(material=mat)
     # 100 box -> badge units, centred, y up (trimesh exports +Y up when we hand it y-up data)
     v = mesh.vertices.copy()
-    mesh.vertices = np.column_stack([(v[:, 0] - 50) / 100, -(v[:, 1] - 50) / 100, v[:, 2] / 100])
+    # The lens: every vertex rises by the dome at its (x, y), so all parts bow together.
+    r2 = ((v[:, 0] - 50) ** 2 + (v[:, 1] - 50) ** 2) / (50.0 ** 2)
+    z = v[:, 2] / 100 + DOME * np.clip(1.0 - r2, 0.0, 1.0)
+    mesh.vertices = np.column_stack([(v[:, 0] - 50) / 100, -(v[:, 1] - 50) / 100, z])
     mesh.fix_normals()
     return mesh
 
@@ -216,24 +234,24 @@ def build_tier(i, t):
     stone_c = PAL[t['stone']] if t['stone'] != 'none' else None
     mats = {
         'metal': material('metal', metal_c, 1.0, 0.3), 'mark': material('mark', mark_c, 1.0, 0.3),
-        'enamel': material('enamel', enamel_c, 0.0, 0.45), 'enamel_tone1': material('enamel_tone1', lighten(enamel_c, 0.14), 0.0, 0.45),
-        'enamel_tone2': material('enamel_tone2', darken(enamel_c, 0.22), 0.0, 0.45), 'enamel2': material('enamel2', enamel2_c, 0.0, 0.45),
+        'enamel': material('enamel', enamel_c, 0.0, 0.45), 'enamel_tone1': material('enamel_tone1', lighten(enamel_c, 0.07), 0.0, 0.45),
+        'enamel_tone2': material('enamel_tone2', darken(enamel_c, 0.2), 0.0, 0.45), 'enamel2': material('enamel2', enamel2_c, 0.0, 0.45),
         'stone': material('stone', stone_c or '#FFFFFF', 0.0, 0.08),
     }
     scene = trimesh.Scene()
     add = lambda name, mesh, mat: scene.add_geometry(finish(mesh, mats[mat]), node_name=name, geom_name=name) if mesh is not None else None
     add('plate', extrude(L['outline'], *Z['plate']), 'metal')
-    add('border', extrude(L['border'], *Z['border']), 'metal')
-    add('lines', extrude(L['lines'], *Z['line']), 'metal')
+    add('border', pillow(L['border'], *Z['border'], 3.0), 'metal')
+    add('lines', pillow(L['lines'], *Z['line'], 1.0), 'metal')
     for key, poly in L['regions'].items():
         add(f'enamel_{key}', extrude(poly, *Z['enamel']), {'enamel': 'enamel', 'tone1': 'enamel_tone1', 'tone2': 'enamel_tone2', 'enamel2': 'enamel2'}[key])
     if L['stones']:
         bezels = unary_union([Point(x, y).buffer(4.0, quad_segs=16).difference(Point(x, y).buffer(3.1, quad_segs=16)) for x, y in L['stones']])
-        add('bezels', extrude(bezels, *Z['bezel']), 'metal')
+        add('bezels', pillow(bezels, *Z['bezel'], 0.45), 'metal')
         add('stones', trimesh.util.concatenate([gem_mesh(x, y, 3.1) for x, y in L['stones']]), 'stone')
     for f in FAMILIES:
         metal, channel = mark_regions(f, L['shape'])
-        add(f'mark_{f}', extrude(metal.intersection(L['face']), *Z['mark_metal']), 'mark')
+        add(f'mark_{f}', pillow(metal.intersection(L['face']), *Z['mark_metal'], 1.4), 'mark')
         add(f'mark_{f}_channel', extrude(channel.intersection(L['face']), *Z['mark_channel']), 'enamel2')
     path = os.path.join(OUT, f'tier{i + 1}.glb')
     scene.export(path)

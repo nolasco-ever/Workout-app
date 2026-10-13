@@ -15,22 +15,25 @@ scene.render.resolution_x = scene.render.resolution_y = 480
 scene.render.film_transparent = True
 world = bpy.data.worlds.new('studio'); scene.world = world; world.use_nodes = True
 nt = world.node_tree; bg = nt.nodes['Background']
-env = nt.nodes.new('ShaderNodeTexEnvironment'); env.image = bpy.data.images.load(ENV)
-nt.links.new(env.outputs['Color'], bg.inputs['Color']); bg.inputs['Strength'].default_value = 0.6
+if ENV != 'none':
+    env = nt.nodes.new('ShaderNodeTexEnvironment'); env.image = bpy.data.images.load(ENV)
+    nt.links.new(env.outputs['Color'], bg.inputs['Color']); bg.inputs['Strength'].default_value = 0.6
+else:
+    bg.inputs['Color'].default_value = (0.16, 0.16, 0.17, 1); bg.inputs['Strength'].default_value = 1.0
 scene.view_settings.exposure = 0.0
 # A softbox overhead: a large emissive plane the metals reflect as a broad highlight.
 bpy.ops.mesh.primitive_plane_add(size=2.6, location=(-0.4, -0.6, 2.2))
 soft = bpy.context.view_layer.objects.active; soft.name = 'softbox'
 soft.rotation_euler = (math.radians(12), math.radians(-8), 0)
 sm = bpy.data.materials.new('softbox'); sm.use_nodes = True
-em = sm.node_tree.nodes.new('ShaderNodeEmission'); em.inputs['Strength'].default_value = 7.0; em.inputs['Color'].default_value = (1.0, 0.98, 0.95, 1)
+em = sm.node_tree.nodes.new('ShaderNodeEmission'); em.inputs['Strength'].default_value = 6.5; em.inputs['Color'].default_value = (1.0, 0.98, 0.95, 1)
 sm.node_tree.links.new(em.outputs['Emission'], sm.node_tree.nodes['Material Output'].inputs['Surface'])
 soft.data.materials.append(sm); soft.visible_camera = False
 def light(name, loc, energy, size, color=(1, 1, 1)):
     d = bpy.data.lights.new(name, 'AREA'); d.energy = energy; d.size = size; d.color = color
     o = bpy.data.objects.new(name, d); bpy.context.collection.objects.link(o); o.location = loc
     o.rotation_euler = (Vector(loc) * -1).to_track_quat('-Z', 'Y').to_euler()
-light('key', (-1.2, -1.6, 2.0), 160, 0.35, (1.0, 0.97, 0.92)); light('rim', (1.6, 1.1, 1.3), 60, 0.5, (0.9, 0.94, 1.0)); light('fill', (1.4, -1.4, 0.8), 15, 2.0)
+light('key', (-1.2, -1.6, 2.0), 260, 0.3, (1.0, 0.97, 0.92)); light('rim', (1.6, 1.3, 1.2), 160, 0.4, (0.85, 0.92, 1.0)); light('rim2', (-1.7, 1.0, 0.9), 90, 0.5, (1.0, 0.9, 0.8)); light('fill', (1.4, -1.6, 0.9), 35, 2.5)
 cam_data = bpy.data.cameras.new('cam'); cam_data.lens = 60
 cam = bpy.data.objects.new('cam', cam_data); bpy.context.collection.objects.link(cam); scene.camera = cam
 def aim(loc, target=(0, 0, 0.02)):
@@ -43,9 +46,9 @@ def shade(mat):
     if not b: return
     n = mat.name.split('.')[0]
     if n in ('metal', 'mark'):
-        b.inputs['Metallic'].default_value = 1.0; b.inputs['Roughness'].default_value = 0.22
+        b.inputs['Metallic'].default_value = 1.0; b.inputs['Roughness'].default_value = 0.2
     elif n.startswith('enamel'):
-        b.inputs['Metallic'].default_value = 0.0; b.inputs['Roughness'].default_value = 0.3; b.inputs['Coat Weight'].default_value = 0.7; b.inputs['Coat Roughness'].default_value = 0.06; b.inputs['Specular IOR Level'].default_value = 0.3
+        b.inputs['Metallic'].default_value = 0.0; b.inputs['Roughness'].default_value = 0.5; b.inputs['Coat Weight'].default_value = 0.12; b.inputs['Coat Roughness'].default_value = 0.1; b.inputs['Specular IOR Level'].default_value = 0.2
     elif n == 'stone':
         b.inputs['Metallic'].default_value = 0.0; b.inputs['Roughness'].default_value = 0.05; b.inputs['Coat Weight'].default_value = 1.0; b.inputs['Coat Roughness'].default_value = 0.03; b.inputs['IOR'].default_value = 1.75; b.inputs['Transmission Weight'].default_value = 0.35
 
@@ -59,7 +62,7 @@ for i, t in enumerate(TIERS):
             if slot.material: shade(slot.material)
         base = o.name.split('.')[0]
         if base != 'stones':
-            bev = o.modifiers.new('bevel', 'BEVEL'); bev.width = 0.004; bev.segments = 3; bev.limit_method = 'ANGLE'; bev.angle_limit = math.radians(40); bev.use_clamp_overlap = True
+            bev = o.modifiers.new('bevel', 'BEVEL'); bev.width = 0.0025; bev.segments = 2; bev.limit_method = 'ANGLE'; bev.angle_limit = math.radians(40); bev.use_clamp_overlap = True
         bpy.context.view_layer.objects.active = o; o.select_set(True); bpy.ops.object.shade_smooth_by_angle(angle=math.radians(35)) if hasattr(bpy.ops.object, 'shade_smooth_by_angle') else bpy.ops.object.shade_smooth(); o.select_set(False)
     # glTF Y-up imported as Z-up: the badge lies flat facing +Z. Good for a top-front camera.
     marks = {o.name.split('.')[0]: o for o in objs}
