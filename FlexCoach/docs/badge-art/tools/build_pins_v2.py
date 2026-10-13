@@ -33,8 +33,9 @@ MARK_FIT = {'medallion': (1.0, 0.0), 'hex': (1.0, 0.0), 'shield': (0.9, -3.0)}
 
 # Heights, in badge units (badge = 1 wide; the 2D work is in the 100 box and scaled at the end)
 # Real relief: the metal stands 3% of the badge width above the enamel, the mark a little more, the stones higher still.
-Z = dict(plate=(0.0, 0.040), enamel=(0.040, 0.050), line=(0.040, 0.085), border=(0.040, 0.088), scallop=0.07,
-         mark_metal=(0.040, 0.092), mark_channel=(0.040, 0.064), bezel=(0.040, 0.092), gem_base=0.084, gem_top=0.118)
+# Thin pin: a 1.8% plate, enamel just above it, lines a touch proud of the enamel, marks a little more, stones highest.
+Z = dict(plate=(0.0, 0.018), enamel=(0.018, 0.026), line=(0.018, 0.040), border=(0.018, 0.044), scallop=0.036,
+         mark_metal=(0.018, 0.050), mark_channel=(0.018, 0.034), bezel=(0.018, 0.046), gem_base=0.040, gem_top=0.066)
 DOME = float(os.environ.get('DOME', '0.10'))   # the whole badge bows up by this much at the centre (badge units)
 PILLOW_LAYERS = 6
 STEP = 0.35
@@ -234,7 +235,7 @@ def build_tier(i, t):
     stone_c = PAL[t['stone']] if t['stone'] != 'none' else None
     mats = {
         'metal': material('metal', metal_c, 1.0, 0.3), 'mark': material('mark', mark_c, 1.0, 0.3),
-        'enamel': material('enamel', enamel_c, 0.0, 0.45), 'enamel_tone1': material('enamel_tone1', lighten(enamel_c, 0.07), 0.0, 0.45),
+        'enamel': material('enamel', enamel_c, 0.0, 0.45), 'enamel_tone1': material('enamel_tone1', lighten(enamel_c, 0.04), 0.0, 0.45),
         'enamel_tone2': material('enamel_tone2', darken(enamel_c, 0.2), 0.0, 0.45), 'enamel2': material('enamel2', enamel2_c, 0.0, 0.45),
         'stone': material('stone', stone_c or '#FFFFFF', 0.0, 0.08),
     }
