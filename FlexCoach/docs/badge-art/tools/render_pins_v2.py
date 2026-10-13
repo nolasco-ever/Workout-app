@@ -86,3 +86,32 @@ for i, t in enumerate(TIERS):
     aim(tuple(c * 1.6 for c in low)); scene.render.filepath = os.path.join(OUT, f'low_t{i + 1}.png'); bpy.ops.render.render(write_still=True)
     for o in objs: bpy.data.objects.remove(o, do_unlink=True)
 print('rendered', shots + len(TIERS))
+
+# ---------------------------------------------------------------- turntables: TURN="workouts:1,streak:3" renders 24 frames each, spinning about the vertical axis
+TURN = os.environ.get('TURN')
+if TURN:
+    FRAMES = int(os.environ.get('FRAMES', '24'))
+    scene.render.resolution_x = scene.render.resolution_y = 360
+    scene.cycles.samples = 48
+    for spec in TURN.split(','):
+        f, t = spec.split(':'); t = int(t)
+        before = set(bpy.data.objects)
+        bpy.ops.import_scene.gltf(filepath=os.path.join(GLB, f'tier{t}.glb'))
+        objs = [o for o in bpy.data.objects if o not in before and o.type == 'MESH']
+        pivot = bpy.data.objects.new('pivot', None); bpy.context.collection.objects.link(pivot)
+        for o in objs:
+            for slot in o.material_slots:
+                if slot.material: shade(slot.material)
+            base = o.name.split('.')[0]
+            if base != 'stones':
+                bev = o.modifiers.new('bevel', 'BEVEL'); bev.width = 0.0025; bev.segments = 2; bev.limit_method = 'ANGLE'; bev.angle_limit = math.radians(40); bev.use_clamp_overlap = True
+            bpy.context.view_layer.objects.active = o; o.select_set(True); bpy.ops.object.shade_smooth_by_angle(angle=math.radians(35)) if hasattr(bpy.ops.object, 'shade_smooth_by_angle') else bpy.ops.object.shade_smooth(); o.select_set(False)
+            o.hide_render = base.startswith('mark_') and not (base == f'mark_{f}' or base == f'mark_{f}_channel')
+            o.parent = pivot
+        aim((0.0, -1.9, 1.0), target=(0, 0, 0.03))
+        for i in range(FRAMES):
+            pivot.rotation_euler = (0, math.radians(360 * i / FRAMES), 0)
+            scene.render.filepath = os.path.join(OUT, f'turn_{f}_t{t}_{i:02d}.png'); bpy.ops.render.render(write_still=True)
+        for o in objs: bpy.data.objects.remove(o, do_unlink=True)
+        bpy.data.objects.remove(pivot, do_unlink=True)
+    print('turntables done')
