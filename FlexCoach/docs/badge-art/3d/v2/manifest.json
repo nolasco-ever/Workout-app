@@ -1,0 +1,195 @@
+{
+ "tiers": [
+  {
+   "count": "default",
+   "design": {
+    "bleed": "scallop",
+    "enamel2": "graphite",
+    "inner": "double",
+    "laurel": "no",
+    "markStyle": "solid",
+    "panel": "none",
+    "rays": "none",
+    "ribbon": "no",
+    "segments": "none"
+   },
+   "enamel": "black",
+   "mark": "metal",
+   "metal": "bronze",
+   "shape": "medallion",
+   "stone": "none"
+  },
+  {
+   "count": "default",
+   "design": {
+    "bleed": "scallop",
+    "enamel2": "graphite",
+    "inner": "ring",
+    "laurel": "no",
+    "markStyle": "solid",
+    "panel": "low",
+    "rays": "none",
+    "ribbon": "no",
+    "segments": "8"
+   },
+   "enamel": "black",
+   "mark": "metal",
+   "metal": "silver",
+   "shape": "medallion",
+   "stone": "none"
+  },
+  {
+   "count": "default",
+   "design": {
+    "bleed": "scallop",
+    "enamel2": "graphite",
+    "inner": "ring",
+    "laurel": "no",
+    "markStyle": "solid",
+    "panel": "chevron",
+    "rays": "none",
+    "ribbon": "no",
+    "segments": "12"
+   },
+   "enamel": "black",
+   "mark": "metal",
+   "metal": "gold",
+   "shape": "medallion",
+   "stone": "none"
+  },
+  {
+   "count": "default",
+   "design": {
+    "bleed": "none",
+    "enamel2": "graphite",
+    "inner": "ring",
+    "laurel": "no",
+    "markStyle": "solid",
+    "panel": "none",
+    "rays": "none",
+    "ribbon": "no",
+    "segments": "16"
+   },
+   "enamel": "gold",
+   "mark": "metal",
+   "metal": "platinum",
+   "shape": "hex",
+   "stone": "none"
+  },
+  {
+   "count": "6",
+   "design": {
+    "bleed": "scallop",
+    "enamel2": "graphite",
+    "inner": "none",
+    "laurel": "no",
+    "markStyle": "solid",
+    "panel": "none",
+    "rays": "none",
+    "ribbon": "no",
+    "segments": "fan"
+   },
+   "enamel": "ruby",
+   "mark": "metal",
+   "metal": "platinum",
+   "shape": "hex",
+   "stone": "none"
+  },
+  {
+   "count": "6",
+   "design": {
+    "bleed": "none",
+    "enamel2": "graphite",
+    "inner": "ring",
+    "laurel": "no",
+    "markStyle": "solid",
+    "panel": "none",
+    "rays": "none",
+    "ribbon": "no",
+    "segments": "fan"
+   },
+   "enamel": "sapphire",
+   "mark": "metal",
+   "metal": "platinum",
+   "shape": "hex",
+   "stone": "sapphire"
+  },
+  {
+   "count": "6",
+   "design": {
+    "bleed": "none",
+    "enamel2": "graphite",
+    "inner": "ring",
+    "laurel": "no",
+    "markStyle": "solid",
+    "panel": "none",
+    "rays": "none",
+    "ribbon": "no",
+    "segments": "fan"
+   },
+   "enamel": "emerald",
+   "mark": "platinum",
+   "metal": "platinum",
+   "shape": "hex",
+   "stone": "emerald"
+  },
+  {
+   "count": "12",
+   "design": {
+    "bleed": "scallop",
+    "enamel2": "graphite",
+    "inner": "none",
+    "laurel": "no",
+    "markStyle": "solid",
+    "panel": "chevron",
+    "rays": "none",
+    "ribbon": "no",
+    "segments": "16"
+   },
+   "enamel": "orange",
+   "mark": "metal",
+   "metal": "gold",
+   "shape": "shield",
+   "stone": "diamond"
+  }
+ ],
+ "palette": {
+  "black": "#0A0A0C",
+  "bronze": "#CF8343",
+  "diamond": "#E6F6FF",
+  "emerald": "#17A85C",
+  "gold": "#F3C244",
+  "graphite": "#1C1C21",
+  "orange": "#E2602A",
+  "orange_dark_theme": "#FF7A3D",
+  "platinum": "#E2E9F0",
+  "ruby": "#E0163F",
+  "sapphire": "#2458E6",
+  "silver": "#C9CFD8",
+  "white": "#F4F3F1"
+ },
+ "ladder": {
+  "workouts": 8,
+  "streak": 7,
+  "volume": 7,
+  "records": 6,
+  "cycles": 5,
+  "perfect_cycles": 4,
+  "early_bird": 4,
+  "night_owl": 4,
+  "buddies": 4,
+  "plan_uses": 5
+ },
+ "families": [
+  "workouts",
+  "streak",
+  "volume",
+  "records",
+  "cycles",
+  "perfect_cycles",
+  "early_bird",
+  "night_owl",
+  "buddies",
+  "plan_uses"
+ ]
+}

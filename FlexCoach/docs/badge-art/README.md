@@ -92,3 +92,24 @@ reference):
 
 Proportions and materials are constants at the top of the script.
 `renders/` keeps the review contact sheets by round.
+
+## v2: built from the Badge Builder config (`3d/v2/`)
+
+`design-config.json` is the final configuration from the Badge Builder
+artifact (palette, one recipe per tier, inner line-work, solid marks,
+stones). `tools/build_pins_v2.py` turns it into `3d/v2/tier1.glb` …
+`tier8.glb` with shapely + trimesh (no Blender needed): `plate`,
+`border` (with scallops), `lines` (segments, panel cut, rings),
+`enamel_*` panels per colour, `bezels` + `stones`, and ten
+`mark_<family>` + `mark_<family>_channel` groups. Materials are named by
+role (`metal`, `mark`, `enamel`, `enamel_tone1`, `enamel_tone2`,
+`enamel2`, `stone`) with the flat palette colours baked in.
+`tools/render_pins_v2.py` renders every badge on the ladders in Blender
+(interior environment, neutral lights, metals metallic/roughness 0.22,
+enamel matte with a faint coat, stones glossy with some transmission):
+
+```sh
+.venv/bin/python docs/badge-art/tools/build_pins_v2.py docs/badge-art/design-config.json docs/badge-art/3d/v2
+/Applications/Blender.app/Contents/MacOS/Blender -b -P docs/badge-art/tools/render_pins_v2.py -- \
+  docs/badge-art/3d/v2 <out_dir> /Applications/Blender.app/Contents/Resources/5.0/datafiles/studiolights/world/interior.exr
+```
