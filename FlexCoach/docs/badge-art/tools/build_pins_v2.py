@@ -32,8 +32,9 @@ STONES_DEFAULT = {'medallion': 16, 'hex': 12, 'shield': 14}
 MARK_FIT = {'medallion': (1.0, 0.0), 'hex': (1.0, 0.0), 'shield': (0.9, -3.0)}
 
 # Heights, in badge units (badge = 1 wide; the 2D work is in the 100 box and scaled at the end)
-Z = dict(plate=(0.0, 0.025), enamel=(0.025, 0.030), line=(0.025, 0.036), border=(0.025, 0.036), scallop=0.032,
-         mark_metal=(0.025, 0.038), mark_channel=(0.025, 0.034), bezel=(0.025, 0.038), gem_base=0.036, gem_top=0.050)
+# Real relief: the metal stands 3% of the badge width above the enamel, the mark a little more, the stones higher still.
+Z = dict(plate=(0.0, 0.030), enamel=(0.030, 0.040), line=(0.030, 0.070), border=(0.030, 0.072), scallop=0.06,
+         mark_metal=(0.030, 0.078), mark_channel=(0.030, 0.056), bezel=(0.030, 0.080), gem_base=0.072, gem_top=0.104)
 STEP = 0.35
 
 # ---------------------------------------------------------------- 2D helpers
@@ -98,7 +99,9 @@ def mark_regions(family, shape):
         line = g.exterior if isinstance(g, Polygon) else g
         strokes.append(line)
         if kind == 'closed': fills.append(g)
-    strokes = unary_union(strokes); fills = unary_union(fills) if fills else Polygon()
+    strokes = unary_union(strokes)
+    # Sampled outlines can self-touch at a cusp (the flame's tip); buffer(0) repairs them so the fill survives the union.
+    fills = unary_union([f.buffer(0) for f in fills]) if fills else Polygon()
     halo = unary_union([strokes.buffer(3.0, cap_style='round', join_style='round'), fills])
     channel = strokes.buffer(1.5, cap_style='round', join_style='round')
     metal = halo.difference(channel)
