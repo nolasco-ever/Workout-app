@@ -91,8 +91,8 @@ print('rendered', shots + len(TIERS))
 TURN = os.environ.get('TURN')
 if TURN:
     FRAMES = int(os.environ.get('FRAMES', '24'))
-    scene.render.resolution_x = scene.render.resolution_y = 360
-    scene.cycles.samples = 48
+    scene.render.resolution_x = scene.render.resolution_y = 300
+    scene.cycles.samples = 40
     for spec in TURN.split(','):
         f, t = spec.split(':'); t = int(t)
         before = set(bpy.data.objects)
@@ -108,10 +108,14 @@ if TURN:
             bpy.context.view_layer.objects.active = o; o.select_set(True); bpy.ops.object.shade_smooth_by_angle(angle=math.radians(35)) if hasattr(bpy.ops.object, 'shade_smooth_by_angle') else bpy.ops.object.shade_smooth(); o.select_set(False)
             o.hide_render = base.startswith('mark_') and not (base == f'mark_{f}' or base == f'mark_{f}_channel')
             o.parent = pivot
-        aim((0.0, -1.9, 1.0), target=(0, 0, 0.03))
-        for i in range(FRAMES):
-            pivot.rotation_euler = (0, math.radians(360 * i / FRAMES), 0)
-            scene.render.filepath = os.path.join(OUT, f'turn_{f}_t{t}_{i:02d}.png'); bpy.ops.render.render(write_still=True)
+        # The imported badge stands upright facing -Y (toward the camera). Yaw about Z turns it round to the edge and the
+        # back; pitch about X tips it to show the top and the underside.
+        aim((0.0, -2.1, 0.55), target=(0, 0, 0.0))
+        PITCHES = [-40, 0, 40]
+        for pi_, pitch in enumerate(PITCHES):
+            for i in range(FRAMES):
+                pivot.rotation_euler = (math.radians(pitch), 0, math.radians(360 * i / FRAMES))
+                scene.render.filepath = os.path.join(OUT, f'turn_{f}_t{t}_p{pi_}_{i:02d}.png'); bpy.ops.render.render(write_still=True)
         for o in objs: bpy.data.objects.remove(o, do_unlink=True)
         bpy.data.objects.remove(pivot, do_unlink=True)
     print('turntables done')
