@@ -38,6 +38,10 @@ Z = dict(plate=(0.0, 0.016), enamel=(0.016, 0.023), line=(0.016, 0.034), border=
          mark_metal=(0.016, 0.046), mark_channel=(0.016, 0.038), bezel=(0.016, 0.040), gem_base=0.034, gem_top=0.058)
 DOME = float(os.environ.get('DOME', '0.0'))    # flat; the dome is abandoned
 PILLOW_LAYERS = 14
+VIVID = float(os.environ.get('VIVID', '1.6'))   # saturation gain on every chromatic colour (neutrals untouched)
+LOGO_BARS = [(217, 164, 200, 696, 64), (449, 236, 176, 552, 56), (657, 312, 150, 400, 48)]   # the app icon's three bars in its 1024 box
+LOGO_SIZE = 36   # tallest bar, badge units
+ETCH = 0.0045    # engraving depth into the back of the plate
 STEP = 0.35
 
 # ---------------------------------------------------------------- 2D helpers
@@ -70,6 +74,31 @@ def hexrgb(h):
     h = h.lstrip('#'); return [int(h[i:i + 2], 16) / 255 for i in (0, 2, 4)]
 def mix(h, t, target): a = hexrgb(h); b = hexrgb(target); return '#' + ''.join(f'{int(round((a[i] + (b[i] - a[i]) * t) * 255)):02x}' for i in range(3))
 lighten = lambda h, t: mix(h, t, '#FFFFFF'); darken = lambda h, t: mix(h, t, '#000000')
+import colorsys
+def vivid(h, gain=VIVID):
+    """Cartoon colour: push saturation hard, lift value a touch; greys, blacks and whites stay as they are."""
+    r, g, b = hexrgb(h); hh, ss, vv = colorsys.rgb_to_hsv(r, g, b)
+    if ss < 0.15: return h
+    ss = min(1.0, ss * gain); vv = min(1.0, vv * (1 + 0.15 * (gain - 1)))
+    return '#' + ''.join(f'{int(round(c * 255)):02x}' for c in colorsys.hsv_to_rgb(hh, ss, vv))
+PAL = {k: vivid(v) for k, v in PAL.items()}
+PAL['ruby'] = '#f2102b'   # a true red: the palette's ruby leans pink once saturated
+PAL['gold'] = '#ffd01f'   # keep gold yellow so it stays apart from the orange tier
+print('vivid palette', {k: v for k, v in PAL.items()})
+def logo_poly(size=LOGO_SIZE, cx=50, cy=50, mirror=True):
+    """The app icon's bars, centred, scaled so the tallest bar is `size`; mirrored so it reads correctly from the back."""
+    from shapely import affinity
+    from shapely.geometry import box
+    k = size / 696.0; bars = []
+    for x, y, w, h, rx in LOGO_BARS:
+        X0, Y0, W, H, R = (x - 512) * k, (y - 512) * k, w * k, h * k, rx * k
+        r = box(X0 + R, Y0, X0 + W - R, Y0 + H).union(box(X0, Y0 + R, X0 + W, Y0 + H - R))
+        for px, py in [(X0 + R, Y0 + R), (X0 + W - R, Y0 + R), (X0 + R, Y0 + H - R), (X0 + W - R, Y0 + H - R)]:
+            r = r.union(Point(px, py).buffer(R, quad_segs=12))
+        bars.append(r)
+    p = unary_union(bars)
+    if mirror: p = affinity.scale(p, xfact=-1, yfact=1, origin=(0, 0))
+    return affinity.translate(p, cx, cy)
 
 # ---------------------------------------------------------------- marks (same drawings as the builder, with fill hints)
 def star(cx, cy, r):
@@ -214,8 +243,10 @@ def gem_mesh(cx, cy, r):
     m.fix_normals()
     return m
 
+def srgb_to_linear(c): return c / 12.92 if c <= 0.04045 else ((c + 0.055) / 1.055) ** 2.4
 def material(name, color, metallic, roughness):
-    return PBRMaterial(name=name, baseColorFactor=[*hexrgb(color), 1.0], metallicFactor=metallic, roughnessFactor=roughness)
+    # glTF base colour is linear; the palette is sRGB hex. Without this conversion every colour displays lighter and paler than designed.
+    return PBRMaterial(name=name, baseColorFactor=[*(srgb_to_linear(c) for c in hexrgb(color)), 1.0], metallicFactor=metallic, roughnessFactor=roughness)
 
 def finish(mesh, mat):
     mesh.visual = trimesh.visual.TextureVisuals(material=mat)
@@ -241,7 +272,9 @@ def build_tier(i, t):
     }
     scene = trimesh.Scene()
     add = lambda name, mesh, mat: scene.add_geometry(finish(mesh, mats[mat]), node_name=name, geom_name=name) if mesh is not None else None
-    add('plate', extrude(L['outline'], *Z['plate']), 'metal')
+    logo = logo_poly()
+    add('plate', extrude(L['outline'].difference(logo), *Z['plate']), 'metal')
+    add('etch', extrude(logo.buffer(0.3), Z['plate'][0] + ETCH, Z['plate'][1]), 'enamel2')   # engraved floor, graphite, sunk into the back
     add('border', pillow(L['border'], *Z['border'], 1.8), 'metal')
     for key, poly in L['regions'].items():
         add(f'enamel_{key}', extrude(poly, *Z['enamel']), {'enamel': 'enamel', 'tone1': 'enamel_tone1', 'tone2': 'enamel_tone2', 'enamel2': 'enamel2'}[key])
