@@ -27,17 +27,17 @@ PAL = CFG['palette']
 
 FAMILIES = ['workouts', 'streak', 'volume', 'records', 'cycles', 'perfect_cycles', 'early_bird', 'night_owl', 'buddies', 'plan_uses']
 LADDER = {'workouts': 8, 'streak': 7, 'volume': 7, 'records': 6, 'cycles': 5, 'perfect_cycles': 4, 'early_bird': 4, 'night_owl': 4, 'buddies': 4, 'plan_uses': 5}
-FACE = 0.86
+FACE = 0.92   # thinner metal border: 4% of the width
 STONES_DEFAULT = {'medallion': 16, 'hex': 12, 'shield': 14}
 MARK_FIT = {'medallion': (1.0, 0.0), 'hex': (1.0, 0.0), 'shield': (0.9, -3.0)}
 
 # Heights, in badge units (badge = 1 wide; the 2D work is in the 100 box and scaled at the end)
 # Real relief: the metal stands 3% of the badge width above the enamel, the mark a little more, the stones higher still.
 # Thin pin: a 1.8% plate, enamel just above it, lines a touch proud of the enamel, marks a little more, stones highest.
-Z = dict(plate=(0.0, 0.018), enamel=(0.018, 0.026), line=(0.018, 0.040), border=(0.018, 0.044), scallop=0.036,
-         mark_metal=(0.018, 0.050), mark_channel=(0.018, 0.034), bezel=(0.018, 0.046), gem_base=0.040, gem_top=0.066)
-DOME = float(os.environ.get('DOME', '0.10'))   # the whole badge bows up by this much at the centre (badge units)
-PILLOW_LAYERS = 6
+Z = dict(plate=(0.0, 0.016), enamel=(0.016, 0.023), line=(0.016, 0.034), border=(0.016, 0.036), scallop=0.030,
+         mark_metal=(0.016, 0.046), mark_channel=(0.016, 0.038), bezel=(0.016, 0.040), gem_base=0.034, gem_top=0.058)
+DOME = float(os.environ.get('DOME', '0.0'))    # flat; the dome is abandoned
+PILLOW_LAYERS = 14
 STEP = 0.35
 
 # ---------------------------------------------------------------- 2D helpers
@@ -144,7 +144,7 @@ def layout_tier(t):
     if d['bleed'] != 'none':
         n = {'medallion': 24, 'hex': 18, 'shield': 20}[shape]
         pts = outline_points(outline, n, FACE)
-        scallops = unary_union([p.buffer(3.2, quad_segs=12) for p in pts]).intersection(face)
+        scallops = unary_union([p.buffer(2.2, quad_segs=12) for p in pts]).intersection(face)
     # enamel regions by colour
     regions = {}
     base = face.difference(lines).difference(scallops)
@@ -242,8 +242,7 @@ def build_tier(i, t):
     scene = trimesh.Scene()
     add = lambda name, mesh, mat: scene.add_geometry(finish(mesh, mats[mat]), node_name=name, geom_name=name) if mesh is not None else None
     add('plate', extrude(L['outline'], *Z['plate']), 'metal')
-    add('border', pillow(L['border'], *Z['border'], 3.0), 'metal')
-    add('lines', pillow(L['lines'], *Z['line'], 1.0), 'metal')
+    add('border', pillow(L['border'], *Z['border'], 1.8), 'metal')
     for key, poly in L['regions'].items():
         add(f'enamel_{key}', extrude(poly, *Z['enamel']), {'enamel': 'enamel', 'tone1': 'enamel_tone1', 'tone2': 'enamel_tone2', 'enamel2': 'enamel2'}[key])
     if L['stones']:
@@ -252,6 +251,8 @@ def build_tier(i, t):
         add('stones', trimesh.util.concatenate([gem_mesh(x, y, 3.1) for x, y in L['stones']]), 'stone')
     for f in FAMILIES:
         metal, channel = mark_regions(f, L['shape'])
+        footprint = unary_union([metal, channel]).buffer(0.9)
+        add(f'lines_{f}', pillow(L['lines'].difference(footprint), *Z['line'], 1.0), 'metal')
         add(f'mark_{f}', pillow(metal.intersection(L['face']), *Z['mark_metal'], 1.4), 'mark')
         add(f'mark_{f}_channel', extrude(channel.intersection(L['face']), *Z['mark_channel']), 'enamel2')
     path = os.path.join(OUT, f'tier{i + 1}.glb')

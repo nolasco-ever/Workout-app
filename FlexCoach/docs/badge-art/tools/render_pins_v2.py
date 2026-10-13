@@ -17,9 +17,9 @@ world = bpy.data.worlds.new('studio'); scene.world = world; world.use_nodes = Tr
 nt = world.node_tree; bg = nt.nodes['Background']
 if ENV != 'none':
     env = nt.nodes.new('ShaderNodeTexEnvironment'); env.image = bpy.data.images.load(ENV)
-    nt.links.new(env.outputs['Color'], bg.inputs['Color']); bg.inputs['Strength'].default_value = 0.6
+    nt.links.new(env.outputs['Color'], bg.inputs['Color']); bg.inputs['Strength'].default_value = 0.9
 else:
-    bg.inputs['Color'].default_value = (0.16, 0.16, 0.17, 1); bg.inputs['Strength'].default_value = 1.0
+    bg.inputs['Color'].default_value = (0.42, 0.42, 0.44, 1); bg.inputs['Strength'].default_value = 1.0
 scene.view_settings.exposure = 0.0
 # A softbox overhead: a large emissive plane the metals reflect as a broad highlight.
 bpy.ops.mesh.primitive_plane_add(size=2.6, location=(-0.4, -0.6, 2.2))
@@ -29,11 +29,19 @@ sm = bpy.data.materials.new('softbox'); sm.use_nodes = True
 em = sm.node_tree.nodes.new('ShaderNodeEmission'); em.inputs['Strength'].default_value = 3.8; em.inputs['Color'].default_value = (1.0, 0.98, 0.95, 1)
 sm.node_tree.links.new(em.outputs['Emission'], sm.node_tree.nodes['Material Output'].inputs['Surface'])
 soft.data.materials.append(sm); soft.visible_camera = False
+# The badge faces the camera; its flat face reflects what sits behind and above it. A second softbox there is what the metal shows.
+bpy.ops.mesh.primitive_plane_add(size=5.0, location=(0.2, 2.2, 2.2))
+soft2 = bpy.context.view_layer.objects.active; soft2.name = 'softbox_reflect'
+soft2.rotation_euler = (Vector((0.2, 1.9, 1.9)) * -1).to_track_quat('-Z', 'Y').to_euler()
+sm2 = bpy.data.materials.new('softbox2'); sm2.use_nodes = True
+em2 = sm2.node_tree.nodes.new('ShaderNodeEmission'); em2.inputs['Strength'].default_value = 6.0; em2.inputs['Color'].default_value = (1.0, 0.98, 0.94, 1)
+sm2.node_tree.links.new(em2.outputs['Emission'], sm2.node_tree.nodes['Material Output'].inputs['Surface'])
+soft2.data.materials.append(sm2); soft2.visible_camera = False
 def light(name, loc, energy, size, color=(1, 1, 1)):
     d = bpy.data.lights.new(name, 'AREA'); d.energy = energy; d.size = size; d.color = color
     o = bpy.data.objects.new(name, d); bpy.context.collection.objects.link(o); o.location = loc
     o.rotation_euler = (Vector(loc) * -1).to_track_quat('-Z', 'Y').to_euler()
-light('key', (-1.2, -1.6, 2.0), 150, 0.3, (1.0, 0.97, 0.92)); light('rim', (1.6, 1.3, 1.2), 120, 0.4, (0.85, 0.92, 1.0)); light('rim2', (-1.7, 1.0, 0.9), 70, 0.5, (1.0, 0.9, 0.8)); light('fill', (1.4, -1.6, 0.9), 20, 2.5)
+light('key', (-1.2, -1.6, 2.0), 110, 0.3, (1.0, 0.97, 0.92)); light('rim', (1.6, 1.3, 1.2), 120, 0.4, (0.85, 0.92, 1.0)); light('rim2', (-1.7, 1.0, 0.9), 70, 0.5, (1.0, 0.9, 0.8)); light('fill', (1.4, -1.6, 0.9), 20, 2.5)
 cam_data = bpy.data.cameras.new('cam'); cam_data.lens = 60
 cam = bpy.data.objects.new('cam', cam_data); bpy.context.collection.objects.link(cam); scene.camera = cam
 def aim(loc, target=(0, 0, 0.02)):
@@ -62,8 +70,8 @@ for i, t in enumerate(TIERS):
             if slot.material: shade(slot.material)
         base = o.name.split('.')[0]
         if base != 'stones':
-            bev = o.modifiers.new('bevel', 'BEVEL'); bev.width = 0.0025; bev.segments = 2; bev.limit_method = 'ANGLE'; bev.angle_limit = math.radians(40); bev.use_clamp_overlap = True
-        bpy.context.view_layer.objects.active = o; o.select_set(True); bpy.ops.object.shade_smooth_by_angle(angle=math.radians(35)) if hasattr(bpy.ops.object, 'shade_smooth_by_angle') else bpy.ops.object.shade_smooth(); o.select_set(False)
+            bev = o.modifiers.new('bevel', 'BEVEL'); bev.width = 0.0015; bev.segments = 2; bev.limit_method = 'ANGLE'; bev.angle_limit = math.radians(40); bev.use_clamp_overlap = True
+        bpy.context.view_layer.objects.active = o; o.select_set(True); bpy.ops.object.shade_smooth_by_angle(angle=math.radians(70)) if hasattr(bpy.ops.object, 'shade_smooth_by_angle') else bpy.ops.object.shade_smooth(); o.select_set(False)
     # glTF Y-up imported as Z-up: the badge lies flat facing +Z. Good for a top-front camera.
     marks = {o.name.split('.')[0]: o for o in objs}
     front, low = (0.0, -1.05, 0.95), (0.75, -0.95, 0.42)
@@ -74,7 +82,8 @@ for i, t in enumerate(TIERS):
         for o in objs:
             base = o.name.split('.')[0]
             is_mark = base.startswith('mark_')
-            o.hide_render = is_mark and not (base == f'mark_{f}' or base == f'mark_{f}_channel')
+            is_lines = base.startswith('lines_')
+            o.hide_render = (is_mark and not (base == f'mark_{f}' or base == f'mark_{f}_channel')) or (is_lines and base != f'lines_{f}')
         aim(tuple(c * 1.6 for c in front))
         scene.render.filepath = os.path.join(OUT, f'{f}_t{i + 1}.png'); bpy.ops.render.render(write_still=True); shots += 1
     # one low-angle shot per tier, with the workouts mark
@@ -82,7 +91,7 @@ for i, t in enumerate(TIERS):
         for o in objs: bpy.data.objects.remove(o, do_unlink=True)
         continue
     for o in objs:
-        base = o.name.split('.')[0]; o.hide_render = base.startswith('mark_') and not base.startswith('mark_workouts')
+        base = o.name.split('.')[0]; o.hide_render = (base.startswith('mark_') and not base.startswith('mark_workouts')) or (base.startswith('lines_') and base != 'lines_workouts')
     aim(tuple(c * 1.6 for c in low)); scene.render.filepath = os.path.join(OUT, f'low_t{i + 1}.png'); bpy.ops.render.render(write_still=True)
     for o in objs: bpy.data.objects.remove(o, do_unlink=True)
 print('rendered', shots + len(TIERS))
@@ -104,9 +113,9 @@ if TURN:
                 if slot.material: shade(slot.material)
             base = o.name.split('.')[0]
             if base != 'stones':
-                bev = o.modifiers.new('bevel', 'BEVEL'); bev.width = 0.0025; bev.segments = 2; bev.limit_method = 'ANGLE'; bev.angle_limit = math.radians(40); bev.use_clamp_overlap = True
-            bpy.context.view_layer.objects.active = o; o.select_set(True); bpy.ops.object.shade_smooth_by_angle(angle=math.radians(35)) if hasattr(bpy.ops.object, 'shade_smooth_by_angle') else bpy.ops.object.shade_smooth(); o.select_set(False)
-            o.hide_render = base.startswith('mark_') and not (base == f'mark_{f}' or base == f'mark_{f}_channel')
+                bev = o.modifiers.new('bevel', 'BEVEL'); bev.width = 0.0015; bev.segments = 2; bev.limit_method = 'ANGLE'; bev.angle_limit = math.radians(40); bev.use_clamp_overlap = True
+            bpy.context.view_layer.objects.active = o; o.select_set(True); bpy.ops.object.shade_smooth_by_angle(angle=math.radians(70)) if hasattr(bpy.ops.object, 'shade_smooth_by_angle') else bpy.ops.object.shade_smooth(); o.select_set(False)
+            o.hide_render = (base.startswith('mark_') and not (base == f'mark_{f}' or base == f'mark_{f}_channel')) or (base.startswith('lines_') and base != f'lines_{f}')
             o.parent = pivot
         # The imported badge stands upright facing -Y (toward the camera). Yaw about Z turns it round to the edge and the
         # back; pitch about X tips it to show the top and the underside.
