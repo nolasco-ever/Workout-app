@@ -1,5 +1,5 @@
 import React from 'react';
-import { ScrollView, TouchableOpacity, View } from 'react-native';
+import { Pressable, ScrollView, View } from 'react-native';
 import { CustomText } from '../text/customText';
 import { useTheme } from '../../theme';
 
@@ -16,13 +16,16 @@ export function ChoiceChips<T extends string>({ options, value, onChange, scroll
   const chips = options.map(o => {
     const on = o.value === value;
     return (
-      <TouchableOpacity
+      // Pressable, not TouchableOpacity: the opacity dip read as a dim, laggy chip while the list behind recomputed.
+      <Pressable
         key={o.value}
         onPress={() => onChange(o.value)}
-        style={{ backgroundColor: on ? colors.accent : colors.surfaceRaised, borderRadius: radius.pill, paddingHorizontal: spacing.md + 2, paddingVertical: spacing.sm }}
+        accessibilityRole="button"
+        accessibilityState={{ selected: on }}
+        style={({ pressed }) => ({ backgroundColor: on || pressed ? colors.accent : colors.surfaceRaised, borderRadius: radius.pill, paddingHorizontal: spacing.md + 2, paddingVertical: spacing.sm })}
       >
-        <CustomText variant="label" color={on ? colors.onAccent : colors.ink}>{o.label}</CustomText>
-      </TouchableOpacity>
+        {({ pressed }) => <CustomText variant="label" color={on || pressed ? colors.onAccent : colors.ink}>{o.label}</CustomText>}
+      </Pressable>
     );
   });
   if (scroll) {
