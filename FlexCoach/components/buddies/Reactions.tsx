@@ -16,6 +16,12 @@ interface Props {
   onReact?: (emoji: string | null) => void;
   /** Chips only, no way to add one; for the Home card. */
   compact?: boolean;
+  /**
+   * A row to put the smile button at the right of (a title line, say),
+   * instead of after the chips. The chips then sit on their own row below,
+   * and nothing at all is drawn under the header until someone reacts.
+   */
+  header?: React.ReactNode;
 }
 
 /**
@@ -25,7 +31,7 @@ interface Props {
  * already gave takes it back, tapping a chip does the same for its emoji.
  * One reaction per person. A long press on any chip lists who reacted.
  */
-export const Reactions = ({ reactions, myUid, onReact, compact = false }: Props) => {
+export const Reactions = ({ reactions, myUid, onReact, compact = false, header }: Props) => {
   const { colors, spacing, radius } = useTheme();
   const [anchor, setAnchor] = useState<BubbleAnchor | null>(null);
   const [whoOpen, setWhoOpen] = useState(false);
@@ -37,7 +43,7 @@ export const Reactions = ({ reactions, myUid, onReact, compact = false }: Props)
   const known: readonly string[] = REACTION_EMOJI;
   const ordered: string[] = [...known.filter(e => counts.has(e)), ...[...counts.keys()].filter(e => !known.includes(e))];
   const canReact = !!onReact && !!myUid;
-  if (ordered.length === 0 && (compact || !canReact)) return null;
+  if (ordered.length === 0 && (compact || !canReact) && header === undefined) return null;
   // Who gave what, newest first within each emoji, in the chips' order.
   const who = ordered.map(emoji => ({
     emoji,
@@ -57,8 +63,30 @@ export const Reactions = ({ reactions, myUid, onReact, compact = false }: Props)
     node.measureInWindow((x, y, width, height) => setAnchor({ x, y, width, height }));
   };
 
+  const addButton = canReact && !compact && (
+    <View ref={button} collapsable={false}>
+      <TouchableOpacity
+        onPress={openBubble}
+        hitSlop={6}
+        accessibilityRole="button"
+        accessibilityLabel="Add a reaction"
+        style={{ width: 28, height: 28, borderRadius: 14, alignItems: 'center', justifyContent: 'center', backgroundColor: anchor ? colors.accentTint : colors.surfaceRaised }}
+      >
+        <Icon icon={generalIcons.smilePlus} size={16} color={anchor ? colors.accent : colors.inkMuted} />
+      </TouchableOpacity>
+    </View>
+  );
+
   return (
-    <View style={{ flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center', gap: spacing.xs, marginTop: spacing.xs }}>
+    <View>
+      {header !== undefined && (
+        <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.md }}>
+          <View style={{ flex: 1 }}>{header}</View>
+          {addButton}
+        </View>
+      )}
+      {(ordered.length > 0 || (header === undefined && canReact && !compact)) && (
+      <View style={{ flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center', gap: spacing.xs, marginTop: spacing.xs }}>
       {ordered.map(emoji => {
         const selected = mine === emoji;
         const count = counts.get(emoji) ?? 0;
@@ -89,18 +117,8 @@ export const Reactions = ({ reactions, myUid, onReact, compact = false }: Props)
           </TouchableOpacity>
         );
       })}
-      {canReact && !compact && (
-        <View ref={button} collapsable={false}>
-          <TouchableOpacity
-            onPress={openBubble}
-            hitSlop={6}
-            accessibilityRole="button"
-            accessibilityLabel="Add a reaction"
-            style={{ width: 28, height: 28, borderRadius: 14, alignItems: 'center', justifyContent: 'center', backgroundColor: anchor ? colors.accentTint : colors.surfaceRaised }}
-          >
-            <Icon icon={generalIcons.smilePlus} size={16} color={anchor ? colors.accent : colors.inkMuted} />
-          </TouchableOpacity>
-        </View>
+      {header === undefined && addButton}
+      </View>
       )}
       {canReact && !compact && <ReactionBubble anchor={anchor} mine={mine} onPick={pick} onClose={() => setAnchor(null)} />}
       <BottomSheet open={whoOpen} title="Reactions" onClose={() => setWhoOpen(false)}>

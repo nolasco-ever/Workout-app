@@ -126,7 +126,7 @@ const RecordRow = ({ name, value, line, units, open, onToggle, divider }: { name
               </CustomText>
             </>
           ) : (
-            <CustomText variant="caption" color={colors.inkMuted}>First time logged, so no history to graph yet.</CustomText>
+            <CustomText variant="caption" color={colors.inkMuted}>Not enough data to graph</CustomText>
           )}
         </View>
       )}
@@ -261,19 +261,23 @@ export const BuddyWorkoutScreen = () => {
         )}
         {item && (
           <>
-            <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.md }}>
-              <Avatar uri={buddy?.card?.photoUrl ?? buddy?.photoUrl} name={name} size={48} />
-              <View style={{ flex: 1 }}>
-                <CustomText variant="heading">{item.title.replace(/^Finished /, '')}</CustomText>
-                <CustomText variant="caption" color={colors.inkMuted}>
-                  {name.split(' ')[0]} · {dateLine(item.at)}{item.detail ? ` · ${item.detail}` : ''}
-                </CustomText>
-              </View>
-            </View>
-            {/* Reactions right under the header, as a bare chip row: no label, no card, just the smile button when nobody has reacted yet. */}
-            <View style={{ marginTop: -spacing.sm }}>
-              <Reactions reactions={item.reactions} myUid={uid} onReact={react} />
-            </View>
+            {/* The smile button sits at the right of the title line; the reaction chips, once there are any, go on a bare row under it. */}
+            <Reactions
+              reactions={item.reactions}
+              myUid={uid}
+              onReact={react}
+              header={
+                <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.md }}>
+                  <Avatar uri={buddy?.card?.photoUrl ?? buddy?.photoUrl} name={name} size={48} />
+                  <View style={{ flex: 1 }}>
+                    <CustomText variant="heading">{item.title.replace(/^Finished /, '')}</CustomText>
+                    <CustomText variant="caption" color={colors.inkMuted}>
+                      {name.split(' ')[0]} · {dateLine(item.at)}{item.detail ? ` · ${item.detail}` : ''}
+                    </CustomText>
+                  </View>
+                </View>
+              }
+            />
 
             {/* The workout itself: as much of it as the owner shares. A private workout has no line at all; lines from before sharing existed carry nothing. */}
             {item.kind === 'workout_done' && (
