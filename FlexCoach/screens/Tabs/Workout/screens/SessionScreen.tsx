@@ -96,8 +96,9 @@ export const SessionScreen = () => {
       leave();
       return;
     }
-    Alert.alert('Leave workout?', 'Your sets are saved. You can resume from the Workout tab.', [
-      { text: 'Stay', style: 'cancel' },
+    // Stay leads; it is not the cancel button because iOS would then sink it to the bottom of a three-button alert.
+    Alert.alert('Leave workout?', 'You can resume from the Workout tab.', [
+      { text: 'Stay' },
       {
         text: 'Leave',
         onPress: () => {
