@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Modal, Pressable, TouchableOpacity, useWindowDimensions, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Animated, { Easing, runOnJS, useAnimatedStyle, useSharedValue, withTiming } from 'react-native-reanimated';
 import { REACTION_COLUMNS, REACTION_EMOJI } from '../../data/models';
 import { CustomText } from '../text/customText';
@@ -34,7 +35,7 @@ const OPEN_MS = 160;
 const CLOSE_MS = 120;
 
 /**
- * The emoji picker as a floating bubble above the button that opened it,
+ * The emoji picker as a floating bubble under the button that opened it,
  * the set wrapped into rows of REACTION_COLUMNS. Grows out of the button's
  * spot and fades in; a tap anywhere else, or a
  * pick, shrinks it back and closes. Lives in a transparent modal so it
@@ -42,7 +43,8 @@ const CLOSE_MS = 120;
  */
 export const ReactionBubble = ({ anchor, mine, onPick, onClose }: Props) => {
   const { colors, spacing, radius } = useTheme();
-  const { width: screenWidth } = useWindowDimensions();
+  const { width: screenWidth, height: screenHeight } = useWindowDimensions();
+  const insets = useSafeAreaInsets();
   const [mounted, setMounted] = useState(anchor !== null);
   const progress = useSharedValue(0);
 
@@ -73,9 +75,12 @@ export const ReactionBubble = ({ anchor, mine, onPick, onClose }: Props) => {
 
   if (!mounted || !anchor) return null;
   const left = Math.min(Math.max(spacing.md, anchor.x + anchor.width / 2 - WIDTH / 2), screenWidth - WIDTH - spacing.md);
-  const top = anchor.y - HEIGHT - GAP;
-  // Scale from the point above the button, so it grows out of it.
+  // Under the button, so a button on a title line is not covered by the header; above it only when the bottom of the screen is in the way.
+  const below = anchor.y + anchor.height + GAP + HEIGHT <= screenHeight - insets.bottom - spacing.md;
+  const top = below ? anchor.y + anchor.height + GAP : anchor.y - HEIGHT - GAP;
+  // Scale from the button's edge, so it grows out of it.
   const originX = anchor.x + anchor.width / 2 - left;
+  const originY = below ? 0 : HEIGHT;
 
   return (
     <Modal visible transparent animationType="none" onRequestClose={close} statusBarTranslucent navigationBarTranslucent>
@@ -100,7 +105,7 @@ export const ReactionBubble = ({ anchor, mine, onPick, onClose }: Props) => {
               shadowRadius: 14,
               shadowOffset: { width: 0, height: 8 },
               elevation: 10,
-              transformOrigin: `${originX}px ${HEIGHT}px`,
+              transformOrigin: `${originX}px ${originY}px`,
             },
             style,
           ]}
