@@ -21,15 +21,20 @@ const targetLine = (t: ExerciseProgression['target'], measurement: ExerciseProgr
   return `${t.sets} × ${targetRepsLabel(t)} reps${weight ? ` @ ${weight}` : ''}`;
 };
 
+/** The chip on a cycle review row: how the cycle went against the target. */
+export const verdictLabel = (verdict: ExerciseProgression['verdict']): string | null => (verdict === 'beat' ? 'Beat' : verdict === 'hit' ? 'Hit' : verdict === 'missed' ? 'Missed' : null);
+
 /**
  * What changed for one exercise going into the next cycle, and why, for
  * the cycle review: the new target, the one it replaces (null the first
- * time), and the cause in one short sentence.
+ * time), what was actually done against it (null when nothing was), and
+ * the cause in one short sentence.
  */
-export const describeProgression = (p: ExerciseProgression, unit: WeightUnit): { next: string; previous: string | null; reason: string } => {
+export const describeProgression = (p: ExerciseProgression, unit: WeightUnit): { next: string; previous: string | null; did: string | null; reason: string } => {
   const sessionsWord = `${p.sessions} session${p.sessions === 1 ? '' : 's'}`;
   const next = targetLine(p.target, p.measurement, unit);
   const previous = p.from ? targetLine(p.from, p.measurement, unit) : null;
+  const did = p.did && p.sessions > 0 ? targetLine(p.did, p.measurement, unit) : null;
   const missed = `${p.sessions - p.hits} of ${sessionsWord}`;
   const hit = `${p.hits} of ${sessionsWord}`;
 
@@ -54,5 +59,5 @@ export const describeProgression = (p: ExerciseProgression, unit: WeightUnit): {
     }
   })();
 
-  return { next, previous, reason };
+  return { next, previous, did, reason };
 };

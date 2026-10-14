@@ -29,6 +29,14 @@ import { KG_PER_LB } from './units';
 
 export type ProgressionChange = 'start' | 'hold' | 'increase' | 'climb' | 'drop';
 
+/**
+ * How the cycle went against the target: every session did more than it
+ * asked (beat), every session did what it asked (hit), or at least one
+ * session fell short (missed). Null when there was no target to judge
+ * against: the first cycle, an untrained exercise, or cardio.
+ */
+export type ProgressionVerdict = 'beat' | 'hit' | 'missed';
+
 export interface ExerciseProgression {
   workoutExerciseId: Id;
   exerciseId: Id;
@@ -43,6 +51,14 @@ export interface ExerciseProgression {
   sessions: number;
   /** Of those, sessions where every working set hit its target. */
   hits: number;
+  verdict: ProgressionVerdict | null;
+  /**
+   * What was actually done over the cycle, shaped like a target so it reads
+   * the same way: per set, the fewest reps it reached in any session at the
+   * weight it was last done at; for a hold, the shortest hold; for cardio,
+   * the last distance and time. Null when nothing was done.
+   */
+  did: SetTarget | null;
 }
 
 const minOf = (values: (number | null | undefined)[]): number | null => {
@@ -100,7 +116,7 @@ const carry = (target: SetTarget, sets: number): SetTarget => {
   return { ...withPerSet(sets, goals), durationSec: target.durationSec, distanceM: target.distanceM };
 };
 
-const summary = (entry: WorkoutExercise, from: SetTarget | null, target: SetTarget, change: ProgressionChange, sessions: number, hits: number): ExerciseProgression => ({
+const summary = (entry: WorkoutExercise, from: SetTarget | null, target: SetTarget, change: ProgressionChange, sessions: number, hits: number, verdict: ProgressionVerdict | null = null, did: SetTarget | null = null): ExerciseProgression => ({
   workoutExerciseId: entry.id,
   exerciseId: entry.exerciseId,
   exerciseName: entry.exerciseName,
@@ -110,6 +126,8 @@ const summary = (entry: WorkoutExercise, from: SetTarget | null, target: SetTarg
   change,
   sessions,
   hits,
+  verdict,
+  did,
 });
 
 /**
@@ -155,22 +173,27 @@ export const progressExercise = (prescribed: WorkoutExercise, logs: SessionExerc
         const attempts = done.map(sets => sets[i]);
         return maxOf([[...attempts].reverse().find(s => s !== undefined)?.weightKg]) ?? goalFor(from, i).weightKg ?? entry.startingWeightKg;
       });
+      // What was done, set by set: the fewest reps the set reached in any session, at its last weight.
+      const did = withPerSet(entry.sets, indices.map(i => ({ weightKg: lastWeights[i], reps: Math.min(...done.map(sets => sets[i]?.reps ?? 0)) })));
+      // Beaten: every set of every session did more than it was asked, in reps or in weight at the asked reps.
+      const beatAll = hitAll && done.every(sets => indices.every(i => (sets[i].reps ?? 0) > asked[i] || (sets[i].weightKg ?? 0) > (goalFor(from, i).weightKg ?? 0)));
+      const verdict: ProgressionVerdict = beatAll ? 'beat' : hitAll ? 'hit' : 'missed';
 
       const changeFor = (reps: number): ProgressionChange => (reps > targetReps ? 'climb' : reps < targetReps ? 'drop' : 'hold');
       if (!hitAll) {
         const reps = Math.max(rangeMin, Math.min(minReps, rangeMax));
-        return summary(entry, from, withPerSet(entry.sets, lastWeights.map(weightKg => ({ weightKg, reps }))), changeFor(reps), judged.length, hits);
+        return summary(entry, from, withPerSet(entry.sets, lastWeights.map(weightKg => ({ weightKg, reps }))), changeFor(reps), judged.length, hits, verdict, did);
       }
       if (targetReps < rangeMax) {
         const reps = Math.max(rangeMin, Math.min(rangeMax, Math.max(targetReps + p.repStep, minReps)));
-        return summary(entry, from, withPerSet(entry.sets, lastWeights.map(weightKg => ({ weightKg, reps }))), changeFor(reps), judged.length, hits);
+        return summary(entry, from, withPerSet(entry.sets, lastWeights.map(weightKg => ({ weightKg, reps }))), changeFor(reps), judged.length, hits, verdict, did);
       }
       const canAddWeight = entry.measurement === 'weight_reps' || lastWeights.every(w => w !== null && w > 0);
       if (canAddWeight) {
         const goals = lastWeights.map(w => ({ weightKg: w !== null ? roundToLoadableKg(w + p.weightIncrementKg, unit) : null, reps: rangeMin }));
-        return summary(entry, from, withPerSet(entry.sets, goals), 'increase', judged.length, hits);
+        return summary(entry, from, withPerSet(entry.sets, goals), 'increase', judged.length, hits, verdict, did);
       }
-      return summary(entry, from, withPerSet(entry.sets, lastWeights.map(weightKg => ({ weightKg, reps: rangeMax + p.repStep }))), 'climb', judged.length, hits);
+      return summary(entry, from, withPerSet(entry.sets, lastWeights.map(weightKg => ({ weightKg, reps: rangeMax + p.repStep }))), 'climb', judged.length, hits, verdict, did);
     }
 
     case 'time': {
@@ -182,7 +205,11 @@ export const progressExercise = (prescribed: WorkoutExercise, logs: SessionExerc
       const weight = maxOf(done[done.length - 1].map(s => s.weightKg)) ?? from.weightKg;
       const durationSec = hitAll ? targetSec + p.durationStepSec : Math.max(5, minSec);
       const target: SetTarget = { sets: entry.sets, reps: null, weightKg: weight, durationSec, distanceM: null };
-      return summary(entry, from, target, hitAll ? 'increase' : durationSec < targetSec ? 'drop' : 'hold', judged.length, hits);
+      const did: SetTarget = { sets: entry.sets, reps: null, weightKg: weight, durationSec: minSec, distanceM: null };
+      // No target yet (the first hold sets the bar) means nothing to beat or miss.
+      const judgedAgainst = from.durationSec !== null || entry.startingDurationSec !== null;
+      const verdict: ProgressionVerdict | null = !judgedAgainst ? null : hitAll && minSec > targetSec ? 'beat' : hitAll ? 'hit' : 'missed';
+      return summary(entry, from, target, hitAll ? 'increase' : durationSec < targetSec ? 'drop' : 'hold', judged.length, hits, verdict, did);
     }
 
     case 'distance_time': {
@@ -196,7 +223,9 @@ export const progressExercise = (prescribed: WorkoutExercise, logs: SessionExerc
         durationSec: lastDuration,
         distanceM: lastDistance !== null ? lastDistance + p.distanceStepM : null,
       };
-      return summary(entry, from, target, p.distanceStepM > 0 && lastDistance !== null ? 'increase' : 'hold', judged.length, judged.length);
+      const did: SetTarget = { sets: entry.sets, reps: null, weightKg: null, durationSec: lastDuration, distanceM: lastDistance };
+      // Cardio has no bar to clear, so no verdict: the next step is simply what was done plus the step.
+      return summary(entry, from, target, p.distanceStepM > 0 && lastDistance !== null ? 'increase' : 'hold', judged.length, judged.length, null, did);
     }
   }
 };

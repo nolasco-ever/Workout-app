@@ -111,6 +111,36 @@ describe('progressExercise: weighted lifts, judged per cycle', () => {
   });
 });
 
+describe('progressExercise: the verdict and what was done', () => {
+  it('has no verdict before there is a target to judge against', () => {
+    expect(progressExercise(entry(), [], null, 'kg').verdict).toBeNull();
+    expect(progressExercise(entry(), [], null, 'kg').did).toBeNull();
+  });
+
+  it('calls it hit when every session did what was asked, and says what was done', () => {
+    const logs = [lastSession({ reps: 10, weightKg: 30 }, three(30, 10)), lastSession({ reps: 10, weightKg: 30 }, [set({ weightKg: 30, reps: 11 }), set({ weightKg: 30, reps: 10 }), set({ weightKg: 30, reps: 10 })])];
+    const p = progressExercise(entry(), logs, null, 'kg');
+    expect(p.verdict).toBe('hit');
+    expect(p.did).toMatchObject({ sets: 3, reps: 10, weightKg: 30 });
+    expect(describeProgression(p, 'kg').did).toBe('3 × 10 reps @ 30 kg');
+  });
+
+  it('calls it beat when every set of every session did more than asked, in reps or weight', () => {
+    const moreReps = [lastSession({ reps: 8, weightKg: 30 }, three(30, 10)), lastSession({ reps: 8, weightKg: 30 }, three(30, 9))];
+    expect(progressExercise(entry(), moreReps, null, 'kg').verdict).toBe('beat');
+    const moreWeight = [lastSession({ reps: 10, weightKg: 30 }, three(32.5, 10))];
+    expect(progressExercise(entry(), moreWeight, null, 'kg').verdict).toBe('beat');
+  });
+
+  it('calls it missed when any session fell short, and shows the lowest the sets got', () => {
+    const logs = [lastSession({ reps: 10, weightKg: 30 }, three(30, 10)), lastSession({ reps: 10, weightKg: 30 }, [set({ weightKg: 30, reps: 10 }), set({ weightKg: 30, reps: 9 }), set({ weightKg: 30, reps: 8 })])];
+    const p = progressExercise(entry(), logs, null, 'kg');
+    expect(p.verdict).toBe('missed');
+    expect(p.did?.perSet?.map(g => g.reps)).toEqual([10, 9, 8]);
+    expect(describeProgression(p, 'kg').did).toBe('3 × 8–10 reps @ 30 kg');
+  });
+});
+
 describe('progressExercise: bodyweight reps', () => {
   const pullUps = () => entry({ measurement: 'reps', exerciseName: 'Pull Ups', startingWeightKg: null, repRangeMin: 6, repRangeMax: 10 });
 

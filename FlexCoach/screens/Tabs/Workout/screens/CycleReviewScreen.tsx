@@ -8,7 +8,7 @@ import { formatDuration, formatRecordValue, toDisplayWeight } from '../../../../
 import { CycleReview, getCycleReview, loadCycleForReview, markCycleReportReviewed, startNextCycle } from '../../../../data/services/workoutService';
 import { countWorkingSets } from '../../../../data/engine/stats';
 import { nextCycleNumberAfter } from '../../../../data/engine/schedule';
-import { describeProgression } from '../../../../data/engine/progressionCopy';
+import { describeProgression, verdictLabel } from '../../../../data/engine/progressionCopy';
 import { notificationRepository } from '../../../../data/repositories/notificationRepository';
 import { CustomText } from '../../../../components/text/customText';
 import { Icon } from '../../../../components/icons/Icon';
@@ -52,7 +52,7 @@ const DetailRow = ({ label, value, tone, first = false }: { label: string; value
 export const CycleReviewScreen = () => {
   const navigation = useNavigation<NavigationProp<WorkoutStackParams>>();
   const { params } = useRoute<RouteProp<WorkoutStackParams, 'CycleReviewScreen'>>();
-  const { colors, spacing } = useTheme();
+  const { colors, spacing, radius } = useTheme();
   const bottomInset = useTabBarInset();
   const { uid, profile } = useAuth();
   const [loaded, setLoaded] = useState<{ plan: Plan; cycle: Cycle } | null>(params.cycle ? { plan: params.plan, cycle: params.cycle } : null);
@@ -106,6 +106,9 @@ export const CycleReviewScreen = () => {
   const volume = Math.round(toDisplayWeight(review.volumeKg, unit) ?? 0);
   const sessions = [...review.sessions].sort((a, b) => b.startedAt - a.startedAt);
   const avgSec = review.sessions.length ? Math.round(review.durationSec / review.sessions.length) : 0;
+  // Exercises that had a target to judge, and how many cleared it.
+  const judged = review.nextTargets.filter(p => p.verdict !== null);
+  const targetsHit = judged.filter(p => p.verdict !== 'missed').length;
   const startNext = async () => {
     if (!uid) return;
     setBusy(true);
@@ -140,6 +143,7 @@ export const CycleReviewScreen = () => {
               <DetailRow first label="Total time trained" value={review.durationSec ? formatDuration(review.durationSec) : '—'} />
               <DetailRow label="Avg per workout" value={avgSec ? formatDuration(avgSec) : '—'} />
               <DetailRow label="Total sets" value={String(review.setsCompleted)} />
+              {judged.length > 0 && <DetailRow label="Targets hit" value={`${targetsHit} of ${judged.length}`} tone={targetsHit === judged.length ? colors.success : targetsHit === 0 ? colors.warning : undefined} />}
             </View>
             <View>
               <CustomText variant="overline" color={colors.accent} style={{ paddingTop: spacing.xs, paddingBottom: spacing.xs }}>Schedule</CustomText>
@@ -175,27 +179,35 @@ export const CycleReviewScreen = () => {
             <CustomText variant="overline" color={colors.inkMuted}>Next cycle</CustomText>
             <Card style={{ padding: 0 }}>
               {review.nextTargets.map((p, i) => {
-                const { next, previous, reason } = describeProgression(p, unit);
+                const { next, previous, did, reason } = describeProgression(p, unit);
                 const tone = p.change === 'increase' ? colors.success : p.change === 'climb' ? colors.accent : p.change === 'drop' ? colors.warning : colors.inkMuted;
                 const icon = p.change === 'increase' || p.change === 'climb' ? directionIcons.angleUp : p.change === 'drop' ? directionIcons.angleDown : generalIcons.minus;
+                const verdict = verdictLabel(p.verdict);
+                const verdictTone = p.verdict === 'beat' ? colors.accent : p.verdict === 'hit' ? colors.success : colors.warning;
                 return (
                   <View key={p.workoutExerciseId} style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.md, padding: spacing.lg, borderTopWidth: i ? 1 : 0, borderTopColor: colors.line }}>
                     <View style={{ width: 32, height: 32, borderRadius: 16, backgroundColor: colors.surfaceRaised, alignItems: 'center', justifyContent: 'center' }}>
                       <Icon icon={icon} size={18} color={tone} strokeWidth={2.5} />
                     </View>
                     <View style={{ flex: 1, gap: spacing.xs }}>
-                      <CustomText variant="bodyStrong">{p.exerciseName}</CustomText>
-                      {/* Two columns: the coming target and the one it replaces. */}
-                      <View style={{ flexDirection: 'row', gap: spacing.md }}>
+                      <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.sm }}>
                         <View style={{ flex: 1 }}>
-                          <CustomText variant="overline" color={colors.inkMuted}>Updated</CustomText>
-                          <CustomText variant="label" color={tone}>{next}</CustomText>
+                          <CustomText variant="bodyStrong">{p.exerciseName}</CustomText>
                         </View>
-                        <View style={{ flex: 1 }}>
-                          <CustomText variant="overline" color={colors.inkMuted}>Previously</CustomText>
-                          <CustomText variant="label" color={colors.inkMuted}>{previous ?? '—'}</CustomText>
-                        </View>
+                        {/* How the cycle went against the target, at a glance. */}
+                        {verdict && (
+                          <View style={{ paddingHorizontal: spacing.sm, paddingVertical: 2, borderRadius: radius.pill, backgroundColor: colors.surfaceRaised }}>
+                            <CustomText variant="overline" color={verdictTone}>{verdict}</CustomText>
+                          </View>
+                        )}
                       </View>
+                      {/* What was done against what was asked, then the coming target and why. */}
+                      {did && (
+                        <CustomText variant="caption" color={colors.ink}>
+                          Did {did}{previous ? ` · asked ${previous}` : ''}
+                        </CustomText>
+                      )}
+                      <CustomText variant="label" color={tone}>Next {next}</CustomText>
                       <CustomText variant="caption" color={colors.inkMuted}>{reason}</CustomText>
                     </View>
                   </View>
