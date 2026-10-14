@@ -1,3 +1,35 @@
+diff --git a/node_modules/react-native-filament/cpp/jsi/RNFJSIConverter.h b/node_modules/react-native-filament/cpp/jsi/RNFJSIConverter.h
+index 686003f..089aa81 100644
+--- a/node_modules/react-native-filament/cpp/jsi/RNFJSIConverter.h
++++ b/node_modules/react-native-filament/cpp/jsi/RNFJSIConverter.h
+@@ -175,6 +175,7 @@ template <typename TResult> struct JSIConverter<std::future<TResult>> {
+           } catch (const std::exception& exception) {
+             // the async function threw an error, reject the promise on JS Thread
+             std::string what = exception.what();
++            std::fprintf(stderr, "[react-native-filament] async native call threw: %s\n", what.c_str());
+             promise->reject(what);
+           } catch (...) {
+             // the async function threw a non-std error, try getting it
+diff --git a/node_modules/react-native-filament/cpp/jsi/RNFPromise.cpp b/node_modules/react-native-filament/cpp/jsi/RNFPromise.cpp
+index 5a88bbc..eaa436a 100644
+--- a/node_modules/react-native-filament/cpp/jsi/RNFPromise.cpp
++++ b/node_modules/react-native-filament/cpp/jsi/RNFPromise.cpp
+@@ -3,6 +3,7 @@
+ #include <jsi/jsi.h>
+ #include <utility>
+ #include <vector>
++#include <cstdio>
+ 
+ namespace margelo {
+ 
+@@ -35,6 +36,7 @@ void Promise::resolve(jsi::Value&& result) {
+ }
+ 
+ void Promise::reject(std::string message) {
++  std::fprintf(stderr, "[react-native-filament] Promise rejected (%zu bytes): %s\n", message.size(), message.c_str());
+   jsi::JSError error(runtime, message);
+   _rejecter.call(runtime, error.value());
+ }
 diff --git a/node_modules/react-native-filament/ios/src/RNFAppleFilamentProxy.mm b/node_modules/react-native-filament/ios/src/RNFAppleFilamentProxy.mm
 index 7923259..d212595 100644
 --- a/node_modules/react-native-filament/ios/src/RNFAppleFilamentProxy.mm

@@ -94,14 +94,17 @@ const Turntable = ({ family, tier, lighting, spin }: Required<Omit<Props, 'style
 
   return (
     <GestureDetector gesture={pan}>
-      <FilamentView style={{ flex: 1 }} enableTransparentRendering>
-        {/* The model is one unit wide, front toward +Z; the camera sits on that axis. */}
-        <Camera cameraPosition={[0, 0, 3.1]} cameraTarget={[0, 0, 0]} cameraUp={[0, 1, 0]} focalLengthInMillimeters={60} />
-        <EnvironmentalLight source={{ uri: 'RNF_default_env_ibl.ktx' }} intensity={lighting.environment} />
-        <Light type="directional" intensity={lighting.sun} colorKelvin={lighting.kelvin} direction={[-0.4, -0.7, -0.6]} castShadows={false} />
-        <Model source={BADGE_BODIES[tier]} rotate={rotate} multiplyWithCurrentTransform={false} />
-        {overlay !== undefined && <Model source={overlay} rotate={rotate} multiplyWithCurrentTransform={false} />}
-      </FilamentView>
+      {/* A plain host view for the gesture to attach to; FilamentView's own native view does not take handlers. */}
+      <View style={{ flex: 1 }} collapsable={false}>
+        <FilamentView style={{ flex: 1 }} enableTransparentRendering>
+          {/* The model is one unit wide, front toward +Z; the camera sits on that axis. */}
+          <Camera cameraPosition={[0, 0, 3.1]} cameraTarget={[0, 0, 0]} cameraUp={[0, 1, 0]} focalLengthInMillimeters={60} />
+          <EnvironmentalLight source={{ uri: 'RNF_default_env_ibl.ktx' }} intensity={lighting.environment} />
+          <Light type="directional" intensity={lighting.sun} colorKelvin={lighting.kelvin} direction={[-0.4, -0.7, -0.6]} castShadows={false} />
+          <Model source={BADGE_BODIES[tier]} rotate={rotate} multiplyWithCurrentTransform={false} />
+          {overlay !== undefined && <Model source={overlay} rotate={rotate} multiplyWithCurrentTransform={false} />}
+        </FilamentView>
+      </View>
     </GestureDetector>
   );
 };
