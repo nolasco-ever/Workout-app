@@ -70,9 +70,9 @@ export const Reactions = ({ reactions, myUid, onReact, compact = false, header }
         hitSlop={6}
         accessibilityRole="button"
         accessibilityLabel="Add a reaction"
-        style={{ width: 28, height: 28, borderRadius: 14, alignItems: 'center', justifyContent: 'center', backgroundColor: anchor ? colors.accentTint : colors.surfaceRaised }}
+        style={{ width: 36, height: 36, borderRadius: 18, alignItems: 'center', justifyContent: 'center', backgroundColor: anchor ? colors.accentTint : colors.surfaceRaised }}
       >
-        <Icon icon={generalIcons.smilePlus} size={16} color={anchor ? colors.accent : colors.inkMuted} />
+        <Icon icon={generalIcons.smilePlus} size={20} color={anchor ? colors.accent : colors.inkMuted} />
       </TouchableOpacity>
     </View>
   );
@@ -86,7 +86,7 @@ export const Reactions = ({ reactions, myUid, onReact, compact = false, header }
         </View>
       )}
       {(ordered.length > 0 || (header === undefined && canReact && !compact)) && (
-      <View style={{ flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center', gap: spacing.xs, marginTop: spacing.xs }}>
+      <View style={{ flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center', gap: spacing.xs, marginTop: header !== undefined ? spacing.md : spacing.xs }}>
       {ordered.map(emoji => {
         const selected = mine === emoji;
         const count = counts.get(emoji) ?? 0;
