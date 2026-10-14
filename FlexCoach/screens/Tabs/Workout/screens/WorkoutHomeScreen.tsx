@@ -7,7 +7,7 @@ import { usePlans } from '../../../../data/hooks/usePlans';
 import { useAuth } from '../../../../data/auth/AuthProvider';
 import { Occurrence, Plan } from '../../../../data/models';
 import { findWorkout } from '../../../../data/engine/schedule';
-import { fromLocalDate } from '../../../../data/engine/dates';
+import { addDays, fromLocalDate } from '../../../../data/engine/dates';
 import { pushWorkoutTo, seedSamplePlan, skipWorkout, startNextCycle, startQuickSession, startSession } from '../../../../data/services/workoutService';
 import { activatePlan, startFreshCycle, validatePlan } from '../../../../data/services/planService';
 import { CustomText } from '../../../../components/text/customText';
@@ -20,7 +20,7 @@ import { TabHeader } from '../../../../components/headers/TabHeader';
 import { SurfaceCard as Card } from '../../../../components/cards/SurfaceCard';
 import { PrimaryButton } from '../../../../components/buttons/PrimaryButton';
 import { NotificationPermissionCard } from '../../../../components/cards/NotificationPermissionCard';
-import { OccurrenceRow } from '../components/OccurrenceRow';
+import { DayRow } from '../components/OccurrenceRow';
 import { askNotToday } from '../components/notToday';
 import { AppStackParams } from '../../../../appNavigators/AppStack';
 import { devFlags } from '../../../../dev/flags';
@@ -72,6 +72,9 @@ export const WorkoutHomeScreen = () => {
 
   const openPreview = (occurrence: Occurrence) => plan && cycle && navigation.navigate('WorkoutPreviewScreen', { plan, cycle, occurrence });
   /** A finished day opens what was logged; anything else opens the preview. */
+  // Every date of the cycle, so the list never loses a day when a workout moves off it.
+  const cycleDays: string[] = [];
+  if (cycle) for (let d = cycle.startDate; d <= cycle.endDate && cycleDays.length < 60; d = addDays(d, 1)) cycleDays.push(d);
   const openOccurrence = (o: Occurrence) => (o.status === 'completed' && o.sessionId ? navigation.navigate('SessionDetailScreen', { sessionId: o.sessionId, workoutName: o.workoutName ?? undefined }) : openPreview(o));
 
   const start = (occurrence: Occurrence) =>
@@ -319,9 +322,10 @@ export const WorkoutHomeScreen = () => {
         <View>
           <CustomText variant="heading" style={{ marginBottom: spacing.sm }}>This cycle</CustomText>
           <Card style={{ padding: 0 }}>
-            {cycle.occurrences.map((o, i) => (
-              <View key={o.id} style={{ borderTopWidth: i === 0 ? 0 : 1, borderTopColor: colors.line }}>
-                <OccurrenceRow occurrence={o} isToday={o.date === state.todayDate} onPress={o.workoutId ? () => openOccurrence(o) : undefined} />
+            {/* One row per calendar day, start to end: a day two workouts landed on shows both, and a day nothing sits on any more is a rest day. */}
+            {cycleDays.map((date, i) => (
+              <View key={date} style={{ borderTopWidth: i === 0 ? 0 : 1, borderTopColor: colors.line }}>
+                <DayRow date={date} occurrences={cycle.occurrences.filter(o => o.date === date)} isToday={date === state.todayDate} onOpen={openOccurrence} />
               </View>
             ))}
           </Card>
