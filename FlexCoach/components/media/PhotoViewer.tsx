@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Modal, StatusBar, TouchableOpacity, useWindowDimensions, View } from 'react-native';
 import { Gesture, GestureDetector, ScrollView } from 'react-native-gesture-handler';
-import Animated, { Easing, runOnJS, useAnimatedStyle, useSharedValue, withSpring, withTiming } from 'react-native-reanimated';
+import Animated, { Easing, runOnJS, useAnimatedStyle, useSharedValue, withTiming } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { CustomText } from '../text/customText';
 import { Icon } from '../icons/Icon';
@@ -19,15 +19,23 @@ interface Props {
 }
 
 const MAX_ZOOM = 4;
+const DOUBLE_TAP_ZOOM = 2.5;
 /** Drag distance or fling speed that counts as "put it away". */
 const DISMISS_DISTANCE = 120;
 const DISMISS_VELOCITY = 900;
-const SPRING = { damping: 18, stiffness: 220 };
+/** How the photo settles after a gesture: a short ease, no bounce. */
+const SETTLE = { duration: 220, easing: Easing.out(Easing.cubic) };
+/** The photo's box is this much of the screen height; the bounds of a zoomed photo come from it. */
+const PHOTO_HEIGHT = 0.7;
 
 /**
  * Full-screen photo viewer: swipe between photos, pinch or double-tap to
  * zoom, tap to close, or drag the photo up or down to throw it away. The
  * backdrop fades as the photo moves. Zoom resets when the page changes.
+ *
+ * The pinch zooms around the fingers and follows them, so the photo can be
+ * zoomed and moved in one gesture; a one-finger drag pans a zoomed photo
+ * and, at 1x, is the dismissal. Two fingers never dismiss.
  */
 export const PhotoViewer = ({ images, captions = [], index, onClose }: Props) => {
   const { colors, spacing, radius } = useTheme();
@@ -47,23 +55,53 @@ export const PhotoViewer = ({ images, captions = [], index, onClose }: Props) =>
   const open = index !== null;
 
   const scale = useSharedValue(1);
-  const savedScale = useSharedValue(1);
   const panX = useSharedValue(0);
   const panY = useSharedValue(0);
-  const savedPanX = useSharedValue(0);
-  const savedPanY = useSharedValue(0);
+  /** Where the current gesture started from. */
+  const startScale = useSharedValue(1);
+  const startPanX = useSharedValue(0);
+  const startPanY = useSharedValue(0);
+  const startFocalX = useSharedValue(0);
+  const startFocalY = useSharedValue(0);
   /** Vertical offset of the dismiss drag; separate from panning a zoomed photo. */
   const dragY = useSharedValue(0);
   const closing = useSharedValue(false);
 
+  /** How far a photo at scale `s` may be panned before its edge leaves the screen edge. */
+  const bound = (s: number, size: number) => {
+    'worklet';
+    return Math.max(0, ((s - 1) * size) / 2);
+  };
+
+  /** Ease the pan back inside the photo's bounds at the current scale. */
+  const settleInBounds = () => {
+    'worklet';
+    const bx = bound(scale.value, width);
+    const by = bound(scale.value, height * PHOTO_HEIGHT);
+    const x = Math.min(bx, Math.max(-bx, panX.value));
+    const y = Math.min(by, Math.max(-by, panY.value));
+    if (x !== panX.value) panX.value = withTiming(x, SETTLE);
+    if (y !== panY.value) panY.value = withTiming(y, SETTLE);
+  };
+
   const resetZoom = () => {
     'worklet';
-    scale.value = withSpring(1, SPRING);
-    savedScale.value = 1;
-    panX.value = withSpring(0, SPRING);
-    panY.value = withSpring(0, SPRING);
-    savedPanX.value = 0;
-    savedPanY.value = 0;
+    scale.value = withTiming(1, SETTLE);
+    panX.value = withTiming(0, SETTLE);
+    panY.value = withTiming(0, SETTLE);
+  };
+
+  /** Zoom to `s` keeping the content under the screen point (fx, fy) in place; `from*` describe the gesture's start. */
+  const zoomAbout = (s: number, fx: number, fy: number, fromScale: number, fromPanX: number, fromPanY: number, fromFx: number, fromFy: number) => {
+    'worklet';
+    // Positions are relative to the photo's centre, where the scale is applied.
+    const cx = width / 2;
+    const cy = height / 2;
+    const contentX = (fromFx - cx - fromPanX) / fromScale;
+    const contentY = (fromFy - cy - fromPanY) / fromScale;
+    scale.value = s;
+    panX.value = fx - cx - s * contentX;
+    panY.value = fy - cy - s * contentY;
   };
 
   useEffect(() => {
@@ -73,11 +111,8 @@ export const PhotoViewer = ({ images, captions = [], index, onClose }: Props) =>
     setZoomed(false);
     setPinching(false);
     scale.value = 1;
-    savedScale.value = 1;
     panX.value = 0;
     panY.value = 0;
-    savedPanX.value = 0;
-    savedPanY.value = 0;
     dragY.value = 0;
     closing.value = false;
     // Jump to the requested page once the modal has laid out.
@@ -110,19 +145,29 @@ export const PhotoViewer = ({ images, captions = [], index, onClose }: Props) =>
     runOnJS(onClose)();
   };
 
+  // The pinch: zoom around the fingers, and follow them as they move, so a
+  // pinch is also a pan. Letting go under 1x eases back to 1x.
   const pinch = Gesture.Pinch()
     .onBegin(() => {
       runOnJS(setPinching)(true);
     })
+    .onStart(e => {
+      startScale.value = scale.value;
+      startPanX.value = panX.value;
+      startPanY.value = panY.value;
+      startFocalX.value = e.focalX;
+      startFocalY.value = e.focalY;
+    })
     .onUpdate(e => {
-      scale.value = Math.min(MAX_ZOOM, Math.max(1, savedScale.value * e.scale));
+      const s = Math.min(MAX_ZOOM, Math.max(0.7, startScale.value * e.scale));
+      zoomAbout(s, e.focalX, e.focalY, startScale.value, startPanX.value, startPanY.value, startFocalX.value, startFocalY.value);
     })
     .onEnd(() => {
-      if (scale.value < 1.05) {
+      if (scale.value <= 1.02) {
         resetZoom();
         runOnJS(setZoomed)(false);
       } else {
-        savedScale.value = scale.value;
+        settleInBounds();
         runOnJS(setZoomed)(true);
       }
     })
@@ -130,22 +175,26 @@ export const PhotoViewer = ({ images, captions = [], index, onClose }: Props) =>
       runOnJS(settlePager)();
     });
 
-  // Not zoomed: a mostly vertical drag moves the photo towards dismissal and
-  // a horizontal one is left to the pager. Zoomed: any drag pans the photo.
-  const basePan = Gesture.Pan();
+  // One finger only. Zoomed: any drag pans the photo. At 1x: a mostly
+  // vertical drag moves the photo towards dismissal, a horizontal one is
+  // left to the pager.
+  const basePan = Gesture.Pan().maxPointers(1);
   const pan = (zoomed ? basePan.activeOffsetY([-4, 4]).activeOffsetX([-4, 4]) : basePan.activeOffsetY([-14, 14]).failOffsetX([-14, 14]))
+    .onStart(() => {
+      startPanX.value = panX.value;
+      startPanY.value = panY.value;
+    })
     .onUpdate(e => {
       if (scale.value > 1) {
-        panX.value = savedPanX.value + e.translationX;
-        panY.value = savedPanY.value + e.translationY;
+        panX.value = startPanX.value + e.translationX;
+        panY.value = startPanY.value + e.translationY;
       } else {
         dragY.value = e.translationY;
       }
     })
     .onEnd(e => {
       if (scale.value > 1) {
-        savedPanX.value = panX.value;
-        savedPanY.value = panY.value;
+        settleInBounds();
         return;
       }
       const thrown = Math.abs(e.translationY) > DISMISS_DISTANCE || Math.abs(e.velocityY) > DISMISS_VELOCITY;
@@ -155,19 +204,30 @@ export const PhotoViewer = ({ images, captions = [], index, onClose }: Props) =>
           if (done) finish();
         });
       } else {
-        dragY.value = withSpring(0, SPRING);
+        dragY.value = withTiming(0, SETTLE);
       }
+    })
+    .onFinalize((_, success) => {
+      // A pan that was cancelled (the pinch took over) leaves nothing half-dragged behind.
+      if (!success && scale.value <= 1) dragY.value = withTiming(0, SETTLE);
     });
 
+  // Double tap zooms in around the tap, or back out.
   const doubleTap = Gesture.Tap()
     .numberOfTaps(2)
-    .onEnd(() => {
+    .maxDuration(300)
+    .onEnd(e => {
       if (scale.value > 1) {
         resetZoom();
         runOnJS(setZoomed)(false);
       } else {
-        scale.value = withSpring(2.5, SPRING);
-        savedScale.value = 2.5;
+        const cx = width / 2;
+        const cy = height / 2;
+        scale.value = withTiming(DOUBLE_TAP_ZOOM, SETTLE);
+        const bx = bound(DOUBLE_TAP_ZOOM, width);
+        const by = bound(DOUBLE_TAP_ZOOM, height * PHOTO_HEIGHT);
+        panX.value = withTiming(Math.min(bx, Math.max(-bx, (cx - e.x) * (DOUBLE_TAP_ZOOM - 1))), SETTLE);
+        panY.value = withTiming(Math.min(by, Math.max(-by, (cy - e.y) * (DOUBLE_TAP_ZOOM - 1))), SETTLE);
         runOnJS(setZoomed)(true);
       }
     });
@@ -207,7 +267,7 @@ export const PhotoViewer = ({ images, captions = [], index, onClose }: Props) =>
             {/* Only the page on screen takes the zoom and drag transforms; the others sit still behind it. */}
             {images.map((uri, i) => (
               <View key={uri} style={{ width, height, justifyContent: 'center' }}>
-                <Animated.Image source={{ uri }} resizeMode="contain" style={[{ width, height: height * 0.7 }, i === page ? photoStyle : null]} />
+                <Animated.Image source={{ uri }} resizeMode="contain" style={[{ width, height: height * PHOTO_HEIGHT }, i === page ? photoStyle : null]} />
               </View>
             ))}
           </ScrollView>
