@@ -182,8 +182,8 @@ describe('computeNewUnlocks', () => {
     expect(tiersReached('plan_uses', 0)).toEqual([]);
   });
 
-  it('words the feed item by tier', () => {
+  it('words the notification by tier, with a short body', () => {
     expect(unlockCopy({ family: 'streak', tier: 1, threshold: 7 }, 'lb').title).toBe('Badge unlocked: 7-day streak 🏅');
-    expect(unlockCopy({ family: 'streak', tier: 3, threshold: 30 }, 'lb').body).toContain('gold');
+    expect(unlockCopy({ family: 'streak', tier: 3, threshold: 30 }, 'lb')).toEqual({ title: 'Badge unlocked: 30-day streak 🏅', body: 'Tap to see it' });
   });
 });

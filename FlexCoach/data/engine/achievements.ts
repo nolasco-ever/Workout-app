@@ -259,12 +259,10 @@ export const computeNewUnlocks = (
 
 /** Copy for the feed item and push a tier produces. */
 export const unlockCopy = (unlock: Pick<AchievementUnlock, 'family' | 'tier' | 'threshold'>, unit: WeightUnit): { title: string; body: string } => {
-  const family = familyOf(unlock.family);
   const label = tierLabel(unlock.family, unlock.threshold, unit);
-  const material = materialFor(unlock.tier);
   return {
     title: `Badge unlocked: ${label} 🏅`,
-    body: unlock.tier === 1 ? `Your ${family.name} badge is yours. Tap to see it` : `Your ${family.name} badge is now ${material}. Tap to see it`,
+    body: 'Tap to see it',
   };
 };
 
