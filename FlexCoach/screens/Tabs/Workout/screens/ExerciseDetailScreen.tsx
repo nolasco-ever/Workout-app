@@ -53,7 +53,7 @@ export const ExerciseDetailScreen = () => {
   };
 
   // From a running workout's picker: the pick goes back through the swap channel and both screens pop, as the row's own button does.
-  const sessionAction = ex && params.swapForSessionExerciseId ? { label: 'Swap it in', icon: generalIcons.swap, run: () => pickSwap(params.swapForSessionExerciseId!, ex) } : ex && params.addToSession ? { label: 'Add to this workout', icon: generalIcons.plus, run: () => pickAdd(ex) } : null;
+  const sessionAction = ex && params.swapForSessionExerciseId ? { label: 'Swap', icon: generalIcons.swap, run: () => pickSwap(params.swapForSessionExerciseId!, ex) } : ex && params.addToSession ? { label: 'Add to this workout', icon: generalIcons.plus, run: () => pickAdd(ex) } : null;
   const runSessionAction = () => {
     sessionAction?.run();
     navigation.pop(2);
