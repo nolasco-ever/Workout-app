@@ -4,6 +4,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { RouteProp, useNavigation, useRoute } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { newEntry } from '../../../../data/services/planService';
+import { pickAdd, pickSwap } from '../components/swapChannel';
 import { usePlanEditor } from '../../../Plans/PlanEditorContext';
 import { useAuth } from '../../../../data/auth/AuthProvider';
 import { PrimaryButton } from '../../../../components/buttons/PrimaryButton';
@@ -31,7 +32,7 @@ const Chip = ({ label }: { label: string }) => {
  * photos, and step-by-step instructions. Video comes later.
  */
 export const ExerciseDetailScreen = () => {
-  const { params } = useRoute<RouteProp<{ ExerciseDetailScreen: { exerciseId: string; addToWorkoutId?: string } }, 'ExerciseDetailScreen'>>();
+  const { params } = useRoute<RouteProp<{ ExerciseDetailScreen: { exerciseId: string; addToWorkoutId?: string; addToSession?: boolean; swapForSessionExerciseId?: string } }, 'ExerciseDetailScreen'>>();
   const navigation = useNavigation<NativeStackNavigationProp<Record<string, object | undefined>>>();
   const { colors, spacing, radius } = useTheme();
   const ex = getCatalogExercise(params.exerciseId);
@@ -48,6 +49,13 @@ export const ExerciseDetailScreen = () => {
       workouts: p.workouts.map(w => (w.id === targetWorkout.id ? { ...w, exercises: [...w.exercises, newEntry(ex, w.exercises.length, p.goal, profile?.weightUnit ?? 'lb')] } : w)),
     }));
     // Pop the detail screen and the picker beneath it, back to the workout editor.
+    navigation.pop(2);
+  };
+
+  // From a running workout's picker: the pick goes back through the swap channel and both screens pop, as the row's own button does.
+  const sessionAction = ex && params.swapForSessionExerciseId ? { label: 'Swap it in', icon: generalIcons.swap, run: () => pickSwap(params.swapForSessionExerciseId!, ex) } : ex && params.addToSession ? { label: 'Add to this workout', icon: generalIcons.plus, run: () => pickAdd(ex) } : null;
+  const runSessionAction = () => {
+    sessionAction?.run();
     navigation.pop(2);
   };
 
@@ -120,6 +128,11 @@ export const ExerciseDetailScreen = () => {
       {targetWorkout && (
         <View style={{ padding: spacing.lg, borderTopWidth: 1, borderTopColor: colors.line }}>
           <PrimaryButton label={alreadyAdded ? `Already in ${targetWorkout.name}` : `Add to ${targetWorkout.name}`} icon={generalIcons.plus} disabled={alreadyAdded} onPress={addToWorkout} />
+        </View>
+      )}
+      {sessionAction && (
+        <View style={{ padding: spacing.lg, borderTopWidth: 1, borderTopColor: colors.line }}>
+          <PrimaryButton label={sessionAction.label} icon={sessionAction.icon} onPress={runSessionAction} />
         </View>
       )}
     </SafeAreaView>

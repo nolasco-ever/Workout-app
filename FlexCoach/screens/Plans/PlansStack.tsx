@@ -27,7 +27,7 @@ export type PlansStackParams = {
   ExerciseEntryScreen: { workoutId: string; entryId: string };
   PlanScheduleScreen: { mode: EditorMode };
   PlanReviewScreen: { mode: EditorMode };
-  ExerciseDetailScreen: { exerciseId: string; addToWorkoutId?: string };
+  ExerciseDetailScreen: { exerciseId: string; addToWorkoutId?: string; addToSession?: boolean; swapForSessionExerciseId?: string };
 };
 
 const Stack = createNativeStackNavigator<PlansStackParams>();

@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo, useState } from 'react';
+import React, { useCallback, useDeferredValue, useMemo, useState } from 'react';
 import { FlatList, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { RouteProp, useNavigation, useRoute } from '@react-navigation/native';
@@ -106,21 +106,24 @@ export const ExercisePickerScreen = () => {
   const workout = params.workoutId ? draft?.workouts.find(w => w.id === params.workoutId) : undefined;
   const already = useMemo(() => new Set(sessionMode ? params.excludeIds ?? [] : workout?.exercises.map(e => e.exerciseId) ?? []), [sessionMode, params.excludeIds, workout]);
 
+  // The catalog search is deferred so a tapped chip or a typed letter paints at once and the list follows.
+  const filters = useDeferredValue({ query, muscle, equipment, category });
   const results = useMemo(() => {
+    const { query: q, muscle: m, equipment: eq, category: c } = filters;
     const found = searchCatalog({
-      query,
-      muscle: muscle === 'all' ? undefined : muscle,
-      equipment: equipment === 'any' ? undefined : equipment,
-      category: category === 'any' ? undefined : category,
+      query: q,
+      muscle: m === 'all' ? undefined : m,
+      equipment: eq === 'any' ? undefined : eq,
+      category: c === 'any' ? undefined : c,
     }).filter(e => !swapping || e.id !== swapping.id);
     // Swapping: the closest stand-ins lead the list until a search or filter says otherwise.
-    if (swapping && !query && muscle === 'all' && equipment === 'any' && category === 'any') {
+    if (swapping && !q && m === 'all' && eq === 'any' && c === 'any') {
       const lead = comparableExercises(swapping, already);
       const leadIds = new Set(lead.map(e => e.id));
       return [...lead, ...found.filter(e => !leadIds.has(e.id))].slice(0, 120);
     }
     return found.slice(0, 120);
-  }, [query, muscle, equipment, category, swapping, already]);
+  }, [filters, swapping, already]);
 
   const workoutId = params.workoutId;
   const add = useCallback(
@@ -136,7 +139,12 @@ export const ExercisePickerScreen = () => {
     },
     [swapMode, params.sessionExerciseId, sessionMode, update, navigation, workoutId, unit],
   );
-  const open = useCallback((ex: Exercise) => navigation.navigate('ExerciseDetailScreen', sessionMode ? { exerciseId: ex.id } : { exerciseId: ex.id, addToWorkoutId: workoutId }), [navigation, sessionMode, workoutId]);
+  // The how-to carries the same action as the row, so a pick can be made from there without coming back to the list.
+  const sessionExerciseId = params.sessionExerciseId;
+  const open = useCallback(
+    (ex: Exercise) => navigation.navigate('ExerciseDetailScreen', swapMode && sessionExerciseId ? { exerciseId: ex.id, swapForSessionExerciseId: sessionExerciseId } : sessionMode ? { exerciseId: ex.id, addToSession: true } : { exerciseId: ex.id, addToWorkoutId: workoutId }),
+    [navigation, swapMode, sessionExerciseId, sessionMode, workoutId],
+  );
 
   if (!sessionMode && (!draft || !workout)) return null;
 

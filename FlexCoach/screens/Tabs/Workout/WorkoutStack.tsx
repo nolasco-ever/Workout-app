@@ -25,7 +25,8 @@ export type WorkoutStackParams = {
   /** Either the live objects, or just an id (from a notification or the feed). */
   CycleReviewScreen: { plan: Plan; cycle: Cycle; cycleId?: undefined } | { cycleId: string; plan?: undefined; cycle?: undefined };
   SessionDetailScreen: { sessionId: string; workoutName?: string };
-  ExerciseDetailScreen: { exerciseId: string };
+  /** From the picker in session or swap mode, the how-to offers the same action in its footer. */
+  ExerciseDetailScreen: { exerciseId: string; addToSession?: boolean; swapForSessionExerciseId?: string };
   /** The running workout's exercise list, as a modal over the session; reads the session through sessionChannel. */
   SessionExercisesScreen: { workoutName: string; currentIndex: number };
   /** The active plan's workouts to copy into an empty quick workout, as a modal over the picker. */
