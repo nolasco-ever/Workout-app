@@ -34,3 +34,64 @@ index 6078080..8637c7b 100644
    } else {
      jsiRuntime = [self.bridge respondsToSelector:@selector(runtime)] ? reinterpret_cast<jsi::Runtime*>(self.bridge.runtime) : nullptr;
      jsCallInvoker = self.bridge.jsCallInvoker;
+diff --git a/node_modules/react-native-filament/lib/commonjs/utilities/withCleanupScope.js b/node_modules/react-native-filament/lib/commonjs/utilities/withCleanupScope.js
+index 25c667a..73a2568 100644
+--- a/node_modules/react-native-filament/lib/commonjs/utilities/withCleanupScope.js
++++ b/node_modules/react-native-filament/lib/commonjs/utilities/withCleanupScope.js
+@@ -28,7 +28,8 @@ var _reactNative = require("react-native");
+ function withCleanupScope(cleanupFunction) {
+   return () => {
+     // runAfterInteractions to make sure its called after all children have run their cleanup and all interactions are done
+-    _reactNative.InteractionManager.runAfterInteractions(() => {
++    // InteractionManager was removed from React Native 0.87; defer to an idle moment instead.
++    (typeof requestIdleCallback === 'function' ? cb => requestIdleCallback(() => cb()) : cb => setTimeout(cb, 0))(() => {
+       // Cleanup in worklets context, as cleanup functions might also use the worklet context
+       // and we want to queue our cleanup after all other worklets have run
+       setTimeout(() => {
+diff --git a/node_modules/react-native-filament/lib/module/utilities/withCleanupScope.js b/node_modules/react-native-filament/lib/module/utilities/withCleanupScope.js
+index 67eceee..c06bbd9 100644
+--- a/node_modules/react-native-filament/lib/module/utilities/withCleanupScope.js
++++ b/node_modules/react-native-filament/lib/module/utilities/withCleanupScope.js
+@@ -1,6 +1,9 @@
+ "use strict";
+ 
+-import { InteractionManager } from 'react-native';
++// InteractionManager was removed from React Native 0.87; defer to an idle moment instead.
++const runWhenIdle = task => {
++  if (typeof requestIdleCallback === 'function') requestIdleCallback(() => task());else setTimeout(task, 0);
++};
+ 
+ /**
+  * Operations that are releasing memory from JS should be executed after cleanup functions
+@@ -25,7 +28,7 @@ import { InteractionManager } from 'react-native';
+ export function withCleanupScope(cleanupFunction) {
+   return () => {
+     // runAfterInteractions to make sure its called after all children have run their cleanup and all interactions are done
+-    InteractionManager.runAfterInteractions(() => {
++    runWhenIdle(() => {
+       // Cleanup in worklets context, as cleanup functions might also use the worklet context
+       // and we want to queue our cleanup after all other worklets have run
+       setTimeout(() => {
+diff --git a/node_modules/react-native-filament/src/utilities/withCleanupScope.ts b/node_modules/react-native-filament/src/utilities/withCleanupScope.ts
+index 20ec04e..5abe613 100644
+--- a/node_modules/react-native-filament/src/utilities/withCleanupScope.ts
++++ b/node_modules/react-native-filament/src/utilities/withCleanupScope.ts
+@@ -1,4 +1,8 @@
+-import { InteractionManager } from 'react-native'
++// InteractionManager was removed from React Native 0.87; defer to an idle moment instead.
++const runWhenIdle = (task: () => void): void => {
++  if (typeof requestIdleCallback === 'function') requestIdleCallback(() => task())
++  else setTimeout(task, 0)
++}
+ 
+ /**
+  * Operations that are releasing memory from JS should be executed after cleanup functions
+@@ -23,7 +27,7 @@ import { InteractionManager } from 'react-native'
+ export function withCleanupScope(cleanupFunction: Function) {
+   return () => {
+     // runAfterInteractions to make sure its called after all children have run their cleanup and all interactions are done
+-    InteractionManager.runAfterInteractions(() => {
++    runWhenIdle(() => {
+       // Cleanup in worklets context, as cleanup functions might also use the worklet context
+       // and we want to queue our cleanup after all other worklets have run
+       setTimeout(() => {
