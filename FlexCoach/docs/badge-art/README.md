@@ -113,3 +113,28 @@ enamel matte with a faint coat, stones glossy with some transmission):
 /Applications/Blender.app/Contents/MacOS/Blender -b -P docs/badge-art/tools/render_pins_v2.py -- \
   docs/badge-art/3d/v2 <out_dir> /Applications/Blender.app/Contents/Resources/5.0/datafiles/studiolights/world/interior.exr
 ```
+
+## In the app (`assets/badges/`), rendered live with react-native-filament
+
+The app no longer uses renders: it draws the badge itself and the user spins it.
+
+- `tools/build_pins_mobile.py <design-config.json> <out_dir>` writes one body per
+  tier (`body_t1.glb` … `body_t8.glb`: plate, border, enamel, scallops, the engraved
+  back) and one overlay per family and tier (`<family>_t<tier>.glb`: the mark and the
+  tier's line-work cut to fit around it). Profiles are lofted as one surface, so the
+  whole set is about 7 MB. Copy the output and `manifest.json` into `assets/badges/`
+  and run `python3 docs/badge-art/tools/badge_models_ts.py` to regenerate
+  `components/achievements/badgeModels.ts`.
+- `components/achievements/Badge3D.tsx` loads the body and the overlay into one
+  Filament scene and turns both with a Reanimated value: drag sideways to turn, flick
+  to spin, and it coasts to a stop with scroll-like decay. Lighting is an environment
+  map plus one sun; both are props.
+- `screens/Achievements/BadgePreviewScreen.tsx` (Profile → Badge preview, behind
+  `features.badgePreview`) shows every family and tier with dials for the lighting and
+  the spin feel. It is the design-review surface; switch the flag off before a build
+  goes to testers.
+- Native: react-native-filament 1.11 needs `patches/react-native-filament+1.11.0.patch`
+  (React Native 0.87 has no RCTCxxBridge) and react-native-worklets-core 2.0 beta.
+  `npm install` applies the patch through `postinstall`.
+- Colour: the palette is sRGB hex; the builder converts it to linear for glTF. Saturation
+  is one number (`VIVID`, default 1.3) and the engraved date size is `DATE_CAP`.

@@ -6,6 +6,13 @@ const { getDefaultConfig, mergeConfig } = require('@react-native/metro-config');
  *
  * @type {import('@react-native/metro-config').MetroConfig}
  */
-const config = {};
+const defaults = getDefaultConfig(__dirname);
 
-module.exports = mergeConfig(getDefaultConfig(__dirname), config);
+const config = {
+  resolver: {
+    // 3D badge models (react-native-filament loads them with require()).
+    assetExts: [...defaults.resolver.assetExts, 'glb'],
+  },
+};
+
+module.exports = mergeConfig(defaults, config);

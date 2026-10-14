@@ -22,4 +22,11 @@ export const features = {
    * in Firestore, field `achievements`. Flip both together.
    */
   achievements: false,
+  /**
+   * The badge design review: a Profile row opening every badge, every
+   * tier, as the spinning 3D model, with lighting and spin dials. For the
+   * owner's own look while the art is being finished; off before a build
+   * goes to testers.
+   */
+  badgePreview: true,
 };

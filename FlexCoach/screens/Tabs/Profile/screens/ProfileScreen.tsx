@@ -100,6 +100,22 @@ export const ProfileScreen = () => {
             </View>
           </SurfaceCard>
         </TouchableOpacity>
+        {features.badgePreview && (
+          <TouchableOpacity onPress={() => navigation.navigate('BadgePreviewScreen')} activeOpacity={0.7} accessibilityRole="button" accessibilityLabel="Badge preview">
+            <SurfaceCard>
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.md }}>
+                <View style={{ width: 40, height: 40, borderRadius: 20, backgroundColor: colors.accentTint, alignItems: 'center', justifyContent: 'center' }}>
+                  <Icon icon={generalIcons.award} size={20} color={colors.accent} />
+                </View>
+                <View style={{ flex: 1 }}>
+                  <CustomText variant="bodyStrong">Badge preview</CustomText>
+                  <CustomText variant="caption" color={colors.inkMuted}>Every badge, every tier, in 3D. Design review only.</CustomText>
+                </View>
+                <Icon icon={directionIcons.angleRight} size={18} color={colors.inactive} />
+              </View>
+            </SurfaceCard>
+          </TouchableOpacity>
+        )}
 
         <View style={{ gap: spacing.sm }}>
           <CustomText variant="overline" color={colors.inkMuted}>Training</CustomText>

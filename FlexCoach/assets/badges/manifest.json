@@ -1,0 +1,400 @@
+{
+ "families": [
+  "workouts",
+  "streak",
+  "volume",
+  "records",
+  "cycles",
+  "perfect_cycles",
+  "early_bird",
+  "night_owl",
+  "buddies",
+  "plan_uses"
+ ],
+ "ladder": {
+  "workouts": 8,
+  "streak": 7,
+  "volume": 7,
+  "records": 6,
+  "cycles": 5,
+  "perfect_cycles": 4,
+  "early_bird": 4,
+  "night_owl": 4,
+  "buddies": 4,
+  "plan_uses": 5
+ },
+ "files": [
+  {
+   "family": "body",
+   "tier": 1,
+   "tris": 15348,
+   "bytes": 279332
+  },
+  {
+   "family": "workouts",
+   "tier": 1,
+   "tris": 5291,
+   "bytes": 97772
+  },
+  {
+   "family": "streak",
+   "tier": 1,
+   "tris": 5924,
+   "bytes": 109116
+  },
+  {
+   "family": "volume",
+   "tier": 1,
+   "tris": 4898,
+   "bytes": 90656
+  },
+  {
+   "family": "records",
+   "tier": 1,
+   "tris": 6944,
+   "bytes": 127440
+  },
+  {
+   "family": "cycles",
+   "tier": 1,
+   "tris": 6730,
+   "bytes": 123636
+  },
+  {
+   "family": "perfect_cycles",
+   "tier": 1,
+   "tris": 7532,
+   "bytes": 138052
+  },
+  {
+   "family": "early_bird",
+   "tier": 1,
+   "tris": 7191,
+   "bytes": 132032
+  },
+  {
+   "family": "night_owl",
+   "tier": 1,
+   "tris": 7439,
+   "bytes": 136404
+  },
+  {
+   "family": "buddies",
+   "tier": 1,
+   "tris": 9952,
+   "bytes": 181608
+  },
+  {
+   "family": "plan_uses",
+   "tier": 1,
+   "tris": 9192,
+   "bytes": 167940
+  },
+  {
+   "family": "body",
+   "tier": 2,
+   "tris": 14112,
+   "bytes": 259100
+  },
+  {
+   "family": "workouts",
+   "tier": 2,
+   "tris": 4895,
+   "bytes": 90748
+  },
+  {
+   "family": "streak",
+   "tier": 2,
+   "tris": 5292,
+   "bytes": 97708
+  },
+  {
+   "family": "volume",
+   "tier": 2,
+   "tris": 4262,
+   "bytes": 79212
+  },
+  {
+   "family": "records",
+   "tier": 2,
+   "tris": 6517,
+   "bytes": 119728
+  },
+  {
+   "family": "cycles",
+   "tier": 2,
+   "tris": 6358,
+   "bytes": 116908
+  },
+  {
+   "family": "perfect_cycles",
+   "tier": 2,
+   "tris": 7384,
+   "bytes": 135584
+  },
+  {
+   "family": "early_bird",
+   "tier": 2,
+   "tris": 6898,
+   "bytes": 126756
+  },
+  {
+   "family": "night_owl",
+   "tier": 2,
+   "tris": 7098,
+   "bytes": 130256
+  },
+  {
+   "family": "buddies",
+   "tier": 2,
+   "tris": 9498,
+   "bytes": 173504
+  },
+  {
+   "family": "plan_uses",
+   "tier": 2,
+   "tris": 8639,
+   "bytes": 158108
+  },
+  {
+   "family": "body",
+   "tier": 3,
+   "tris": 13944,
+   "bytes": 256268
+  },
+  {
+   "family": "workouts",
+   "tier": 3,
+   "tris": 5713,
+   "bytes": 105372
+  },
+  {
+   "family": "streak",
+   "tier": 3,
+   "tris": 5696,
+   "bytes": 105008
+  },
+  {
+   "family": "volume",
+   "tier": 3,
+   "tris": 4758,
+   "bytes": 88216
+  },
+  {
+   "family": "records",
+   "tier": 3,
+   "tris": 6873,
+   "bytes": 126212
+  },
+  {
+   "family": "cycles",
+   "tier": 3,
+   "tris": 7110,
+   "bytes": 130488
+  },
+  {
+   "family": "perfect_cycles",
+   "tier": 3,
+   "tris": 7720,
+   "bytes": 141736
+  },
+  {
+   "family": "early_bird",
+   "tier": 3,
+   "tris": 7557,
+   "bytes": 138824
+  },
+  {
+   "family": "night_owl",
+   "tier": 3,
+   "tris": 7679,
+   "bytes": 140760
+  },
+  {
+   "family": "buddies",
+   "tier": 3,
+   "tris": 9877,
+   "bytes": 180372
+  },
+  {
+   "family": "plan_uses",
+   "tier": 3,
+   "tris": 9096,
+   "bytes": 166152
+  },
+  {
+   "family": "body",
+   "tier": 4,
+   "tris": 4260,
+   "bytes": 81204
+  },
+  {
+   "family": "workouts",
+   "tier": 4,
+   "tris": 4317,
+   "bytes": 80248
+  },
+  {
+   "family": "streak",
+   "tier": 4,
+   "tris": 4700,
+   "bytes": 87076
+  },
+  {
+   "family": "volume",
+   "tier": 4,
+   "tris": 3712,
+   "bytes": 69304
+  },
+  {
+   "family": "records",
+   "tier": 4,
+   "tris": 5826,
+   "bytes": 107356
+  },
+  {
+   "family": "cycles",
+   "tier": 4,
+   "tris": 6136,
+   "bytes": 112868
+  },
+  {
+   "family": "perfect_cycles",
+   "tier": 4,
+   "tris": 6844,
+   "bytes": 126020
+  },
+  {
+   "family": "early_bird",
+   "tier": 4,
+   "tris": 6515,
+   "bytes": 119980
+  },
+  {
+   "family": "night_owl",
+   "tier": 4,
+   "tris": 6950,
+   "bytes": 127568
+  },
+  {
+   "family": "buddies",
+   "tier": 4,
+   "tris": 8812,
+   "bytes": 161144
+  },
+  {
+   "family": "plan_uses",
+   "tier": 4,
+   "tris": 8044,
+   "bytes": 147488
+  },
+  {
+   "family": "body",
+   "tier": 5,
+   "tris": 7700,
+   "bytes": 142540
+  },
+  {
+   "family": "workouts",
+   "tier": 5,
+   "tris": 2593,
+   "bytes": 49356
+  },
+  {
+   "family": "streak",
+   "tier": 5,
+   "tris": 2969,
+   "bytes": 56028
+  },
+  {
+   "family": "volume",
+   "tier": 5,
+   "tris": 2068,
+   "bytes": 39848
+  },
+  {
+   "family": "records",
+   "tier": 5,
+   "tris": 4083,
+   "bytes": 76140
+  },
+  {
+   "family": "cycles",
+   "tier": 5,
+   "tris": 4036,
+   "bytes": 75336
+  },
+  {
+   "family": "plan_uses",
+   "tier": 5,
+   "tris": 6368,
+   "bytes": 117244
+  },
+  {
+   "family": "body",
+   "tier": 6,
+   "tris": 4104,
+   "bytes": 77944
+  },
+  {
+   "family": "workouts",
+   "tier": 6,
+   "tris": 3485,
+   "bytes": 65256
+  },
+  {
+   "family": "streak",
+   "tier": 6,
+   "tris": 3802,
+   "bytes": 71416
+  },
+  {
+   "family": "volume",
+   "tier": 6,
+   "tris": 2967,
+   "bytes": 55884
+  },
+  {
+   "family": "records",
+   "tier": 6,
+   "tris": 4986,
+   "bytes": 92232
+  },
+  {
+   "family": "body",
+   "tier": 7,
+   "tris": 4104,
+   "bytes": 77948
+  },
+  {
+   "family": "workouts",
+   "tier": 7,
+   "tris": 3485,
+   "bytes": 65256
+  },
+  {
+   "family": "streak",
+   "tier": 7,
+   "tris": 3802,
+   "bytes": 71416
+  },
+  {
+   "family": "volume",
+   "tier": 7,
+   "tris": 2967,
+   "bytes": 55884
+  },
+  {
+   "family": "body",
+   "tier": 8,
+   "tris": 10758,
+   "bytes": 198700
+  },
+  {
+   "family": "workouts",
+   "tier": 8,
+   "tris": 3333,
+   "bytes": 62696
+  }
+ ]
+}

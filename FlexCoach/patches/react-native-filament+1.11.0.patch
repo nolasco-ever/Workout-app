@@ -1,0 +1,36 @@
+diff --git a/node_modules/react-native-filament/ios/src/RNFFilamentInstaller.mm b/node_modules/react-native-filament/ios/src/RNFFilamentInstaller.mm
+index af9f548..0b831eb 100644
+--- a/node_modules/react-native-filament/ios/src/RNFFilamentInstaller.mm
++++ b/node_modules/react-native-filament/ios/src/RNFFilamentInstaller.mm
+@@ -20,10 +20,12 @@
+ using namespace facebook;
+ using namespace margelo;
+ 
++#ifndef RCT_NEW_ARCH_ENABLED
+ // This is defined in RCTCxxBridge.mm, and we are technically using a private API here.
+ @interface RCTCxxBridge (CallInvoker)
+ - (std::shared_ptr<react::CallInvoker>)jsCallInvoker;
+ @end
++#endif
+ 
+ @implementation FilamentInstaller
+ 
+diff --git a/node_modules/react-native-filament/ios/src/RNFFilamentModule.mm b/node_modules/react-native-filament/ios/src/RNFFilamentModule.mm
+index 6078080..8637c7b 100644
+--- a/node_modules/react-native-filament/ios/src/RNFFilamentModule.mm
++++ b/node_modules/react-native-filament/ios/src/RNFFilamentModule.mm
+@@ -48,10 +48,10 @@ - (NSNumber*)install {
+   jsi::Runtime* jsiRuntime = nullptr;
+   std::shared_ptr<react::CallInvoker> jsCallInvoker = nullptr;
+   if (_isBridgeless) {
+-    // If we are in bridgless mode we can cast directly to RCTCxxBridge to get our properties:
+-    RCTCxxBridge* cxxBridge = (RCTCxxBridge*)self.bridge;
+-    jsiRuntime = (jsi::Runtime*)cxxBridge.runtime;
+-    jsCallInvoker = cxxBridge.jsCallInvoker;
++    // Bridgeless: self.bridge is an RCTBridgeProxy, which answers `runtime` and `jsCallInvoker` itself
++    // (RCTCxxBridge no longer exists in React Native 0.87).
++    jsiRuntime = reinterpret_cast<jsi::Runtime*>(self.bridge.runtime);
++    jsCallInvoker = self.bridge.jsCallInvoker;
+   } else {
+     jsiRuntime = [self.bridge respondsToSelector:@selector(runtime)] ? reinterpret_cast<jsi::Runtime*>(self.bridge.runtime) : nullptr;
+     jsCallInvoker = self.bridge.jsCallInvoker;
