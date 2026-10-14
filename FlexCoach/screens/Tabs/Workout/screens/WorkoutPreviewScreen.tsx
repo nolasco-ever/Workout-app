@@ -133,7 +133,9 @@ export const WorkoutPreviewScreen = () => {
               setBusy(true);
               try {
                 const { session, cycle: updated } = await startWorkoutNow(uid, plan, cycle, occurrence, profile?.weightUnit ?? 'lb');
-                navigation.replace('SessionScreen', { plan, cycle: updated, session });
+                // The session opens in the root stack, over the tabs; the preview under it goes, so back from the workout lands on the Workout home.
+                navigation.navigate('SessionScreen', { plan, cycle: updated, session });
+                navigation.popToTop();
               } finally {
                 setBusy(false);
               }

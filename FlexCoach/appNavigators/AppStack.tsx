@@ -9,6 +9,12 @@ import { AuthStack } from '../screens/Auth/AuthStack';
 import { OnboardingStack } from '../screens/Onboarding/OnboardingStack';
 import { AccountScreen } from '../screens/Tabs/Profile/screens/AccountScreen';
 import { ExerciseDetailScreen } from '../screens/Tabs/Workout/screens/ExerciseDetailScreen';
+import { SessionScreen } from '../screens/Tabs/Workout/screens/SessionScreen';
+import { SessionCompleteScreen } from '../screens/Tabs/Workout/screens/SessionCompleteScreen';
+import { SessionExercisesScreen } from '../screens/Tabs/Workout/screens/SessionExercisesScreen';
+import { ActivePlanWorkoutsScreen } from '../screens/Tabs/Workout/screens/ActivePlanWorkoutsScreen';
+import { ExercisePickerScreen } from '../screens/Plans/screens/ExercisePickerScreen';
+import type { SessionRoutes } from '../screens/Tabs/Workout/sessionRoutes';
 import { BuddiesScreen } from '../screens/Buddies/BuddiesScreen';
 import { CardStack } from '../screens/Buddies/CardStack';
 import { BuddyCardScreen } from '../screens/Buddies/BuddyCardScreen';
@@ -28,15 +34,15 @@ import { useAuth } from '../data/auth/AuthProvider';
 import { ensurePhotoCacheable } from '../data/services/profileService';
 import { useTheme } from '../theme';
 
-export type AppStackParams = BuddyRoutes & {
+export type AppStackParams = BuddyRoutes & SessionRoutes & {
     AuthStack: undefined;
     OnboardingStack: undefined;
     TabNavigator: undefined;
     NotificationsScreen: undefined;
     PlansStack: NavigatorScreenParams<PlansStackParams> | undefined;
     AccountScreen: undefined;
-    /** How-to for an exercise opened from a buddy's plan; the plan creator and Workout tab have their own copies. */
-    ExerciseDetailScreen: { exerciseId: string };
+    /** How-to for an exercise opened from a buddy's plan or the running workout's picker; the plan creator and Workout tab have their own copies. */
+    ExerciseDetailScreen: { exerciseId: string; addToSession?: boolean; swapForSessionExerciseId?: string };
     /** The badge grid; `achievementId` opens that badge's family. */
     AchievementsScreen: { achievementId?: string } | undefined;
     BadgeScreen: { family: AchievementFamilyId; tier: number };
@@ -96,6 +102,12 @@ export const AppStack = () => {
                     <Stack.Screen name="BuddyPlanScreen" component={BuddyPlanScreen} options={opts.screen('Plan')} />
                     <Stack.Screen name="BuddyWorkoutScreen" component={BuddyWorkoutScreen} options={({ route }) => opts.screen(route.params.displayName?.split(' ')[0] ?? 'Workout')} />
                     <Stack.Screen name="ExerciseDetailScreen" component={ExerciseDetailScreen} options={({ navigation }) => opts.modal('How to', () => <HeaderButton icon={generalIcons.xMark} accessibilityLabel="Close" onPress={() => navigation.goBack()} />)} />
+                    {/* The running workout, over the tabs: a focus mode with no tab bar. Draws its own header row (see SessionScreen) so the title stays centred beside the rest pill. */}
+                    <Stack.Screen name="SessionScreen" component={SessionScreen} options={({ route }) => ({ ...opts.screen(route.params.session.workoutName), headerShown: false, gestureEnabled: false })} />
+                    <Stack.Screen name="SessionCompleteScreen" component={SessionCompleteScreen} options={{ ...opts.base, headerShown: false, animation: 'fade', gestureEnabled: false }} />
+                    <Stack.Screen name="SessionExercisesScreen" component={SessionExercisesScreen} options={({ navigation, route }) => opts.modal(route.params.workoutName, () => <HeaderButton icon={generalIcons.xMark} accessibilityLabel="Close" onPress={() => navigation.goBack()} />)} />
+                    <Stack.Screen name="ActivePlanWorkoutsScreen" component={ActivePlanWorkoutsScreen} options={({ navigation }) => opts.modal('Active plan workouts', () => <HeaderButton icon={generalIcons.xMark} accessibilityLabel="Close" onPress={() => navigation.goBack()} />)} />
+                    <Stack.Screen name="ExercisePickerScreen" component={ExercisePickerScreen} options={({ navigation, route }) => opts.modal(route.params.mode === 'swap' ? 'Swap exercise' : 'Add exercise', () => <HeaderButton icon={generalIcons.xMark} accessibilityLabel="Close" onPress={() => navigation.goBack()} />)} />
                 </>
             )}
         </Stack.Navigator>

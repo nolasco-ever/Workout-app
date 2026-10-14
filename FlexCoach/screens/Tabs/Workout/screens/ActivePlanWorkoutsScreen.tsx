@@ -8,7 +8,7 @@ import { SurfaceCard } from '../../../../components/cards/SurfaceCard';
 import { Icon } from '../../../../components/icons/Icon';
 import { directionIcons } from '../../../../components/icons/icon-library';
 import { useTheme } from '../../../../theme';
-import { WorkoutStackParams } from '../WorkoutStack';
+import { AppStackParams } from '../../../../appNavigators/AppStack';
 import { pickCopyWorkout } from '../components/swapChannel';
 
 /**
@@ -17,8 +17,8 @@ import { pickCopyWorkout } from '../components/swapChannel';
  * choice goes back through swapChannel and both modals close.
  */
 export const ActivePlanWorkoutsScreen = () => {
-  const navigation = useNavigation<NativeStackNavigationProp<WorkoutStackParams>>();
-  const { params } = useRoute<RouteProp<WorkoutStackParams, 'ActivePlanWorkoutsScreen'>>();
+  const navigation = useNavigation<NativeStackNavigationProp<AppStackParams>>();
+  const { params } = useRoute<RouteProp<AppStackParams, 'ActivePlanWorkoutsScreen'>>();
   const { colors, spacing } = useTheme();
   const workouts = [...params.workouts].sort((a, b) => a.order - b.order);
 

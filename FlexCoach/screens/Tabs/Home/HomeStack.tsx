@@ -10,8 +10,10 @@ import { ProgressScreen } from './screens/ProgressScreen';
 import { ExerciseProgressScreen } from './screens/ExerciseProgressScreen';
 import { MusclesScreen } from './screens/MusclesScreen';
 import { MuscleDetailScreen } from './screens/MuscleDetailScreen';
+import type { SessionRoutes } from '../Workout/sessionRoutes';
 
-export type HomeStackParams = {
+/** Plus the running workout's screens, which live in the root stack and are reachable from here by name. */
+export type HomeStackParams = SessionRoutes & {
   HomeScreen: undefined;
   LogWeightScreen: undefined;
   WeightHistoryScreen: undefined;

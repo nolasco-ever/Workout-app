@@ -22,7 +22,7 @@ import { CustomText } from '../../../../components/text/customText';
 import { Icon } from '../../../../components/icons/Icon';
 import { directionIcons, generalIcons } from '../../../../components/icons/icon-library';
 import { useTheme } from '../../../../theme';
-import { WorkoutStackParams } from '../WorkoutStack';
+import { AppStackParams } from '../../../../appNavigators/AppStack';
 import { useTabBarInset } from '../../../../navigation/useTabBarInset';
 import { PrimaryButton } from '../../../../components/buttons/PrimaryButton';
 import { GLASS_BUTTON_SIZE, GlassIconButton } from '../../../../components/buttons/GlassIconButton';
@@ -35,8 +35,8 @@ import Animated, { SlideInLeft, SlideInRight } from 'react-native-reanimated';
 import { fromDraft, toDraft, Units, unitLabels } from '../components/setDrafts';
 
 export const SessionScreen = () => {
-  const navigation = useNavigation<NativeStackNavigationProp<WorkoutStackParams>>();
-  const { params } = useRoute<RouteProp<WorkoutStackParams, 'SessionScreen'>>();
+  const navigation = useNavigation<NativeStackNavigationProp<AppStackParams>>();
+  const { params } = useRoute<RouteProp<AppStackParams, 'SessionScreen'>>();
   const { plan, cycle, activePlan } = params;
   const { colors, spacing, radius } = useTheme();
   const tabBarInset = useTabBarInset();

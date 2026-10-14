@@ -9,7 +9,7 @@ import { CustomText } from '../../../../components/text/customText';
 import { Icon } from '../../../../components/icons/Icon';
 import { generalIcons } from '../../../../components/icons/icon-library';
 import { useTheme } from '../../../../theme';
-import { WorkoutStackParams } from '../WorkoutStack';
+import { AppStackParams } from '../../../../appNavigators/AppStack';
 import { useTabBarInset } from '../../../../navigation/useTabBarInset';
 import { SurfaceCard as Card } from '../../../../components/cards/SurfaceCard';
 import { PrimaryButton } from '../../../../components/buttons/PrimaryButton';
@@ -26,8 +26,8 @@ const Stat = ({ label, value }: { label: string; value: string }) => {
 };
 
 export const SessionCompleteScreen = () => {
-  const navigation = useNavigation<NativeStackNavigationProp<WorkoutStackParams>>();
-  const { params } = useRoute<RouteProp<WorkoutStackParams, 'SessionCompleteScreen'>>();
+  const navigation = useNavigation<NativeStackNavigationProp<AppStackParams>>();
+  const { params } = useRoute<RouteProp<AppStackParams, 'SessionCompleteScreen'>>();
   const { result } = params;
   const { colors, spacing } = useTheme();
   const tabBarInset = useTabBarInset();

@@ -13,7 +13,7 @@ import { directionIcons, generalIcons } from '../../../../components/icons/icon-
 import { MuscleMap } from '../../../../components/anatomy/MuscleMap';
 import { SwipeToDelete } from '../../../../components/list-items/SwipeToDelete';
 import { useTheme } from '../../../../theme';
-import { WorkoutStackParams } from '../WorkoutStack';
+import { AppStackParams } from '../../../../appNavigators/AppStack';
 import { currentSession, sendSessionCommand, subscribeSession } from '../components/sessionChannel';
 
 /**
@@ -24,8 +24,8 @@ import { currentSession, sendSessionCommand, subscribeSession } from '../compone
  * opens above this screen and comes back to it); extras swipe away.
  */
 export const SessionExercisesScreen = () => {
-  const navigation = useNavigation<NativeStackNavigationProp<WorkoutStackParams>>();
-  const { params } = useRoute<RouteProp<WorkoutStackParams, 'SessionExercisesScreen'>>();
+  const navigation = useNavigation<NativeStackNavigationProp<AppStackParams>>();
+  const { params } = useRoute<RouteProp<AppStackParams, 'SessionExercisesScreen'>>();
   const { colors, spacing } = useTheme();
   const [session, setSession] = useState<Session | null>(currentSession);
   useEffect(() => subscribeSession(setSession), []);
