@@ -101,6 +101,92 @@ index 67eceee..c06bbd9 100644
        // Cleanup in worklets context, as cleanup functions might also use the worklet context
        // and we want to queue our cleanup after all other worklets have run
        setTimeout(() => {
+diff --git a/node_modules/react-native-filament/src/ErrorUtils.ts b/node_modules/react-native-filament/src/ErrorUtils.ts
+index d361ce0..1a91bff 100644
+--- a/node_modules/react-native-filament/src/ErrorUtils.ts
++++ b/node_modules/react-native-filament/src/ErrorUtils.ts
+@@ -19,6 +19,7 @@ export function reportError(error: unknown, fatal: boolean): void {
+ }
+ 
+ const throwErrorOnJS = Worklets.createRunOnJS((message: string, stack: string | undefined, fatal: boolean) => {
++  console.error('[react-native-filament] worklet error:', typeof message, message, '| stack:', stack, '| fatal:', fatal)
+   const error = new Error()
+   error.message = message
+   error.stack = stack
+@@ -32,8 +33,8 @@ const throwErrorOnJS = Worklets.createRunOnJS((message: string, stack: string |
+ export const reportWorkletError = (error: unknown, fatal = true): void => {
+   'worklet'
+   const safeError = error as Error | undefined
+-  const message = safeError != null && 'message' in safeError ? safeError.message : 'Filament threw an error.'
+-  throwErrorOnJS(message, safeError?.stack, fatal)
++  const message = safeError != null && typeof safeError === 'object' && 'message' in safeError ? String(safeError.message) : typeof error === 'string' ? error : 'Filament threw an error.'
++  throwErrorOnJS(message, safeError != null && typeof safeError === 'object' ? safeError.stack : undefined, fatal)
+ }
+ 
+ export const wrapWithErrorHandler = <T extends (...args: any[]) => any>(callback: T): ((...args: Parameters<T>) => ReturnType<T>) => {
+diff --git a/node_modules/react-native-filament/src/hooks/useBuffer.ts b/node_modules/react-native-filament/src/hooks/useBuffer.ts
+index df1211c..91cf79b 100644
+--- a/node_modules/react-native-filament/src/hooks/useBuffer.ts
++++ b/node_modules/react-native-filament/src/hooks/useBuffer.ts
+@@ -57,8 +57,9 @@ export function useBuffer({ source: source, releaseOnUnmount = true }: BufferPro
+         localBuffer = asset
+         setBuffer(asset)
+       })
+-      .catch((error) => {
+-        console.error(`Failed to load asset: ${uri}`, error)
++      .catch((error: unknown) => {
++        const err = error as { message?: unknown; stack?: unknown } | null
++        console.error(`Failed to load asset: ${uri}`, String(error), '| message:', err?.message, '| stack:', err?.stack)
+       })
+     return withCleanupScope(() => {
+       if (releaseOnUnmount) {
+diff --git a/node_modules/react-native-filament/src/hooks/useDisposableResource.ts b/node_modules/react-native-filament/src/hooks/useDisposableResource.ts
+index aaa02ef..a0e1dde 100644
+--- a/node_modules/react-native-filament/src/hooks/useDisposableResource.ts
++++ b/node_modules/react-native-filament/src/hooks/useDisposableResource.ts
+@@ -23,22 +23,27 @@ export const useDisposableResource = <T extends ReleasingResource>(
+   useEffect(() => {
+     let isValid = true
+     let currentAsset: T | undefined
+-    initialize()?.then((a) => {
+-      if (a == null) return
++    const pending = initialize()
++    if (pending != null) {
++      // Wrapped in a real Promise so a rejection is caught and reported in full, not left unhandled.
++      Promise.resolve(pending)
++        .then((a) => {
++          if (a == null) return
+ 
+-      if (isValid) {
+-        // this useEffect is still mounted
+-        setResource(a)
+-        currentAsset = a
+-      } else {
+-        // this useEffect has been unmounted already, drop the asset
+-        a.release()
+-      }
+-    })
+-    // TODO: catch is broken
+-    // .catch((e) => {
+-    //   console.error('Error while loading resource', e)
+-    // })
++          if (isValid) {
++            // this useEffect is still mounted
++            setResource(a)
++            currentAsset = a
++          } else {
++            // this useEffect has been unmounted already, drop the asset
++            a.release()
++          }
++        })
++        .catch((e: unknown) => {
++          const err = e as { message?: unknown; stack?: unknown } | null
++          console.error('[react-native-filament] Failed to load a resource:', String(e), '| message:', err?.message, '| stack:', err?.stack)
++        })
++    }
+     return () => {
+       setResource(undefined)
+       isValid = false
 diff --git a/node_modules/react-native-filament/src/utilities/withCleanupScope.ts b/node_modules/react-native-filament/src/utilities/withCleanupScope.ts
 index 20ec04e..5abe613 100644
 --- a/node_modules/react-native-filament/src/utilities/withCleanupScope.ts
