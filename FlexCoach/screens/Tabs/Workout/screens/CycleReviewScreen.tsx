@@ -25,7 +25,8 @@ const Hero = ({ label, value, tone }: { label: string; value: string; tone?: str
   const { colors } = useTheme();
   return (
     <View style={{ flex: 1 }}>
-      <CustomText variant="display" color={tone} style={{ fontVariant: ['tabular-nums'] }}>{value}</CustomText>
+      {/* Shrinks rather than wraps: a five-figure volume was breaking onto a second line. */}
+      <CustomText variant="display" color={tone} numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.6} style={{ fontVariant: ['tabular-nums'] }}>{value}</CustomText>
       <CustomText variant="caption" color={colors.inkMuted}>{label}</CustomText>
     </View>
   );

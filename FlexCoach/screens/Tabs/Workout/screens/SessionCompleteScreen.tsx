@@ -19,7 +19,8 @@ const Stat = ({ label, value }: { label: string; value: string }) => {
   return (
     <View style={{ flex: 1 }}>
       <CustomText variant="overline" color={colors.inkMuted}>{label}</CustomText>
-      <CustomText variant="display">{value}</CustomText>
+      {/* Shrinks rather than wraps: a five-figure volume was breaking onto a second line. */}
+      <CustomText variant="display" numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.6}>{value}</CustomText>
     </View>
   );
 };
