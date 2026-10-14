@@ -1,8 +1,8 @@
 diff --git a/node_modules/react-native-filament/ios/src/RNFAppleFilamentProxy.mm b/node_modules/react-native-filament/ios/src/RNFAppleFilamentProxy.mm
-index 7923259..0c84ff6 100644
+index 7923259..d212595 100644
 --- a/node_modules/react-native-filament/ios/src/RNFAppleFilamentProxy.mm
 +++ b/node_modules/react-native-filament/ios/src/RNFAppleFilamentProxy.mm
-@@ -72,8 +72,14 @@
+@@ -72,8 +72,23 @@
    NSString* name = [pathComponents firstObject];
    NSString* extension = [pathComponents lastObject];
  
@@ -14,6 +14,15 @@ index 7923259..0c84ff6 100644
 +    Class moduleClass = NSClassFromString(@"FilamentModule");
 +    NSBundle* ownBundle = moduleClass ? [NSBundle bundleForClass:moduleClass] : nil;
 +    resourcePath = [ownBundle pathForResource:name ofType:extension];
++  }
++  if (!resourcePath) {
++    // Last resort: any framework or bundle the app loaded.
++    NSMutableArray<NSBundle*>* bundles = [NSMutableArray arrayWithArray:[NSBundle allFrameworks]];
++    [bundles addObjectsFromArray:[NSBundle allBundles]];
++    for (NSBundle* bundle in bundles) {
++      resourcePath = [bundle pathForResource:name ofType:extension];
++      if (resourcePath) break;
++    }
 +  }
    if (!resourcePath) {
      throw std::runtime_error("File not found");
