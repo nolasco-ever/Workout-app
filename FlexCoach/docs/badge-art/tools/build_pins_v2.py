@@ -38,9 +38,12 @@ Z = dict(plate=(0.0, 0.016), enamel=(0.016, 0.023), line=(0.016, 0.034), border=
          mark_metal=(0.016, 0.046), mark_channel=(0.016, 0.038), bezel=(0.016, 0.040), gem_base=0.034, gem_top=0.058)
 DOME = float(os.environ.get('DOME', '0.0'))    # flat; the dome is abandoned
 PILLOW_LAYERS = 14
-VIVID = float(os.environ.get('VIVID', '1.6'))   # saturation gain on every chromatic colour (neutrals untouched)
+VIVID = float(os.environ.get('VIVID', '1.3'))   # saturation gain on every chromatic colour (neutrals untouched)
 LOGO_BARS = [(217, 164, 200, 696, 64), (449, 236, 176, 552, 56), (657, 312, 150, 400, 48)]   # the app icon's three bars in its 1024 box
-LOGO_SIZE = 36   # tallest bar, badge units
+LOGO_SIZE = 30   # tallest bar, badge units
+LOGO_CY = 42     # logo sits high on the back; the unlock date is engraved beneath it
+DATE_Y = 66; DATE_CAP = 6.5   # baseline-ish centre and cap height of the engraved date, badge units
+DATE_SAMPLE = os.environ.get('DATE', '12 OCT 2026')
 ETCH = 0.0045    # engraving depth into the back of the plate
 STEP = 0.35
 
@@ -82,10 +85,45 @@ def vivid(h, gain=VIVID):
     ss = min(1.0, ss * gain); vv = min(1.0, vv * (1 + 0.15 * (gain - 1)))
     return '#' + ''.join(f'{int(round(c * 255)):02x}' for c in colorsys.hsv_to_rgb(hh, ss, vv))
 PAL = {k: vivid(v) for k, v in PAL.items()}
-PAL['ruby'] = '#f2102b'   # a true red: the palette's ruby leans pink once saturated
-PAL['gold'] = '#ffd01f'   # keep gold yellow so it stays apart from the orange tier
+PAL['ruby'] = '#e8142e'   # a true red: the palette's ruby leans pink once saturated
+PAL['gold'] = '#f7c62a'   # keep gold yellow so it stays apart from the orange tier
 print('vivid palette', {k: v for k, v in PAL.items()})
-def logo_poly(size=LOGO_SIZE, cx=50, cy=50, mirror=True):
+FONT_PATH = os.environ.get('FONT', '/Users/evernolasco/Documents/GitHub/FlexCoachApp/FlexCoach/FlexCoach/assets/fonts/Sora-SemiBold.ttf')
+def date_poly(text, y=DATE_Y, cap=DATE_CAP, cx=50, mirror=True, tracking=0.08):
+    """The unlock date as engraved letters: glyph outlines from the app's display font, centred, mirrored to read from the back."""
+    from fontTools.ttLib import TTFont
+    from fontTools.pens.svgPathPen import SVGPathPen
+    from svgpathtools import parse_path
+    from shapely import affinity
+    font = TTFont(FONT_PATH); glyphs = font.getGlyphSet(); cmap = font.getBestCmap(); upm = font['head'].unitsPerEm
+    cap_h = getattr(font['OS/2'], 'sCapHeight', 0) or upm * 0.7
+    x = 0.0; letters = []
+    for ch in text:
+        gname = cmap.get(ord(ch))
+        if gname is None: continue
+        g = glyphs[gname]; pen = SVGPathPen(glyphs); g.draw(pen); d = pen.getCommands()
+        if d:
+            contours = []
+            for sub in parse_path(d).continuous_subpaths():
+                pts = []
+                for seg in sub:
+                    n = 1 if seg.__class__.__name__ == 'Line' else 8
+                    pts += [(seg.point(i / n).real, seg.point(i / n).imag) for i in range(n)]
+                if len(pts) >= 3:
+                    c = Polygon(pts).buffer(0)
+                    if not c.is_empty: contours.append(c)
+            glyph = None
+            for c in contours: glyph = c if glyph is None else glyph.symmetric_difference(c)
+            if glyph is not None and not glyph.is_empty: letters.append(affinity.translate(glyph, x, 0))
+        x += g.width + tracking * upm
+    width = x - tracking * upm
+    p = unary_union(letters)
+    k = cap / cap_h
+    p = affinity.scale(p, xfact=k, yfact=-k, origin=(0, 0))          # font units -> badge units, y down
+    p = affinity.translate(p, -width * k / 2, cap / 2)                 # centre on the origin, cap-height centred on y=0
+    if mirror: p = affinity.scale(p, xfact=-1, yfact=1, origin=(0, 0))
+    return affinity.translate(p, cx, y)
+def logo_poly(size=LOGO_SIZE, cx=50, cy=LOGO_CY, mirror=True):
     """The app icon's bars, centred, scaled so the tallest bar is `size`; mirrored so it reads correctly from the back."""
     from shapely import affinity
     from shapely.geometry import box
@@ -269,12 +307,13 @@ def build_tier(i, t):
         'enamel': material('enamel', enamel_c, 0.0, 0.45), 'enamel_tone1': material('enamel_tone1', lighten(enamel_c, 0.04), 0.0, 0.45),
         'enamel_tone2': material('enamel_tone2', darken(enamel_c, 0.2), 0.0, 0.45), 'enamel2': material('enamel2', enamel2_c, 0.0, 0.45),
         'stone': material('stone', stone_c or '#FFFFFF', 0.0, 0.08),
+        'metal_dark': material('metal_dark', darken(metal_c, 0.45), 1.0, 0.55),   # engraving floor: the same metal, darkened and matte
     }
     scene = trimesh.Scene()
     add = lambda name, mesh, mat: scene.add_geometry(finish(mesh, mats[mat]), node_name=name, geom_name=name) if mesh is not None else None
-    logo = logo_poly()
-    add('plate', extrude(L['outline'].difference(logo), *Z['plate']), 'metal')
-    add('etch', extrude(logo.buffer(0.3), Z['plate'][0] + ETCH, Z['plate'][1]), 'enamel2')   # engraved floor, graphite, sunk into the back
+    engraved = unary_union([logo_poly(), date_poly(DATE_SAMPLE)])
+    add('plate', extrude(L['outline'].difference(engraved), *Z['plate']), 'metal')
+    add('etch', extrude(engraved.buffer(0.3), Z['plate'][0] + ETCH, Z['plate'][1]), 'metal_dark')   # engraved floor sunk into the back
     add('border', pillow(L['border'], *Z['border'], 1.8), 'metal')
     for key, poly in L['regions'].items():
         add(f'enamel_{key}', extrude(poly, *Z['enamel']), {'enamel': 'enamel', 'tone1': 'enamel_tone1', 'tone2': 'enamel_tone2', 'enamel2': 'enamel2'}[key])

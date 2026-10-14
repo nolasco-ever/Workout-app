@@ -55,15 +55,15 @@ cam = bpy.data.objects.new('cam', cam_data); bpy.context.collection.objects.link
 def aim(loc, target=(0, 0, 0.02)):
     cam.location = loc; cam.rotation_euler = (Vector(target) - Vector(loc)).to_track_quat('-Z', 'Y').to_euler()
 
-GLOW_ENAMEL = float(os.environ.get('GLOW_ENAMEL', '0.45')); GLOW_METAL = float(os.environ.get('GLOW_METAL', '0.12'))   # self-light keeps the colour saturated in shade (the cartoon look)
+GLOW_ENAMEL = float(os.environ.get('GLOW_ENAMEL', '0.3')); GLOW_METAL = float(os.environ.get('GLOW_METAL', '0.12'))   # self-light keeps the colour saturated in shade (the cartoon look)
 def shade(mat):
     """Keep the flat base colour from the file; set the shader by material role."""
     mat.use_nodes = True
     b = mat.node_tree.nodes.get('Principled BSDF')
     if not b: return
     n = mat.name.split('.')[0]
-    if n in ('metal', 'mark'):
-        b.inputs['Metallic'].default_value = 1.0; b.inputs['Roughness'].default_value = 0.2
+    if n in ('metal', 'mark', 'metal_dark'):
+        b.inputs['Metallic'].default_value = 1.0; b.inputs['Roughness'].default_value = 0.55 if n == 'metal_dark' else 0.2
         b.inputs['Emission Color'].default_value = tuple(b.inputs['Base Color'].default_value); b.inputs['Emission Strength'].default_value = GLOW_METAL
     elif n.startswith('enamel'):
         b.inputs['Metallic'].default_value = 0.0; b.inputs['Roughness'].default_value = 0.55; b.inputs['Coat Weight'].default_value = 0.06; b.inputs['Coat Roughness'].default_value = 0.1; b.inputs['Specular IOR Level'].default_value = 0.08
