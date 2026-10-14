@@ -9,7 +9,7 @@ import { Icon } from '../icons/Icon';
 import { generalIcons } from '../icons/icon-library';
 import { useTheme } from '../../theme';
 import { Avatar } from './Avatar';
-import { Badge } from '../achievements/Badge';
+import { BadgeSvg } from '../achievements/BadgeSvg';
 import { features } from '../../config/features';
 import { ACHIEVEMENT_FAMILIES, parseAchievementId } from '../../data/engine/achievements';
 
@@ -82,7 +82,7 @@ export const IronCard = ({ card, unit, distanceUnit = 'mi', footer }: { card: Pu
           <CustomText variant="overline" color={colors.inkMuted}>Badges</CustomText>
           <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm }}>
             {badges.map(b => (
-              <Badge key={b.family} family={b.family} tier={b.tier} size={44} />
+              <BadgeSvg key={b.family} family={b.family} tier={b.tier} size={48} />
             ))}
           </View>
         </View>

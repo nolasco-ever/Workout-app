@@ -1,3 +1,4 @@
+import { deleteField } from '@react-native-firebase/firestore';
 import { paths } from '../firebase/paths';
 import { AchievementUnlock, Id, PlanUse } from '../models';
 import { listDocs, mergeDoc, patchDoc, readDoc, watchDocs, writeDoc, writeDocs, Unsubscribe } from './base';
@@ -18,6 +19,12 @@ export const achievementRepository = {
   /** The celebration was shown for these; they won't be shown again. */
   markCelebrated: async (uid: Id, achievementIds: Id[], now: number = Date.now()): Promise<void> => {
     await Promise.all(achievementIds.map(id => patchDoc<AchievementUnlock>(paths.achievement(uid, id), { celebratedAt: now, updatedAt: now })));
+  },
+
+  /** Development only: forget that the celebrations were shown, so they play again on the next launch of the queue. */
+  uncelebrate: async (uid: Id, now: number = Date.now()): Promise<void> => {
+    const unlocks = await listDocs<AchievementUnlock>(paths.achievements(uid));
+    await Promise.all(unlocks.map(u => patchDoc<AchievementUnlock>(paths.achievement(uid, u.achievementId), { celebratedAt: deleteField(), updatedAt: now } as any)));
   },
 
   /** Buddies who copied or synced one of the owner's plans. */

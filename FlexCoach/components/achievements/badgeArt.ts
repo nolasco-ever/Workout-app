@@ -1,5 +1,5 @@
 import { AchievementFamilyId } from '../../data/models';
-import { MaterialId } from '../../data/engine/achievements';
+import { MaterialId, materialFor } from '../../data/engine/achievements';
 import { IconSource } from '../icons/Icon';
 import { generalIcons } from '../icons/icon-library';
 
@@ -37,6 +37,9 @@ export const MATERIAL_ART: Record<MaterialId, Material> = {
 
 /** A badge not yet earned: flat and quiet. */
 export const LOCKED_ART: Material = { light: '#DEDBD6', mid: '#C9C5BF', dark: '#A9A49D', rim: '#8E8982', ink: '#6E6B6A', glow: 'transparent', name: 'Locked' };
+
+/** The tier's material tokens: its name, and the colours used around the badge (glow, sparks, progress bars). */
+export const artFor = (tier: number): Material => (tier > 0 ? MATERIAL_ART[materialFor(tier)] : LOCKED_ART);
 
 export const FAMILY_MARKS: Record<AchievementFamilyId, IconSource> = {
   workouts: generalIcons.dumbbell,

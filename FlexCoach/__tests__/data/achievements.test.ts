@@ -1,4 +1,4 @@
-import { ACHIEVEMENT_FAMILIES, achievementIdOf, computeNewUnlocks, familyOf, materialFor, measureAchievements, parseAchievementId, progressFor, thresholdsFor, tierLabel, tierReached, unlockCopy } from '../../data/engine/achievements';
+import { ACHIEVEMENT_FAMILIES, achievementIdOf, computeNewUnlocks, familyOf, materialFor, measureAchievements, originFor, parseAchievementId, progressFor, thresholdsFor, tierLabel, tierReached, unlockCopy } from '../../data/engine/achievements';
 import { BUDDY_LADDERS, tiersReached } from '../../functions/src/ladders';
 import { Cycle, Session } from '../../data/models';
 import { entry, lastSession, set } from './support/fixtures';
@@ -82,12 +82,30 @@ describe('ladders', () => {
 
 describe('measureAchievements', () => {
   it('counts workouts, the longest streak, and time of day', () => {
-    const sessions = [session('a', '2026-09-01', 5), session('b', '2026-09-02', 23), session('c', '2026-09-03'), session('d', '2026-09-10', 22)];
+    // Early bird is about the finish (before 9am), night owl about the start (9pm or later).
+    const sessions = [session('a', '2026-09-01', 7), session('b', '2026-09-02', 21), session('c', '2026-09-03', 8), session('d', '2026-09-10', 22)];
     const v = measureAchievements({ ...empty, sessions });
     expect(v.workouts).toBe(4);
     expect(v.streak).toBe(3);
     expect(v.early_bird).toBe(1);
     expect(v.night_owl).toBe(2);
+  });
+
+  it('names the workout or cycle that carried a family over each line', () => {
+    const sessions = [session('a', '2026-09-01', 7), session('b', '2026-09-02', 21), session('c', '2026-09-03'), session('d', '2026-09-10', 22, [lift(100, 5)]), session('e', '2026-09-11', 22, [lift(110, 5)])];
+    const cycles = [cycle('c1', ['completed', 'skipped']), cycle('c2', ['completed', 'completed'], { endDate: '2026-09-14' })];
+    const input = { ...empty, sessions, cycles };
+    expect(originFor(input, familyOf('workouts'), 1)).toEqual({ sessionId: 'a' });
+    expect(originFor(input, familyOf('workouts'), 5)).toEqual({ sessionId: 'e' });
+    expect(originFor(input, familyOf('workouts'), 10)).toEqual({});
+    expect(originFor(input, familyOf('streak'), 3)).toEqual({ sessionId: 'c' });
+    expect(originFor(input, familyOf('early_bird'), 1)).toEqual({ sessionId: 'a' });
+    expect(originFor(input, familyOf('night_owl'), 3)).toEqual({ sessionId: 'e' });
+    expect(originFor(input, familyOf('volume'), 1000)).toEqual({ sessionId: 'd' }); // 1,500 kg in one go
+    expect(originFor(input, familyOf('records'), 1)).toEqual({ sessionId: 'e' });
+    expect(originFor(input, familyOf('cycles'), 2)).toEqual({ cycleId: 'c2' });
+    expect(originFor(input, familyOf('perfect_cycles'), 1)).toEqual({ cycleId: 'c2' });
+    expect(originFor(input, familyOf('buddies'), 1)).toEqual({});
   });
 
   it('measures volume in the user\'s unit', () => {
@@ -143,7 +161,7 @@ describe('computeNewUnlocks', () => {
 
   it('unlocks every tier reached that is not stored yet, lowest first', () => {
     const out = computeNewUnlocks(values, [{ achievementId: 'workouts:1' }], 'lb', 'device', 100);
-    expect(out.map(u => u.achievementId)).toEqual(['workouts:2', 'workouts:3', 'buddies:1', 'buddies:2']);
+    expect(out.map(u => u.achievementId)).toEqual(['workouts:2', 'workouts:3', 'buddies:1', 'buddies:2', 'buddies:3']);
     expect(out[0]).toMatchObject({ family: 'workouts', tier: 2, threshold: 10, value: 30, source: 'device', celebratedAt: null, unlockedAt: 100 });
   });
 
@@ -160,7 +178,7 @@ describe('computeNewUnlocks', () => {
   });
 
   it('matches the server ladder', () => {
-    expect(tiersReached('buddies', 6).map(t => t.tier)).toEqual([1, 2]);
+    expect(tiersReached('buddies', 6).map(t => t.tier)).toEqual([1, 2, 3]);
     expect(tiersReached('plan_uses', 0)).toEqual([]);
   });
 

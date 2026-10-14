@@ -1,0 +1,12 @@
+{
+  "info" : { "author" : "xcode", "version" : 1 },
+  "properties" : { "interpretation" : "non-premultiplied-colors", "origin" : "top-left" },
+  "textures" : [
+    { "cube-face" : "x+", "filename" : "px.png", "idiom" : "universal" },
+    { "cube-face" : "x-", "filename" : "nx.png", "idiom" : "universal" },
+    { "cube-face" : "y+", "filename" : "py.png", "idiom" : "universal" },
+    { "cube-face" : "y-", "filename" : "ny.png", "idiom" : "universal" },
+    { "cube-face" : "z+", "filename" : "pz.png", "idiom" : "universal" },
+    { "cube-face" : "z-", "filename" : "nz.png", "idiom" : "universal" }
+  ]
+}

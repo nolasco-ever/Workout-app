@@ -10,11 +10,14 @@
 		13B07FBF1A68108700A75B9A /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 13B07FB51A68108700A75B9A /* Images.xcassets */; };
 		357A49FEC181430DABE3F6B9 /* Manrope-Medium.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 47392A1E174B44D2A8B56C8D /* Manrope-Medium.ttf */; };
 		36334D67B9AB4CBDDA5653E1 /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 0C51CB0A697223AE786785BB /* GoogleService-Info.plist */; };
+		391D0BCAB879AE8F8710D045 /* BadgeSceneView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 289B63D03307B7EAECF68A1C /* BadgeSceneView.swift */; };
 		393DD280E97049879573A247 /* Manrope-SemiBold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 2FCD7E429DFA487BA9AC2945 /* Manrope-SemiBold.ttf */; };
 		3A34F5671654404CB5D6CEAC /* Manrope-Regular.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 41B742B3F2F7425CB3130A2E /* Manrope-Regular.ttf */; };
+		4F812C63D862D43DBDF8706A /* BadgeModels in Resources */ = {isa = PBXBuildFile; fileRef = 8A6099CA797449FC43A571AE /* BadgeModels */; };
 		761780ED2CA45674006654EE /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 761780EC2CA45674006654EE /* AppDelegate.swift */; };
 		81AB9BB82411601600AC10FF /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 81AB9BB72411601600AC10FF /* LaunchScreen.storyboard */; };
 		8B967B7F25F9E67C031F968D /* FirebaseCore in Frameworks */ = {isa = PBXBuildFile; productRef = B440C06462D48E094AC631CE /* FirebaseCore */; };
+		9C0F66BE04AE97F79C273E34 /* BadgeView.mm in Sources */ = {isa = PBXBuildFile; fileRef = 293A1241524658A484918039 /* BadgeView.mm */; };
 		C969F60DCDDD4566B22A119E /* Sora-SemiBold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 1F2D31DB537D4659AA67E8BF /* Sora-SemiBold.ttf */; };
 		CB99C4E13959419483CC03A9 /* Pods_FlexCoach.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F205662FF7054D1711856F3B /* Pods_FlexCoach.framework */; };
 		D2C507A959D14769AA9F8C58 /* Manrope-Bold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = EBF138ACCC1E4D54B3059A15 /* Manrope-Bold.ttf */; };
@@ -22,25 +25,32 @@
 		E5D0749E8B9340A58677A21E /* Sora-Bold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = AAD32DE9E2CE44C6A2525831 /* Sora-Bold.ttf */; };
 		EBCBB8558CA64914B56A1464 /* Sora-Medium.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 9E468FA679E0496B8351BC9A /* Sora-Medium.ttf */; };
 		ED9C4C67E4D2A01067168D70 /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 22DF11EA1FE0F0912026CA10 /* SceneDelegate.swift */; };
+		F72B19AC33D111C4AA29EFF3 /* NativeBadgeModels.mm in Sources */ = {isa = PBXBuildFile; fileRef = C871AF154FB5F0E764FEF1F9 /* NativeBadgeModels.mm */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
 		0C51CB0A697223AE786785BB /* GoogleService-Info.plist */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.plist.xml; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
+		1047F10FD03E0881FF4AB647 /* NativeBadgeModels.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; name = NativeBadgeModels.h; path = FlexCoach/NativeBadgeModels.h; sourceTree = SOURCE_ROOT; };
 		13B07F961A680F5B00A75B9A /* FlexCoach.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = FlexCoach.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		13B07FB51A68108700A75B9A /* Images.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; name = Images.xcassets; path = FlexCoach/Images.xcassets; sourceTree = "<group>"; };
 		13B07FB61A68108700A75B9A /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = Info.plist; path = FlexCoach/Info.plist; sourceTree = "<group>"; };
 		13B07FB81A68108700A75B9A /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = PrivacyInfo.xcprivacy; path = FlexCoach/PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
 		1F2D31DB537D4659AA67E8BF /* Sora-SemiBold.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 517466845161; includeInIndex = 0; lastKnownFileType = unknown; name = "Sora-SemiBold.ttf"; path = "../assets/fonts/Sora-SemiBold.ttf"; sourceTree = "<group>"; };
 		22DF11EA1FE0F0912026CA10 /* SceneDelegate.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = SceneDelegate.swift; path = FlexCoach/SceneDelegate.swift; sourceTree = "<group>"; };
+		289B63D03307B7EAECF68A1C /* BadgeSceneView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = BadgeSceneView.swift; path = FlexCoach/BadgeSceneView.swift; sourceTree = SOURCE_ROOT; };
+		293A1241524658A484918039 /* BadgeView.mm */ = {isa = PBXFileReference; includeInIndex = 1; name = BadgeView.mm; path = FlexCoach/BadgeView.mm; sourceTree = SOURCE_ROOT; };
 		2FCD7E429DFA487BA9AC2945 /* Manrope-SemiBold.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 517466845161; includeInIndex = 0; lastKnownFileType = unknown; name = "Manrope-SemiBold.ttf"; path = "../assets/fonts/Manrope-SemiBold.ttf"; sourceTree = "<group>"; };
 		3B4392A12AC88292D35C810B /* Pods-FlexCoach.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-FlexCoach.debug.xcconfig"; path = "Target Support Files/Pods-FlexCoach/Pods-FlexCoach.debug.xcconfig"; sourceTree = "<group>"; };
 		41B742B3F2F7425CB3130A2E /* Manrope-Regular.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 517466845161; includeInIndex = 0; lastKnownFileType = unknown; name = "Manrope-Regular.ttf"; path = "../assets/fonts/Manrope-Regular.ttf"; sourceTree = "<group>"; };
 		47392A1E174B44D2A8B56C8D /* Manrope-Medium.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 517466845161; includeInIndex = 0; lastKnownFileType = unknown; name = "Manrope-Medium.ttf"; path = "../assets/fonts/Manrope-Medium.ttf"; sourceTree = "<group>"; };
 		5709B34CF0A7D63546082F79 /* Pods-FlexCoach.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-FlexCoach.release.xcconfig"; path = "Target Support Files/Pods-FlexCoach/Pods-FlexCoach.release.xcconfig"; sourceTree = "<group>"; };
 		761780EC2CA45674006654EE /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = AppDelegate.swift; path = FlexCoach/AppDelegate.swift; sourceTree = "<group>"; };
+		7A833D779BAF49CBCDF58F02 /* BadgeView.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; name = BadgeView.h; path = FlexCoach/BadgeView.h; sourceTree = SOURCE_ROOT; };
 		81AB9BB72411601600AC10FF /* LaunchScreen.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; name = LaunchScreen.storyboard; path = FlexCoach/LaunchScreen.storyboard; sourceTree = "<group>"; };
+		8A6099CA797449FC43A571AE /* BadgeModels */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = folder; name = BadgeModels; path = FlexCoach/BadgeModels; sourceTree = SOURCE_ROOT; };
 		9E468FA679E0496B8351BC9A /* Sora-Medium.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 517466845161; includeInIndex = 0; lastKnownFileType = unknown; name = "Sora-Medium.ttf"; path = "../assets/fonts/Sora-Medium.ttf"; sourceTree = "<group>"; };
 		AAD32DE9E2CE44C6A2525831 /* Sora-Bold.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 517466845161; includeInIndex = 0; lastKnownFileType = unknown; name = "Sora-Bold.ttf"; path = "../assets/fonts/Sora-Bold.ttf"; sourceTree = "<group>"; };
+		C871AF154FB5F0E764FEF1F9 /* NativeBadgeModels.mm */ = {isa = PBXFileReference; includeInIndex = 1; name = NativeBadgeModels.mm; path = FlexCoach/NativeBadgeModels.mm; sourceTree = SOURCE_ROOT; };
 		DA7BD56AF52E9DC3CF4787A3 /* FlexCoach.entitlements */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.plist.entitlements; path = FlexCoach.entitlements; sourceTree = "<group>"; };
 		EBF138ACCC1E4D54B3059A15 /* Manrope-Bold.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 517466845161; includeInIndex = 0; lastKnownFileType = unknown; name = "Manrope-Bold.ttf"; path = "../assets/fonts/Manrope-Bold.ttf"; sourceTree = "<group>"; };
 		ED297162215061F000B7C4FE /* JavaScriptCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = JavaScriptCore.framework; path = System/Library/Frameworks/JavaScriptCore.framework; sourceTree = SDKROOT; };
@@ -69,6 +79,12 @@
 				81AB9BB72411601600AC10FF /* LaunchScreen.storyboard */,
 				13B07FB81A68108700A75B9A /* PrivacyInfo.xcprivacy */,
 				22DF11EA1FE0F0912026CA10 /* SceneDelegate.swift */,
+				289B63D03307B7EAECF68A1C /* BadgeSceneView.swift */,
+				7A833D779BAF49CBCDF58F02 /* BadgeView.h */,
+				293A1241524658A484918039 /* BadgeView.mm */,
+				8A6099CA797449FC43A571AE /* BadgeModels */,
+				1047F10FD03E0881FF4AB647 /* NativeBadgeModels.h */,
+				C871AF154FB5F0E764FEF1F9 /* NativeBadgeModels.mm */,
 			);
 			name = FlexCoach;
 			sourceTree = "<group>";
@@ -222,6 +238,7 @@
 				EBCBB8558CA64914B56A1464 /* Sora-Medium.ttf in Resources */,
 				C969F60DCDDD4566B22A119E /* Sora-SemiBold.ttf in Resources */,
 				D2C507A959D14769AA9F8C58 /* Manrope-Bold.ttf in Resources */,
+				4F812C63D862D43DBDF8706A /* BadgeModels in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -362,6 +379,9 @@
 			files = (
 				761780ED2CA45674006654EE /* AppDelegate.swift in Sources */,
 				ED9C4C67E4D2A01067168D70 /* SceneDelegate.swift in Sources */,
+				391D0BCAB879AE8F8710D045 /* BadgeSceneView.swift in Sources */,
+				9C0F66BE04AE97F79C273E34 /* BadgeView.mm in Sources */,
+				F72B19AC33D111C4AA29EFF3 /* NativeBadgeModels.mm in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

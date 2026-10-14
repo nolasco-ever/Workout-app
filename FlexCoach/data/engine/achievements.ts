@@ -1,5 +1,6 @@
 import { AchievementFamilyId, AchievementUnlock, Cycle, Id, Session, WeightUnit } from '../models';
 import { longestStreakDays } from './buddies';
+import { addDays } from './dates';
 import { cycleCounts } from './schedule';
 import { findPersonalRecords, totalVolumeKg } from './stats';
 import { kgToLb } from './units';
@@ -46,13 +47,13 @@ export const compactCount = (n: number): string => (n >= 1_000_000 ? `${(n / 1_0
 
 export const ACHIEVEMENT_FAMILIES: AchievementFamily[] = [
   { id: 'workouts', name: 'Workouts', counts: 'workouts finished, from a plan or on the spot', tiers: [1, 10, 25, 50, 100, 250, 500, 1000], judgedBy: 'device' },
-  { id: 'streak', name: 'Streak', counts: 'days in a row with a workout, your longest run', tiers: [7, 14, 30, 60, 100, 180, 365], judgedBy: 'device' },
-  { id: 'volume', name: 'Iron moved', counts: 'total weight lifted across every set', tiers: [10_000, 50_000, 100_000, 250_000, 500_000, 1_000_000, 2_500_000], tiersKg: [5_000, 25_000, 50_000, 100_000, 250_000, 500_000, 1_000_000], judgedBy: 'device' },
-  { id: 'records', name: 'Records', counts: 'personal bests beaten', tiers: [1, 10, 25, 50, 100, 250], judgedBy: 'device' },
-  { id: 'cycles', name: 'Cycles', counts: 'training cycles finished and reviewed', tiers: [1, 5, 10, 25, 50], judgedBy: 'device' },
-  { id: 'perfect_cycles', name: 'Perfect cycles', counts: 'cycles with every workout done', tiers: [1, 5, 10, 25], judgedBy: 'device' },
-  { id: 'early_bird', name: 'Early bird', counts: 'workouts started before 6am', tiers: [1, 10, 50, 100], judgedBy: 'device' },
-  { id: 'night_owl', name: 'Night owl', counts: 'workouts started after 10pm', tiers: [1, 10, 50, 100], judgedBy: 'device' },
+  { id: 'streak', name: 'Streak', counts: 'days in a row with a workout, your longest run', tiers: [3, 7, 14, 30, 60, 100, 180, 365], judgedBy: 'device' },
+  { id: 'volume', name: 'Iron moved', counts: 'total weight lifted across every set', tiers: [10_000, 25_000, 50_000, 100_000, 250_000, 500_000, 1_000_000, 2_500_000], tiersKg: [5_000, 10_000, 25_000, 50_000, 100_000, 250_000, 500_000, 1_000_000], judgedBy: 'device' },
+  { id: 'records', name: 'Records', counts: 'personal bests beaten', tiers: [1, 5, 10, 25, 50, 100, 150, 250], judgedBy: 'device' },
+  { id: 'cycles', name: 'Cycles', counts: 'training cycles finished and reviewed', tiers: [1, 3, 5, 10, 15, 25, 35, 50], judgedBy: 'device' },
+  { id: 'perfect_cycles', name: 'Perfect cycles', counts: 'cycles with every workout done', tiers: [1, 3, 5, 10, 15, 25, 40, 50], judgedBy: 'device' },
+  { id: 'early_bird', name: 'Early bird', counts: 'workouts finished before 9am', tiers: [1, 5, 10, 20, 35, 50, 75, 100], judgedBy: 'device' },
+  { id: 'night_owl', name: 'Night owl', counts: 'workouts started after 9pm', tiers: [1, 5, 10, 20, 35, 50, 75, 100], judgedBy: 'device' },
   { id: 'buddies', name: 'Buddies', counts: 'buddies on your Iron Card', tiers: [...BUDDY_LADDERS.buddies], judgedBy: 'server' },
   { id: 'plan_uses', name: 'Plans used', counts: 'buddies who copied or synced one of your plans', tiers: [...BUDDY_LADDERS.plan_uses], judgedBy: 'server' },
 ];
@@ -84,15 +85,15 @@ export const tierLabel = (family: AchievementFamilyId, threshold: number, unit: 
     case 'volume':
       return `${compactCount(threshold)} ${unit} moved`;
     case 'records':
-      return plural(threshold, 'record');
+      return plural(threshold, 'personal record');
     case 'cycles':
-      return plural(threshold, 'cycle');
+      return plural(threshold, 'completed cycle');
     case 'perfect_cycles':
       return plural(threshold, 'perfect cycle');
     case 'early_bird':
       return plural(threshold, 'early workout');
     case 'night_owl':
-      return plural(threshold, 'late workout');
+      return plural(threshold, 'late night workout');
     case 'buddies':
       return plural(threshold, 'buddy', 'buddies');
     case 'plan_uses':
@@ -125,6 +126,11 @@ export const isPerfectCycle = (cycle: Cycle): boolean => {
 };
 
 /** Where the user stands on every ladder, in each family's own unit. */
+/** Finished before 9 in the morning. */
+export const isEarlyBird = (s: Session): boolean => hourOf(s.finishedAt ?? s.startedAt) < 9;
+/** Started at or after 9 in the evening. */
+export const isNightOwl = (s: Session): boolean => hourOf(s.startedAt) >= 21;
+
 export const measureAchievements = (input: AchievementInput): AchievementValues => {
   const completed = input.sessions.filter(s => s.status === 'completed');
   const finished = input.cycles.filter(isFinishedCycle);
@@ -137,11 +143,61 @@ export const measureAchievements = (input: AchievementInput): AchievementValues 
     records: findPersonalRecords(completed, []).filter(pr => pr.previousValue !== null).length,
     cycles: finished.length,
     perfect_cycles: finished.filter(isPerfectCycle).length,
-    early_bird: completed.filter(s => hourOf(s.startedAt) < 6).length,
-    night_owl: completed.filter(s => hourOf(s.startedAt) >= 22).length,
+    early_bird: completed.filter(isEarlyBird).length,
+    night_owl: completed.filter(isNightOwl).length,
     buddies: input.buddies,
     plan_uses: input.planUses,
   };
+};
+
+/**
+ * Which session or cycle first carried a family over `threshold`, so a badge
+ * granted from history still points at the workout that earned it. Empty for
+ * the buddy families, which have no workout behind them.
+ */
+export const originFor = (input: AchievementInput, family: AchievementFamily, threshold: number): AchievementUnlock['context'] => {
+  const completed = input.sessions.filter(s => s.status === 'completed').sort((a, b) => a.startedAt - b.startedAt);
+  const nth = (list: Session[], n: number): AchievementUnlock['context'] => (list[n - 1] ? { sessionId: list[n - 1].id } : {});
+  switch (family.id) {
+    case 'workouts':
+      return nth(completed, threshold);
+    case 'early_bird':
+      return nth(completed.filter(isEarlyBird), threshold);
+    case 'night_owl':
+      return nth(completed.filter(isNightOwl), threshold);
+    case 'volume': {
+      let total = 0;
+      for (const s of completed) {
+        const kg = totalVolumeKg([s]);
+        total += input.unit === 'lb' ? kgToLb(kg) : kg;
+        if (total >= threshold) return { sessionId: s.id };
+      }
+      return {};
+    }
+    case 'records': {
+      const prs = findPersonalRecords(completed, []).filter(pr => pr.previousValue !== null);
+      return prs[threshold - 1] ? { sessionId: prs[threshold - 1].sessionId } : {};
+    }
+    case 'streak': {
+      const firstOfDay = new Map<string, Session>();
+      for (const s of completed) if (!firstOfDay.has(s.date)) firstOfDay.set(s.date, s);
+      let run = 0;
+      let prev: string | null = null;
+      for (const day of [...firstOfDay.keys()].sort()) {
+        run = prev && addDays(prev, 1) === day ? run + 1 : 1;
+        if (run >= threshold) return { sessionId: firstOfDay.get(day)!.id };
+        prev = day;
+      }
+      return {};
+    }
+    case 'cycles':
+    case 'perfect_cycles': {
+      const finished = input.cycles.filter(isFinishedCycle).filter(family.id === 'perfect_cycles' ? isPerfectCycle : () => true).sort((a, b) => a.endDate.localeCompare(b.endDate));
+      return finished[threshold - 1] ? { cycleId: finished[threshold - 1].id } : {};
+    }
+    default:
+      return {};
+  }
 };
 
 /** The highest tier `value` reaches on a ladder (0 for none). */
@@ -182,6 +238,7 @@ export const computeNewUnlocks = (
   now: number,
   families: AchievementFamily[] = ACHIEVEMENT_FAMILIES,
   context: AchievementUnlock['context'] = {},
+  originOf: (family: AchievementFamily, threshold: number) => AchievementUnlock['context'] = () => ({}),
 ): AchievementUnlock[] => {
   const have = new Set(existing.map(u => u.achievementId));
   const out: AchievementUnlock[] = [];
@@ -192,7 +249,8 @@ export const computeNewUnlocks = (
       const tier = i + 1;
       const achievementId = achievementIdOf(family.id, tier);
       if (value < threshold || have.has(achievementId)) return;
-      out.push({ id: achievementId, achievementId, family: family.id, tier, threshold, value, unlockedAt: now, source, celebratedAt: null, context, createdAt: now, updatedAt: now });
+      // The workout behind it: what the history says, unless the caller names the session or cycle that just triggered this.
+      out.push({ id: achievementId, achievementId, family: family.id, tier, threshold, value, unlockedAt: now, source, celebratedAt: null, context: { ...originOf(family, threshold), ...context }, createdAt: now, updatedAt: now });
     });
   }
   // Family order, lowest tier first, so a catch-up celebrates bronze before gold.

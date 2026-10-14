@@ -1,122 +1,56 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { Modal, StatusBar, View } from 'react-native';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { Animated, Modal, NativeScrollEvent, NativeSyntheticEvent, Platform, ScrollView, StatusBar, View, useWindowDimensions } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import Animated, { Easing, SharedValue, useAnimatedProps, useAnimatedStyle, useSharedValue, withDelay, withSequence, withSpring, withTiming } from 'react-native-reanimated';
-import Svg, { ClipPath, Defs, G, LinearGradient, Path, Rect, Stop } from 'react-native-svg';
 import { useAuth } from '../../data/auth/AuthProvider';
 import { AchievementUnlock } from '../../data/models';
-import { ACHIEVEMENT_FAMILIES, familyOf, thresholdsFor, tierLabel } from '../../data/engine/achievements';
+import { ACHIEVEMENT_FAMILIES, tierLabel } from '../../data/engine/achievements';
 import { achievementRepository } from '../../data/repositories/achievementRepository';
 import { judgeAchievements, markAchievementsCelebrated } from '../../data/services/achievementService';
 import { navigationRef } from '../../navigation/navigationRef';
 import { CustomText } from '../text/customText';
 import { PrimaryButton } from '../buttons/PrimaryButton';
-import { Icon } from '../icons/Icon';
 import { useTheme } from '../../theme';
-import { Badge, SHIELD, artFor } from './Badge';
-import { FAMILY_MARKS } from './badgeArt';
-
-const AnimatedRect = Animated.createAnimatedComponent(Rect);
+import { BadgeView, HERO_REST_YAW } from './BadgeView';
+import { artFor } from './badgeArt';
+import { preloadBadges } from './preloadBadges';
 
 /** Screens where a celebration would interrupt something: it waits until they're left. */
-const HOLD_ON = new Set(['SessionScreen', 'SessionCompleteScreen', 'SessionExercisesScreen', 'CycleReviewScreen', 'ScanCardScreen', 'AuthStack', 'OnboardingStack']);
+const HOLD_ON = new Set(['BadgeScreen', 'SessionScreen', 'SessionCompleteScreen', 'SessionExercisesScreen', 'CycleReviewScreen', 'ScanCardScreen', 'AuthStack', 'OnboardingStack']);
 
-const BADGE = 200;
-const PARTICLES = 18;
-const GROUND = '#141416';
-
-/** A spark that flies out from behind the badge and fades. */
-const Particle = ({ index, color, burst }: { index: number; color: string; burst: SharedValue<number> }) => {
-  const angle = (index / PARTICLES) * Math.PI * 2 + (index % 2 ? 0.17 : 0);
-  const distance = 110 + (index % 3) * 28;
-  const size = 6 + (index % 3) * 3;
-  const style = useAnimatedStyle(() => {
-    const p = burst.value;
-    return {
-      opacity: p < 0.1 ? p * 10 : 1 - (p - 0.1) / 0.9,
-      transform: [{ translateX: Math.cos(angle) * distance * p }, { translateY: Math.sin(angle) * distance * p }, { scale: 1 - p * 0.6 }],
-    };
-  });
-  return <Animated.View pointerEvents="none" style={[{ position: 'absolute', width: size, height: size, borderRadius: size / 2, backgroundColor: color }, style]} />;
-};
+const BADGE = 280;
+const GROUND = '#000000';
+/** How far a badge turns, in radians, as its page travels one screen width. */
+const SWIPE_TURN = 2.4;
+/** Pages this far from the current one keep their live badge; beyond that they draw nothing until swiped near. iOS keeps fewer: each live badge is a full renderer there. */
+const LIVE_RADIUS = Platform.OS === 'ios' ? 1 : 2;
 
 /**
- * One badge's moment: the badge springs in, a shine sweeps across it,
- * sparks fly, then the words. Mounted fresh per page so every tier gets
- * its own run.
+ * One page: its own live badge over the words. The badge turns with the
+ * swipe (its offset from centre drives the turn) and spins exactly once,
+ * as the page first comes into view with its badge drawn.
  */
-const CelebrationPage = ({ unlock, unit }: { unlock: AchievementUnlock; unit: 'lb' | 'kg' }) => {
-  const { colors, spacing } = useTheme();
-  const family = familyOf(unlock.family);
-  const art = artFor(unlock.tier);
-  const label = tierLabel(unlock.family, unlock.threshold, unit);
-  const next = thresholdsFor(family, unit)[unlock.tier] ?? null;
-  const upgrade = unlock.tier > 1;
-
-  const scale = useSharedValue(0.2);
-  const tilt = useSharedValue(-14);
-  const glow = useSharedValue(0);
-  const shine = useSharedValue(-60);
-  const burst = useSharedValue(0);
-  const words = useSharedValue(0);
-
+const Page = ({ unlock, unit, width, progress, live, spun, pageIndex, markSpun, onReady }: { unlock: AchievementUnlock; unit: 'lb' | 'kg'; width: number; progress: number; live: boolean; spun: boolean; pageIndex: number; markSpun: (page: number) => void; onReady?: () => void }) => {
+  const { spacing } = useTheme();
+  const [ready, setReady] = useState(false);
+  const [spinIn, setSpinIn] = useState(0);
+  // The one spin: as soon as this page is mostly in view and its badge is drawn, so it is already turning as it lands.
+  const arriving = Math.abs(progress) < 0.6;
   useEffect(() => {
-    scale.value = withDelay(120, withSpring(1, { damping: 9, stiffness: 150, mass: 0.9 }));
-    tilt.value = withDelay(120, withSpring(0, { damping: 11, stiffness: 110 }));
-    glow.value = withDelay(260, withTiming(1, { duration: 700, easing: Easing.out(Easing.cubic) }));
-    burst.value = withDelay(300, withTiming(1, { duration: 1000, easing: Easing.out(Easing.quad) }));
-    shine.value = withDelay(700, withSequence(withTiming(150, { duration: 750, easing: Easing.inOut(Easing.cubic) }), withDelay(1800, withTiming(-60, { duration: 0 })), withTiming(150, { duration: 750, easing: Easing.inOut(Easing.cubic) })));
-    words.value = withDelay(560, withTiming(1, { duration: 450, easing: Easing.out(Easing.cubic) }));
-    // Shared values are stable refs; this runs once per page.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  const badgeStyle = useAnimatedStyle(() => ({ transform: [{ scale: scale.value }, { rotate: `${tilt.value}deg` }] }));
-  const glowStyle = useAnimatedStyle(() => ({ opacity: glow.value * 0.55, transform: [{ scale: 0.6 + glow.value * 0.6 }] }));
-  const wordsStyle = useAnimatedStyle(() => ({ opacity: words.value, transform: [{ translateY: (1 - words.value) * 18 }] }));
-  const shineProps = useAnimatedProps(() => ({ x: shine.value }));
-
-  const sparkColors = [art.light, art.mid, colors.accent, '#FFFFFF'];
-
+    if (!arriving || !ready || spun) return;
+    markSpun(pageIndex);
+    setSpinIn(1);
+  }, [arriving, ready, spun, pageIndex, markSpun]);
+  const art = artFor(unlock.tier);
+  const yawOffset = Math.abs(progress) < 0.004 ? 0 : progress * SWIPE_TURN;
   return (
-    <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', gap: spacing.xl, paddingHorizontal: spacing.xl }}>
-      <View style={{ width: BADGE, height: BADGE, alignItems: 'center', justifyContent: 'center' }}>
-        <Animated.View pointerEvents="none" style={[{ position: 'absolute', width: BADGE * 1.9, height: BADGE * 1.9, borderRadius: BADGE, backgroundColor: art.glow }, glowStyle]} />
-        {Array.from({ length: PARTICLES }, (_, i) => (
-          <Particle key={i} index={i} color={sparkColors[i % sparkColors.length]} burst={burst} />
-        ))}
-        <Animated.View style={[{ width: BADGE, height: BADGE, alignItems: 'center', justifyContent: 'center' }, badgeStyle]}>
-          <Badge family={unlock.family} tier={unlock.tier} size={BADGE} markless />
-          {/* The shine, clipped to the shield so it never spills outside it. */}
-          <Svg width={BADGE} height={BADGE} viewBox="0 0 100 100" style={{ position: 'absolute' }} pointerEvents="none">
-            <Defs>
-              <ClipPath id="celebrate-shield">
-                <Path d={SHIELD} />
-              </ClipPath>
-              <LinearGradient id="celebrate-shine" x1="0" y1="0" x2="1" y2="0">
-                <Stop offset="0" stopColor="#FFFFFF" stopOpacity="0" />
-                <Stop offset="0.5" stopColor="#FFFFFF" stopOpacity="0.8" />
-                <Stop offset="1" stopColor="#FFFFFF" stopOpacity="0" />
-              </LinearGradient>
-            </Defs>
-            <G clipPath="url(#celebrate-shield)">
-              <AnimatedRect animatedProps={shineProps} y="-30" width="34" height="160" fill="url(#celebrate-shine)" transform="skewX(-22)" />
-            </G>
-          </Svg>
-          <View style={{ position: 'absolute' }}>
-            <Icon icon={FAMILY_MARKS[unlock.family]} size={BADGE * 0.4} color={art.ink} strokeWidth={2.25} />
-          </View>
-        </Animated.View>
+    <View style={{ width, alignItems: 'center', gap: spacing.xl, paddingHorizontal: spacing.xl }}>
+      <View style={{ width: BADGE, height: BADGE }}>
+        {live && <BadgeView family={unlock.family} tier={unlock.tier} restYaw={HERO_REST_YAW} spinIn={spinIn} yawOffset={yawOffset} unlockedAt={unlock.unlockedAt} onReady={() => { setReady(true); onReady?.(); }} style={{ width: BADGE, height: BADGE }} />}
       </View>
-
-      <Animated.View style={[{ alignItems: 'center', gap: spacing.sm }, wordsStyle]}>
-        <CustomText variant="overline" color={art.light}>{upgrade ? 'Badge upgraded' : 'Badge unlocked'}</CustomText>
-        <CustomText variant="display" color="#FFFFFF" centered>{label}</CustomText>
-        <CustomText variant="bodyStrong" color="rgba(255,255,255,0.78)" centered>{family.name} · {art.name}</CustomText>
-        <CustomText variant="body" color="rgba(255,255,255,0.6)" centered style={{ marginTop: spacing.xs }}>
-          {next !== null ? `Next up: ${tierLabel(unlock.family, next, unit)}.` : 'Top of the ladder. Nothing above this one, yet.'}
-        </CustomText>
-      </Animated.View>
+      <View style={{ alignItems: 'center', gap: spacing.sm }}>
+        <CustomText variant="overline" color={art.light}>{unlock.tier > 1 ? 'Badge upgraded' : 'Badge unlocked'}</CustomText>
+        <CustomText variant="display" color="#FFFFFF" centered>{tierLabel(unlock.family, unlock.threshold, unit)}</CustomText>
+      </View>
     </View>
   );
 };
@@ -125,27 +59,42 @@ const familyOrder = new Map(ACHIEVEMENT_FAMILIES.map((f, i) => [f.id, i]));
 const byMoment = (a: AchievementUnlock, b: AchievementUnlock): number => a.unlockedAt - b.unlockedAt || (familyOrder.get(a.family) ?? 0) - (familyOrder.get(b.family) ?? 0) || a.tier - b.tier;
 
 /**
- * Shows the celebration for every badge the owner hasn't seen yet, one
- * page per tier, as a full-screen modal over whatever is open. Waits
- * while a workout, its summary, or a report is on screen. Also runs the
- * one-time catch-up that grants badges already earned. Mount once at the
- * app root for signed-in, onboarded accounts.
+ * Shows the celebration for every badge the owner hasn't seen yet, as a
+ * full-screen modal over whatever is open. The first badge spins in; with
+ * several unlocks the pages swipe, each with its own live badge that turns
+ * with the swipe and gets a push as it lands. Waits while a workout, its
+ * summary, a report or a badge is on screen. Also runs the one-time
+ * catch-up that grants badges already earned. Mount once at the app root
+ * for signed-in, onboarded accounts.
  */
 export const AchievementCelebration = () => {
   const { uid, profile } = useAuth();
   const { colors, spacing } = useTheme();
   const insets = useSafeAreaInsets();
+  const { width } = useWindowDimensions();
   const unit = profile?.weightUnit ?? 'lb';
   const [unlocks, setUnlocks] = useState<AchievementUnlock[]>([]);
   const [queue, setQueue] = useState<AchievementUnlock[] | null>(null);
   const [index, setIndex] = useState(0);
+  const [scrollX, setScrollX] = useState(0);
+  const [spun, setSpun] = useState<Record<number, boolean>>({});
+  const [shown, setShown] = useState(false); // the first badge is drawn: the modal fades in over it
+  const fade = useRef(new Animated.Value(0)).current;
+  const preparing = useRef(false);
+  const markSpun = useCallback((page: number) => setSpun(s => (s[page] ? s : { ...s, [page]: true })), []);
   const [route, setRoute] = useState<string | undefined>(() => navigationRef.getCurrentRoute()?.name);
   const caughtUp = useRef<string | null>(null);
+  const pager = useRef<React.ElementRef<typeof ScrollView>>(null);
 
   useEffect(() => {
     if (!uid) return;
     return achievementRepository.watch(uid, setUnlocks);
   }, [uid]);
+
+  // Every earned badge goes into the model cache as soon as it is known, so any of them opens at once.
+  useEffect(() => {
+    preloadBadges(unlocks.map(u => ({ family: u.family, tier: u.tier })));
+  }, [unlocks]);
 
   // The catch-up: once per account, everything already earned, quietly.
   const backfilled = profile?.achievementsBackfilledAt ?? null;
@@ -161,11 +110,38 @@ export const AchievementCelebration = () => {
 
   const pending = useMemo(() => unlocks.filter(u => !u.celebratedAt).sort(byMoment), [unlocks]);
   const held = !!route && HOLD_ON.has(route);
+  // The celebration opens only once every badge in it is cached, so no page ever opens blank.
   useEffect(() => {
-    if (queue || pending.length === 0 || held) return;
-    setQueue(pending);
-    setIndex(0);
+    if (queue || pending.length === 0 || held || preparing.current) return;
+    preparing.current = true;
+    let live = true;
+    preloadBadges(pending.map(u => ({ family: u.family, tier: u.tier }))).then(() => {
+      preparing.current = false;
+      if (!live) return;
+      setQueue(pending);
+      setIndex(0);
+      setScrollX(0);
+      setSpun({});
+      setShown(false);
+      fade.setValue(0);
+    });
+    return () => {
+      live = false;
+    };
   }, [pending, held, queue]);
+
+  // Fade in only once the first page's badge is actually drawn, so there is never a black frame.
+  const reveal = () => {
+    if (shown) return;
+    setShown(true);
+    Animated.timing(fade, { toValue: 1, duration: 260, useNativeDriver: true }).start();
+  };
+  useEffect(() => {
+    if (!queue || shown) return;
+    const t = setTimeout(reveal, 1500); // never wait forever on a renderer that stays quiet
+    return () => clearTimeout(t);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [queue, shown]);
 
   const finish = () => {
     if (!queue || !uid) return;
@@ -174,19 +150,35 @@ export const AchievementCelebration = () => {
     markAchievementsCelebrated(uid, ids).catch(err => console.warn('celebration stamp failed', err));
   };
 
+  const onScroll = (e: NativeSyntheticEvent<NativeScrollEvent>) => setScrollX(e.nativeEvent.contentOffset.x);
+  // Once a page settles, it becomes current and its badge gets a push.
+  const onSettle = (e: NativeSyntheticEvent<NativeScrollEvent>) => {
+    const page = Math.round(e.nativeEvent.contentOffset.x / width);
+    setScrollX(page * width);
+    if (page !== index) setIndex(page);
+  };
+  const goTo = (page: number) => pager.current?.scrollTo({ x: page * width, animated: true });
+
   if (!queue) return null;
-  const current = queue[Math.min(index, queue.length - 1)];
   const last = index >= queue.length - 1;
   return (
-    <Modal visible animationType="fade" presentationStyle="fullScreen" statusBarTranslucent onRequestClose={finish}>
+    <Modal visible animationType="none" presentationStyle="fullScreen" statusBarTranslucent onRequestClose={finish}>
       <StatusBar barStyle="light-content" />
-      <View style={{ flex: 1, backgroundColor: GROUND, paddingTop: insets.top, paddingBottom: insets.bottom + spacing.lg }}>
+      {/* An opaque backdrop from the first frame: the fade is of the content only, so nothing lighter ever shows through. */}
+      <View style={{ flex: 1, backgroundColor: GROUND }}>
+      <Animated.View style={{ flex: 1, backgroundColor: GROUND, paddingTop: insets.top, paddingBottom: insets.bottom + spacing.lg, opacity: fade }} pointerEvents={shown ? 'auto' : 'none'}>
         <View style={{ alignItems: 'center', paddingTop: spacing.lg, minHeight: 40 }}>
           {queue.length > 1 && (
             <CustomText variant="label" color="rgba(255,255,255,0.5)">{index + 1} of {queue.length}</CustomText>
           )}
         </View>
-        <CelebrationPage key={current.achievementId} unlock={current} unit={unit} />
+        <View style={{ flex: 1, justifyContent: 'center' }}>
+          <ScrollView ref={pager} horizontal pagingEnabled showsHorizontalScrollIndicator={false} scrollEnabled={queue.length > 1} onScroll={onScroll} scrollEventThrottle={16} onMomentumScrollEnd={onSettle} onScrollEndDrag={e => { if (Math.abs(e.nativeEvent.velocity?.x ?? 0) < 0.05) onSettle(e); }} style={{ flexGrow: 0 }}>
+            {queue.map((u, i) => (
+              <Page key={u.achievementId} unlock={u} unit={unit} width={width} progress={scrollX / width - i} live={Math.abs(i - index) <= LIVE_RADIUS} spun={!!spun[i]} pageIndex={i} markSpun={markSpun} onReady={i === 0 ? reveal : undefined} />
+            ))}
+          </ScrollView>
+        </View>
         <View style={{ paddingHorizontal: spacing.xl, gap: spacing.md }}>
           {queue.length > 1 && (
             <View style={{ flexDirection: 'row', justifyContent: 'center', gap: spacing.sm }}>
@@ -195,8 +187,9 @@ export const AchievementCelebration = () => {
               ))}
             </View>
           )}
-          <PrimaryButton label={last ? 'Done' : 'Next'} onPress={last ? finish : () => setIndex(i => i + 1)} />
+          <PrimaryButton label={last ? 'Done' : 'Next'} onPress={last ? finish : () => goTo(index + 1)} />
         </View>
+      </Animated.View>
       </View>
     </Modal>
   );

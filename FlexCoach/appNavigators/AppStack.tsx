@@ -17,7 +17,8 @@ import { BuddyPlansScreen } from '../screens/Buddies/BuddyPlansScreen';
 import { BuddyPlanScreen } from '../screens/Buddies/BuddyPlanScreen';
 import { BuddyWorkoutScreen } from '../screens/Buddies/BuddyWorkoutScreen';
 import { AchievementsScreen } from '../screens/Achievements/AchievementsScreen';
-import { BadgePreviewScreen } from '../screens/Achievements/BadgePreviewScreen';
+import { BadgeScreen } from '../screens/Achievements/BadgeScreen';
+import { AchievementFamilyId } from '../data/models';
 import type { BuddyRoutes } from '../screens/Buddies/routes';
 import { HeaderButton } from '../components/headers/HeaderButton';
 import { generalIcons } from '../components/icons/icon-library';
@@ -38,7 +39,7 @@ export type AppStackParams = BuddyRoutes & {
     ExerciseDetailScreen: { exerciseId: string };
     /** The badge grid; `achievementId` opens that badge's family. */
     AchievementsScreen: { achievementId?: string } | undefined;
-    BadgePreviewScreen: undefined;
+    BadgeScreen: { family: AchievementFamilyId; tier: number };
 };
 
 const Stack = createNativeStackNavigator<AppStackParams>();
@@ -88,7 +89,8 @@ export const AppStack = () => {
                     {/* A card is a sheet with an X: it can be brought up from a link, a scan, or the buddies list. */}
                     <Stack.Screen name="BuddyCardScreen" component={BuddyCardScreen} options={({ navigation, route }) => opts.modal(route.params.displayName ?? 'Iron Card', () => <HeaderButton icon={generalIcons.xMark} accessibilityLabel="Close" onPress={() => navigation.goBack()} />)} />
                     <Stack.Screen name="AchievementsScreen" component={AchievementsScreen} options={opts.screen('Achievements')} />
-                    <Stack.Screen name="BadgePreviewScreen" component={BadgePreviewScreen} options={opts.screen('Badge preview')} />
+                    {/* One badge on black, so the header goes dark with it. */}
+                    <Stack.Screen name="BadgeScreen" component={BadgeScreen} options={{ ...opts.screen(''), headerStyle: { backgroundColor: '#000000' }, headerTintColor: '#FFFFFF', headerTitleStyle: { color: '#FFFFFF' }, contentStyle: { backgroundColor: '#000000' } }} />
                     <Stack.Screen name="BuddyActivityScreen" component={BuddyActivityScreen} options={opts.screen('Buddy activity')} />
                     <Stack.Screen name="BuddyPlansScreen" component={BuddyPlansScreen} options={opts.screen('Plans from buddies')} />
                     <Stack.Screen name="BuddyPlanScreen" component={BuddyPlanScreen} options={opts.screen('Plan')} />

@@ -122,6 +122,10 @@ android {
 dependencies {
     // The version of react-native is set by the React Native Gradle Plugin
     implementation("com.facebook.react:react-android")
+    // Native 3D badges (com.flexcoach.badges): Google's Filament renderer and its glTF loader.
+    implementation("com.google.android.filament:filament-android:1.71.5")
+    implementation("com.google.android.filament:gltfio-android:1.71.5")
+    implementation("com.google.android.filament:filament-utils-android:1.71.5")
 
     if (hermesEnabled.toBoolean()) {
         implementation("com.facebook.react:hermes-android")

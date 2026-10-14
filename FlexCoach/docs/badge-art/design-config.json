@@ -164,7 +164,7 @@
   {
    "count": "12",
    "design": {
-    "bleed": "scallop",
+    "bleed": "none",
     "enamel2": "graphite",
     "inner": "none",
     "laurel": "no",

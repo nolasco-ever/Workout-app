@@ -1,5 +1,5 @@
 import { AchievementUnlock, Id, PlanUse, UserProfile } from '../models';
-import { ACHIEVEMENT_FAMILIES, computeNewUnlocks, measureAchievements, unlockCopy } from '../engine/achievements';
+import { ACHIEVEMENT_FAMILIES, computeNewUnlocks, measureAchievements, originFor, unlockCopy } from '../engine/achievements';
 import { achievementRepository } from '../repositories/achievementRepository';
 import { buddyRepository } from '../repositories/buddyRepository';
 import { cycleRepository } from '../repositories/cycleRepository';
@@ -31,10 +31,11 @@ export const judgeAchievements = async (uid: Id, profileHint: UserProfile | null
     buddyRepository.list(uid),
     achievementRepository.listPlanUses(uid).catch((): PlanUse[] => []),
   ]);
-  const values = measureAchievements({ sessions, cycles, buddies: buddies.filter(b => b.status === 'accepted').length, planUses: planUses.length, unit });
+  const input = { sessions, cycles, buddies: buddies.filter(b => b.status === 'accepted').length, planUses: planUses.length, unit };
+  const values = measureAchievements(input);
   const families = catchUp ? ACHIEVEMENT_FAMILIES : ACHIEVEMENT_FAMILIES.filter(f => f.judgedBy === 'device');
   const now = Date.now();
-  const fresh = computeNewUnlocks(values, existing, unit, catchUp ? 'backfill' : 'device', now, families, context);
+  const fresh = computeNewUnlocks(values, existing, unit, catchUp ? 'backfill' : 'device', now, families, context, (family, threshold) => originFor(input, family, threshold));
 
   if (fresh.length > 0) {
     await achievementRepository.unlockMany(uid, fresh);

@@ -16,17 +16,10 @@ export const features = {
    */
   avatars: false,
   /**
-   * Badges (achievements). Built, but the artwork is still being designed,
-   * so the grid, the celebration, the judging and the Iron Card row stay
-   * off. The Cloud Functions have their own switch: `config/features`
-   * in Firestore, field `achievements`. Flip both together.
-   */
-  achievements: false,
-  /**
-   * The badge design review: a Profile row opening every badge, every
-   * tier, as the spinning 3D model, with lighting and spin dials. For the
-   * owner's own look while the art is being finished; off before a build
+   * Badges (achievements): the grid, the celebration, the judging and the
+   * Iron Card row. The Cloud Functions have their own switch: `config/features`
+   * in Firestore, field `achievements`. Flip both together before a build
    * goes to testers.
    */
-  badgePreview: true,
+  achievements: true,
 };

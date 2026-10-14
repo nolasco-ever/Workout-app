@@ -13,388 +13,544 @@
  ],
  "ladder": {
   "workouts": 8,
-  "streak": 7,
-  "volume": 7,
-  "records": 6,
-  "cycles": 5,
-  "perfect_cycles": 4,
-  "early_bird": 4,
-  "night_owl": 4,
-  "buddies": 4,
-  "plan_uses": 5
+  "streak": 8,
+  "volume": 8,
+  "records": 8,
+  "cycles": 8,
+  "perfect_cycles": 8,
+  "early_bird": 8,
+  "night_owl": 8,
+  "buddies": 8,
+  "plan_uses": 8
  },
  "files": [
   {
-   "family": "body",
+   "name": "body",
    "tier": 1,
-   "tris": 15348,
-   "bytes": 279332
+   "tris": 20244,
+   "bytes": 441592
   },
   {
-   "family": "workouts",
+   "name": "workouts",
    "tier": 1,
-   "tris": 5291,
-   "bytes": 97772
+   "tris": 5430,
+   "bytes": 112300
   },
   {
-   "family": "streak",
+   "name": "streak",
    "tier": 1,
-   "tris": 5924,
-   "bytes": 109116
+   "tris": 4628,
+   "bytes": 94864
   },
   {
-   "family": "volume",
+   "name": "volume",
    "tier": 1,
-   "tris": 4898,
-   "bytes": 90656
+   "tris": 3021,
+   "bytes": 61896
   },
   {
-   "family": "records",
+   "name": "records",
    "tier": 1,
-   "tris": 6944,
-   "bytes": 127440
+   "tris": 6919,
+   "bytes": 140660
   },
   {
-   "family": "cycles",
+   "name": "cycles",
    "tier": 1,
-   "tris": 6730,
-   "bytes": 123636
+   "tris": 6323,
+   "bytes": 129644
   },
   {
-   "family": "perfect_cycles",
+   "name": "perfect_cycles",
    "tier": 1,
-   "tris": 7532,
-   "bytes": 138052
+   "tris": 8546,
+   "bytes": 174680
   },
   {
-   "family": "early_bird",
+   "name": "early_bird",
    "tier": 1,
-   "tris": 7191,
-   "bytes": 132032
+   "tris": 7943,
+   "bytes": 160344
   },
   {
-   "family": "night_owl",
+   "name": "night_owl",
    "tier": 1,
-   "tris": 7439,
-   "bytes": 136404
+   "tris": 7725,
+   "bytes": 156140
   },
   {
-   "family": "buddies",
+   "name": "buddies",
    "tier": 1,
-   "tris": 9952,
-   "bytes": 181608
+   "tris": 12347,
+   "bytes": 250944
   },
   {
-   "family": "plan_uses",
+   "name": "plan_uses",
    "tier": 1,
-   "tris": 9192,
-   "bytes": 167940
+   "tris": 10238,
+   "bytes": 210852
   },
   {
-   "family": "body",
+   "name": "body",
    "tier": 2,
-   "tris": 14112,
-   "bytes": 259100
+   "tris": 17947,
+   "bytes": 402808
   },
   {
-   "family": "workouts",
+   "name": "workouts",
    "tier": 2,
-   "tris": 4895,
-   "bytes": 90748
+   "tris": 5430,
+   "bytes": 112296
   },
   {
-   "family": "streak",
+   "name": "streak",
    "tier": 2,
-   "tris": 5292,
-   "bytes": 97708
+   "tris": 4628,
+   "bytes": 94860
   },
   {
-   "family": "volume",
+   "name": "volume",
    "tier": 2,
-   "tris": 4262,
-   "bytes": 79212
+   "tris": 3021,
+   "bytes": 61896
   },
   {
-   "family": "records",
+   "name": "records",
    "tier": 2,
-   "tris": 6517,
-   "bytes": 119728
+   "tris": 6919,
+   "bytes": 140656
   },
   {
-   "family": "cycles",
+   "name": "cycles",
    "tier": 2,
-   "tris": 6358,
-   "bytes": 116908
+   "tris": 6323,
+   "bytes": 129640
   },
   {
-   "family": "perfect_cycles",
+   "name": "perfect_cycles",
    "tier": 2,
-   "tris": 7384,
-   "bytes": 135584
+   "tris": 8546,
+   "bytes": 174676
   },
   {
-   "family": "early_bird",
+   "name": "early_bird",
    "tier": 2,
-   "tris": 6898,
-   "bytes": 126756
+   "tris": 7943,
+   "bytes": 160344
   },
   {
-   "family": "night_owl",
+   "name": "night_owl",
    "tier": 2,
-   "tris": 7098,
-   "bytes": 130256
+   "tris": 7725,
+   "bytes": 156136
   },
   {
-   "family": "buddies",
+   "name": "buddies",
    "tier": 2,
-   "tris": 9498,
-   "bytes": 173504
+   "tris": 12347,
+   "bytes": 250940
   },
   {
-   "family": "plan_uses",
+   "name": "plan_uses",
    "tier": 2,
-   "tris": 8639,
-   "bytes": 158108
+   "tris": 10238,
+   "bytes": 210848
   },
   {
-   "family": "body",
+   "name": "body",
    "tier": 3,
-   "tris": 13944,
-   "bytes": 256268
+   "tris": 18347,
+   "bytes": 415256
   },
   {
-   "family": "workouts",
+   "name": "workouts",
    "tier": 3,
-   "tris": 5713,
-   "bytes": 105372
+   "tris": 5430,
+   "bytes": 112300
   },
   {
-   "family": "streak",
+   "name": "streak",
    "tier": 3,
-   "tris": 5696,
-   "bytes": 105008
+   "tris": 4628,
+   "bytes": 94864
   },
   {
-   "family": "volume",
+   "name": "volume",
    "tier": 3,
-   "tris": 4758,
-   "bytes": 88216
+   "tris": 3021,
+   "bytes": 61896
   },
   {
-   "family": "records",
+   "name": "records",
    "tier": 3,
-   "tris": 6873,
-   "bytes": 126212
+   "tris": 6919,
+   "bytes": 140660
   },
   {
-   "family": "cycles",
+   "name": "cycles",
    "tier": 3,
-   "tris": 7110,
-   "bytes": 130488
+   "tris": 6323,
+   "bytes": 129644
   },
   {
-   "family": "perfect_cycles",
+   "name": "perfect_cycles",
    "tier": 3,
-   "tris": 7720,
-   "bytes": 141736
+   "tris": 8546,
+   "bytes": 174680
   },
   {
-   "family": "early_bird",
+   "name": "early_bird",
    "tier": 3,
-   "tris": 7557,
-   "bytes": 138824
+   "tris": 7943,
+   "bytes": 160344
   },
   {
-   "family": "night_owl",
+   "name": "night_owl",
    "tier": 3,
-   "tris": 7679,
-   "bytes": 140760
+   "tris": 7725,
+   "bytes": 156136
   },
   {
-   "family": "buddies",
+   "name": "buddies",
    "tier": 3,
-   "tris": 9877,
-   "bytes": 180372
+   "tris": 12347,
+   "bytes": 250944
   },
   {
-   "family": "plan_uses",
+   "name": "plan_uses",
    "tier": 3,
-   "tris": 9096,
-   "bytes": 166152
+   "tris": 10238,
+   "bytes": 210852
   },
   {
-   "family": "body",
+   "name": "body",
    "tier": 4,
-   "tris": 4260,
-   "bytes": 81204
+   "tris": 4972,
+   "bytes": 117688
   },
   {
-   "family": "workouts",
+   "name": "workouts",
    "tier": 4,
-   "tris": 4317,
-   "bytes": 80248
+   "tris": 5430,
+   "bytes": 112296
   },
   {
-   "family": "streak",
+   "name": "streak",
    "tier": 4,
-   "tris": 4700,
-   "bytes": 87076
+   "tris": 4628,
+   "bytes": 94860
   },
   {
-   "family": "volume",
+   "name": "volume",
    "tier": 4,
-   "tris": 3712,
-   "bytes": 69304
+   "tris": 3021,
+   "bytes": 61896
   },
   {
-   "family": "records",
+   "name": "records",
    "tier": 4,
-   "tris": 5826,
-   "bytes": 107356
+   "tris": 6919,
+   "bytes": 140656
   },
   {
-   "family": "cycles",
+   "name": "cycles",
    "tier": 4,
-   "tris": 6136,
-   "bytes": 112868
+   "tris": 6323,
+   "bytes": 129640
   },
   {
-   "family": "perfect_cycles",
+   "name": "perfect_cycles",
    "tier": 4,
-   "tris": 6844,
-   "bytes": 126020
+   "tris": 8546,
+   "bytes": 174676
   },
   {
-   "family": "early_bird",
+   "name": "early_bird",
    "tier": 4,
-   "tris": 6515,
-   "bytes": 119980
+   "tris": 7943,
+   "bytes": 160344
   },
   {
-   "family": "night_owl",
+   "name": "night_owl",
    "tier": 4,
-   "tris": 6950,
-   "bytes": 127568
+   "tris": 7725,
+   "bytes": 156136
   },
   {
-   "family": "buddies",
+   "name": "buddies",
    "tier": 4,
-   "tris": 8812,
-   "bytes": 161144
+   "tris": 12347,
+   "bytes": 250940
   },
   {
-   "family": "plan_uses",
+   "name": "plan_uses",
    "tier": 4,
-   "tris": 8044,
-   "bytes": 147488
+   "tris": 10238,
+   "bytes": 210848
   },
   {
-   "family": "body",
+   "name": "body",
    "tier": 5,
-   "tris": 7700,
-   "bytes": 142540
+   "tris": 3782,
+   "bytes": 94540
   },
   {
-   "family": "workouts",
+   "name": "workouts",
    "tier": 5,
-   "tris": 2593,
-   "bytes": 49356
+   "tris": 5430,
+   "bytes": 112296
   },
   {
-   "family": "streak",
+   "name": "streak",
    "tier": 5,
-   "tris": 2969,
-   "bytes": 56028
+   "tris": 4628,
+   "bytes": 94860
   },
   {
-   "family": "volume",
+   "name": "volume",
    "tier": 5,
-   "tris": 2068,
-   "bytes": 39848
+   "tris": 3021,
+   "bytes": 61896
   },
   {
-   "family": "records",
+   "name": "records",
    "tier": 5,
-   "tris": 4083,
-   "bytes": 76140
+   "tris": 6919,
+   "bytes": 140656
   },
   {
-   "family": "cycles",
+   "name": "cycles",
    "tier": 5,
-   "tris": 4036,
-   "bytes": 75336
+   "tris": 6323,
+   "bytes": 129640
   },
   {
-   "family": "plan_uses",
+   "name": "perfect_cycles",
    "tier": 5,
-   "tris": 6368,
-   "bytes": 117244
+   "tris": 8546,
+   "bytes": 174676
   },
   {
-   "family": "body",
+   "name": "early_bird",
+   "tier": 5,
+   "tris": 7943,
+   "bytes": 160344
+  },
+  {
+   "name": "night_owl",
+   "tier": 5,
+   "tris": 7725,
+   "bytes": 156136
+  },
+  {
+   "name": "buddies",
+   "tier": 5,
+   "tris": 12347,
+   "bytes": 250940
+  },
+  {
+   "name": "plan_uses",
+   "tier": 5,
+   "tris": 10238,
+   "bytes": 210848
+  },
+  {
+   "name": "body",
    "tier": 6,
-   "tris": 4104,
-   "bytes": 77944
+   "tris": 3260,
+   "bytes": 75668
   },
   {
-   "family": "workouts",
+   "name": "workouts",
    "tier": 6,
-   "tris": 3485,
-   "bytes": 65256
+   "tris": 5430,
+   "bytes": 112296
   },
   {
-   "family": "streak",
+   "name": "streak",
    "tier": 6,
-   "tris": 3802,
-   "bytes": 71416
+   "tris": 4628,
+   "bytes": 94860
   },
   {
-   "family": "volume",
+   "name": "volume",
    "tier": 6,
-   "tris": 2967,
-   "bytes": 55884
+   "tris": 3021,
+   "bytes": 61896
   },
   {
-   "family": "records",
+   "name": "records",
    "tier": 6,
-   "tris": 4986,
-   "bytes": 92232
+   "tris": 6919,
+   "bytes": 140656
   },
   {
-   "family": "body",
+   "name": "cycles",
+   "tier": 6,
+   "tris": 6323,
+   "bytes": 129640
+  },
+  {
+   "name": "perfect_cycles",
+   "tier": 6,
+   "tris": 8546,
+   "bytes": 174676
+  },
+  {
+   "name": "early_bird",
+   "tier": 6,
+   "tris": 7943,
+   "bytes": 160344
+  },
+  {
+   "name": "night_owl",
+   "tier": 6,
+   "tris": 7725,
+   "bytes": 156136
+  },
+  {
+   "name": "buddies",
+   "tier": 6,
+   "tris": 12347,
+   "bytes": 250940
+  },
+  {
+   "name": "plan_uses",
+   "tier": 6,
+   "tris": 10238,
+   "bytes": 210848
+  },
+  {
+   "name": "body",
    "tier": 7,
-   "tris": 4104,
-   "bytes": 77948
+   "tris": 3260,
+   "bytes": 75668
   },
   {
-   "family": "workouts",
+   "name": "workouts",
    "tier": 7,
-   "tris": 3485,
-   "bytes": 65256
+   "tris": 5430,
+   "bytes": 112296
   },
   {
-   "family": "streak",
+   "name": "streak",
    "tier": 7,
-   "tris": 3802,
-   "bytes": 71416
+   "tris": 4628,
+   "bytes": 94860
   },
   {
-   "family": "volume",
+   "name": "volume",
    "tier": 7,
-   "tris": 2967,
-   "bytes": 55884
+   "tris": 3021,
+   "bytes": 61896
   },
   {
-   "family": "body",
+   "name": "records",
+   "tier": 7,
+   "tris": 6919,
+   "bytes": 140656
+  },
+  {
+   "name": "cycles",
+   "tier": 7,
+   "tris": 6323,
+   "bytes": 129640
+  },
+  {
+   "name": "perfect_cycles",
+   "tier": 7,
+   "tris": 8546,
+   "bytes": 174676
+  },
+  {
+   "name": "early_bird",
+   "tier": 7,
+   "tris": 7943,
+   "bytes": 160344
+  },
+  {
+   "name": "night_owl",
+   "tier": 7,
+   "tris": 7725,
+   "bytes": 156136
+  },
+  {
+   "name": "buddies",
+   "tier": 7,
+   "tris": 12347,
+   "bytes": 250940
+  },
+  {
+   "name": "plan_uses",
+   "tier": 7,
+   "tris": 10238,
+   "bytes": 210848
+  },
+  {
+   "name": "body",
    "tier": 8,
-   "tris": 10758,
-   "bytes": 198700
+   "tris": 5426,
+   "bytes": 128568
   },
   {
-   "family": "workouts",
+   "name": "workouts",
    "tier": 8,
-   "tris": 3333,
-   "bytes": 62696
+   "tris": 5180,
+   "bytes": 107500
+  },
+  {
+   "name": "streak",
+   "tier": 8,
+   "tris": 4512,
+   "bytes": 92484
+  },
+  {
+   "name": "volume",
+   "tier": 8,
+   "tris": 2929,
+   "bytes": 60192
+  },
+  {
+   "name": "records",
+   "tier": 8,
+   "tris": 6684,
+   "bytes": 135832
+  },
+  {
+   "name": "cycles",
+   "tier": 8,
+   "tris": 6171,
+   "bytes": 126416
+  },
+  {
+   "name": "perfect_cycles",
+   "tier": 8,
+   "tris": 8487,
+   "bytes": 173408
+  },
+  {
+   "name": "early_bird",
+   "tier": 8,
+   "tris": 7863,
+   "bytes": 159076
+  },
+  {
+   "name": "night_owl",
+   "tier": 8,
+   "tris": 7387,
+   "bytes": 149872
+  },
+  {
+   "name": "buddies",
+   "tier": 8,
+   "tris": 11652,
+   "bytes": 235584
+  },
+  {
+   "name": "plan_uses",
+   "tier": 8,
+   "tris": 9773,
+   "bytes": 201500
   }
  ]
 }

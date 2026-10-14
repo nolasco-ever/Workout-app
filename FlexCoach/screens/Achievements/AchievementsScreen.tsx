@@ -1,141 +1,123 @@
-import React, { useEffect, useState } from 'react';
-import { ActivityIndicator, ScrollView, TouchableOpacity, View } from 'react-native';
+import React, { useEffect } from 'react';
+import { ScrollView, TouchableOpacity, View, useWindowDimensions } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { RouteProp, useRoute } from '@react-navigation/native';
-import { AchievementFamilyId, AchievementUnlock } from '../../data/models';
-import { FamilyProgress, achievementIdOf, parseAchievementId, thresholdsFor, tierLabel } from '../../data/engine/achievements';
-import { WeightUnit } from '../../data/models';
-
-/** A family's progress with the unit its labels are written in. */
-type Progress = FamilyProgress & { unit: WeightUnit };
+import { NavigationProp, RouteProp, useNavigation, useRoute } from '@react-navigation/native';
+import { FamilyProgress, compactCount, parseAchievementId, thresholdsFor, tierLabel } from '../../data/engine/achievements';
+import { useAuth } from '../../data/auth/AuthProvider';
+import { achievementRepository } from '../../data/repositories/achievementRepository';
+import { AchievementFamilyId } from '../../data/models';
 import { useAchievements } from '../../data/hooks/useAchievements';
-import { dateLabel } from '../../components/charts/scale';
-import { toLocalDate } from '../../data/engine/dates';
-import { Badge, artFor } from '../../components/achievements/Badge';
-import { BottomSheet } from '../../components/overlays/BottomSheet';
+import { BadgeSvg } from '../../components/achievements/BadgeSvg';
+import { artFor } from '../../components/achievements/badgeArt';
+import { preloadBadges } from '../../components/achievements/preloadBadges';
 import { CustomText } from '../../components/text/customText';
-import { SurfaceCard } from '../../components/cards/SurfaceCard';
-import { Icon } from '../../components/icons/Icon';
-import { generalIcons } from '../../components/icons/icon-library';
 import { useTheme } from '../../theme';
 import { AppStackParams } from '../../appNavigators/AppStack';
 
-const fmt = (n: number): string => Math.round(n).toLocaleString();
+const COLUMNS = 5;
 
-/** "12 to go", or "Maxed out" at the top of the ladder. */
-const toGo = (p: Progress): string => (p.next === null ? 'Maxed out' : `${fmt(p.next - p.value)} to go`);
+/** What each family counts, short enough to sit beside its name. */
+const COUNTS: Record<AchievementFamilyId, string> = {
+  workouts: 'workouts completed',
+  streak: 'days in a row',
+  volume: 'weight lifted',
+  records: 'personal records',
+  cycles: 'cycles finished',
+  perfect_cycles: 'cycles with every workout done',
+  early_bird: 'workouts before 6am',
+  night_owl: 'workouts after 10pm',
+  buddies: 'buddies',
+  plan_uses: 'plans copied by buddies',
+};
 
-const Tile = ({ progress, onPress }: { progress: Progress; onPress: () => void }) => {
-  const { colors, spacing, radius } = useTheme();
+/** One family: its name, how far along it is, and every tier laid out in order, locked ones in pewter. */
+const FamilySection = ({ progress, unit, cell, onOpen }: { progress: FamilyProgress; unit: 'lb' | 'kg'; cell: number; onOpen: (tier: number) => void }) => {
+  const { colors, spacing } = useTheme();
   const { family, tier } = progress;
-  const unlocked = tier > 0;
-  const thresholds = thresholdsFor(family, progress.unit);
+  const thresholds = thresholdsFor(family, unit);
   return (
-    <TouchableOpacity onPress={onPress} activeOpacity={0.7} accessibilityRole="button" accessibilityLabel={`${family.name}, ${unlocked ? tierLabel(family.id, thresholds[tier - 1], progress.unit) : 'locked'}`} style={{ flexBasis: '47%', flexGrow: 1 }}>
-      <SurfaceCard style={{ alignItems: 'center', gap: spacing.sm, paddingVertical: spacing.lg }}>
-        <Badge family={family.id} tier={tier} size={80} />
-        <View style={{ alignItems: 'center', gap: 2 }}>
-          <CustomText variant="bodyStrong" centered>{family.name}</CustomText>
-          <CustomText variant="caption" color={unlocked ? colors.ink : colors.inkMuted} centered numberOfLines={1}>
-            {unlocked ? `${artFor(tier).name} · ${tierLabel(family.id, thresholds[tier - 1], progress.unit)}` : 'Locked'}
-          </CustomText>
+    <View style={{ gap: spacing.sm }}>
+      <View style={{ flexDirection: 'row', alignItems: 'flex-start', justifyContent: 'space-between', gap: spacing.sm }}>
+        <View style={{ flex: 1 }}>
+          <CustomText variant="heading">{family.name}</CustomText>
+          <CustomText variant="caption" color={colors.inkMuted}>{COUNTS[family.id]}</CustomText>
         </View>
-        <View style={{ alignSelf: 'stretch', gap: spacing.xs }}>
-          <View style={{ height: 5, borderRadius: 3, backgroundColor: colors.surfaceRaised, overflow: 'hidden' }}>
-            <View style={{ height: 5, width: `${Math.round(progress.fraction * 100)}%`, borderRadius: 3, backgroundColor: unlocked ? artFor(tier).mid : colors.accent }} />
-          </View>
-          <CustomText variant="caption" color={colors.inkMuted} centered>{toGo(progress)}</CustomText>
-        </View>
-      </SurfaceCard>
-    </TouchableOpacity>
+        <CustomText variant="caption" color={colors.inkMuted}>{tier} of {thresholds.length}</CustomText>
+      </View>
+      <View style={{ flexDirection: 'row', flexWrap: 'wrap' }}>
+        {thresholds.map((threshold, i) => {
+          const t = i + 1;
+          const earned = t <= tier;
+          return (
+            <TouchableOpacity key={t} onPress={() => onOpen(t)} activeOpacity={0.7} accessibilityRole="button" accessibilityLabel={`${family.name}, ${artFor(t).name}, ${tierLabel(family.id, threshold, unit)}, ${earned ? 'earned' : 'locked'}`} style={{ width: cell, alignItems: 'center', paddingVertical: spacing.xs }}>
+              <BadgeSvg family={family.id} tier={t} locked={!earned} size={cell - spacing.sm} />
+              <CustomText variant="caption" color={earned ? colors.ink : colors.inkMuted} centered numberOfLines={1} style={{ marginTop: 2 }}>{family.id === 'volume' ? compactCount(threshold) : threshold.toLocaleString()}</CustomText>
+            </TouchableOpacity>
+          );
+        })}
+      </View>
+    </View>
   );
 };
 
-/** Every tier of one family, with when it was earned or how far off it is. */
-const FamilySheet = ({ progress, unlocks, onClose }: { progress: Progress | null; unlocks: AchievementUnlock[]; onClose: () => void }) => {
-  const { colors, spacing } = useTheme();
-  const p = progress;
-  const thresholds = p ? thresholdsFor(p.family, p.unit) : [];
-  const byId = new Map(unlocks.map(u => [u.achievementId, u]));
+/** The grid's shape while the unlocks load: ten families of grey tiles. */
+const Skeleton = ({ cell }: { cell: number }) => {
+  const { colors, spacing, radius } = useTheme();
   return (
-    <BottomSheet open={!!p} title={p?.family.name ?? ''} onClose={onClose}>
-      {p && (
-        <>
-          <View style={{ alignItems: 'center', gap: spacing.sm }}>
-            <Badge family={p.family.id} tier={p.tier} size={132} />
-            <CustomText variant="heading" centered>{p.tier > 0 ? `${artFor(p.tier).name} · ${tierLabel(p.family.id, thresholds[p.tier - 1], p.unit)}` : 'Not earned yet'}</CustomText>
-            <CustomText variant="body" color={colors.inkMuted} centered>
-              {fmt(p.value)} {p.family.counts}.
-            </CustomText>
-          </View>
-          <SurfaceCard style={{ padding: 0 }}>
-            {thresholds.map((threshold, i) => {
-              const tier = i + 1;
-              const unlock = byId.get(achievementIdOf(p.family.id, tier));
-              const earned = !!unlock || tier <= p.tier;
-              return (
-                <View key={tier} style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.md, paddingHorizontal: spacing.lg, paddingVertical: spacing.sm, borderTopWidth: i ? 1 : 0, borderTopColor: colors.line, opacity: earned ? 1 : 0.6 }}>
-                  <Badge family={p.family.id} tier={earned ? tier : 0} size={36} />
-                  <View style={{ flex: 1 }}>
-                    <CustomText variant="bodyStrong">{tierLabel(p.family.id, threshold, p.unit)}</CustomText>
-                    <CustomText variant="caption" color={colors.inkMuted}>{artFor(tier).name}</CustomText>
-                  </View>
-                  {earned ? (
-                    <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.xs }}>
-                      <Icon icon={generalIcons.check} size={16} color={colors.success} strokeWidth={3} />
-                      <CustomText variant="caption" color={colors.inkMuted}>{unlock ? dateLabel(toLocalDate(new Date(unlock.unlockedAt))) : 'Earned'}</CustomText>
-                    </View>
-                  ) : (
-                    <CustomText variant="caption" color={colors.inkMuted}>{fmt(threshold - p.value)} to go</CustomText>
-                  )}
-                </View>
-              );
-            })}
-          </SurfaceCard>
-          <View style={{ height: spacing.xs }} />
-        </>
-      )}
-    </BottomSheet>
-  );
-};
-
-/** The badge grid: every family, its current material, and how far to the next tier. */
-export const AchievementsScreen = () => {
-  const { colors, spacing } = useTheme();
-  const { params } = useRoute<RouteProp<AppStackParams, 'AchievementsScreen'>>();
-  const state = useAchievements();
-  const [open, setOpen] = useState<AchievementFamilyId | null>(null);
-
-  // Opened from a feed item or a push: land on that badge.
-  const focus = params?.achievementId ?? null;
-  useEffect(() => {
-    if (focus) setOpen(parseAchievementId(focus)?.family ?? null);
-  }, [focus]);
-
-  const tiers = state.unlocks.length;
-  const progress: Progress[] = state.progress.map(p => ({ ...p, unit: state.unit }));
-  const selected = progress.find(p => p.family.id === open) ?? null;
-
-  return (
-    <SafeAreaView edges={['bottom', 'left', 'right']} style={{ flex: 1, backgroundColor: colors.ground }}>
-      <ScrollView contentContainerStyle={{ padding: spacing.lg, gap: spacing.lg, paddingBottom: spacing.xxl }}>
-        <View style={{ gap: spacing.xs }}>
-          <CustomText variant="title">{state.earned} of {progress.length} badges</CustomText>
-          <CustomText variant="body" color={colors.inkMuted}>
-            {tiers === 0 ? 'Finish a workout to earn your first one. Every badge upgrades as you keep going.' : `${tiers} tier${tiers === 1 ? '' : 's'} earned. Every badge upgrades as you keep going.`}
-          </CustomText>
-        </View>
-        {state.loading ? (
-          <ActivityIndicator color={colors.accent} style={{ marginTop: spacing.xxl }} />
-        ) : (
-          <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: spacing.md }}>
-            {progress.map(p => (
-              <Tile key={p.family.id} progress={p} onPress={() => setOpen(p.family.id)} />
+    <>
+      {[8, 7, 7, 6, 5, 4, 4, 4, 4, 5].map((count, f) => (
+        <View key={f} style={{ gap: spacing.sm }}>
+          <View style={{ width: 120, height: 18, borderRadius: radius.pill, backgroundColor: colors.surfaceRaised }} />
+          <View style={{ flexDirection: 'row', flexWrap: 'wrap' }}>
+            {Array.from({ length: count }, (_, i) => (
+              <View key={i} style={{ width: cell, alignItems: 'center', paddingVertical: spacing.xs }}>
+                <View style={{ width: cell - spacing.sm, height: cell - spacing.sm, borderRadius: (cell - spacing.sm) / 2, backgroundColor: colors.surfaceRaised }} />
+              </View>
             ))}
           </View>
+        </View>
+      ))}
+    </>
+  );
+};
+
+/** Every badge of every family, five to a row, grouped by family; tap one to see it in 3D. */
+export const AchievementsScreen = () => {
+  const { colors, spacing } = useTheme();
+  const { width } = useWindowDimensions();
+  const navigation = useNavigation<NavigationProp<AppStackParams>>();
+  const { params } = useRoute<RouteProp<AppStackParams, 'AchievementsScreen'>>();
+  // Tiers come from the stored unlocks, live; measuring the whole history is not needed to draw the grid.
+  const state = useAchievements(false);
+  const { uid } = useAuth();
+  const cell = Math.floor((width - spacing.lg * 2) / COLUMNS);
+
+  // Opened from a feed item or a push: go straight to that badge.
+  const focus = params?.achievementId ?? null;
+  useEffect(() => {
+    const target = focus ? parseAchievementId(focus) : null;
+    if (target) navigation.navigate('BadgeScreen', { family: target.family, tier: target.tier });
+  }, [focus, navigation]);
+
+  useEffect(() => {
+    preloadBadges(state.unlocks.map(u => ({ family: u.family, tier: u.tier })));
+  }, [state.unlocks]);
+  return (
+    <SafeAreaView edges={['bottom', 'left', 'right']} style={{ flex: 1, backgroundColor: colors.ground }}>
+      <ScrollView contentContainerStyle={{ padding: spacing.lg, gap: spacing.xl, paddingBottom: spacing.xxl }}>
+        {state.loading ? (
+          <Skeleton cell={cell} />
+        ) : (
+          state.progress.map(p => (
+            <FamilySection key={p.family.id} progress={p} unit={state.unit} cell={cell} onOpen={tier => navigation.navigate('BadgeScreen', { family: p.family.id, tier })} />
+          ))
+        )}
+        {__DEV__ && uid && state.unlocks.length > 0 && (
+          <TouchableOpacity onPress={() => achievementRepository.uncelebrate(uid).catch(err => console.warn('replay failed', err))} accessibilityRole="button" style={{ alignSelf: 'center', paddingVertical: spacing.sm }}>
+            <CustomText variant="caption" color={colors.inkMuted}>Replay celebrations (development only)</CustomText>
+          </TouchableOpacity>
         )}
       </ScrollView>
-      <FamilySheet progress={selected} unlocks={state.unlocks} onClose={() => setOpen(null)} />
     </SafeAreaView>
   );
 };

@@ -6,9 +6,9 @@
  */
 export const BUDDY_LADDERS = {
   /** Accepted buddies. */
-  buddies: [1, 5, 10, 25],
+  buddies: [1, 3, 5, 7, 10, 15, 20, 25],
   /** Distinct buddies who copied or synced one of the owner's plans. */
-  plan_uses: [1, 5, 10, 25, 50],
+  plan_uses: [1, 3, 5, 10, 15, 25, 35, 50],
 } as const;
 
 export type ServerFamily = keyof typeof BUDDY_LADDERS;
