@@ -3,6 +3,30 @@
 Newest build first. **Store notes** is the tester-facing text, identical for
 TestFlight and Google Play (under 500 characters). **Details** is for us.
 
+## Build 18 (2026-10-14)
+
+### Store notes
+
+Build 18
+
+• Badges are here: 10 families, 8 tiers each, in 3D. Spin them, flip them, tap one to open the workout that earned it. Badges you already earned arrive on first launch
+
+• Cycle review says whether you beat, hit or missed each target, and what you did vs what was asked
+
+• Edit a plan from an overview: tap Basics, Workouts or Schedule. Adjust plan from the cycle review
+
+• No tab bar during a workout
+
+• Sheets swipe down to close, photo zoom fixed, tab tap scrolls to top
+
+### Details
+
+- Commits 46714b9..7c8793a: achievements with native 3D badges (RealityKit on iOS, Filament on Android; react-native-filament removed), eight tiers per family, unlock origins, grid / badge viewer / celebration; the build 17 TestFlight list (21 notes, 17 items: sheet swipe-down on gesture-handler, session screens over the tabs, photo viewer gestures, scroll-to-top, cycle list by calendar day, How-to footer Swap / Add, chips, copy); targets-vs-actuals verdict in the progression engine; Edit plan hub + Adjust plan on the review.
+- Achievements are ON in the app (`features.achievements`). The one-time catch-up grants everything already earned and the celebration shows on first launch. The Firestore switch `config/features/achievements` for the Cloud Functions (buddy and plan-use badges) still needs flipping by the owner; Cloud Functions were redeployed 2026-10-14 with the new buddy ladders.
+- Native: codegen for the BadgeView component + NativeBadgeModels module (pods changed), Filament 1.71.5 on Android, 88 USDZ + 88 GLB models and glyph meshes in the bundle. Babel config back to one worklets plugin.
+- Not device-tested by us: everything above; iOS badge interaction was only seen on the simulator (low poly there, a device renders at 2x with anti-aliasing). The early-bird rule counts a workout finished after midnight as before 9am.
+- Parked: reactions sheet redesign, missed-workout sheet redesign, workout-done / PR carousel redesign, cycle review pass, Apple-Fitness-style grid-to-viewer transition.
+
 ## Build 17 (2026-10-08)
 
 ### Store notes
