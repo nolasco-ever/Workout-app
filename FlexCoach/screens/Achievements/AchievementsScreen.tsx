@@ -3,8 +3,6 @@ import { ScrollView, TouchableOpacity, View, useWindowDimensions } from 'react-n
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { NavigationProp, RouteProp, useNavigation, useRoute } from '@react-navigation/native';
 import { FamilyProgress, compactCount, parseAchievementId, thresholdsFor, tierLabel } from '../../data/engine/achievements';
-import { useAuth } from '../../data/auth/AuthProvider';
-import { achievementRepository } from '../../data/repositories/achievementRepository';
 import { AchievementFamilyId } from '../../data/models';
 import { useAchievements } from '../../data/hooks/useAchievements';
 import { BadgeSvg } from '../../components/achievements/BadgeSvg';
@@ -89,7 +87,6 @@ export const AchievementsScreen = () => {
   const { params } = useRoute<RouteProp<AppStackParams, 'AchievementsScreen'>>();
   // Tiers come from the stored unlocks, live; measuring the whole history is not needed to draw the grid.
   const state = useAchievements(false);
-  const { uid } = useAuth();
   const cell = Math.floor((width - spacing.lg * 2) / COLUMNS);
 
   // Opened from a feed item or a push: go straight to that badge.
@@ -111,11 +108,6 @@ export const AchievementsScreen = () => {
           state.progress.map(p => (
             <FamilySection key={p.family.id} progress={p} unit={state.unit} cell={cell} onOpen={tier => navigation.navigate('BadgeScreen', { family: p.family.id, tier })} />
           ))
-        )}
-        {__DEV__ && uid && state.unlocks.length > 0 && (
-          <TouchableOpacity onPress={() => achievementRepository.uncelebrate(uid).catch(err => console.warn('replay failed', err))} accessibilityRole="button" style={{ alignSelf: 'center', paddingVertical: spacing.sm }}>
-            <CustomText variant="caption" color={colors.inkMuted}>Replay celebrations (development only)</CustomText>
-          </TouchableOpacity>
         )}
       </ScrollView>
     </SafeAreaView>
