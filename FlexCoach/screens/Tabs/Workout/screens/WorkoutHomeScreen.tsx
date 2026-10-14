@@ -1,7 +1,7 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { ActivityIndicator, ScrollView, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { NavigationProp, useNavigation } from '@react-navigation/native';
+import { NavigationProp, useNavigation, useScrollToTop } from '@react-navigation/native';
 import { useWorkoutHome } from '../../../../data/hooks/useWorkoutHome';
 import { usePlans } from '../../../../data/hooks/usePlans';
 import { useAuth } from '../../../../data/auth/AuthProvider';
@@ -31,6 +31,9 @@ const shortDate = (d: string) => fromLocalDate(d).toLocaleDateString(undefined, 
 
 export const WorkoutHomeScreen = () => {
   const navigation = useNavigation<NavigationProp<WorkoutStackParams>>();
+  // Tapping the Workout tab while it is open scrolls back to the top.
+  const scrollRef = useRef<React.ComponentRef<typeof ScrollView>>(null);
+  useScrollToTop(scrollRef);
   const { colors, spacing, radius } = useTheme();
   const bottomInset = useTabScrollInset();
   const { uid, profile } = useAuth();
@@ -101,6 +104,7 @@ export const WorkoutHomeScreen = () => {
   return (
     <SafeAreaView edges={['top', 'left', 'right']} style={{ flex: 1, backgroundColor: colors.ground }}>
       <ScrollView
+        ref={scrollRef}
         alwaysBounceVertical={false}
         contentContainerStyle={{ padding: spacing.lg, gap: spacing.lg, paddingBottom: spacing.xxl + bottomInset }}
       >

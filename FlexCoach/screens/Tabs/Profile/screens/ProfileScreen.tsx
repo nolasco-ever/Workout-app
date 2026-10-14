@@ -1,7 +1,7 @@
 import React, { useState, useRef } from 'react';
 import { ActivityIndicator, Alert, ScrollView, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { NavigationProp, useNavigation } from '@react-navigation/native';
+import { NavigationProp, useNavigation, useScrollToTop } from '@react-navigation/native';
 import { useAuth } from '../../../../data/auth/AuthProvider';
 import { authService } from '../../../../data/auth/authService';
 import { usePlans } from '../../../../data/hooks/usePlans';
@@ -45,6 +45,9 @@ export const ProfileScreen = () => {
    */
   const [avatarHidden, setAvatarHidden] = useState(false);
   const avatarRef = useRef<React.ComponentRef<typeof View>>(null);
+  // Tapping the Profile tab while it is open scrolls back to the top.
+  const scrollRef = useRef<React.ComponentRef<typeof ScrollView>>(null);
+  useScrollToTop(scrollRef);
   /** Measure the avatar first so the big photo can grow out of it. */
   const openPhoto = () => {
     const show = () => setPhotoOpen(true);
@@ -66,7 +69,7 @@ export const ProfileScreen = () => {
 
   return (
     <SafeAreaView edges={['top', 'left', 'right']} style={{ flex: 1, backgroundColor: colors.ground }}>
-      <ScrollView contentContainerStyle={{ padding: spacing.lg, gap: spacing.lg, paddingBottom: spacing.xxl + bottomInset }}>
+      <ScrollView ref={scrollRef} contentContainerStyle={{ padding: spacing.lg, gap: spacing.lg, paddingBottom: spacing.xxl + bottomInset }}>
         <TabHeader title="Profile" action={{ icon: generalIcons.users, accessibilityLabel: 'Buddies and my Iron Card', onPress: () => navigation.navigate('CardStack') }} />
         <View style={{ alignItems: 'center', gap: spacing.sm }}>
           <TouchableOpacity ref={avatarRef} onPress={openPhoto} disabled={photo.busy} accessibilityRole="button" accessibilityLabel="View or change profile photo" style={{ width: AVATAR, height: AVATAR, opacity: avatarHidden ? 0 : 1 }}>
