@@ -1,3 +1,23 @@
+diff --git a/node_modules/react-native-filament/ios/src/RNFAppleFilamentProxy.mm b/node_modules/react-native-filament/ios/src/RNFAppleFilamentProxy.mm
+index 7923259..0c84ff6 100644
+--- a/node_modules/react-native-filament/ios/src/RNFAppleFilamentProxy.mm
++++ b/node_modules/react-native-filament/ios/src/RNFAppleFilamentProxy.mm
+@@ -72,8 +72,14 @@
+   NSString* name = [pathComponents firstObject];
+   NSString* extension = [pathComponents lastObject];
+ 
+-  // Load the resource from the main bundle
++  // Load the resource from the main bundle, else from the pod's own bundle (with dynamic frameworks, CocoaPods
++  // copies `s.resources` such as RNF_default_env_ibl.ktx into the framework, not the app).
+   NSString* resourcePath = [[NSBundle mainBundle] pathForResource:name ofType:extension];
++  if (!resourcePath) {
++    Class moduleClass = NSClassFromString(@"FilamentModule");
++    NSBundle* ownBundle = moduleClass ? [NSBundle bundleForClass:moduleClass] : nil;
++    resourcePath = [ownBundle pathForResource:name ofType:extension];
++  }
+   if (!resourcePath) {
+     throw std::runtime_error("File not found");
+   }
 diff --git a/node_modules/react-native-filament/ios/src/RNFFilamentInstaller.mm b/node_modules/react-native-filament/ios/src/RNFFilamentInstaller.mm
 index af9f548..0b831eb 100644
 --- a/node_modules/react-native-filament/ios/src/RNFFilamentInstaller.mm

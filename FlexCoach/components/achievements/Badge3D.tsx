@@ -1,8 +1,8 @@
-import React from 'react';
+import React, { useEffect, useRef } from 'react';
 import { StyleProp, View, ViewStyle } from 'react-native';
-import { Camera, EnvironmentalLight, FilamentScene, FilamentView, Light, Model, useSyncSharedValue } from 'react-native-filament';
+import { Camera, EnvironmentalLight, FilamentScene, FilamentView, Light, Model } from 'react-native-filament';
+import { useSharedValue } from 'react-native-worklets-core';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
-import { useDerivedValue, useSharedValue, withDecay } from 'react-native-reanimated';
 import { AchievementFamilyId } from '../../data/models';
 import { BADGE_BODIES, badgeOverlayFor } from './badgeModels';
 
@@ -31,27 +31,65 @@ interface Props {
   spin?: SpinFeel;
 }
 
+const REST = 0.00002; // radians per ms: below this a coasting badge is considered stopped
+
 /**
- * The spinning badge: the tier's body plus the family's mark, turned by
- * a horizontal drag only. A flick keeps it turning and it coasts to a
- * stop on its own, like a scroll. Lives inside the Filament scene so it
- * can hand the turn to the render thread.
+ * The spinning badge: the tier's body plus the family's mark, turned by a
+ * horizontal drag only. A flick keeps it turning and it coasts to a stop on
+ * its own, like a scroll. The turn is integrated on the JS thread, frame by
+ * frame, into a worklets-core shared value that Filament's render thread
+ * reads; Reanimated stays out of the Filament tree because the two worklet
+ * runtimes cannot share functions.
  */
 const Turntable = ({ family, tier, lighting, spin }: Required<Omit<Props, 'style'>>) => {
-  const yaw = useSharedValue(0);
+  const rotate = useSharedValue<[number, number, number]>([0, 0, 0]);
+  const yaw = useRef(0);
+  const velocity = useRef(0); // radians per ms
+  const frame = useRef<number | null>(null);
+  const feel = useRef(spin);
+  feel.current = spin;
+
+  const stop = () => {
+    if (frame.current !== null) cancelAnimationFrame(frame.current);
+    frame.current = null;
+  };
+  const coast = () => {
+    let last = Date.now();
+    const step = () => {
+      const now = Date.now();
+      const dt = Math.min(48, now - last);
+      last = now;
+      velocity.current *= Math.pow(feel.current.deceleration, dt);
+      yaw.current += velocity.current * dt;
+      rotate.value = [0, yaw.current, 0];
+      if (Math.abs(velocity.current) < REST) {
+        velocity.current = 0;
+        frame.current = null;
+        return;
+      }
+      frame.current = requestAnimationFrame(step);
+    };
+    stop();
+    frame.current = requestAnimationFrame(step);
+  };
+  useEffect(() => stop, []);
+
   const pan = Gesture.Pan()
+    .runOnJS(true)
     .activeOffsetX([-4, 4])
     .failOffsetY([-16, 16])
+    .onBegin(() => {
+      stop();
+      velocity.current = 0;
+    })
     .onChange(e => {
-      'worklet';
-      yaw.value += e.changeX * spin.radiansPerPoint;
+      yaw.current += e.changeX * feel.current.radiansPerPoint;
+      rotate.value = [0, yaw.current, 0];
     })
     .onEnd(e => {
-      'worklet';
-      yaw.value = withDecay({ velocity: e.velocityX * spin.radiansPerPoint, deceleration: spin.deceleration });
+      velocity.current = (e.velocityX * feel.current.radiansPerPoint) / 1000;
+      if (Math.abs(velocity.current) >= REST) coast();
     });
-  const rotation = useDerivedValue<[number, number, number]>(() => [0, yaw.value, 0]);
-  const rotate = useSyncSharedValue(rotation);
   const overlay = badgeOverlayFor(family, tier);
 
   return (
