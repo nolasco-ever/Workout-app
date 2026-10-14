@@ -187,7 +187,11 @@ export const PlanScheduleScreen = () => {
           </>
         )}
       </Animated.ScrollView>
-      <StepFooter label="Next: Review" problem={problem} onPress={() => navigation.navigate('PlanReviewScreen', { mode: params.mode })} />
+      {params.mode === 'edit' ? (
+        <StepFooter label="Done" problem={problem} onPress={() => navigation.goBack()} />
+      ) : (
+        <StepFooter label="Next: Review" problem={problem} onPress={() => navigation.navigate('PlanReviewScreen', { mode: params.mode })} />
+      )}
     </SafeAreaView>
   );
 };

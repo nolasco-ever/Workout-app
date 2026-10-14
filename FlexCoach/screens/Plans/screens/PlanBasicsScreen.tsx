@@ -57,7 +57,11 @@ export const PlanBasicsScreen = () => {
             </CustomText>
           </View>
         </ScrollView>
-        <StepFooter label="Next: Workouts" problem={draft.name.trim() ? null : 'Give the plan a name.'} onPress={() => navigation.navigate('PlanWorkoutsScreen', { mode: params.mode })} />
+        {params.mode === 'edit' ? (
+          <StepFooter label="Done" problem={draft.name.trim() ? null : 'Give the plan a name.'} onPress={() => navigation.goBack()} />
+        ) : (
+          <StepFooter label="Next: Workouts" problem={draft.name.trim() ? null : 'Give the plan a name.'} onPress={() => navigation.navigate('PlanWorkoutsScreen', { mode: params.mode })} />
+        )}
       </KeyboardAvoiding>
     </SafeAreaView>
   );

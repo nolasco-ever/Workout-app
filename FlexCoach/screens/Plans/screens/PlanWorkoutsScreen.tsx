@@ -57,7 +57,7 @@ export const PlanWorkoutsScreen = () => {
     <SafeAreaView edges={['bottom', 'left', 'right']} style={{ flex: 1, backgroundColor: colors.ground }}>
       <Animated.ScrollView ref={scrollRef} contentContainerStyle={{ padding: spacing.lg, gap: spacing.lg }} keyboardShouldPersistTaps="handled" keyboardDismissMode="on-drag">
         <CustomText variant="body" color={colors.inkMuted}>
-          Name each day you train, like Push, Pull or Legs. Next you'll pick the exercises for each one, then set which days they land on.
+          {params.mode === 'edit' ? 'Tap a workout to change its exercises, or drag to reorder.' : "Name each day you train, like Push, Pull or Legs. Next you'll pick the exercises for each one, then set which days they land on."}
         </CustomText>
         {draft.workouts.length > 0 && (
           <SurfaceCard style={{ padding: 0, overflow: 'hidden' }}>
@@ -95,7 +95,11 @@ export const PlanWorkoutsScreen = () => {
           <PrimaryButton label="Add workout" icon={generalIcons.plus} variant="outline" onPress={() => setAdding(true)} />
         )}
       </Animated.ScrollView>
-      <StepFooter label="Next: Schedule" problem={problem} onPress={() => navigation.navigate('PlanScheduleScreen', { mode: params.mode })} />
+      {params.mode === 'edit' ? (
+        <StepFooter label="Done" problem={problem} onPress={() => navigation.goBack()} />
+      ) : (
+        <StepFooter label="Next: Schedule" problem={problem} onPress={() => navigation.navigate('PlanScheduleScreen', { mode: params.mode })} />
+      )}
     </SafeAreaView>
   );
 };

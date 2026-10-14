@@ -46,9 +46,10 @@ export const PlanOverviewScreen = () => {
     }
   };
 
+  // Editing opens the hub, not step one: each part of the plan is a tap away there.
   const edit = () => {
     editor.begin(plan, plan);
-    navigation.navigate('PlanBasicsScreen', { mode: 'edit' });
+    navigation.navigate('PlanEditScreen', { planId: plan.id });
   };
 
   const confirm = (title: string, message: string, label: string, fn: () => Promise<void>, destructive = false) =>

@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { ActivityIndicator, ScrollView, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { NavigationProp, RouteProp, useNavigation, useRoute } from '@react-navigation/native';
+import type { AppStackParams } from '../../../../appNavigators/AppStack';
 import { useAuth } from '../../../../data/auth/AuthProvider';
 import { Cycle, Plan } from '../../../../data/models';
 import { formatDuration, formatRecordValue, toDisplayWeight } from '../../../../data/engine/units';
@@ -246,7 +247,11 @@ export const CycleReviewScreen = () => {
       </ScrollView>
       {/* Pinned, so starting the next cycle is one tap from anywhere in the review. */}
       {cycle.status === 'active' && (
-        <View style={{ padding: spacing.lg, paddingBottom: spacing.lg + bottomInset, borderTopWidth: 1, borderTopColor: colors.line, backgroundColor: colors.ground }}>
+        <View style={{ padding: spacing.lg, paddingBottom: spacing.lg + bottomInset, gap: spacing.sm, borderTopWidth: 1, borderTopColor: colors.line, backgroundColor: colors.ground }}>
+          {/* Swap an exercise or move a day before the next cycle starts; a synced copy of a buddy's plan is theirs to change. */}
+          {!plan.sharedFrom?.synced && (
+            <PrimaryButton label="Adjust plan" variant="quiet" onPress={() => (navigation as unknown as NavigationProp<AppStackParams>).navigate('PlansStack', { screen: 'PlanEditScreen', params: { planId: plan.id } })} />
+          )}
           <PrimaryButton label={`Start cycle ${nextCycleNumberAfter(cycle)}`} busy={busy} onPress={() => { startNext().catch(err => console.warn(err)); }} />
         </View>
       )}
