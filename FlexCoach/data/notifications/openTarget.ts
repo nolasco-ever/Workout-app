@@ -1,3 +1,4 @@
+import { StackActions } from '@react-navigation/native';
 import { NotificationTarget } from '../models';
 import { navigationRef } from '../../navigation/navigationRef';
 
@@ -31,11 +32,13 @@ export const openTarget = (target: NotificationTarget): void => {
     case 'session':
       nav.navigate('TabNavigator', { screen: 'WorkoutStack' });
       return;
+    // A workout or a cycle review is pushed on the root stack, over whatever is open, so back returns
+    // to where the tap was: the notifications feed, a banner's screen, or the tabs on a cold start.
     case 'session_detail':
-      nav.navigate('TabNavigator', { screen: 'WorkoutStack', params: { screen: 'SessionDetailScreen', params: { sessionId: target.sessionId, workoutName: target.workoutName ?? undefined }, initial: false } });
+      nav.dispatch(StackActions.push('SessionDetailScreen', { sessionId: target.sessionId, workoutName: target.workoutName ?? undefined }));
       return;
     case 'cycle_summary':
-      nav.navigate('TabNavigator', { screen: 'WorkoutStack', params: { screen: 'CycleReviewScreen', params: { cycleId: target.cycleId }, initial: false } });
+      nav.dispatch(StackActions.push('CycleReviewScreen', { cycleId: target.cycleId }));
       return;
     case 'body_weight':
       nav.navigate('TabNavigator', { screen: 'HomeStack', params: { screen: 'LogWeightScreen', initial: false } });

@@ -1,7 +1,8 @@
 import React, { useEffect, useLayoutEffect, useState } from 'react';
 import { StatusBar, TouchableOpacity, View, useWindowDimensions } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { NavigationProp, RouteProp, useNavigation, useRoute } from '@react-navigation/native';
+import { RouteProp, useNavigation, useRoute } from '@react-navigation/native';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { achievementIdOf, compactCount, familyOf, thresholdsFor, tierLabel } from '../../data/engine/achievements';
 import { AchievementFamilyId } from '../../data/models';
 import { useAchievements } from '../../data/hooks/useAchievements';
@@ -50,7 +51,7 @@ type Origin = { kind: 'session' | 'cycle'; id: string; title: string; date: stri
 export const BadgeScreen = () => {
   const { spacing } = useTheme();
   const { width } = useWindowDimensions();
-  const navigation = useNavigation<NavigationProp<AppStackParams>>();
+  const navigation = useNavigation<NativeStackNavigationProp<AppStackParams>>();
   const { params } = useRoute<RouteProp<AppStackParams, 'BadgeScreen'>>();
   const { uid } = useAuth();
   const state = useAchievements();
@@ -109,9 +110,9 @@ export const BadgeScreen = () => {
 
   const openOrigin = () => {
     if (!origin) return;
-    // History lives in the Profile tab; both screens are pushed there.
-    const screen = origin.kind === 'session' ? { screen: 'SessionDetailScreen', params: { sessionId: origin.id, workoutName: origin.title } } : { screen: 'CycleReviewScreen', params: { cycleId: origin.id } };
-    (navigation as NavigationProp<Record<string, object | undefined>>).navigate('TabNavigator', { screen: 'ProfileStack', params: screen });
+    // Pushed over this screen, so back comes straight back to the badge.
+    if (origin.kind === 'session') navigation.push('SessionDetailScreen', { sessionId: origin.id, workoutName: origin.title });
+    else navigation.push('CycleReviewScreen', { cycleId: origin.id });
   };
 
   return (

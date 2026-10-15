@@ -41,7 +41,7 @@ final class BadgeStage {
     #if targetEnvironment(simulator)
     arView.contentScaleFactor = 1   // the simulator draws RealityKit in software; a third of the pixels keeps it fluid
     #else
-    arView.contentScaleFactor = min(2, UIScreen.main.scale)
+    arView.contentScaleFactor = UIScreen.main.scale   // every pixel of the screen: capped at 2 the rim and the mark's edges came out soft and stepped on 3x phones
     #endif
 
     // The model is one unit wide with its front toward +Z; the camera sits on that axis.

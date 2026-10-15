@@ -79,6 +79,9 @@ export const AchievementCelebration = () => {
   const [scrollX, setScrollX] = useState(0);
   const [spun, setSpun] = useState<Record<number, boolean>>({});
   const [shown, setShown] = useState(false); // the first badge is drawn: the modal fades in over it
+  // Badges this session has already celebrated. The stamp is written to Firestore after Done, and the watch
+  // reports the documents one by one; without this, the same badges came straight back as a second celebration.
+  const [stamped, setStamped] = useState<ReadonlySet<string>>(() => new Set());
   const fade = useRef(new Animated.Value(0)).current;
   const preparing = useRef(false);
   const markSpun = useCallback((page: number) => setSpun(s => (s[page] ? s : { ...s, [page]: true })), []);
@@ -108,7 +111,7 @@ export const AchievementCelebration = () => {
 
   useEffect(() => navigationRef.addListener('state', () => setRoute(navigationRef.getCurrentRoute()?.name)), []);
 
-  const pending = useMemo(() => unlocks.filter(u => !u.celebratedAt).sort(byMoment), [unlocks]);
+  const pending = useMemo(() => unlocks.filter(u => !u.celebratedAt && !stamped.has(u.achievementId)).sort(byMoment), [unlocks, stamped]);
   const held = !!route && HOLD_ON.has(route);
   // The celebration opens only once every badge in it is cached, so no page ever opens blank.
   useEffect(() => {
@@ -146,6 +149,7 @@ export const AchievementCelebration = () => {
   const finish = () => {
     if (!queue || !uid) return;
     const ids = queue.map(u => u.achievementId);
+    setStamped(s => new Set([...s, ...ids]));
     setQueue(null);
     markAchievementsCelebrated(uid, ids).catch(err => console.warn('celebration stamp failed', err));
   };

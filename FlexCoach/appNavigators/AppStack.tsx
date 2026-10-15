@@ -12,6 +12,8 @@ import { ExerciseDetailScreen } from '../screens/Tabs/Workout/screens/ExerciseDe
 import { SessionScreen } from '../screens/Tabs/Workout/screens/SessionScreen';
 import { SessionCompleteScreen } from '../screens/Tabs/Workout/screens/SessionCompleteScreen';
 import { SessionExercisesScreen } from '../screens/Tabs/Workout/screens/SessionExercisesScreen';
+import { SessionDetailScreen } from '../screens/Tabs/Workout/screens/SessionDetailScreen';
+import { CycleReviewScreen } from '../screens/Tabs/Workout/screens/CycleReviewScreen';
 import { ActivePlanWorkoutsScreen } from '../screens/Tabs/Workout/screens/ActivePlanWorkoutsScreen';
 import { ExercisePickerScreen } from '../screens/Plans/screens/ExercisePickerScreen';
 import type { SessionRoutes } from '../screens/Tabs/Workout/sessionRoutes';
@@ -46,6 +48,9 @@ export type AppStackParams = BuddyRoutes & SessionRoutes & {
     /** The badge grid; `achievementId` opens that badge's family. */
     AchievementsScreen: { achievementId?: string } | undefined;
     BadgeScreen: { family: AchievementFamilyId; tier: number };
+    /** A logged workout or a cycle's review, pushed over whatever is open (a badge, the notifications feed) so back returns there. The tabs have their own copies for their own lists. */
+    SessionDetailScreen: { sessionId: string; workoutName?: string };
+    CycleReviewScreen: { cycleId: string };
 };
 
 const Stack = createNativeStackNavigator<AppStackParams>();
@@ -97,6 +102,9 @@ export const AppStack = () => {
                     <Stack.Screen name="AchievementsScreen" component={AchievementsScreen} options={opts.screen('Achievements')} />
                     {/* One badge on black, so the header goes dark with it. */}
                     <Stack.Screen name="BadgeScreen" component={BadgeScreen} options={{ ...opts.screen(''), headerStyle: { backgroundColor: '#000000' }, headerTintColor: '#FFFFFF', headerTitleStyle: { color: '#FFFFFF' }, contentStyle: { backgroundColor: '#000000' } }} />
+                    {/* Reached from a badge's "Earned in" pill, a notification or an in-app banner: pushed here so back goes to where the tap was. */}
+                    <Stack.Screen name="SessionDetailScreen" component={SessionDetailScreen} options={({ route }) => opts.screen(route.params.workoutName ?? 'Workout')} />
+                    <Stack.Screen name="CycleReviewScreen" component={CycleReviewScreen} options={opts.screen('Cycle review')} />
                     <Stack.Screen name="BuddyActivityScreen" component={BuddyActivityScreen} options={opts.screen('Buddy activity')} />
                     <Stack.Screen name="BuddyPlansScreen" component={BuddyPlansScreen} options={opts.screen('Plans from buddies')} />
                     <Stack.Screen name="BuddyPlanScreen" component={BuddyPlanScreen} options={opts.screen('Plan')} />

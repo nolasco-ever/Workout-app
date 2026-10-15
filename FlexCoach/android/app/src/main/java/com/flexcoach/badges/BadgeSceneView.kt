@@ -162,6 +162,11 @@ class BadgeSceneView(context: Context) : FrameLayout(context) {
     view.scene = scene
     view.camera = camera
     view.blendMode = View.BlendMode.TRANSLUCENT
+    // Multisampling smooths the rim and the mark's edges; without it they come out stepped, as the iOS view's did at a capped scale.
+    view.multiSampleAntiAliasingOptions = View.MultiSampleAntiAliasingOptions().apply {
+      enabled = true
+      sampleCount = 4
+    }
     renderer.clearOptions = Renderer.ClearOptions().apply {
       clear = true
       clearColor = doubleArrayOf(0.0, 0.0, 0.0, 0.0)

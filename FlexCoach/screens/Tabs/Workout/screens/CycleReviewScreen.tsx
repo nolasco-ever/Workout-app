@@ -115,7 +115,8 @@ export const CycleReviewScreen = () => {
     setBusy(true);
     try {
       await startNextCycle(uid, plan, cycle);
-      navigation.navigate('WorkoutHomeScreen');
+      // Spelled out from the root: this screen is also pushed over the tabs (from a badge or a notification), where a bare 'WorkoutHomeScreen' is unknown.
+      (navigation as unknown as NavigationProp<AppStackParams>).navigate('TabNavigator', { screen: 'WorkoutStack', params: { screen: 'WorkoutHomeScreen' } } as never);
     } finally {
       setBusy(false);
     }

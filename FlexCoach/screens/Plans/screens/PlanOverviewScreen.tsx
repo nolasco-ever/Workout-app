@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useLayoutEffect, useState } from 'react';
 import { Alert, ScrollView, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { RouteProp, useNavigation, useRoute } from '@react-navigation/native';
@@ -11,6 +11,7 @@ import { planRepository } from '../../../data/repositories/planRepository';
 import { setPlanVisibleToBuddies } from '../../../data/services/buddyService';
 import { SurfaceCard } from '../../../components/cards/SurfaceCard';
 import { SwitchRow } from '../../../components/inputs/SwitchRow';
+import { HeaderButton } from '../../../components/headers/HeaderButton';
 import { generalIcons } from '../../../components/icons/icon-library';
 import { CustomText } from '../../../components/text/customText';
 import { PrimaryButton } from '../../../components/buttons/PrimaryButton';
@@ -33,6 +34,20 @@ export const PlanOverviewScreen = () => {
   const [pickingStart, setPickingStart] = useState(false);
   const plan = plans.find(p => p.id === params.planId);
 
+  // Editing opens the hub, not step one: each part of the plan is a tap away there.
+  const edit = () => {
+    if (!plan) return;
+    editor.begin(plan, plan);
+    navigation.navigate('PlanEditScreen', { planId: plan.id });
+  };
+  // The pencil in the header, as on a logged workout. An archived plan and a synced copy of a buddy's plan are not editable.
+  const canEdit = !!plan && plan.status !== 'archived' && !plan.sharedFrom?.synced;
+  useLayoutEffect(() => {
+    navigation.setOptions({ headerRight: canEdit ? () => <HeaderButton icon={generalIcons.penToSquare} accessibilityLabel="Edit plan" onPress={edit} /> : undefined });
+    // `edit` is rebuilt each render; the plan it opens is what matters.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [navigation, canEdit, plan]);
+
   if (!plan || !uid) return <SafeAreaView edges={['bottom']} style={{ flex: 1, backgroundColor: colors.ground }} />;
 
   const run = (key: string, fn: () => Promise<void>) => async () => {
@@ -44,12 +59,6 @@ export const PlanOverviewScreen = () => {
     } finally {
       setBusy(null);
     }
-  };
-
-  // Editing opens the hub, not step one: each part of the plan is a tap away there.
-  const edit = () => {
-    editor.begin(plan, plan);
-    navigation.navigate('PlanEditScreen', { planId: plan.id });
   };
 
   const confirm = (title: string, message: string, label: string, fn: () => Promise<void>, destructive = false) =>
@@ -115,7 +124,6 @@ export const PlanOverviewScreen = () => {
           {!isActive && !unfinished && plan.status !== 'archived' && (
             <PrimaryButton label="Activate" busy={busy === 'Activate'} onPress={() => setPickingStart(true)} />
           )}
-          {plan.status !== 'archived' && !synced && <PrimaryButton label="Edit" variant={unfinished ? 'quiet' : 'outline'} onPress={edit} />}
           {synced && (
             <PrimaryButton
               label="Stop syncing"
