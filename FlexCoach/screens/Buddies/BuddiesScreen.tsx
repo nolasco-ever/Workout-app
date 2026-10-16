@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { ActivityIndicator, ScrollView, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from '../../components/layout/SafeAreaView';
 import { NavigationProp, useNavigation } from '@react-navigation/native';
@@ -14,6 +14,8 @@ import { directionIcons, generalIcons } from '../../components/icons/icon-librar
 import { Avatar } from '../../components/buddies/Avatar';
 import { useTheme } from '../../theme';
 import { BuddyRoutes } from './routes';
+import { BuddyCard } from './BuddyCardScreen';
+import { useLayoutFamily } from '../../components/layout/useLayoutFamily';
 
 /** One line of what a buddy's card says: streak, last workout, last cycle. */
 export const buddySummary = (b: BuddyWithCard): string => {
@@ -31,11 +33,18 @@ export const buddySummary = (b: BuddyWithCard): string => {
  * Adding someone happens from your Iron Card sheet (Profile header), which
  * carries the QR code and the scanner.
  */
+/** The list's pane beside a buddy's card on a wide window. */
+const LIST_PANE_WIDTH = 320;
+
 export const BuddiesScreen = () => {
   const navigation = useNavigation<NavigationProp<BuddyRoutes>>();
   const { colors, spacing } = useTheme();
   const { uid, profile } = useAuth();
   const { loading, buddies } = useBuddies();
+  // On a wide window the chosen buddy's card stands beside the list: the first buddy until a row is tapped.
+  const wide = useLayoutFamily() === 'wide';
+  const [chosen, setChosen] = useState<string | null>(null);
+  const shownUid = wide ? (chosen && buddies.some(b => b.userId === chosen) ? chosen : buddies[0]?.userId ?? null) : null;
 
   // Keep my own card current so buddies see today's numbers.
   useEffect(() => {
@@ -45,9 +54,8 @@ export const BuddiesScreen = () => {
 
   const empty = !loading && buddies.length === 0;
 
-  return (
-    <SafeAreaView edges={['bottom', 'left', 'right']} style={{ flex: 1, backgroundColor: colors.ground }}>
-      <ScrollView contentContainerStyle={{ padding: spacing.lg, gap: spacing.lg, paddingBottom: spacing.xxl }}>
+  const list = (
+      <ScrollView style={wide ? { width: LIST_PANE_WIDTH, flexGrow: 0 } : undefined} contentContainerStyle={{ padding: spacing.lg, gap: spacing.lg, paddingBottom: spacing.xxl }}>
         {loading && <ActivityIndicator color={colors.accent} style={{ marginTop: spacing.xl }} />}
 
         {empty && (
@@ -71,8 +79,8 @@ export const BuddiesScreen = () => {
               {buddies.map((b, i) => (
                 <TouchableOpacity
                   key={b.userId}
-                  onPress={() => navigation.navigate('BuddyCardScreen', { uid: b.userId, displayName: b.card?.displayName ?? b.displayName ?? null })}
-                  style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.md, padding: spacing.lg, borderTopWidth: i ? 1 : 0, borderTopColor: colors.line }}
+                  onPress={() => (wide ? setChosen(b.userId) : navigation.navigate('BuddyCardScreen', { uid: b.userId, displayName: b.card?.displayName ?? b.displayName ?? null }))}
+                  style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.md, padding: spacing.lg, borderTopWidth: i ? 1 : 0, borderTopColor: colors.line, backgroundColor: shownUid === b.userId ? colors.accentTint : undefined }}
                 >
                   <Avatar uri={b.card?.photoUrl ?? b.photoUrl} name={b.card?.displayName ?? b.displayName} />
                   <View style={{ flex: 1 }}>
@@ -98,6 +106,28 @@ export const BuddiesScreen = () => {
           </View>
         )}
       </ScrollView>
+  );
+
+  return (
+    <SafeAreaView edges={['bottom', 'left', 'right']} style={{ flex: 1, backgroundColor: colors.ground }}>
+      {!wide && list}
+      {/* Wide: the list on the left, the chosen buddy's Iron Card standing on the right. */}
+      {wide && (
+        <View style={{ flex: 1, flexDirection: 'row' }}>
+          {list}
+          <View style={{ flex: 1 }}>
+            {shownUid ? (
+              <BuddyCard key={shownUid} params={{ uid: shownUid, displayName: buddies.find(b => b.userId === shownUid)?.card?.displayName ?? null }} embedded />
+            ) : (
+              !loading && !empty && (
+                <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', padding: spacing.xl }}>
+                  <CustomText variant="body" color={colors.inkMuted} centered>A buddy you tap shows here.</CustomText>
+                </View>
+              )
+            )}
+          </View>
+        </View>
+      )}
     </SafeAreaView>
   );
 };

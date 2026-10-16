@@ -2,6 +2,7 @@ import React, { useCallback, useEffect, useLayoutEffect, useState } from 'react'
 import { ActivityIndicator, Alert, ScrollView, Share, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from '../../components/layout/SafeAreaView';
 import { NavigationProp, RouteProp, useFocusEffect, useNavigation, useRoute } from '@react-navigation/native';
+import { useHeaderHeight } from '@react-navigation/elements';
 import { useAuth } from '../../data/auth/AuthProvider';
 import { Buddy, Plan, PublicProfile } from '../../data/models';
 import { buddyRepository } from '../../data/repositories/buddyRepository';
@@ -16,7 +17,7 @@ import { Icon } from '../../components/icons/Icon';
 import { directionIcons, generalIcons } from '../../components/icons/icon-library';
 import { IronCard } from '../../components/buddies/IronCard';
 import { useTheme } from '../../theme';
-import { BuddyRoutes } from './routes';
+import { BuddyCardParams, BuddyRoutes } from './routes';
 
 type Relation = 'self' | 'accepted' | 'none';
 
@@ -28,8 +29,14 @@ type Relation = 'self' | 'accepted' | 'none';
  * serves before and after, so a card can always be brought back up.
  */
 export const BuddyCardScreen = () => {
-  const navigation = useNavigation<NavigationProp<BuddyRoutes>>();
   const { params } = useRoute<RouteProp<BuddyRoutes, 'BuddyCardScreen'>>();
+  return <BuddyCard params={params} />;
+};
+
+/** The card itself. `embedded`: drawn inside the buddies list's detail pane on a wide window, so the header is the list's. */
+export const BuddyCard = ({ params, embedded = false }: { params: BuddyCardParams; embedded?: boolean }) => {
+  const navigation = useNavigation<NavigationProp<BuddyRoutes>>();
+  const headerHeight = useHeaderHeight();
   const { colors, spacing } = useTheme();
   const { uid, profile } = useAuth();
   const unit = profile?.weightUnit ?? 'lb';
@@ -102,8 +109,9 @@ export const BuddyCardScreen = () => {
 
   const name = card?.displayName ?? row?.displayName ?? params.displayName ?? null;
   useLayoutEffect(() => {
+    if (embedded) return;
     (navigation as any).setOptions({ title: name ?? 'Iron Card' });
-  }, [navigation, name]);
+  }, [navigation, name, embedded]);
 
   const run = async (fn: () => Promise<void>) => {
     setBusy(true);
@@ -153,9 +161,8 @@ export const BuddyCardScreen = () => {
     }
   };
 
-  return (
-    <SafeAreaView edges={['bottom', 'left', 'right']} style={{ flex: 1, backgroundColor: colors.ground }}>
-      <ScrollView contentContainerStyle={{ padding: spacing.lg, gap: spacing.lg, paddingBottom: spacing.xxl }}>
+  const body = (
+      <ScrollView showsVerticalScrollIndicator={!embedded} contentContainerStyle={{ padding: spacing.lg, gap: spacing.lg, paddingBottom: spacing.xxl }}>
         {card === undefined ? (
           <ActivityIndicator color={colors.accent} style={{ marginTop: spacing.xxl }} />
         ) : notFound ? (
@@ -203,6 +210,13 @@ export const BuddyCardScreen = () => {
           </View>
         )}
       </ScrollView>
+  );
+  // Inside the list the host already keeps clear of the display's edges.
+  // Beside the list the pane starts below the header rather than scrolling under it.
+  if (embedded) return <View style={{ flex: 1, backgroundColor: colors.ground, paddingTop: headerHeight }}>{body}</View>;
+  return (
+    <SafeAreaView edges={['bottom', 'left', 'right']} style={{ flex: 1, backgroundColor: colors.ground }}>
+      {body}
     </SafeAreaView>
   );
 };
