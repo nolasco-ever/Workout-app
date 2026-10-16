@@ -15,8 +15,16 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
  * content, and screens outside the tabs (modals, the Plans flow) have no bar,
  * so both get 0.
  */
+/**
+ * The native tabs report the tab bar's frame height. On a folding phone the
+ * bar stands in a column at the side of the display, and that frame is as
+ * tall as the column; a bar taller than this takes no vertical room.
+ */
+const SIDE_PLACED = 160;
+const bottomBar = (height: number): number => (height > SIDE_PLACED ? 0 : height);
+
 export const useTabBarInset = (): number => {
-  const tabBar = useContext(BottomTabBarHeightContext) ?? 0;
+  const tabBar = bottomBar(useContext(BottomTabBarHeightContext) ?? 0);
   const { bottom } = useSafeAreaInsets();
   if (Platform.OS !== 'ios') return 0;
   return Math.max(0, tabBar - bottom);
@@ -30,7 +38,7 @@ export const useTabBarInset = (): number => {
  * which shows through the translucent bar as a clipped edge.
  */
 export const useTabScrollInset = (): number => {
-  const tabBar = useContext(BottomTabBarHeightContext) ?? 0;
+  const tabBar = bottomBar(useContext(BottomTabBarHeightContext) ?? 0);
   const { bottom } = useSafeAreaInsets();
   if (Platform.OS !== 'ios') return bottom;
   return Math.max(tabBar, bottom);
