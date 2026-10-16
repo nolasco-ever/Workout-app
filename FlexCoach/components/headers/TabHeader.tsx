@@ -4,6 +4,7 @@ import { CustomText } from '../text/customText';
 import { IconSource } from '../icons/Icon';
 import { GLASS_BUTTON_SIZE, GlassIconButton } from '../buttons/GlassIconButton';
 import { useTheme } from '../../theme';
+import { useSideRail } from '../../navigation/useSideRail';
 
 export type TabHeaderAction = {
   icon: IconSource;
@@ -23,8 +24,11 @@ export type TabHeaderAction = {
  */
 export const TabHeader = ({ title, action, leading }: { title: string; action?: TabHeaderAction; leading?: TabHeaderAction }) => {
   const { spacing } = useTheme();
+  const { rail, buttonTop } = useSideRail();
+  // Beside a folding phone's status column the row's buttons line up with the camera, as the running workout's do. The row sits inside content padded by spacing.lg, so that much is already there.
+  const paddingTop = rail ? Math.max(0, buttonTop - spacing.lg) : spacing.xs;
   return (
-    <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: spacing.md, paddingTop: spacing.xs }}>
+    <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: spacing.md, paddingTop }}>
       {leading && <GlassIconButton {...leading} />}
       {/* The title's line box is the button's height, so the two centre on the same line. */}
       <CustomText variant="display" style={{ flex: 1, lineHeight: GLASS_BUTTON_SIZE, includeFontPadding: false }} numberOfLines={1} accessibilityRole="header">

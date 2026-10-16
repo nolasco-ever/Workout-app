@@ -273,8 +273,8 @@ export const PhotoViewer = ({ images, captions = [], index, onClose }: Props) =>
           </ScrollView>
         </GestureDetector>
 
-        {/* Close button */}
-        <Animated.View style={[{ position: 'absolute', top: insets.top + spacing.sm, right: spacing.lg }, chromeStyle]}>
+        {/* Close button: top right, except when the right edge is a folding phone's status column; then it takes the free top-left corner instead of hugging the column. */}
+        <Animated.View style={[{ position: 'absolute', top: Math.max(insets.top, spacing.md) + spacing.sm }, insets.right > 0 ? { left: insets.left + spacing.lg } : { right: spacing.lg }, chromeStyle]}>
           <TouchableOpacity
             onPress={onClose}
             hitSlop={10}
@@ -287,7 +287,7 @@ export const PhotoViewer = ({ images, captions = [], index, onClose }: Props) =>
         </Animated.View>
 
         {/* Caption and page dots */}
-        <Animated.View pointerEvents="none" style={[{ position: 'absolute', left: 0, right: 0, bottom: insets.bottom + spacing.xl, alignItems: 'center', gap: spacing.md }, chromeStyle]}>
+        <Animated.View pointerEvents="none" style={[{ position: 'absolute', left: insets.left, right: insets.right, bottom: insets.bottom + spacing.xl, alignItems: 'center', gap: spacing.md }, chromeStyle]}>
           {captions[page] ? (
             <View style={{ backgroundColor: 'rgba(255,255,255,0.15)', borderRadius: radius.pill, paddingHorizontal: spacing.md, paddingVertical: spacing.xs }}>
               <CustomText variant="label" color="#FFFFFF">{captions[page]}</CustomText>

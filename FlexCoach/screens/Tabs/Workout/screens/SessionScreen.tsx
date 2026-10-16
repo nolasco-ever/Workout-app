@@ -1,7 +1,9 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Alert, AppState, Platform, ScrollView, TouchableOpacity, Vibration, View } from 'react-native';
 import { KeyboardAvoiding } from '../../../../components/layout/KeyboardAvoiding';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { SafeAreaView } from '../../../../components/layout/SafeAreaView';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useSideRail } from '../../../../navigation/useSideRail';
 import { RouteProp, useIsFocused, useNavigation, useRoute } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useAuth } from '../../../../data/auth/AuthProvider';
@@ -39,6 +41,8 @@ export const SessionScreen = () => {
   const { params } = useRoute<RouteProp<AppStackParams, 'SessionScreen'>>();
   const { plan, cycle, activePlan } = params;
   const { colors, spacing, radius } = useTheme();
+  const insets = useSafeAreaInsets();
+  const { top: headerTop } = useSideRail();
   const tabBarInset = useTabBarInset();
   const { uid, profile } = useAuth();
   const units: Units = { weight: profile?.weightUnit ?? 'lb', distance: profile?.distanceUnit ?? 'mi' };
@@ -492,7 +496,7 @@ export const SessionScreen = () => {
   }, [restStartedAt, restFor, session.id, restOverEnabled]);
 
   return (
-    <SafeAreaView edges={['top', 'bottom', 'left', 'right']} style={{ flex: 1, backgroundColor: colors.ground }}>
+    <SafeAreaView edges={['bottom', 'left', 'right']} style={{ flex: 1, backgroundColor: colors.ground }}>
       <KeyboardAvoiding>
         {/*
           Our own header row instead of the native one: the title with the
@@ -500,7 +504,8 @@ export const SessionScreen = () => {
           The native bar centred it between the back button and the rest
           pill, so the pill shoved it left.
         */}
-        <View style={{ height: 56, justifyContent: 'center', paddingHorizontal: spacing.md }}>
+        {/* The top inset by hand: beside a folding phone's status column the inset is 0, so the row drops to the Dynamic Island's level, clear of the round corners. */}
+        <View style={{ height: 56, justifyContent: 'center', paddingHorizontal: spacing.md, marginTop: headerTop }}>
           {/* The row only passes touches to its buttons, so the title beneath it stays tappable. */}
           <View pointerEvents="box-none" style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
             <GlassIconButton icon={directionIcons.angleLeft} nudgeX={-1} accessibilityLabel="Back" onPress={() => confirmLeaveRef.current(() => navigation.goBack())} />
