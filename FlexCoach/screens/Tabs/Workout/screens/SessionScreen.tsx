@@ -4,6 +4,8 @@ import { KeyboardAvoiding } from '../../../../components/layout/KeyboardAvoiding
 import { SafeAreaView } from '../../../../components/layout/SafeAreaView';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useSideRail } from '../../../../navigation/useSideRail';
+import { useLayoutFamily } from '../../../../components/layout/useLayoutFamily';
+import { SessionExerciseList } from '../components/SessionExerciseList';
 import { RouteProp, useIsFocused, useNavigation, useRoute } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useAuth } from '../../../../data/auth/AuthProvider';
@@ -36,6 +38,9 @@ import { SwipeToDelete } from '../../../../components/list-items/SwipeToDelete';
 import Animated, { SlideInLeft, SlideInRight } from 'react-native-reanimated';
 import { fromDraft, toDraft, Units, unitLabels } from '../components/setDrafts';
 
+/** The exercise list's pane beside the current exercise on a wide window. */
+const LIST_PANE_WIDTH = 320;
+
 export const SessionScreen = () => {
   const navigation = useNavigation<NativeStackNavigationProp<AppStackParams>>();
   const { params } = useRoute<RouteProp<AppStackParams, 'SessionScreen'>>();
@@ -43,6 +48,8 @@ export const SessionScreen = () => {
   const { colors, spacing, radius } = useTheme();
   const insets = useSafeAreaInsets();
   const { top: headerTop } = useSideRail();
+  // On a wide window the exercise list stands beside the current exercise; the sheet and the footer are for phones.
+  const wide = useLayoutFamily() === 'wide';
   const tabBarInset = useTabBarInset();
   const { uid, profile } = useAuth();
   const units: Units = { weight: profile?.weightUnit ?? 'lb', distance: profile?.distanceUnit ?? 'mi' };
@@ -83,6 +90,7 @@ export const SessionScreen = () => {
   const quick = isQuickSession(session);
   const total = session.exercises.length;
   const completedSets = useMemo(() => session.exercises.reduce((n, ex) => n + ex.sets.filter(s => s.completed).length, 0), [session]);
+  const allComplete = total > 0 && session.exercises.every(ex => ex.sets.length > 0 && ex.sets.every(st => st.completed));
   const totalSets = useMemo(() => session.exercises.reduce((n, ex) => n + ex.sets.length, 0), [session]);
 
   // Leaving the screen keeps the session in progress; Home offers Resume.
@@ -496,7 +504,7 @@ export const SessionScreen = () => {
   }, [restStartedAt, restFor, session.id, restOverEnabled]);
 
   return (
-    <SafeAreaView edges={['bottom', 'left', 'right']} style={{ flex: 1, backgroundColor: colors.ground }}>
+    <SafeAreaView edges={wide ? ['left', 'right'] : ['bottom', 'left', 'right']} style={{ flex: 1, backgroundColor: colors.ground }}>
       <KeyboardAvoiding>
         {/*
           Our own header row instead of the native one: the title with the
@@ -505,18 +513,28 @@ export const SessionScreen = () => {
           pill, so the pill shoved it left.
         */}
         {/* The top inset by hand: beside a folding phone's status column the inset is 0, so the row drops to the Dynamic Island's level, clear of the round corners. */}
-        <View style={{ height: 56, justifyContent: 'center', paddingHorizontal: spacing.md, marginTop: headerTop }}>
+        <View style={{ height: 56, justifyContent: 'center', paddingHorizontal: spacing.md, paddingRight: spacing.md + insets.right, marginTop: headerTop }}>
           {/* The row only passes touches to its buttons, so the title beneath it stays tappable. */}
           <View pointerEvents="box-none" style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
             <GlassIconButton icon={directionIcons.angleLeft} nudgeX={-1} accessibilityLabel="Back" onPress={() => confirmLeaveRef.current(() => navigation.goBack())} />
             {restStartedAt === null ? <View style={{ width: GLASS_BUTTON_SIZE }} /> : <RestPill startedAt={restStartedAt} durationSec={restFor} onDismiss={dismissRest} />}
           </View>
           <View pointerEvents="box-none" style={{ position: 'absolute', left: 0, right: 0, alignItems: 'center' }}>
-            <SessionTitle name={session.workoutName} startedAt={session.startedAt} onPress={openList} />
+            <SessionTitle name={session.workoutName} startedAt={session.startedAt} onPress={wide ? undefined : openList} />
           </View>
         </View>
 
-        <ScrollView contentContainerStyle={{ padding: spacing.lg }} keyboardShouldPersistTaps="handled" keyboardDismissMode="on-drag">
+        <View style={{ flex: 1, flexDirection: wide ? 'row' : 'column', gap: wide ? spacing.lg : 0, paddingLeft: wide ? spacing.lg : 0 }}>
+        {wide && (
+          <View style={{ width: LIST_PANE_WIDTH }}>
+            <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ gap: spacing.lg, paddingBottom: spacing.lg + insets.bottom }}>
+              <SessionExerciseList session={session} currentIndex={index} onJump={goTo} onRemove={ex => askRemoveRef.current(ex)} />
+              <PrimaryButton label="Add exercise" variant="outline" icon={generalIcons.plus} onPress={addExercise} />
+            </ScrollView>
+          </View>
+        )}
+        <View style={{ flex: 1 }}>
+        <ScrollView contentContainerStyle={{ padding: spacing.lg, paddingBottom: wide ? spacing.lg + insets.bottom : spacing.lg }} keyboardShouldPersistTaps="handled" keyboardDismissMode="on-drag">
           {/* Keyed by exercise so a change mounts fresh content that slides in from the side it came from. */}
           {!exercise && (
             <View style={{ alignItems: 'center', gap: spacing.md, paddingTop: spacing.xxl }}>
@@ -623,6 +641,7 @@ export const SessionScreen = () => {
           )}
         </ScrollView>
 
+        {!wide && (
         <View style={{ padding: spacing.lg, paddingBottom: spacing.lg + tabBarInset, gap: spacing.sm, borderTopWidth: 1, borderTopColor: colors.line, backgroundColor: colors.ground }}>
           {!exercise && <PrimaryButton label="Add exercise" icon={generalIcons.plus} onPress={addExercise} />}
           {exercise && (
@@ -645,6 +664,15 @@ export const SessionScreen = () => {
           )}
         </View>
 
+        )}
+        {/* No footer beside the list: a tap on the list moves between exercises. Finish shows once every set is in. */}
+        {wide && allComplete && (
+          <View style={{ padding: spacing.lg, paddingBottom: spacing.lg + insets.bottom, borderTopWidth: 1, borderTopColor: colors.line, backgroundColor: colors.ground }}>
+            <PrimaryButton label="Finish workout" icon={generalIcons.check} busy={finishing} onPress={finish} />
+          </View>
+        )}
+        </View>
+        </View>
       </KeyboardAvoiding>
     </SafeAreaView>
   );
