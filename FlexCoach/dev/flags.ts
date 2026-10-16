@@ -12,5 +12,5 @@ export const devFlags = {
   /** Write three weeks of sample weigh-ins if the account has none. */
   seedBodyWeightIfEmpty: false,
   /** Show what the fold module reports (pose, hinge, fold, window) in a corner of the screen. */
-  showFoldReadout: true,
+  showFoldReadout: false,
 };
