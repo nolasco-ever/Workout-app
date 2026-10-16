@@ -1,5 +1,8 @@
 import React, { useEffect } from 'react';
 import { ScrollView, TouchableOpacity, View, useWindowDimensions } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useLayoutFamily } from '../../components/layout/useLayoutFamily';
+import { FloatingBadges } from '../../components/achievements/FloatingBadges';
 import { SafeAreaView } from '../../components/layout/SafeAreaView';
 import { NavigationProp, RouteProp, useNavigation, useRoute } from '@react-navigation/native';
 import { FamilyProgress, compactCount, parseAchievementId, thresholdsFor, tierLabel } from '../../data/engine/achievements';
@@ -92,7 +95,15 @@ const Skeleton = ({ cell }: { cell: number }) => {
 export const AchievementsScreen = () => {
   const { colors, spacing } = useTheme();
   const { width } = useWindowDimensions();
-  const cell = Math.floor((Math.min(width, OUTER_DISPLAY_WIDTH) - spacing.lg * 2) / COLUMNS);
+  const insets = useSafeAreaInsets();
+  const layout = useLayoutFamily();
+  const wide = layout === 'wide';
+  // Sideways the display splits down the middle: the earned badges drift on the left, the grid has the right, running under the status column as the closed display's does.
+  const half = width / 2;
+  // Upright the tiles fill the window; sideways the grid's half; a phone keeps the closed display's tiles.
+  const gridWidth = layout === 'medium' ? width : wide ? half : Math.min(width, OUTER_DISPLAY_WIDTH);
+  const cell = Math.floor((gridWidth - spacing.lg * 2) / COLUMNS);
+  const open = (family: AchievementFamilyId, tier: number) => navigation.navigate('BadgeScreen', { family, tier });
   const navigation = useNavigation<NavigationProp<AppStackParams>>();
   const { params } = useRoute<RouteProp<AppStackParams, 'AchievementsScreen'>>();
   // Tiers come from the stored unlocks, live; measuring the whole history is not needed to draw the grid.
@@ -102,23 +113,41 @@ export const AchievementsScreen = () => {
   const focus = params?.achievementId ?? null;
   useEffect(() => {
     const target = focus ? parseAchievementId(focus) : null;
-    if (target) navigation.navigate('BadgeScreen', { family: target.family, tier: target.tier });
+    if (target) open(target.family, target.tier);
+    // `open` follows the layout; the badge to show is what matters here.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [focus, navigation]);
 
   useEffect(() => {
     preloadBadges(state.unlocks.map(u => ({ family: u.family, tier: u.tier })));
   }, [state.unlocks]);
-  return (
-    <SafeAreaView edges={['bottom', 'left', 'right']} style={{ flex: 1, backgroundColor: colors.ground }}>
-      <ScrollView contentContainerStyle={{ padding: spacing.lg, gap: spacing.xl, paddingBottom: spacing.xxl }}>
+  const grid = (
+      <ScrollView showsVerticalScrollIndicator={!wide} contentContainerStyle={{ padding: spacing.lg, gap: spacing.xl, paddingBottom: spacing.xxl + (wide ? insets.bottom : 0) }}>
         {state.loading ? (
           <Skeleton cell={cell} />
         ) : (
           state.progress.map(p => (
-            <FamilySection key={p.family.id} progress={p} unit={state.unit} cell={cell} onOpen={tier => navigation.navigate('BadgeScreen', { family: p.family.id, tier })} />
+            <FamilySection key={p.family.id} progress={p} unit={state.unit} cell={cell} onOpen={tier => open(p.family.id, tier)} />
           ))
         )}
       </ScrollView>
+  );
+  if (!wide) {
+    return (
+      <SafeAreaView edges={['bottom', 'left', 'right']} style={{ flex: 1, backgroundColor: colors.ground }}>
+        {grid}
+      </SafeAreaView>
+    );
+  }
+  // Sideways: the earned badges drifting on the left, the grid on the right, half and half; a tapped badge opens its screen as on a phone.
+  return (
+    <SafeAreaView edges={['left', 'right']} style={{ flex: 1, backgroundColor: colors.ground }}>
+      <View style={{ flex: 1, flexDirection: 'row' }}>
+        <View style={{ width: half }}>
+          <FloatingBadges unlocks={state.unlocks} />
+        </View>
+        <View style={{ flex: 1 }}>{grid}</View>
+      </View>
     </SafeAreaView>
   );
 };
