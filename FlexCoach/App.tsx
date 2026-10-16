@@ -18,6 +18,8 @@ import { features } from './config/features';
 import { useAuth } from './data/auth/AuthProvider';
 import { startInviteLinkListener } from './data/links/inviteLinks';
 import { InAppBannerHost } from './components/overlays/InAppBanner';
+import { FoldReadout } from './components/dev/FoldReadout';
+import { devFlags } from './dev/flags';
 
 // react-native-sortables passes dependency arrays to Reanimated hooks (meant
 // for web); Reanimated 4.7 warns about it on native. Harmless, and not ours.
@@ -73,6 +75,7 @@ const App = () => {
           <Notifications/>
           <CustomModal/>
           <InAppBannerHost/>
+          {__DEV__ && devFlags.showFoldReadout && <FoldReadout />}
         </ModalProvider>
       </AuthProvider>
     </SafeAreaProvider>

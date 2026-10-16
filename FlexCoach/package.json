@@ -83,7 +83,8 @@
         "BadgeView": "BadgeView"
       },
       "modulesProvider": {
-        "NativeBadgeModels": "NativeBadgeModels"
+        "NativeBadgeModels": "NativeBadgeModels",
+        "NativeFold": "NativeFold"
       }
     }
   }

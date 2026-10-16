@@ -126,6 +126,9 @@ dependencies {
     implementation("com.google.android.filament:filament-android:1.71.5")
     implementation("com.google.android.filament:gltfio-android:1.71.5")
     implementation("com.google.android.filament:filament-utils-android:1.71.5")
+    // Folding phones (com.flexcoach.fold): where the fold is, from Jetpack WindowManager; the Java adapter for its listener.
+    implementation("androidx.window:window:1.5.1")
+    implementation("androidx.window:window-java:1.5.1")
 
     if (hermesEnabled.toBoolean()) {
         implementation("com.facebook.react:hermes-android")

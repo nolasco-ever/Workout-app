@@ -21,6 +21,7 @@
 		C969F60DCDDD4566B22A119E /* Sora-SemiBold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 1F2D31DB537D4659AA67E8BF /* Sora-SemiBold.ttf */; };
 		CB99C4E13959419483CC03A9 /* Pods_FlexCoach.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F205662FF7054D1711856F3B /* Pods_FlexCoach.framework */; };
 		D2C507A959D14769AA9F8C58 /* Manrope-Bold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = EBF138ACCC1E4D54B3059A15 /* Manrope-Bold.ttf */; };
+		DC37C8AD27D71F75E7BB78CA /* NativeFold.mm in Sources */ = {isa = PBXBuildFile; fileRef = 8BA049AD2F521D826E6F2DF9 /* NativeFold.mm */; };
 		DE148586F8DF4F91DFF166BE /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = 13B07FB81A68108700A75B9A /* PrivacyInfo.xcprivacy */; };
 		E5D0749E8B9340A58677A21E /* Sora-Bold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = AAD32DE9E2CE44C6A2525831 /* Sora-Bold.ttf */; };
 		EBCBB8558CA64914B56A1464 /* Sora-Medium.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 9E468FA679E0496B8351BC9A /* Sora-Medium.ttf */; };
@@ -48,12 +49,14 @@
 		7A833D779BAF49CBCDF58F02 /* BadgeView.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; name = BadgeView.h; path = FlexCoach/BadgeView.h; sourceTree = SOURCE_ROOT; };
 		81AB9BB72411601600AC10FF /* LaunchScreen.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; name = LaunchScreen.storyboard; path = FlexCoach/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		8A6099CA797449FC43A571AE /* BadgeModels */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = folder; name = BadgeModels; path = FlexCoach/BadgeModels; sourceTree = SOURCE_ROOT; };
+		8BA049AD2F521D826E6F2DF9 /* NativeFold.mm */ = {isa = PBXFileReference; includeInIndex = 1; name = NativeFold.mm; path = FlexCoach/NativeFold.mm; sourceTree = SOURCE_ROOT; };
 		9E468FA679E0496B8351BC9A /* Sora-Medium.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 517466845161; includeInIndex = 0; lastKnownFileType = unknown; name = "Sora-Medium.ttf"; path = "../assets/fonts/Sora-Medium.ttf"; sourceTree = "<group>"; };
 		AAD32DE9E2CE44C6A2525831 /* Sora-Bold.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 517466845161; includeInIndex = 0; lastKnownFileType = unknown; name = "Sora-Bold.ttf"; path = "../assets/fonts/Sora-Bold.ttf"; sourceTree = "<group>"; };
 		C871AF154FB5F0E764FEF1F9 /* NativeBadgeModels.mm */ = {isa = PBXFileReference; includeInIndex = 1; name = NativeBadgeModels.mm; path = FlexCoach/NativeBadgeModels.mm; sourceTree = SOURCE_ROOT; };
 		DA7BD56AF52E9DC3CF4787A3 /* FlexCoach.entitlements */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.plist.entitlements; path = FlexCoach.entitlements; sourceTree = "<group>"; };
 		EBF138ACCC1E4D54B3059A15 /* Manrope-Bold.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 517466845161; includeInIndex = 0; lastKnownFileType = unknown; name = "Manrope-Bold.ttf"; path = "../assets/fonts/Manrope-Bold.ttf"; sourceTree = "<group>"; };
 		ED297162215061F000B7C4FE /* JavaScriptCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = JavaScriptCore.framework; path = System/Library/Frameworks/JavaScriptCore.framework; sourceTree = SDKROOT; };
+		F05DCC9ACAB7AE1618879FA1 /* NativeFold.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; name = NativeFold.h; path = FlexCoach/NativeFold.h; sourceTree = SOURCE_ROOT; };
 		F205662FF7054D1711856F3B /* Pods_FlexCoach.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_FlexCoach.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
@@ -85,6 +88,8 @@
 				8A6099CA797449FC43A571AE /* BadgeModels */,
 				1047F10FD03E0881FF4AB647 /* NativeBadgeModels.h */,
 				C871AF154FB5F0E764FEF1F9 /* NativeBadgeModels.mm */,
+				F05DCC9ACAB7AE1618879FA1 /* NativeFold.h */,
+				8BA049AD2F521D826E6F2DF9 /* NativeFold.mm */,
 			);
 			name = FlexCoach;
 			sourceTree = "<group>";
@@ -382,6 +387,7 @@
 				391D0BCAB879AE8F8710D045 /* BadgeSceneView.swift in Sources */,
 				9C0F66BE04AE97F79C273E34 /* BadgeView.mm in Sources */,
 				F72B19AC33D111C4AA29EFF3 /* NativeBadgeModels.mm in Sources */,
+				DC37C8AD27D71F75E7BB78CA /* NativeFold.mm in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

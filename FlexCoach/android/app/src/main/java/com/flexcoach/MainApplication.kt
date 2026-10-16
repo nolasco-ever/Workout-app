@@ -7,6 +7,7 @@ import com.facebook.react.ReactHost
 import com.facebook.react.ReactNativeApplicationEntryPoint.loadReactNative
 import com.facebook.react.defaults.DefaultReactHost.getDefaultReactHost
 import com.flexcoach.badges.BadgePackage
+import com.flexcoach.fold.FoldPackage
 
 class MainApplication : Application(), ReactApplication {
 
@@ -17,6 +18,7 @@ class MainApplication : Application(), ReactApplication {
         PackageList(this).packages.apply {
           // App-local native components live here; everything else is autolinked.
           add(BadgePackage())
+          add(FoldPackage())
         },
     )
   }
