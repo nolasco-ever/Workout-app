@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
 import { ScrollView, TouchableOpacity, View, useWindowDimensions } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { SafeAreaView } from '../../components/layout/SafeAreaView';
 import { NavigationProp, RouteProp, useNavigation, useRoute } from '@react-navigation/native';
 import { FamilyProgress, compactCount, parseAchievementId, thresholdsFor, tierLabel } from '../../data/engine/achievements';
 import { AchievementFamilyId } from '../../data/models';
@@ -13,6 +13,15 @@ import { useTheme } from '../../theme';
 import { AppStackParams } from '../../appNavigators/AppStack';
 
 const COLUMNS = 5;
+/**
+ * A folding phone's closed outer display is this wide. The grid is sized to
+ * the narrower of the window and this, so five tiles fill the closed screen
+ * (and any phone), and opening the phone changes nothing: a grid that
+ * followed the window redrew a beat after each fold, and one laid out in
+ * percentages re-rasterised every badge drawing and blacked the screen out
+ * for a second.
+ */
+const OUTER_DISPLAY_WIDTH = 466;
 
 /** What each family counts, short enough to sit beside its name. */
 const COUNTS: Record<AchievementFamilyId, string> = {
@@ -42,7 +51,7 @@ const FamilySection = ({ progress, unit, cell, onOpen }: { progress: FamilyProgr
         </View>
         <CustomText variant="caption" color={colors.inkMuted}>{tier} of {thresholds.length}</CustomText>
       </View>
-      <View style={{ flexDirection: 'row', flexWrap: 'wrap' }}>
+      <View style={{ flexDirection: 'row', flexWrap: 'wrap', maxWidth: COLUMNS * cell }}>
         {thresholds.map((threshold, i) => {
           const t = i + 1;
           const earned = t <= tier;
@@ -66,10 +75,10 @@ const Skeleton = ({ cell }: { cell: number }) => {
       {[8, 7, 7, 6, 5, 4, 4, 4, 4, 5].map((count, f) => (
         <View key={f} style={{ gap: spacing.sm }}>
           <View style={{ width: 120, height: 18, borderRadius: radius.pill, backgroundColor: colors.surfaceRaised }} />
-          <View style={{ flexDirection: 'row', flexWrap: 'wrap' }}>
+          <View style={{ flexDirection: 'row', flexWrap: 'wrap', maxWidth: COLUMNS * cell }}>
             {Array.from({ length: count }, (_, i) => (
               <View key={i} style={{ width: cell, alignItems: 'center', paddingVertical: spacing.xs }}>
-                <View style={{ width: cell - spacing.sm, height: cell - spacing.sm, borderRadius: (cell - spacing.sm) / 2, backgroundColor: colors.surfaceRaised }} />
+                <View style={{ width: cell - spacing.sm, height: cell - spacing.sm, borderRadius: radius.pill, backgroundColor: colors.surfaceRaised }} />
               </View>
             ))}
           </View>
@@ -83,11 +92,11 @@ const Skeleton = ({ cell }: { cell: number }) => {
 export const AchievementsScreen = () => {
   const { colors, spacing } = useTheme();
   const { width } = useWindowDimensions();
+  const cell = Math.floor((Math.min(width, OUTER_DISPLAY_WIDTH) - spacing.lg * 2) / COLUMNS);
   const navigation = useNavigation<NavigationProp<AppStackParams>>();
   const { params } = useRoute<RouteProp<AppStackParams, 'AchievementsScreen'>>();
   // Tiers come from the stored unlocks, live; measuring the whole history is not needed to draw the grid.
   const state = useAchievements(false);
-  const cell = Math.floor((width - spacing.lg * 2) / COLUMNS);
 
   // Opened from a feed item or a push: go straight to that badge.
   const focus = params?.achievementId ?? null;
