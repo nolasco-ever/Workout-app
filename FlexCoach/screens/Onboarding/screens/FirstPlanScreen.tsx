@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import { View } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { ScrollView, View } from 'react-native';
+import { SafeAreaView } from '../../../components/layout/SafeAreaView';
 import { useAuth } from '../../../data/auth/AuthProvider';
 import { completeOnboarding } from '../../../data/services/profileService';
 import { CustomText } from '../../../components/text/customText';
@@ -37,7 +37,8 @@ export const FirstPlanScreen = () => {
 
   return (
     <SafeAreaView edges={['bottom', 'left', 'right']} style={{ flex: 1, backgroundColor: colors.ground }}>
-      <View style={{ flex: 1, padding: spacing.lg, gap: spacing.lg, justifyContent: 'center' }}>
+      {/* Centred when there is room; scrolls on a short window (a folded phone's outer display). */}
+      <ScrollView contentContainerStyle={{ flexGrow: 1, padding: spacing.lg, gap: spacing.lg, justifyContent: 'center' }}>
         <CustomText variant="title">You're set. Here's how it works.</CustomText>
         <SurfaceCard style={{ gap: spacing.lg }}>
           {steps.map(s => (
@@ -52,7 +53,7 @@ export const FirstPlanScreen = () => {
             </View>
           ))}
         </SurfaceCard>
-      </View>
+      </ScrollView>
       <View style={{ padding: spacing.lg, borderTopWidth: 1, borderTopColor: colors.line }}>
         <PrimaryButton label="Build my first plan" busy={busy} onPress={finish} />
       </View>

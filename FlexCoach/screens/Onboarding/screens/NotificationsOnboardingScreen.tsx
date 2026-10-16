@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import { View } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { ScrollView, View } from 'react-native';
+import { SafeAreaView } from '../../../components/layout/SafeAreaView';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { requestPermission } from '../../../data/notifications/notificationService';
@@ -47,7 +47,8 @@ export const NotificationsOnboardingScreen = () => {
 
   return (
     <SafeAreaView edges={['bottom', 'left', 'right']} style={{ flex: 1, backgroundColor: colors.ground }}>
-      <View style={{ flex: 1, padding: spacing.lg, gap: spacing.lg, justifyContent: 'center' }}>
+      {/* Centred when there is room; scrolls on a short window (a folded phone's outer display). */}
+      <ScrollView contentContainerStyle={{ flexGrow: 1, padding: spacing.lg, gap: spacing.lg, justifyContent: 'center' }}>
         <View style={{ alignItems: 'center', gap: spacing.md }}>
           <View style={{ width: 96, height: 96, borderRadius: 48, backgroundColor: colors.accentTint, alignItems: 'center', justifyContent: 'center' }}>
             <Icon icon={generalIcons.bell} size={44} color={colors.accent} />
@@ -68,7 +69,7 @@ export const NotificationsOnboardingScreen = () => {
             </View>
           ))}
         </SurfaceCard>
-      </View>
+      </ScrollView>
       <View style={{ padding: spacing.lg, gap: spacing.sm, borderTopWidth: 1, borderTopColor: colors.line }}>
         <PrimaryButton label="Turn on notifications" busy={busy} onPress={turnOn} />
         <PrimaryButton label="Not now" variant="quiet" disabled={busy} onPress={next} />

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import { View } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { ScrollView, View } from 'react-native';
+import { SafeAreaView } from '../../../components/layout/SafeAreaView';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useProfilePhoto } from '../../../data/hooks/useProfilePhoto';
@@ -38,7 +38,8 @@ export const ProfilePhotoScreen = () => {
 
   return (
     <SafeAreaView edges={['bottom', 'left', 'right']} style={{ flex: 1, backgroundColor: colors.ground }}>
-      <View style={{ flex: 1, padding: spacing.lg, gap: spacing.lg }}>
+      {/* Scrolls on a short window (a folded phone's outer display). */}
+      <ScrollView contentContainerStyle={{ flexGrow: 1, padding: spacing.lg, gap: spacing.lg }}>
         <CustomText variant="body" color={colors.inkMuted}>A photo helps buddies recognise you. Optional.</CustomText>
         <View style={{ alignItems: 'center', paddingVertical: spacing.xl }}>
           <Avatar uri={uri} name={profile?.displayName} size={160} fallback="icon" />
@@ -46,7 +47,7 @@ export const ProfilePhotoScreen = () => {
         <PrimaryButton label="Choose from library" variant="outline" busy={busy} onPress={() => pick('library')} />
         <PrimaryButton label="Take a photo" variant="outline" busy={busy} onPress={() => pick('camera')} />
         {features.avatars && <PrimaryButton label="Pick an avatar" icon={generalIcons.smile} variant="outline" busy={busy} onPress={() => setAvatarOpen(true)} />}
-      </View>
+      </ScrollView>
       <AvatarPicker
         open={avatarOpen}
         selected={avatarIdOf(uri)}
