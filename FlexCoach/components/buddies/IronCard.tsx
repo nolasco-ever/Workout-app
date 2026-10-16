@@ -19,7 +19,7 @@ const compact = (n: number): string => (n >= 100_000 ? `${Math.round(n / 1000)}k
 const Stat = ({ label, value, sub }: { label: string; value: string; sub?: string | null }) => {
   const { colors, spacing, radius } = useTheme();
   return (
-    <View style={{ flexBasis: '47%', flexGrow: 1, backgroundColor: colors.surfaceRaised, borderRadius: radius.md, padding: spacing.md, gap: 2 }}>
+    <View style={{ flex: 1, minWidth: 0, backgroundColor: colors.surfaceRaised, borderRadius: radius.md, padding: spacing.md, gap: 2 }}>
       <CustomText variant="overline" color={colors.inkMuted}>{label}</CustomText>
       <CustomText variant="title" numberOfLines={1} style={{ fontVariant: ['tabular-nums'] }}>{value}</CustomText>
       {sub ? <CustomText variant="caption" color={colors.inkMuted} numberOfLines={1}>{sub}</CustomText> : null}
@@ -68,11 +68,16 @@ export const IronCard = ({ card, unit, distanceUnit = 'mi', footer }: { card: Pu
           </View>
         )}
       </View>
-      <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm }}>
-        <Stat label="Workouts" value={String(card.totalSessions)} sub={card.lastWorkoutDate ? `Last ${dateLabel(card.lastWorkoutDate)}` : 'None yet'} />
-        <Stat label="Best lift" value={bestValue} sub={best?.exerciseName ?? 'No records yet'} />
-        <Stat label="Longest streak" value={`${card.longestStreakDays} day${card.longestStreakDays === 1 ? '' : 's'}`} sub={card.currentStreakDays > 0 ? `${card.currentStreakDays} right now` : null} />
-        <Stat label="Weight moved" value={volumeText} sub={card.favoriteExercise ? `Loves ${card.favoriteExercise}` : null} />
+      {/* Two by two, whatever the width: rows rather than wrapping, so a narrowing pane cannot stack them. */}
+      <View style={{ gap: spacing.sm }}>
+        <View style={{ flexDirection: 'row', gap: spacing.sm }}>
+          <Stat label="Workouts" value={String(card.totalSessions)} sub={card.lastWorkoutDate ? `Last ${dateLabel(card.lastWorkoutDate)}` : 'None yet'} />
+          <Stat label="Best lift" value={bestValue} sub={best?.exerciseName ?? 'No records yet'} />
+        </View>
+        <View style={{ flexDirection: 'row', gap: spacing.sm }}>
+          <Stat label="Longest streak" value={`${card.longestStreakDays} day${card.longestStreakDays === 1 ? '' : 's'}`} sub={card.currentStreakDays > 0 ? `${card.currentStreakDays} right now` : null} />
+          <Stat label="Weight moved" value={volumeText} sub={card.favoriteExercise ? `Loves ${card.favoriteExercise}` : null} />
+        </View>
       </View>
       {card.lastCycleCompletionRate !== null && (
         <CustomText variant="caption" color={colors.inkMuted}>Last cycle: {Math.round(card.lastCycleCompletionRate * 100)}% of workouts done</CustomText>

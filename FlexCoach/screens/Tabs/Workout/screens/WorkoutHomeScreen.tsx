@@ -18,6 +18,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { WorkoutStackParams } from '../WorkoutStack';
 import { useTabBarSidePlaced, useTabScrollInset } from '../../../../navigation/useTabBarInset';
 import { useLayoutFamily } from '../../../../components/layout/useLayoutFamily';
+import { useBookGutter } from '../../../../components/layout/useBookGutter';
 import { StickyTabHeader, estimateStickyHeaderHeight } from '../../../../components/headers/StickyTabHeader';
 import { SurfaceCard as Card } from '../../../../components/cards/SurfaceCard';
 import { PrimaryButton } from '../../../../components/buttons/PrimaryButton';
@@ -42,6 +43,13 @@ export const WorkoutHomeScreen = () => {
   // The title row is a bar over the scroll view; the content starts under it.
   const [headerHeight, setHeaderHeight] = useState(() => estimateStickyHeaderHeight(insets.top, spacing));
   const family = useLayoutFamily();
+  // Held like a book, the columns split on the crease.
+  const book = useBookGutter();
+  // The left column's width is always a number, measured from the row: a style that drops its width, or sets a flex
+  // basis instead, does not take on this screen (seen on the Duo: the column stuck at its old width, or collapsed).
+  // Held like a book it ends at the crease; flat, it is a half of the row less the gap.
+  const [rowWidth, setRowWidth] = useState(0);
+  const leftColumn = book ? Math.max(0, book.left - spacing.lg) : Math.max(0, (rowWidth - spacing.lg) / 2);
   // Short states (no plan, no cycle) keep one comfortable column on a wide window.
   const narrow = family === 'phone' ? undefined : ({ width: '100%', maxWidth: 560, alignSelf: 'center' } as const);
   // Room under the last card: less when no tab bar floats over the bottom.
@@ -436,8 +444,8 @@ export const WorkoutHomeScreen = () => {
         )}
         {/* Two columns: the cycle and today's workout beside the day list. */}
         {!loading && cycleView && family === 'wide' && (
-          <View style={{ flexDirection: 'row', gap: spacing.lg, alignItems: 'flex-start' }}>
-            <View style={{ flex: 1, gap: spacing.lg, alignSelf: 'flex-start' }}>
+          <View style={{ flexDirection: 'row', gap: book?.gap ?? spacing.lg, alignItems: 'flex-start' }} onLayout={e => setRowWidth(e.nativeEvent.layout.width)}>
+            <View style={{ width: leftColumn, flexGrow: 0, flexShrink: 0, gap: spacing.lg, alignSelf: 'flex-start' }}>
               {cycleView.headline}
               {cycleView.report}
               {cycleView.missed}

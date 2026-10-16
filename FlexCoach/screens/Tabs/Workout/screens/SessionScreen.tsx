@@ -5,6 +5,7 @@ import { SafeAreaView } from '../../../../components/layout/SafeAreaView';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useSideRail } from '../../../../navigation/useSideRail';
 import { useLayoutFamily } from '../../../../components/layout/useLayoutFamily';
+import { useBookGutter } from '../../../../components/layout/useBookGutter';
 import { SessionExerciseList } from '../components/SessionExerciseList';
 import { RouteProp, useIsFocused, useNavigation, useRoute } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
@@ -50,6 +51,8 @@ export const SessionScreen = () => {
   const { top: headerTop } = useSideRail();
   // On a wide window the exercise list stands beside the current exercise; the sheet and the footer are for phones.
   const wide = useLayoutFamily() === 'wide';
+  // Held like a book, the panes split on the crease.
+  const book = useBookGutter();
   const tabBarInset = useTabBarInset();
   const { uid, profile } = useAuth();
   const units: Units = { weight: profile?.weightUnit ?? 'lb', distance: profile?.distanceUnit ?? 'mi' };
@@ -265,6 +268,13 @@ export const SessionScreen = () => {
   // workouts, from a link at the top of the picker: same exercises and
   // targets, but outside the plan. The link only shows while it is empty.
   const planWorkouts = activePlan ? [...activePlan.plan.workouts].sort((a, b) => a.order - b.order).filter(w => w.exercises.length > 0) : [];
+  // The header row's measurements, for keeping the centred title clear of the rest pill.
+  const [rowWidth, setRowWidth] = useState(0);
+  const [pillWidth, setPillWidth] = useState(0);
+  const [titleWidth, setTitleWidth] = useState(0);
+  // How far left the title must slide so its right edge clears the pill, capped so its left edge clears the back button.
+  const overlap = Math.max(0, titleWidth / 2 + pillWidth + spacing.sm - rowWidth / 2);
+  const titleShift = Math.min(overlap, Math.max(0, rowWidth / 2 - titleWidth / 2 - GLASS_BUTTON_SIZE - spacing.sm));
   const addExercise = () =>
     navigation.navigate('ExercisePickerScreen', {
       mode: 'session',
@@ -513,20 +523,25 @@ export const SessionScreen = () => {
           pill, so the pill shoved it left.
         */}
         {/* The top inset by hand: beside a folding phone's status column the inset is 0, so the row drops to the Dynamic Island's level, clear of the round corners. */}
-        <View style={{ height: 56, justifyContent: 'center', paddingHorizontal: spacing.md, paddingRight: spacing.md + insets.right, marginTop: headerTop }}>
+        <View style={{ height: 56, justifyContent: 'center', paddingHorizontal: spacing.md, paddingRight: spacing.md + insets.right, marginTop: headerTop }} onLayout={e => setRowWidth(e.nativeEvent.layout.width - spacing.md * 2 - insets.right)}>
           {/* The row only passes touches to its buttons, so the title beneath it stays tappable. */}
           <View pointerEvents="box-none" style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
             <GlassIconButton icon={directionIcons.angleLeft} nudgeX={-1} accessibilityLabel="Back" onPress={() => confirmLeaveRef.current(() => navigation.goBack())} />
-            {restStartedAt === null ? <View style={{ width: GLASS_BUTTON_SIZE }} /> : <RestPill startedAt={restStartedAt} durationSec={restFor} onDismiss={dismissRest} />}
+            <View onLayout={e => setPillWidth(e.nativeEvent.layout.width)}>
+              {restStartedAt === null ? <View style={{ width: GLASS_BUTTON_SIZE }} /> : <RestPill startedAt={restStartedAt} durationSec={restFor} onDismiss={dismissRest} />}
+            </View>
           </View>
-          <View pointerEvents="box-none" style={{ position: 'absolute', left: 0, right: 0, alignItems: 'center' }}>
-            <SessionTitle name={session.workoutName} startedAt={session.startedAt} onPress={wide ? undefined : openList} />
+          {/* Dead centre when there is room; on a narrow row (a folding phone's outer display) it slides left just enough to clear the rest pill, and never over the back button. */}
+          <View pointerEvents="box-none" style={{ position: 'absolute', left: 0, right: 0, alignItems: 'center', transform: [{ translateX: -titleShift }] }}>
+            <View onLayout={e => setTitleWidth(e.nativeEvent.layout.width)} style={{ maxWidth: Math.max(0, rowWidth - GLASS_BUTTON_SIZE - pillWidth - spacing.md * 2) }}>
+              <SessionTitle name={session.workoutName} startedAt={session.startedAt} onPress={wide ? undefined : openList} />
+            </View>
           </View>
         </View>
 
-        <View style={{ flex: 1, flexDirection: wide ? 'row' : 'column', gap: wide ? spacing.lg : 0, paddingLeft: wide ? spacing.lg : 0 }}>
+        <View style={{ flex: 1, flexDirection: wide ? 'row' : 'column', gap: wide ? book?.gap ?? spacing.lg : 0, paddingLeft: wide ? spacing.lg : 0 }}>
         {wide && (
-          <View style={{ width: LIST_PANE_WIDTH }}>
+          <View style={{ width: book ? Math.max(0, book.left - spacing.lg) : LIST_PANE_WIDTH }}>
             <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ gap: spacing.lg, paddingBottom: spacing.lg + insets.bottom }}>
               <SessionExerciseList session={session} currentIndex={index} onJump={goTo} onRemove={ex => askRemoveRef.current(ex)} />
               <PrimaryButton label="Add exercise" variant="outline" icon={generalIcons.plus} onPress={addExercise} />

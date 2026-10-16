@@ -2,6 +2,7 @@ import React, { useEffect } from 'react';
 import { ScrollView, TouchableOpacity, View, useWindowDimensions } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useLayoutFamily } from '../../components/layout/useLayoutFamily';
+import { useBookGutter } from '../../components/layout/useBookGutter';
 import { FloatingBadges } from '../../components/achievements/FloatingBadges';
 import { SafeAreaView } from '../../components/layout/SafeAreaView';
 import { NavigationProp, RouteProp, useNavigation, useRoute } from '@react-navigation/native';
@@ -101,9 +102,12 @@ export const AchievementsScreen = () => {
   const layout = useLayoutFamily();
   const wide = layout === 'wide';
   // Sideways the display splits down the middle: the earned badges drift on the left, the grid has the right, running under the status column as the closed display's does.
-  const half = width / 2;
+  const book = useBookGutter();
+  // Held like a book the viewer is the left half exactly and the crease the gap, so the grid starts past the fold.
+  const viewerWidth = book?.left ?? width / 2;
+  const gridPane = book ? width - book.left - book.gap : width / 2;
   // Upright the tiles fill the window; sideways the grid's half; a phone keeps the closed display's tiles.
-  const gridWidth = layout === 'medium' ? width : wide ? half : Math.min(width, OUTER_DISPLAY_WIDTH);
+  const gridWidth = layout === 'medium' ? width : wide ? gridPane : Math.min(width, OUTER_DISPLAY_WIDTH);
   const cell = Math.floor((gridWidth - spacing.lg * 2) / COLUMNS);
   const open = (family: AchievementFamilyId, tier: number) => navigation.navigate('BadgeScreen', { family, tier });
   const navigation = useNavigation<NavigationProp<AppStackParams>>();
@@ -144,8 +148,8 @@ export const AchievementsScreen = () => {
   // Sideways: the earned badges drifting on the left, the grid on the right, half and half; a tapped badge opens its screen as on a phone.
   return (
     <SafeAreaView edges={['left', 'right']} style={{ flex: 1, backgroundColor: colors.ground }}>
-      <View style={{ flex: 1, flexDirection: 'row' }}>
-        <View style={{ width: half }}>
+      <View style={{ flex: 1, flexDirection: 'row', gap: book?.gap ?? 0 }}>
+        <View style={{ width: viewerWidth }}>
           <FloatingBadges unlocks={state.unlocks} />
         </View>
         <View style={{ flex: 1 }}>{grid}</View>

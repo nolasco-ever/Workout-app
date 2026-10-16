@@ -20,6 +20,8 @@ import { PlansStackParams } from '../routes';
 import { usePlanEditor } from '../PlanEditorContext';
 import { describeSchedule } from '../components/planSummary';
 import { useLayoutFamily } from '../../../components/layout/useLayoutFamily';
+import { useBookGutter } from '../../../components/layout/useBookGutter';
+
 import { PlanOverview } from './PlanOverviewScreen';
 
 const PlanRow = ({ plan, selected = false, onPress }: { plan: Plan; selected?: boolean; onPress: () => void }) => {
@@ -58,6 +60,8 @@ export const PlansScreen = () => {
   const editor = usePlanEditor();
   // On a wide window the chosen plan's overview stands beside the list: the active plan (or the first) until a row is tapped.
   const wide = useLayoutFamily() === 'wide';
+  // Held like a book, the panes split on the crease.
+  const book = useBookGutter();
   const [chosen, setChosen] = useState<string | null>(null);
 
   const active = plans.filter(p => p.status === 'active');
@@ -106,7 +110,7 @@ export const PlansScreen = () => {
     );
 
   const list = (
-    <View style={wide ? { width: LIST_PANE_WIDTH } : { flex: 1 }}>
+    <View style={wide ? { width: book?.left ?? LIST_PANE_WIDTH } : { flex: 1 }}>
       <ScrollView showsVerticalScrollIndicator={false}
         contentInsetAdjustmentBehavior="automatic"
         contentContainerStyle={{ padding: spacing.lg, gap: spacing.xl}}
@@ -136,7 +140,7 @@ export const PlansScreen = () => {
       {!wide && list}
       {/* Wide: the list on the left, the chosen plan's overview standing on the right. */}
       {wide && (
-        <View style={{ flex: 1, flexDirection: 'row' }}>
+        <View style={{ flex: 1, flexDirection: 'row', gap: book?.gap ?? 0 }}>
           {list}
           <View style={{ flex: 1 }}>
             {shownId ? (

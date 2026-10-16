@@ -21,6 +21,7 @@ import { useNoHeaderGlass } from '../../../../navigation/useNoHeaderGlass';
 import { useTheme } from '../../../../theme';
 import { useTabScrollInset } from '../../../../navigation/useTabBarInset';
 import { useLayoutFamily } from '../../../../components/layout/useLayoutFamily';
+import { useBookGutter } from '../../../../components/layout/useBookGutter';
 import { SessionDetail } from '../../Workout/screens/SessionDetailScreen';
 import { CycleReviewView } from '../../Workout/screens/CycleReviewScreen';
 import { ProfileStackParams } from '../ProfileStack';
@@ -57,6 +58,8 @@ export const HistoryScreen = () => {
   const [cycles, setCycles] = useState<CycleRow[] | null>(null);
   // On a wide window the detail stands beside the list: one choice per view, the newest entry until a row is tapped.
   const wide = useLayoutFamily() === 'wide';
+  // Held like a book, the panes split on the crease.
+  const book = useBookGutter();
   const [panes, setPanes] = useState<Record<Tab, Pane | null>>({ workouts: null, cycles: null });
   const choose = (pane: Pane) => setPanes(p => ({ ...p, [tab]: pane }));
   const first: Pane | null =
@@ -105,7 +108,7 @@ export const HistoryScreen = () => {
   }
 
   const list = (
-      <ScrollView contentInsetAdjustmentBehavior="automatic" showsVerticalScrollIndicator={false} style={wide ? { width: LIST_PANE_WIDTH, flexGrow: 0 } : undefined} contentContainerStyle={{ padding: spacing.lg, gap: spacing.lg, paddingBottom: spacing.xl + bottomInset}}>
+      <ScrollView contentInsetAdjustmentBehavior="automatic" showsVerticalScrollIndicator={false} style={wide ? { width: book?.left ?? LIST_PANE_WIDTH, flexGrow: 0 } : undefined} contentContainerStyle={{ padding: spacing.lg, gap: spacing.lg, paddingBottom: spacing.xl + bottomInset}}>
         <SegmentedControl<Tab> options={[{ value: 'workouts', label: 'Workouts' }, { value: 'cycles', label: 'Cycles' }]} value={tab} onChange={setTab} />
         {tab === 'cycles' && (
           <>
@@ -187,7 +190,7 @@ export const HistoryScreen = () => {
       {!wide && list}
       {/* Wide: the list on the left, the chosen entry's detail standing on the right. */}
       {wide && (
-        <View style={{ flex: 1, flexDirection: 'row' }}>
+        <View style={{ flex: 1, flexDirection: 'row', gap: book?.gap ?? 0 }}>
           {list}
           <View style={{ flex: 1 }}>
             {shown?.kind === 'session' && <SessionDetail key={shown.sessionId} sessionId={shown.sessionId} workoutName={shown.workoutName} embedded />}

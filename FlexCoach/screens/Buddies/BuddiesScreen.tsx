@@ -17,6 +17,7 @@ import { useTheme } from '../../theme';
 import { BuddyRoutes } from './routes';
 import { BuddyCard } from './BuddyCardScreen';
 import { useLayoutFamily } from '../../components/layout/useLayoutFamily';
+import { useBookGutter } from '../../components/layout/useBookGutter';
 
 /** One line of what a buddy's card says: streak, last workout, last cycle. */
 export const buddySummary = (b: BuddyWithCard): string => {
@@ -45,6 +46,8 @@ export const BuddiesScreen = () => {
   const { loading, buddies } = useBuddies();
   // On a wide window the chosen buddy's card stands beside the list: the first buddy until a row is tapped.
   const wide = useLayoutFamily() === 'wide';
+  // Held like a book, the panes split on the crease.
+  const book = useBookGutter();
   const [chosen, setChosen] = useState<string | null>(null);
   const shownUid = wide ? (chosen && buddies.some(b => b.userId === chosen) ? chosen : buddies[0]?.userId ?? null) : null;
 
@@ -57,7 +60,7 @@ export const BuddiesScreen = () => {
   const empty = !loading && buddies.length === 0;
 
   const list = (
-      <ScrollView contentInsetAdjustmentBehavior="automatic" showsVerticalScrollIndicator={false} style={wide ? { width: LIST_PANE_WIDTH, flexGrow: 0 } : undefined} contentContainerStyle={{ padding: spacing.lg, gap: spacing.lg, paddingBottom: spacing.xxl}}>
+      <ScrollView contentInsetAdjustmentBehavior="automatic" showsVerticalScrollIndicator={false} style={wide ? { width: book?.left ?? LIST_PANE_WIDTH, flexGrow: 0 } : undefined} contentContainerStyle={{ padding: spacing.lg, gap: spacing.lg, paddingBottom: spacing.xxl}}>
         {loading && <ActivityIndicator color={colors.accent} style={{ marginTop: spacing.xl }} />}
 
         {empty && (
@@ -115,7 +118,7 @@ export const BuddiesScreen = () => {
       {!wide && list}
       {/* Wide: the list on the left, the chosen buddy's Iron Card standing on the right. */}
       {wide && (
-        <View style={{ flex: 1, flexDirection: 'row' }}>
+        <View style={{ flex: 1, flexDirection: 'row', gap: book?.gap ?? 0 }}>
           {list}
           <View style={{ flex: 1 }}>
             {shownUid ? (

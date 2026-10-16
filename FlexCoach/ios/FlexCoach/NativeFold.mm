@@ -141,6 +141,12 @@ static const CGFloat kOpenWidth = 600;
         strong->_hingeAngleDeg = -1;
       }
       [strong refresh];
+      // The division region's active flag can settle a beat after the hinge reports, and a flat window lays out nothing new: read again shortly.
+      for (NSNumber *delay in @[ @0.25, @1.0 ]) {
+        dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(delay.doubleValue * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+          [weakSelf refresh];
+        });
+      }
     }];
     [probe addInteraction:interaction];
   }
@@ -182,6 +188,9 @@ static const CGFloat kOpenWidth = 600;
     }
   }
 #endif
+
+  // Flat open, the fold is never in the way whatever the region says of itself.
+  if ([_hingeStatus isEqualToString:@"fullyOpen"]) active = NO;
 
   BOOL foldable = hasFold || _hingeKnown;
   NSString *posture;

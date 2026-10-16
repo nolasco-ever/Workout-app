@@ -19,6 +19,7 @@ import { MuscleMap } from '../../../components/anatomy/MuscleMap';
 import { PlansStackParams } from '../routes';
 import { usePlanEditor } from '../PlanEditorContext';
 import { useAuth } from '../../../data/auth/AuthProvider';
+import { useFold } from '../../../data/fold/useFold';
 
 const title = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
 
@@ -95,6 +96,8 @@ export const ExercisePickerScreen = () => {
   const { draft, update } = usePlanEditor();
   const { profile } = useAuth();
   const unit = profile?.weightUnit ?? 'lb';
+  // Held like a book, the keyboard would claim a half and push this sheet onto the other, over the content it came from: the search waits for a tap.
+  const book = useFold().posture === 'book';
   const [query, setQuery] = useState('');
   const [muscle, setMuscle] = useState<MuscleGroup | 'all'>('all');
   const [equipment, setEquipment] = useState<Equipment | 'any'>('any');
@@ -153,7 +156,7 @@ export const ExercisePickerScreen = () => {
       <View style={{ padding: spacing.lg, gap: spacing.md }}>
         <View style={{ flexDirection: 'row', gap: spacing.sm, alignItems: 'center' }}>
           <View style={{ flex: 1 }}>
-            <TextField id="exercise-search" placeholder={`Search ${DEFAULT_COUNT} exercises`} value={query} onChangeText={setQuery} autoFocus autoCorrect={false} returnKeyType="search" />
+            <TextField id="exercise-search" placeholder={`Search ${DEFAULT_COUNT} exercises`} value={query} onChangeText={setQuery} autoFocus={!book} autoCorrect={false} returnKeyType="search" />
           </View>
           <TouchableOpacity
             onPress={() => setFiltersOpen(true)}

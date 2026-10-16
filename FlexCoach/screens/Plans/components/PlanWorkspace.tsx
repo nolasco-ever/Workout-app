@@ -16,6 +16,7 @@ import { SurfaceCard } from '../../../components/cards/SurfaceCard';
 import { Icon } from '../../../components/icons/Icon';
 import { directionIcons, generalIcons } from '../../../components/icons/icon-library';
 import { useTheme } from '../../../theme';
+import { useBookGutter } from '../../../components/layout/useBookGutter';
 import { PlansStackParams, leaveEditor } from '../routes';
 import { usePlanEditor } from '../PlanEditorContext';
 import { describeSchedule, GOAL_LABEL } from './planSummary';
@@ -71,13 +72,18 @@ export const PlanWorkspace = ({ mode, initial = 'basics', initialWorkoutId = nul
   const level = openEntry ? 2 : openWorkout ? 1 : 0;
   const levelRef = useRef(level);
   levelRef.current = level;
-  // The columns slide as a strip: one column's width to the left per level.
+  // The columns slide as a strip: one column's width to the left per level. The line between the two in view runs
+  // down the window's middle, which is the crease's centre when the phone is held like a book; each column then keeps
+  // half the crease clear on the side that meets it, so nothing sits on the fold.
   const [width, setWidth] = useState(0);
+  const book = useBookGutter();
   const half = width / 2;
+  const crease = book ? book.gap / 2 : 0;
   const shift = useSharedValue(0);
   useEffect(() => {
     shift.value = withTiming(level * half, { duration: 280, easing: Easing.out(Easing.cubic) });
   }, [level, half, shift]);
+  const slotStyle = (slot: number) => ({ width: half, paddingLeft: slot === 0 ? 0 : crease, paddingRight: slot === 3 ? 0 : crease });
   const strip = useAnimatedStyle(() => ({ transform: [{ translateX: -shift.value }] }));
 
   // The native back button is the one way back: a column at a time while a workout or an exercise is open, then out,
@@ -189,7 +195,7 @@ export const PlanWorkspace = ({ mode, initial = 'basics', initialWorkoutId = nul
         {width > 0 && (
           <Animated.View style={[{ flex: 1, flexDirection: 'row', width: half * 4 }, strip]}>
             {/* 1. The parts */}
-            <View style={{ width: half, borderRightWidth: 1, borderRightColor: colors.line }}>
+            <View style={{ ...slotStyle(0), borderRightWidth: 1, borderRightColor: colors.line }}>
               <ColumnHeader title="Plan" />
               <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ padding: spacing.lg, gap: spacing.md }}>
                 <CustomText variant="body" color={colors.inkMuted}>{mode === 'create' ? 'Fill in each part. Activate or save once everything is in.' : 'Tap a part of the plan to change it.'}</CustomText>
@@ -214,7 +220,7 @@ export const PlanWorkspace = ({ mode, initial = 'basics', initialWorkoutId = nul
               <PlanSaveFooter mode={mode} onDone={done} />
             </View>
             {/* 2. The chosen part */}
-            <View style={{ width: half, borderRightWidth: openWorkout ? 1 : 0, borderRightColor: colors.line }}>
+            <View style={{ ...slotStyle(1), borderRightWidth: openWorkout ? 1 : 0, borderRightColor: colors.line }}>
               <ColumnHeader title={titleOf} />
               {section === 'basics' && <PlanBasicsStep mode={mode} embedded />}
               {section === 'workouts' && <PlanWorkoutsStep mode={mode} embedded onOpenWorkout={setWorkoutId} openWorkoutId={openWorkout} />}
@@ -239,11 +245,11 @@ export const PlanWorkspace = ({ mode, initial = 'basics', initialWorkoutId = nul
               )}
             </View>
             {/* 3. The open workout's exercises */}
-            <View style={{ width: half, borderRightWidth: openEntry ? 1 : 0, borderRightColor: colors.line }}>
+            <View style={{ ...slotStyle(2), borderRightWidth: openEntry ? 1 : 0, borderRightColor: colors.line }}>
               {openWorkout && <WorkoutEditor key={openWorkout} workoutId={openWorkout} embedded onOpenEntry={setEntryId} openEntryId={openEntry} />}
             </View>
             {/* 4. The open exercise's prescription */}
-            <View style={{ width: half }}>
+            <View style={slotStyle(3)}>
               {openWorkout && openEntry && (
                 <>
                   <ColumnHeader title={draft.workouts.find(w => w.id === openWorkout)?.exercises.find(e => e.id === openEntry)?.exerciseName ?? 'Exercise'} />
