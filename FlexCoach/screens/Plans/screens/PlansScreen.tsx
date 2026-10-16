@@ -18,11 +18,13 @@ import { useTheme } from '../../../theme';
 import { PlansStackParams } from '../PlansStack';
 import { usePlanEditor } from '../PlanEditorContext';
 import { describeSchedule } from '../components/planSummary';
+import { useLayoutFamily } from '../../../components/layout/useLayoutFamily';
+import { PlanOverview } from './PlanOverviewScreen';
 
-const PlanRow = ({ plan, onPress }: { plan: Plan; onPress: () => void }) => {
+const PlanRow = ({ plan, selected = false, onPress }: { plan: Plan; selected?: boolean; onPress: () => void }) => {
   const { colors, spacing } = useTheme();
   return (
-    <TouchableOpacity onPress={onPress} style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.md, padding: spacing.lg }}>
+    <TouchableOpacity onPress={onPress} style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.md, padding: spacing.lg, backgroundColor: selected ? colors.accentTint : undefined }}>
       <View style={{ flex: 1 }}>
         <CustomText variant="bodyStrong">{plan.name || 'Untitled plan'}</CustomText>
         <CustomText variant="caption" color={colors.inkMuted}>
@@ -33,6 +35,9 @@ const PlanRow = ({ plan, onPress }: { plan: Plan; onPress: () => void }) => {
     </TouchableOpacity>
   );
 };
+
+/** The list's pane beside a plan's overview on a wide window. */
+const LIST_PANE_WIDTH = 320;
 
 export const PlansScreen = () => {
   const navigation = useNavigation<NativeStackNavigationProp<PlansStackParams>>();
@@ -49,12 +54,17 @@ export const PlansScreen = () => {
     }
   }, [refresh]);
   const editor = usePlanEditor();
+  // On a wide window the chosen plan's overview stands beside the list: the active plan (or the first) until a row is tapped.
+  const wide = useLayoutFamily() === 'wide';
+  const [chosen, setChosen] = useState<string | null>(null);
 
   const active = plans.filter(p => p.status === 'active');
   const inactive = plans.filter(p => p.status === 'draft' && !p.sharedFrom);
   // Copies of buddies' plans sit apart until they're activated, so it's clear which are yours from scratch.
   const fromBuddies = plans.filter(p => p.status === 'draft' && !!p.sharedFrom);
   const archived = plans.filter(p => p.status === 'archived');
+
+  const shownId = wide ? (chosen && plans.some(p => p.id === chosen) ? chosen : active[0]?.id ?? plans[0]?.id ?? null) : null;
 
   const create = () => {
     if (!uid) return;
@@ -78,7 +88,7 @@ export const PlansScreen = () => {
           {items.map((p, i) => {
             const row = (
               <View style={{ borderTopWidth: i ? 1 : 0, borderTopColor: colors.line }}>
-                <PlanRow plan={p} onPress={() => navigation.navigate('PlanOverviewScreen', { planId: p.id })} />
+                <PlanRow plan={p} selected={shownId === p.id} onPress={() => (wide ? setChosen(p.id) : navigation.navigate('PlanOverviewScreen', { planId: p.id }))} />
               </View>
             );
             return deletable ? (
@@ -93,8 +103,8 @@ export const PlansScreen = () => {
       </View>
     );
 
-  return (
-    <SafeAreaView edges={['bottom', 'left', 'right']} style={{ flex: 1, backgroundColor: colors.ground }}>
+  const list = (
+    <View style={wide ? { width: LIST_PANE_WIDTH } : { flex: 1 }}>
       <ScrollView
         contentInsetAdjustmentBehavior="automatic"
         contentContainerStyle={{ padding: spacing.lg, gap: spacing.xl }}
@@ -116,6 +126,29 @@ export const PlansScreen = () => {
       <View style={{ padding: spacing.lg }}>
         <PrimaryButton label="New plan" icon={generalIcons.plus} onPress={create} />
       </View>
+    </View>
+  );
+
+  return (
+    <SafeAreaView edges={['bottom', 'left', 'right']} style={{ flex: 1, backgroundColor: colors.ground }}>
+      {!wide && list}
+      {/* Wide: the list on the left, the chosen plan's overview standing on the right. */}
+      {wide && (
+        <View style={{ flex: 1, flexDirection: 'row' }}>
+          {list}
+          <View style={{ flex: 1 }}>
+            {shownId ? (
+              <PlanOverview key={shownId} planId={shownId} embedded onGone={() => setChosen(null)} />
+            ) : (
+              !loading && plans.length > 0 && (
+                <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', padding: spacing.xl }}>
+                  <CustomText variant="body" color={colors.inkMuted} centered>A plan you tap shows here.</CustomText>
+                </View>
+              )
+            )}
+          </View>
+        </View>
+      )}
     </SafeAreaView>
   );
 };

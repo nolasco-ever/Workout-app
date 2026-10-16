@@ -1,8 +1,9 @@
-import React, { useLayoutEffect, useState } from 'react';
+import React, { useEffect, useLayoutEffect, useState } from 'react';
 import { Alert, ScrollView, View } from 'react-native';
 import { SafeAreaView } from '../../../components/layout/SafeAreaView';
 import { RouteProp, useNavigation, useRoute } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { useHeaderHeight } from '@react-navigation/elements';
 import { useAuth } from '../../../data/auth/AuthProvider';
 import { usePlans } from '../../../data/hooks/usePlans';
 import { useWorkoutHome } from '../../../data/hooks/useWorkoutHome';
@@ -22,8 +23,20 @@ import { PlanSummaryCard } from '../components/PlanSummaryCard';
 import { StartDateSheet } from '../components/StartDateSheet';
 
 export const PlanOverviewScreen = () => {
-  const navigation = useNavigation<NativeStackNavigationProp<PlansStackParams>>();
   const { params } = useRoute<RouteProp<PlansStackParams, 'PlanOverviewScreen'>>();
+  return <PlanOverview planId={params.planId} />;
+};
+
+/**
+ * The overview itself. `embedded`: drawn inside the plans list's detail
+ * pane on a wide window; the pencil goes into the list's header, and
+ * `onGone` is called where the pushed screen would go back (the plan was
+ * deleted).
+ */
+export const PlanOverview = ({ planId, embedded = false, onGone }: { planId: string; embedded?: boolean; onGone?: () => void }) => {
+  const navigation = useNavigation<NativeStackNavigationProp<PlansStackParams>>();
+  const params = { planId };
+  const headerHeight = useHeaderHeight();
   const { colors, spacing } = useTheme();
   const { uid, profile } = useAuth();
   const { plans } = usePlans();
@@ -47,8 +60,15 @@ export const PlanOverviewScreen = () => {
     // `edit` is rebuilt each render; the plan it opens is what matters.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [navigation, canEdit, plan]);
+  // Inside the list, the pencil leaves with the plan it was for.
+  useEffect(() => {
+    if (!embedded) return;
+    return () => navigation.setOptions({ headerRight: undefined });
+  }, [navigation, embedded]);
+  // Where the pushed screen goes back to the list, the pane just moves on.
+  const leave = () => (embedded ? onGone?.() : navigation.goBack());
 
-  if (!plan || !uid) return <SafeAreaView edges={['bottom', 'left', 'right']} style={{ flex: 1, backgroundColor: colors.ground }} />;
+  if (!plan || !uid) return embedded ? <View style={{ flex: 1 }} /> : <SafeAreaView edges={['bottom', 'left', 'right']} style={{ flex: 1, backgroundColor: colors.ground }} />;
 
   const run = (key: string, fn: () => Promise<void>) => async () => {
     setBusy(key);
@@ -74,9 +94,9 @@ export const PlanOverviewScreen = () => {
   const problems = validatePlan(plan);
   const unfinished = !isActive && problems.length > 0;
 
-  return (
-    <SafeAreaView edges={['bottom', 'left', 'right']} style={{ flex: 1, backgroundColor: colors.ground }}>
-      <ScrollView contentContainerStyle={{ padding: spacing.lg, gap: spacing.lg }}>
+  const body = (
+    <>
+      <ScrollView showsVerticalScrollIndicator={!embedded} contentContainerStyle={{ padding: spacing.lg, gap: spacing.lg }}>
         <View>
           <CustomText variant="overline" color={isActive ? colors.accent : colors.inkMuted}>
             {isActive ? 'Active plan' : plan.status === 'archived' ? 'Archived' : 'Inactive'}
@@ -147,7 +167,7 @@ export const PlanOverviewScreen = () => {
               onPress={() => confirm('Deactivate plan?', 'The current cycle closes and the Workout tab empties until you activate a plan.', 'Deactivate', () => deactivatePlan(uid, plan, activeCycle))}
             />
           )}
-          <PrimaryButton label="Duplicate" variant="quiet" busy={busy === 'Duplicate'} onPress={run('Duplicate', async () => { await duplicatePlan(uid, plan); navigation.goBack(); })} />
+          <PrimaryButton label="Duplicate" variant="quiet" busy={busy === 'Duplicate'} onPress={run('Duplicate', async () => { await duplicatePlan(uid, plan); leave(); })} />
           {plan.status === 'archived' ? (
             <PrimaryButton label="Unarchive" variant="quiet" busy={busy === 'Unarchive'} onPress={run('Unarchive', () => planRepository.unarchive(uid, plan.id))} />
           ) : (
@@ -155,7 +175,7 @@ export const PlanOverviewScreen = () => {
               label="Archive"
               variant="quiet"
               busy={busy === 'Archive'}
-              onPress={() => confirm('Archive plan?', isActive ? 'This also deactivates it and closes the current cycle.' : 'You can unarchive it later.', 'Archive', async () => { await archivePlan(uid, plan, activeCycle); navigation.goBack(); })}
+              onPress={() => confirm('Archive plan?', isActive ? 'This also deactivates it and closes the current cycle.' : 'You can unarchive it later.', 'Archive', async () => { await archivePlan(uid, plan, activeCycle); leave(); })}
             />
           )}
           {!isActive && (
@@ -163,7 +183,7 @@ export const PlanOverviewScreen = () => {
               label="Delete"
               variant="quiet"
               busy={busy === 'Delete'}
-              onPress={() => confirm('Delete plan?', 'This cannot be undone. Logged sessions are kept.', 'Delete', async () => { await planRepository.remove(uid, plan.id); navigation.goBack(); }, true)}
+              onPress={() => confirm('Delete plan?', 'This cannot be undone. Logged sessions are kept.', 'Delete', async () => { await planRepository.remove(uid, plan.id); leave(); }, true)}
             />
           )}
         </View>
@@ -187,6 +207,13 @@ export const PlanOverviewScreen = () => {
           }
         }}
       />
+    </>
+  );
+  // Beside the list the pane starts below the header rather than scrolling under it: a second glass edge, cut off at the list, looked wrong.
+  if (embedded) return <View style={{ flex: 1, backgroundColor: colors.ground, paddingTop: headerHeight }}>{body}</View>;
+  return (
+    <SafeAreaView edges={['bottom', 'left', 'right']} style={{ flex: 1, backgroundColor: colors.ground }}>
+      {body}
     </SafeAreaView>
   );
 };

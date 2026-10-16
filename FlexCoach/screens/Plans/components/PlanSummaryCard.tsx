@@ -13,6 +13,7 @@ import { directionIcons, generalIcons } from '../../../components/icons/icon-lib
 import { useTheme } from '../../../theme';
 import { PlansStackParams } from '../PlansStack';
 import { cycleLengthDays, describeEntry, GOAL_LABEL, muscleCoverage, scheduleRows } from './planSummary';
+import { useLayoutFamily } from '../../../components/layout/useLayoutFamily';
 
 const title = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
 
@@ -72,9 +73,12 @@ export const PlanSummaryCard = ({ plan }: { plan: Plan }) => {
   const schedule = scheduleRows(plan);
   const coverage = muscleCoverage(plan);
   const workouts = [...plan.workouts].sort((a, b) => a.order - b.order);
+  // On a wide window the workouts and the schedule sit side by side, the shorter card stretched to the taller; the coverage goes full width below.
+  const pair = useLayoutFamily() !== 'phone';
   return (
     <View style={{ gap: spacing.md }}>
-      <SurfaceCard style={{ paddingVertical: spacing.sm }}>
+      <View style={pair ? { flexDirection: 'row', alignItems: 'stretch', gap: spacing.md } : { gap: spacing.md }}>
+      <SurfaceCard style={pair ? { paddingVertical: spacing.sm, flex: 1 } : { paddingVertical: spacing.sm }}>
         <CustomText variant="overline" color={colors.inkMuted} style={{ paddingTop: spacing.sm }}>Workouts</CustomText>
         {workouts.map((w, i) => (
           <WorkoutRow key={w.id} workout={w} first={i === 0} />
@@ -84,7 +88,7 @@ export const PlanSummaryCard = ({ plan }: { plan: Plan }) => {
           <CustomText variant="caption" color={colors.inkMuted} style={{ paddingBottom: spacing.sm }}>Tap a workout to see its exercises.</CustomText>
         )}
       </SurfaceCard>
-      <SurfaceCard>
+      <SurfaceCard style={pair ? { flex: 1 } : undefined}>
         <CustomText variant="overline" color={colors.inkMuted}>Schedule</CustomText>
         {/* Two columns: the day, then the workout. Rest days stay in the list, muted, so the rhythm reads. */}
         {schedule.length === 0 ? (
@@ -105,6 +109,7 @@ export const PlanSummaryCard = ({ plan }: { plan: Plan }) => {
           {plan.schedule.mode === 'rotation' ? 'Rotation' : 'Weekly'} · {cycleLengthDays(plan)}-day cycle{plan.schedule.mode === 'rotation' && plan.schedule.passesPerCycle > 1 ? ` · ${plan.schedule.passesPerCycle}× per cycle` : ''}{plan.goal ? ` · ${GOAL_LABEL[plan.goal]}` : ''}
         </CustomText>
       </SurfaceCard>
+      </View>
       <SurfaceCard>
         <CustomText variant="overline" color={colors.inkMuted} style={{ marginBottom: spacing.md }}>Muscle coverage</CustomText>
         <MuscleMap primary={coverage.primary} secondary={coverage.secondary} height={190} />
