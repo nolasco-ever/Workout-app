@@ -81,8 +81,18 @@ const describeTarget = (ex: SessionExercise, u: Units): string => {
  * the live session uses so a mistyped number can be fixed afterwards.
  */
 export const SessionDetailScreen = () => {
-  const navigation = useNavigation<NativeStackNavigationProp<Params>>();
   const { params } = useRoute<RouteProp<Params, 'SessionDetailScreen'>>();
+  return <SessionDetail sessionId={params.sessionId} workoutName={params.workoutName} />;
+};
+
+/**
+ * The logged workout itself. `embedded`: drawn inside another screen (the
+ * History screen's detail pane on a wide window), with a title row of its
+ * own in place of the native header.
+ */
+export const SessionDetail = ({ sessionId, workoutName, embedded = false }: { sessionId: string; workoutName?: string; embedded?: boolean }) => {
+  const navigation = useNavigation<NativeStackNavigationProp<Params>>();
+  const params = { sessionId, workoutName };
   const { colors, spacing, radius } = useTheme();
   const bottomInset = useTabScrollInset();
   const { uid, profile } = useAuth();
@@ -150,7 +160,8 @@ export const SessionDetailScreen = () => {
   // session to load) so the header doesn't visibly change after navigation.
   useLayoutEffect(() => {
     navigation.setOptions({
-      title: session?.workoutName ?? params.workoutName ?? 'Workout',
+      // Drawn inside another screen, the header is that screen's: only the button goes there.
+      ...(embedded ? {} : { title: session?.workoutName ?? params.workoutName ?? 'Workout' }),
       headerBackVisible: !editing,
       gestureEnabled: !editing,
       headerRight: () =>
@@ -161,7 +172,12 @@ export const SessionDetailScreen = () => {
         ),
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [navigation, session, editing, params.workoutName]);
+  }, [navigation, session, editing, params.workoutName, embedded]);
+  // Leaving the host's header as it was found when the detail goes (another entry chosen, the window narrowed).
+  useEffect(() => {
+    if (!embedded) return;
+    return () => navigation.setOptions({ headerRight: undefined, headerBackVisible: true, gestureEnabled: true });
+  }, [navigation, embedded]);
 
   const toggleDone = (ex: SessionExercise, set: LoggedSet) => {
     setDraftSession(s =>
@@ -212,10 +228,16 @@ export const SessionDetailScreen = () => {
     );
   }
 
-  return (
-    <SafeAreaView edges={['left', 'right']} style={{ flex: 1, backgroundColor: colors.ground }}>
+  const body = (
       <KeyboardAvoiding>
+        {/* Drawn inside another screen: the workout's name, since the header is the host's. */}
+        {embedded && (
+          <View style={{ paddingHorizontal: spacing.lg, paddingTop: spacing.lg }}>
+            <CustomText variant="heading" numberOfLines={1}>{shown.workoutName}</CustomText>
+          </View>
+        )}
         <ScrollView
+          showsVerticalScrollIndicator={!embedded}
           contentContainerStyle={{ padding: spacing.lg, gap: spacing.lg, paddingBottom: (editing ? spacing.lg : spacing.xl + bottomInset) }}
           keyboardShouldPersistTaps="handled"
           keyboardDismissMode="on-drag"
@@ -296,6 +318,12 @@ export const SessionDetailScreen = () => {
           </View>
         )}
       </KeyboardAvoiding>
+  );
+  // Inside another screen the host already keeps clear of the display's edges; a second safe-area view here took the side column off again.
+  if (embedded) return <View style={{ flex: 1, backgroundColor: colors.ground }}>{body}</View>;
+  return (
+    <SafeAreaView edges={['left', 'right']} style={{ flex: 1, backgroundColor: colors.ground }}>
+      {body}
     </SafeAreaView>
   );
 };

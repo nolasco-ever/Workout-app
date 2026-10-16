@@ -19,11 +19,19 @@ import { Icon } from '../../../../components/icons/Icon';
 import { directionIcons, generalIcons } from '../../../../components/icons/icon-library';
 import { useTheme } from '../../../../theme';
 import { useTabScrollInset } from '../../../../navigation/useTabBarInset';
+import { useLayoutFamily } from '../../../../components/layout/useLayoutFamily';
+import { SessionDetail } from '../../Workout/screens/SessionDetailScreen';
+import { CycleReviewView } from '../../Workout/screens/CycleReviewScreen';
 import { ProfileStackParams } from '../ProfileStack';
 
 const monthOf = (d: string) => fromLocalDate(d).toLocaleDateString(undefined, { month: 'long', year: 'numeric' });
 
 type Tab = 'workouts' | 'cycles';
+
+/** What the detail pane shows on a wide window. */
+type Pane = { kind: 'session'; sessionId: string; workoutName: string } | { kind: 'cycle'; cycleId: string };
+/** The list's pane beside the detail on a wide window. */
+const LIST_PANE_WIDTH = 320;
 
 interface CycleRow {
   cycle: Cycle;
@@ -45,6 +53,19 @@ export const HistoryScreen = () => {
   const [tab, setTab] = useState<Tab>('workouts');
   const [sessions, setSessions] = useState<Session[] | null>(null);
   const [cycles, setCycles] = useState<CycleRow[] | null>(null);
+  // On a wide window the detail stands beside the list: one choice per view, the newest entry until a row is tapped.
+  const wide = useLayoutFamily() === 'wide';
+  const [panes, setPanes] = useState<Record<Tab, Pane | null>>({ workouts: null, cycles: null });
+  const choose = (pane: Pane) => setPanes(p => ({ ...p, [tab]: pane }));
+  const first: Pane | null =
+    tab === 'workouts'
+      ? sessions?.[0]
+        ? { kind: 'session', sessionId: sessions[0].id, workoutName: sessions[0].workoutName }
+        : null
+      : cycles?.[0]
+        ? { kind: 'cycle', cycleId: cycles[0].cycle.id }
+        : null;
+  const shown = wide ? panes[tab] ?? first : null;
 
   // Re-read on every focus so edits made on the detail screen show up.
   useFocusEffect(
@@ -81,9 +102,8 @@ export const HistoryScreen = () => {
     else groups.push({ month, sessions: [s] });
   }
 
-  return (
-    <SafeAreaView edges={['left', 'right']} style={{ flex: 1, backgroundColor: colors.ground }}>
-      <ScrollView contentContainerStyle={{ padding: spacing.lg, gap: spacing.lg, paddingBottom: spacing.xl + bottomInset }}>
+  const list = (
+      <ScrollView style={wide ? { width: LIST_PANE_WIDTH, flexGrow: 0 } : undefined} contentContainerStyle={{ padding: spacing.lg, gap: spacing.lg, paddingBottom: spacing.xl + bottomInset }}>
         <SegmentedControl<Tab> options={[{ value: 'workouts', label: 'Workouts' }, { value: 'cycles', label: 'Cycles' }]} value={tab} onChange={setTab} />
         {tab === 'cycles' && (
           <>
@@ -104,8 +124,8 @@ export const HistoryScreen = () => {
                   return (
                     <TouchableOpacity
                       key={cycle.id}
-                      onPress={() => navigation.navigate('CycleReviewScreen', { cycleId: cycle.id })}
-                      style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.md, padding: spacing.lg, borderTopWidth: i ? 1 : 0, borderTopColor: colors.line }}
+                      onPress={() => (wide ? choose({ kind: 'cycle', cycleId: cycle.id }) : navigation.navigate('CycleReviewScreen', { cycleId: cycle.id }))}
+                      style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.md, padding: spacing.lg, borderTopWidth: i ? 1 : 0, borderTopColor: colors.line, backgroundColor: shown?.kind === 'cycle' && shown.cycleId === cycle.id ? colors.accentTint : undefined }}
                     >
                       <View style={{ flex: 1 }}>
                         <CustomText variant="bodyStrong">{row.planName} · Cycle {cycle.number}</CustomText>
@@ -141,8 +161,8 @@ export const HistoryScreen = () => {
                 return (
                   <TouchableOpacity
                     key={s.id}
-                    onPress={() => navigation.navigate('SessionDetailScreen', { sessionId: s.id, workoutName: s.workoutName })}
-                    style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.md, padding: spacing.lg, borderTopWidth: i ? 1 : 0, borderTopColor: colors.line }}
+                    onPress={() => (wide ? choose({ kind: 'session', sessionId: s.id, workoutName: s.workoutName }) : navigation.navigate('SessionDetailScreen', { sessionId: s.id, workoutName: s.workoutName }))}
+                    style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.md, padding: spacing.lg, borderTopWidth: i ? 1 : 0, borderTopColor: colors.line, backgroundColor: shown?.kind === 'session' && shown.sessionId === s.id ? colors.accentTint : undefined }}
                   >
                     <View style={{ flex: 1 }}>
                       <CustomText variant="bodyStrong">{s.workoutName}</CustomText>
@@ -158,6 +178,26 @@ export const HistoryScreen = () => {
           </View>
         ))}
       </ScrollView>
+  );
+
+  return (
+    <SafeAreaView edges={['left', 'right']} style={{ flex: 1, backgroundColor: colors.ground }}>
+      {!wide && list}
+      {/* Wide: the list on the left, the chosen entry's detail standing on the right. */}
+      {wide && (
+        <View style={{ flex: 1, flexDirection: 'row' }}>
+          {list}
+          <View style={{ flex: 1 }}>
+            {shown?.kind === 'session' && <SessionDetail key={shown.sessionId} sessionId={shown.sessionId} workoutName={shown.workoutName} embedded />}
+            {shown?.kind === 'cycle' && <CycleReviewView key={shown.cycleId} cycleId={shown.cycleId} embedded onOpenSession={(sessionId, workoutName) => choose({ kind: 'session', sessionId, workoutName })} />}
+            {!shown && (
+              <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', padding: spacing.xl }}>
+                <CustomText variant="body" color={colors.inkMuted} centered>{tab === 'workouts' ? 'A workout you tap shows here.' : 'A cycle you tap shows here.'}</CustomText>
+              </View>
+            )}
+          </View>
+        </View>
+      )}
     </SafeAreaView>
   );
 };

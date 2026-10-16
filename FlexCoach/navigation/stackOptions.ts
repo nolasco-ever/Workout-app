@@ -1,17 +1,22 @@
 import { Platform } from 'react-native';
 import type { NativeStackNavigationOptions } from '@react-navigation/native-stack';
 import { useTheme } from '../theme';
+import { useSideRail } from './useSideRail';
 
 /**
  * Shared native-stack header styling. On iOS the header background is left
  * to the system so iOS 26 renders Liquid Glass and older versions their
  * translucent bar; Android paints the ground colour.
  */
+/** The header title beside a folding phone's status column: it floats small at the top left there, so it gets the size of a screen title. */
+const SIDE_RAIL_TITLE_SIZE = 24;
+
 export const useStackOptions = () => {
   const { colors, fonts } = useTheme();
+  const { rail } = useSideRail();
   const base: NativeStackNavigationOptions = {
     headerTintColor: colors.accent,
-    headerTitleStyle: { fontFamily: fonts.display.semibold, fontSize: 17, color: colors.ink },
+    headerTitleStyle: { fontFamily: fonts.display.semibold, fontSize: rail ? SIDE_RAIL_TITLE_SIZE : 17, color: colors.ink },
     headerLargeTitleStyle: { fontFamily: fonts.display.bold, color: colors.ink },
     headerBackButtonDisplayMode: 'minimal',
     headerShadowVisible: false,

@@ -16,6 +16,7 @@ import { Icon } from '../../../../components/icons/Icon';
 import { directionIcons, generalIcons } from '../../../../components/icons/icon-library';
 import { dateLabel } from '../../../../components/charts/scale';
 import { useTheme } from '../../../../theme';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { WorkoutStackParams } from '../WorkoutStack';
 import { useTabBarInset } from '../../../../navigation/useTabBarInset';
 import { SurfaceCard as Card } from '../../../../components/cards/SurfaceCard';
@@ -53,10 +54,22 @@ const DetailRow = ({ label, value, tone, first = false }: { label: string; value
 export const CycleReviewScreen = () => {
   const navigation = useNavigation<NavigationProp<WorkoutStackParams>>();
   const { params } = useRoute<RouteProp<WorkoutStackParams, 'CycleReviewScreen'>>();
+  return <CycleReviewView cycleId={params.cycleId} plan={params.plan} cycle={params.cycle} onOpenSession={(sessionId, workoutName) => navigation.navigate('SessionDetailScreen', { sessionId, workoutName })} />;
+};
+
+/**
+ * The review itself, by cycle id or with the live plan and cycle. A tapped
+ * session goes to `onOpenSession`: the screen pushes it, the History
+ * screen's detail pane on a wide window shows it in place.
+ */
+export const CycleReviewView = ({ cycleId, plan: planProp, cycle: cycleProp, onOpenSession, embedded = false }: { cycleId?: string; plan?: Plan; cycle?: Cycle; onOpenSession: (sessionId: string, workoutName: string) => void; embedded?: boolean }) => {
+  const navigation = useNavigation<NavigationProp<WorkoutStackParams>>();
+  const params = { cycleId, plan: planProp, cycle: cycleProp };
   const { colors, spacing, radius } = useTheme();
   const bottomInset = useTabBarInset();
+  const insets = useSafeAreaInsets();
   const { uid, profile } = useAuth();
-  const [loaded, setLoaded] = useState<{ plan: Plan; cycle: Cycle } | null>(params.cycle ? { plan: params.plan, cycle: params.cycle } : null);
+  const [loaded, setLoaded] = useState<{ plan: Plan; cycle: Cycle } | null>(params.cycle && params.plan ? { plan: params.plan, cycle: params.cycle } : null);
   const [missing, setMissing] = useState(false);
   const [review, setReview] = useState<CycleReview | null>(null);
   const [busy, setBusy] = useState(false);
@@ -122,9 +135,9 @@ export const CycleReviewScreen = () => {
     }
   };
 
-  return (
-    <SafeAreaView edges={['left', 'right', 'bottom']} style={{ flex: 1, backgroundColor: colors.ground }}>
-      <ScrollView contentContainerStyle={{ padding: spacing.lg, gap: spacing.lg, paddingBottom: spacing.xl }}>
+  const body = (
+    <>
+      <ScrollView contentContainerStyle={{ padding: spacing.lg, gap: spacing.lg, paddingBottom: spacing.xl + (embedded ? insets.bottom : 0) }}>
         {/* Which cycle, then the three numbers that matter, then the rest a size down. */}
         <CustomText variant="overline" color={colors.inkMuted}>
           {plan.name} · Cycle {cycle.number} · {dateLabel(cycle.startDate)} to {dateLabel(cycle.endDate)}
@@ -229,7 +242,7 @@ export const CycleReviewScreen = () => {
                 return (
                   <TouchableOpacity
                     key={s.id}
-                    onPress={() => navigation.navigate('SessionDetailScreen', { sessionId: s.id, workoutName: s.workoutName })}
+                    onPress={() => onOpenSession(s.id, s.workoutName)}
                     style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.md, padding: spacing.lg, borderTopWidth: i ? 1 : 0, borderTopColor: colors.line }}
                   >
                     <View style={{ flex: 1 }}>
@@ -256,6 +269,13 @@ export const CycleReviewScreen = () => {
           <PrimaryButton label={`Start cycle ${nextCycleNumberAfter(cycle)}`} busy={busy} onPress={() => { startNext().catch(err => console.warn(err)); }} />
         </View>
       )}
+    </>
+  );
+  // Inside another screen the host already keeps clear of the display's edges.
+  if (embedded) return <View style={{ flex: 1, backgroundColor: colors.ground }}>{body}</View>;
+  return (
+    <SafeAreaView edges={['left', 'right', 'bottom']} style={{ flex: 1, backgroundColor: colors.ground }}>
+      {body}
     </SafeAreaView>
   );
 };
