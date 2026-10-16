@@ -10,6 +10,7 @@ import { SurfaceCard } from '../../../../components/cards/SurfaceCard';
 import { SwipeToDelete } from '../../../../components/list-items/SwipeToDelete';
 import { Icon, IconSource } from '../../../../components/icons/Icon';
 import { generalIcons } from '../../../../components/icons/icon-library';
+import { useComfortableColumn } from '../../../../components/layout/useComfortableColumn';
 import { useTheme } from '../../../../theme';
 
 const iconFor = (kind: FeedNotificationKind): IconSource => {
@@ -68,6 +69,7 @@ const dayGroup = (ts: number, now = Date.now()): string => {
  */
 export const NotificationsScreen = () => {
   const { colors, spacing, radius } = useTheme();
+  const column = useComfortableColumn();
   const feed = useNotificationFeed();
   const [refreshing, setRefreshing] = useState(false);
   const onRefresh = useCallback(async () => {
@@ -114,7 +116,7 @@ export const NotificationsScreen = () => {
       {feed.loading ? (
         <ActivityIndicator color={colors.accent} style={{ marginTop: spacing.xxl }} />
       ) : feed.items.length === 0 ? (
-        <ScrollView refreshControl={refreshControl} contentContainerStyle={{ flexGrow: 1, alignItems: 'center', justifyContent: 'center', padding: spacing.xl, gap: spacing.md }}>
+        <ScrollView showsVerticalScrollIndicator={false} refreshControl={refreshControl} contentContainerStyle={[{ flexGrow: 1, alignItems: 'center', justifyContent: 'center', padding: spacing.xl, gap: spacing.md}, column]}>
           <View style={{ width: 72, height: 72, borderRadius: 36, backgroundColor: colors.surfaceRaised, alignItems: 'center', justifyContent: 'center' }}>
             <Icon icon={generalIcons.bell} color={colors.inkMuted} size={32} />
           </View>
@@ -124,7 +126,7 @@ export const NotificationsScreen = () => {
           </CustomText>
         </ScrollView>
       ) : (
-        <ScrollView refreshControl={refreshControl} contentContainerStyle={{ padding: spacing.lg, gap: spacing.lg, paddingBottom: spacing.xxl }}>
+        <ScrollView showsVerticalScrollIndicator={false} refreshControl={refreshControl} contentContainerStyle={[{ padding: spacing.lg, gap: spacing.lg, paddingBottom: spacing.xxl}, column]}>
           {groups.map(group => (
             <View key={group.label} style={{ gap: spacing.sm }}>
               <CustomText variant="overline" color={colors.inkMuted}>{group.label}</CustomText>

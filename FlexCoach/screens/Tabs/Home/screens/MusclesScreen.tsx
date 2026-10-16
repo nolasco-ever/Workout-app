@@ -9,6 +9,7 @@ import { MUSCLE_GROUPS } from '../../../../data/catalog/exerciseCatalog';
 import { CustomText } from '../../../../components/text/customText';
 import { SurfaceCard } from '../../../../components/cards/SurfaceCard';
 import { MuscleMap } from '../../../../components/anatomy/MuscleMap';
+import { useComfortableColumn } from '../../../../components/layout/useComfortableColumn';
 import { useTheme } from '../../../../theme';
 import { HomeStackParams } from '../HomeStack';
 import { useTabScrollInset } from '../../../../navigation/useTabBarInset';
@@ -20,6 +21,7 @@ const title = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
 export const MusclesScreen = () => {
   const navigation = useNavigation<NativeStackNavigationProp<HomeStackParams>>();
   const { colors, spacing } = useTheme();
+  const column = useComfortableColumn();
   const bottomInset = useTabScrollInset();
   const ins = useInsights();
   const trained = ins.muscles30d;
@@ -28,7 +30,7 @@ export const MusclesScreen = () => {
 
   return (
     <SafeAreaView edges={['left', 'right']} style={{ flex: 1, backgroundColor: colors.ground }}>
-      <ScrollView contentContainerStyle={{ padding: spacing.lg, gap: spacing.lg, paddingBottom: spacing.xl + bottomInset }}>
+      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={[{ padding: spacing.lg, gap: spacing.lg, paddingBottom: spacing.xl + bottomInset}, column]}>
         <SurfaceCard>
           <View style={{ alignItems: 'center', marginBottom: spacing.sm }}>
             <MuscleMap primary={trained.slice(0, 6).map(m => m.muscle as MuscleGroup)} secondary={trained.slice(6).map(m => m.muscle as MuscleGroup)} height={190} />

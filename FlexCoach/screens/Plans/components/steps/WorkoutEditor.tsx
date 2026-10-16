@@ -17,12 +17,12 @@ import { MuscleMap } from '../../../../components/anatomy/MuscleMap';
 import { useTheme } from '../../../../theme';
 import { StepRoot } from '../StepRoot';
 import { ColumnHeader } from '../ColumnHeader';
-import { PlansStackParams } from '../../PlansStack';
+import { PlansStackParams } from '../../routes';
 import { usePlanEditor } from '../../PlanEditorContext';
 import { describeEntry } from '../planSummary';
 
 /** The editor itself: its own screen on a phone, a column of the plan workspace on a wide window. */
-export const WorkoutEditor = ({ workoutId, embedded = false, onBack, onOpenEntry, openEntryId = null }: { workoutId: string; embedded?: boolean; /** In a column: slides back to the workouts. */ onBack?: () => void; /** In a column: where a tapped exercise goes (the next column) rather than a sheet. */ onOpenEntry?: (entryId: string) => void; openEntryId?: string | null }) => {
+export const WorkoutEditor = ({ workoutId, embedded = false, onOpenEntry, openEntryId = null }: { workoutId: string; embedded?: boolean; /** In a column: where a tapped exercise goes (the next column) rather than a sheet. */ onOpenEntry?: (entryId: string) => void; openEntryId?: string | null }) => {
   const navigation = useNavigation<NativeStackNavigationProp<PlansStackParams>>();
   const params = { workoutId };
   const { colors, spacing } = useTheme();
@@ -54,9 +54,14 @@ export const WorkoutEditor = ({ workoutId, embedded = false, onBack, onOpenEntry
 
   return (
     <StepRoot embedded={embedded}>
-      {/* In a column the name is the title, with the pencil beside it; on a phone the native header has the name and the row below renames. */}
-      {embedded && <ColumnHeader title={workout.name} onBack={onBack} action={renaming ? undefined : { icon: generalIcons.penToSquare, accessibilityLabel: 'Rename workout', onPress: () => setRenaming(true) }} />}
-      <Animated.ScrollView ref={scrollRef} showsVerticalScrollIndicator={!embedded} contentContainerStyle={{ padding: spacing.lg, gap: spacing.lg }} keyboardShouldPersistTaps="handled" keyboardDismissMode="on-drag">
+      {/* In a column the name is the title, the pencil beside it as on a phone (where the native header carries the name and the row below renames). */}
+      {embedded && (renaming ? <ColumnHeader title={workout.name} /> : (
+        <TouchableOpacity onPress={() => setRenaming(true)} accessibilityRole="button" accessibilityLabel="Rename workout" style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.sm, paddingHorizontal: spacing.lg, paddingTop: spacing.lg }}>
+          <CustomText variant="title" numberOfLines={1} style={{ flexShrink: 1 }}>{workout.name}</CustomText>
+          <Icon icon={generalIcons.penToSquare} size={18} color={colors.inkMuted} />
+        </TouchableOpacity>
+      ))}
+      <Animated.ScrollView ref={scrollRef} showsVerticalScrollIndicator={false} contentContainerStyle={{ padding: spacing.lg, gap: spacing.lg}} keyboardShouldPersistTaps="handled" keyboardDismissMode="on-drag">
         {renaming ? (
           <TextField
             id="rename-workout"

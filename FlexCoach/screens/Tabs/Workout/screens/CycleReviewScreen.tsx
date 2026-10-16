@@ -137,7 +137,7 @@ export const CycleReviewView = ({ cycleId, plan: planProp, cycle: cycleProp, onO
 
   const body = (
     <>
-      <ScrollView contentContainerStyle={{ padding: spacing.lg, gap: spacing.lg, paddingBottom: spacing.xl + (embedded ? insets.bottom : 0) }}>
+      <ScrollView contentInsetAdjustmentBehavior="automatic" showsVerticalScrollIndicator={false} contentContainerStyle={{ padding: spacing.lg, gap: spacing.lg, paddingBottom: spacing.xl + (embedded ? insets.bottom : 0)}}>
         {/* Which cycle, then the three numbers that matter, then the rest a size down. */}
         <CustomText variant="overline" color={colors.inkMuted}>
           {plan.name} · Cycle {cycle.number} · {dateLabel(cycle.startDate)} to {dateLabel(cycle.endDate)}
@@ -264,7 +264,7 @@ export const CycleReviewView = ({ cycleId, plan: planProp, cycle: cycleProp, onO
         <View style={{ padding: spacing.lg, paddingBottom: spacing.lg + bottomInset, gap: spacing.sm, borderTopWidth: 1, borderTopColor: colors.line, backgroundColor: colors.ground }}>
           {/* Swap an exercise or move a day before the next cycle starts; a synced copy of a buddy's plan is theirs to change. */}
           {!plan.sharedFrom?.synced && (
-            <PrimaryButton label="Adjust plan" variant="quiet" onPress={() => (navigation as unknown as NavigationProp<AppStackParams>).navigate('PlansStack', { screen: 'PlanEditScreen', params: { planId: plan.id } })} />
+            <PrimaryButton label="Adjust plan" variant="quiet" onPress={() => (navigation as unknown as NavigationProp<AppStackParams>).navigate('PlanEditScreen', { planId: plan.id })} />
           )}
           <PrimaryButton label={`Start cycle ${nextCycleNumberAfter(cycle)}`} busy={busy} onPress={() => { startNext().catch(err => console.warn(err)); }} />
         </View>

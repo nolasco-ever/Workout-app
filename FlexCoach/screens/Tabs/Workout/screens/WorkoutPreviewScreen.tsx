@@ -16,6 +16,7 @@ import { CustomText } from '../../../../components/text/customText';
 import { Icon } from '../../../../components/icons/Icon';
 import { MuscleMap } from '../../../../components/anatomy/MuscleMap';
 import { generalIcons } from '../../../../components/icons/icon-library';
+import { useComfortableColumn } from '../../../../components/layout/useComfortableColumn';
 import { useTheme } from '../../../../theme';
 import { WorkoutStackParams } from '../WorkoutStack';
 import { useTabScrollInset } from '../../../../navigation/useTabBarInset';
@@ -50,6 +51,7 @@ export const WorkoutPreviewScreen = () => {
   const { params } = useRoute<RouteProp<WorkoutStackParams, 'WorkoutPreviewScreen'>>();
   const { plan, cycle, occurrence } = params;
   const { colors, spacing } = useTheme();
+  const column = useComfortableColumn();
   const bottomInset = useTabScrollInset();
   const { uid, profile } = useAuth();
   const unit = profile?.weightUnit ?? 'lb';
@@ -81,7 +83,7 @@ export const WorkoutPreviewScreen = () => {
 
   return (
     <SafeAreaView edges={['left', 'right']} style={{ flex: 1, backgroundColor: colors.ground }}>
-      <ScrollView contentContainerStyle={{ padding: spacing.lg, gap: spacing.md, paddingBottom: canStart ? spacing.lg : spacing.xl + bottomInset }}>
+      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={[{ padding: spacing.lg, gap: spacing.md, paddingBottom: canStart ? spacing.lg : spacing.xl + bottomInset}, column]}>
         <CustomText variant="caption" color={colors.inkMuted}>
           Targets hold for the whole cycle and move at the cycle review. You can change them as you go.
         </CustomText>

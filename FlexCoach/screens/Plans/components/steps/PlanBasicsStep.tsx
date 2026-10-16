@@ -8,7 +8,7 @@ import { CustomText } from '../../../../components/text/customText';
 import { TextField } from '../../../../components/inputs/TextField';
 import { ChoiceChips } from '../../../../components/inputs/ChoiceChips';
 import { useTheme } from '../../../../theme';
-import { EditorMode, PlansStackParams } from '../../PlansStack';
+import { EditorMode, PlansStackParams } from '../../routes';
 import { StepRoot } from '../StepRoot';
 import { usePlanEditor } from '../../PlanEditorContext';
 import { StepFooter } from '../StepFooter';
@@ -27,7 +27,7 @@ export const PlanBasicsStep = ({ mode, embedded = false }: { mode: EditorMode; e
   return (
     <StepRoot embedded={embedded}>
       <KeyboardAvoiding>
-        <ScrollView showsVerticalScrollIndicator={!embedded} contentContainerStyle={{ padding: spacing.lg, gap: spacing.xl }} keyboardShouldPersistTaps="handled" keyboardDismissMode="on-drag">
+        <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ padding: spacing.lg, gap: spacing.xl}} keyboardShouldPersistTaps="handled" keyboardDismissMode="on-drag">
           <TextField
             id="plan-name"
             label="Plan name"

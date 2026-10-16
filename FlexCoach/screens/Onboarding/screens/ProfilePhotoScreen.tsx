@@ -13,12 +13,14 @@ import { Avatar } from '../../../components/buddies/Avatar';
 import { AvatarPicker } from '../../../components/media/AvatarPicker';
 import { avatarIdOf } from '../../../data/engine/avatars';
 import { features } from '../../../config/features';
+import { useComfortableColumn } from '../../../components/layout/useComfortableColumn';
 import { useTheme } from '../../../theme';
 import { OnboardingStackParams } from '../OnboardingStack';
 
 export const ProfilePhotoScreen = () => {
   const navigation = useNavigation<NativeStackNavigationProp<OnboardingStackParams>>();
   const { colors, spacing } = useTheme();
+  const column = useComfortableColumn();
   const { profile } = useAuth();
   const photo = useProfilePhoto();
   const [uri, setUri] = useState<string | null>(photo.photoUrl);
@@ -39,7 +41,7 @@ export const ProfilePhotoScreen = () => {
   return (
     <SafeAreaView edges={['bottom', 'left', 'right']} style={{ flex: 1, backgroundColor: colors.ground }}>
       {/* Scrolls on a short window (a folded phone's outer display). */}
-      <ScrollView contentContainerStyle={{ flexGrow: 1, padding: spacing.lg, gap: spacing.lg }}>
+      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={[{ flexGrow: 1, padding: spacing.lg, gap: spacing.lg}, column]}>
         <CustomText variant="body" color={colors.inkMuted}>A photo helps buddies recognise you. Optional.</CustomText>
         <View style={{ alignItems: 'center', paddingVertical: spacing.xl }}>
           <Avatar uri={uri} name={profile?.displayName} size={160} fallback="icon" />
@@ -58,8 +60,10 @@ export const ProfilePhotoScreen = () => {
           });
         }}
       />
-      <View style={{ padding: spacing.lg, borderTopWidth: 1, borderTopColor: colors.line }}>
+      <View style={{ paddingVertical: spacing.lg, borderTopWidth: 1, borderTopColor: colors.line }}>
+        <View style={[{ paddingHorizontal: spacing.lg }, column]}>
         <PrimaryButton label={uri ? 'Next' : 'Skip for now'} disabled={busy} onPress={next} />
+        </View>
       </View>
     </SafeAreaView>
   );

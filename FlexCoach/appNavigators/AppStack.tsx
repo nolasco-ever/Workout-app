@@ -1,10 +1,19 @@
 import React, { useEffect } from 'react';
 import { ActivityIndicator, View } from 'react-native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import type { NavigatorScreenParams } from '@react-navigation/native';
 import { TabNavigator } from './TabNavigator';
 import { NotificationsScreen } from '../screens/Tabs/Home/screens/NotificationsScreen';
-import { PlansStack, type PlansStackParams } from '../screens/Plans/PlansStack';
+import { type EditorMode, type PlansStackParams } from '../screens/Plans/routes';
+import { PlanEditorProvider } from '../screens/Plans/PlanEditorContext';
+import { PlansScreen } from '../screens/Plans/screens/PlansScreen';
+import { PlanOverviewScreen } from '../screens/Plans/screens/PlanOverviewScreen';
+import { PlanEditScreen } from '../screens/Plans/screens/PlanEditScreen';
+import { PlanBasicsScreen } from '../screens/Plans/screens/PlanBasicsScreen';
+import { PlanWorkoutsScreen } from '../screens/Plans/screens/PlanWorkoutsScreen';
+import { WorkoutEditorScreen } from '../screens/Plans/screens/WorkoutEditorScreen';
+import { ExerciseEntryScreen } from '../screens/Plans/screens/ExerciseEntryScreen';
+import { PlanScheduleScreen } from '../screens/Plans/screens/PlanScheduleScreen';
+import { PlanReviewScreen } from '../screens/Plans/screens/PlanReviewScreen';
 import { AuthStack } from '../screens/Auth/AuthStack';
 import { OnboardingStack } from '../screens/Onboarding/OnboardingStack';
 import { AccountScreen } from '../screens/Tabs/Profile/screens/AccountScreen';
@@ -36,15 +45,14 @@ import { useAuth } from '../data/auth/AuthProvider';
 import { ensurePhotoCacheable } from '../data/services/profileService';
 import { useTheme } from '../theme';
 
-export type AppStackParams = BuddyRoutes & SessionRoutes & {
+export type AppStackParams = BuddyRoutes & SessionRoutes & Omit<PlansStackParams, 'ExercisePickerScreen' | 'ExerciseDetailScreen'> & {
     AuthStack: undefined;
     OnboardingStack: undefined;
     TabNavigator: undefined;
     NotificationsScreen: undefined;
-    PlansStack: NavigatorScreenParams<PlansStackParams> | undefined;
     AccountScreen: undefined;
     /** How-to for an exercise opened from a buddy's plan or the running workout's picker; the plan creator and Workout tab have their own copies. */
-    ExerciseDetailScreen: { exerciseId: string; addToSession?: boolean; swapForSessionExerciseId?: string };
+    ExerciseDetailScreen: { exerciseId: string; addToSession?: boolean; swapForSessionExerciseId?: string; addToWorkoutId?: string };
     /** The badge grid; `achievementId` opens that badge's family. */
     AchievementsScreen: { achievementId?: string } | undefined;
     BadgeScreen: { family: AchievementFamilyId; tier: number };
@@ -63,6 +71,8 @@ const Stack = createNativeStackNavigator<AppStackParams>();
 export const AppStack = () => {
     const opts = useStackOptions();
     const { colors } = useTheme();
+    // The plan steps' titles: numbered while creating, plain while editing a part from the hub.
+    const step = (n: number, title: string) => ({ route }: { route: { params?: { mode?: EditorMode } } }) => opts.screen(route.params?.mode === 'edit' ? title : `${title}  ·  ${n} of 4`);
     const { ready, uid, profile } = useAuth();
     const bypass = __DEV__ && devFlags.startAtTabs;
     const signedIn = bypass || !!uid;
@@ -83,6 +93,7 @@ export const AppStack = () => {
     }
 
     return (
+        <PlanEditorProvider>
         <Stack.Navigator screenOptions={{ ...opts.base, headerShown: false }}>
             {!signedIn ? (
                 <Stack.Screen name="AuthStack" component={AuthStack} options={{ animation: 'fade' }} />
@@ -93,7 +104,16 @@ export const AppStack = () => {
                     <Stack.Screen name="TabNavigator" component={TabNavigator} options={{ animation: 'fade', gestureEnabled: false }} />
                     <Stack.Screen name="NotificationsScreen" component={NotificationsScreen} options={opts.screen('Notifications')} />
                     <Stack.Screen name="AccountScreen" component={AccountScreen} options={opts.screen('Account')} />
-                    <Stack.Screen name="PlansStack" component={PlansStack} options={{ presentation: 'fullScreenModal' }} />
+                    {/* The plan screens, pushed like any other (they were a stack of their own once). Creating walks four numbered steps; editing opens one part at a time from the hub. */}
+                    <Stack.Screen name="PlansScreen" component={PlansScreen} options={opts.screen('My plans')} />
+                    <Stack.Screen name="PlanOverviewScreen" component={PlanOverviewScreen} options={opts.screen('Plan')} />
+                    <Stack.Screen name="PlanEditScreen" component={PlanEditScreen} options={opts.screen('Edit plan')} />
+                    <Stack.Screen name="PlanBasicsScreen" component={PlanBasicsScreen} options={step(1, 'Basics')} />
+                    <Stack.Screen name="PlanWorkoutsScreen" component={PlanWorkoutsScreen} options={step(2, 'Workouts')} />
+                    <Stack.Screen name="WorkoutEditorScreen" component={WorkoutEditorScreen} options={opts.screen('Workout')} />
+                    <Stack.Screen name="ExerciseEntryScreen" component={ExerciseEntryScreen} options={({ navigation }) => opts.modal('Exercise', () => <HeaderButton icon={generalIcons.xMark} accessibilityLabel="Close" onPress={() => navigation.goBack()} />)} />
+                    <Stack.Screen name="PlanScheduleScreen" component={PlanScheduleScreen} options={step(3, 'Schedule')} />
+                    <Stack.Screen name="PlanReviewScreen" component={PlanReviewScreen} options={step(4, 'Review')} />
                     <Stack.Screen name="BuddiesScreen" component={BuddiesScreen} options={opts.screen('Buddies')} />
                     {/* Your own card slides up from the Profile header; swipe it down (or X) to put it away. The scanner pushes inside the sheet. */}
                     <Stack.Screen name="CardStack" component={CardStack} options={{ presentation: 'modal', headerShown: false }} />
@@ -119,5 +139,6 @@ export const AppStack = () => {
                 </>
             )}
         </Stack.Navigator>
+        </PlanEditorProvider>
     );
 };

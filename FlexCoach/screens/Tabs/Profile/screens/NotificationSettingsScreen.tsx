@@ -17,6 +17,7 @@ import { WheelPicker } from '../../../../components/inputs/WheelPicker';
 import { ChoiceChips } from '../../../../components/inputs/ChoiceChips';
 import { Icon } from '../../../../components/icons/Icon';
 import { generalIcons } from '../../../../components/icons/icon-library';
+import { useComfortableColumn } from '../../../../components/layout/useComfortableColumn';
 import { useTheme } from '../../../../theme';
 import { features } from '../../../../config/features';
 import { useTabScrollInset } from '../../../../navigation/useTabBarInset';
@@ -79,6 +80,7 @@ const TimeSheet = ({ open, title, value, onClose, onChange }: { open: boolean; t
 
 export const NotificationSettingsScreen = () => {
   const { colors, spacing } = useTheme();
+  const column = useComfortableColumn();
   const bottomInset = useTabScrollInset();
   const { uid, profile } = useAuth();
   const prefs = withPrefDefaults(profile?.notifications);
@@ -117,7 +119,7 @@ export const NotificationSettingsScreen = () => {
 
   return (
     <SafeAreaView edges={['left', 'right']} style={{ flex: 1, backgroundColor: colors.ground }}>
-      <ScrollView contentContainerStyle={{ padding: spacing.lg, gap: spacing.lg, paddingBottom: spacing.xxl + bottomInset }}>
+      <ScrollView contentInsetAdjustmentBehavior="automatic" showsVerticalScrollIndicator={false} contentContainerStyle={[{ padding: spacing.lg, gap: spacing.lg, paddingBottom: spacing.xxl + bottomInset}, column]}>
         {blocked && (
           <SurfaceCard tone="accent">
             <View style={{ flexDirection: 'row', gap: spacing.md, alignItems: 'flex-start' }}>

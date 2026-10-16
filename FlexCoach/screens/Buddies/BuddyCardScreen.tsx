@@ -2,7 +2,6 @@ import React, { useCallback, useEffect, useLayoutEffect, useState } from 'react'
 import { ActivityIndicator, Alert, ScrollView, Share, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from '../../components/layout/SafeAreaView';
 import { NavigationProp, RouteProp, useFocusEffect, useNavigation, useRoute } from '@react-navigation/native';
-import { useHeaderHeight } from '@react-navigation/elements';
 import { useAuth } from '../../data/auth/AuthProvider';
 import { Buddy, Plan, PublicProfile } from '../../data/models';
 import { buddyRepository } from '../../data/repositories/buddyRepository';
@@ -36,7 +35,6 @@ export const BuddyCardScreen = () => {
 /** The card itself. `embedded`: drawn inside the buddies list's detail pane on a wide window, so the header is the list's. */
 export const BuddyCard = ({ params, embedded = false }: { params: BuddyCardParams; embedded?: boolean }) => {
   const navigation = useNavigation<NavigationProp<BuddyRoutes>>();
-  const headerHeight = useHeaderHeight();
   const { colors, spacing } = useTheme();
   const { uid, profile } = useAuth();
   const unit = profile?.weightUnit ?? 'lb';
@@ -162,7 +160,7 @@ export const BuddyCard = ({ params, embedded = false }: { params: BuddyCardParam
   };
 
   const body = (
-      <ScrollView showsVerticalScrollIndicator={!embedded} contentContainerStyle={{ padding: spacing.lg, gap: spacing.lg, paddingBottom: spacing.xxl }}>
+      <ScrollView contentInsetAdjustmentBehavior="automatic" showsVerticalScrollIndicator={false} contentContainerStyle={{ padding: spacing.lg, gap: spacing.lg, paddingBottom: spacing.xxl}}>
         {card === undefined ? (
           <ActivityIndicator color={colors.accent} style={{ marginTop: spacing.xxl }} />
         ) : notFound ? (
@@ -212,8 +210,8 @@ export const BuddyCard = ({ params, embedded = false }: { params: BuddyCardParam
       </ScrollView>
   );
   // Inside the list the host already keeps clear of the display's edges.
-  // Beside the list the pane starts below the header rather than scrolling under it.
-  if (embedded) return <View style={{ flex: 1, backgroundColor: colors.ground, paddingTop: headerHeight }}>{body}</View>;
+  // Beside the list (a screen over the tabs, laid out below its header already) the pane needs no inset of its own; one on top cut the card's head off.
+  if (embedded) return <View style={{ flex: 1, backgroundColor: colors.ground }}>{body}</View>;
   return (
     <SafeAreaView edges={['bottom', 'left', 'right']} style={{ flex: 1, backgroundColor: colors.ground }}>
       {body}

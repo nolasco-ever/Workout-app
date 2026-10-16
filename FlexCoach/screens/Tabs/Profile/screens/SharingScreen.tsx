@@ -9,6 +9,7 @@ import { CustomText } from '../../../../components/text/customText';
 import { SurfaceCard } from '../../../../components/cards/SurfaceCard';
 import { SwitchRow } from '../../../../components/inputs/SwitchRow';
 import { generalIcons } from '../../../../components/icons/icon-library';
+import { useComfortableColumn } from '../../../../components/layout/useComfortableColumn';
 import { useTheme } from '../../../../theme';
 import { useTabScrollInset } from '../../../../navigation/useTabBarInset';
 
@@ -19,6 +20,7 @@ import { useTabScrollInset } from '../../../../navigation/useTabBarInset';
  */
 export const SharingScreen = () => {
   const { colors, spacing } = useTheme();
+  const column = useComfortableColumn();
   const bottomInset = useTabScrollInset();
   const { uid, profile } = useAuth();
   const [prefs, setPrefs] = useState<SharingPrefs>(() => withSharingDefaults(profile?.sharing));
@@ -44,7 +46,7 @@ export const SharingScreen = () => {
 
   return (
     <SafeAreaView edges={['left', 'right']} style={{ flex: 1, backgroundColor: colors.ground }}>
-      <ScrollView contentContainerStyle={{ padding: spacing.lg, gap: spacing.lg, paddingBottom: spacing.xxl + bottomInset }}>
+      <ScrollView contentInsetAdjustmentBehavior="automatic" showsVerticalScrollIndicator={false} contentContainerStyle={[{ padding: spacing.lg, gap: spacing.lg, paddingBottom: spacing.xxl + bottomInset}, column]}>
         <View style={{ gap: spacing.sm }}>
           <CustomText variant="overline" color={colors.inkMuted}>Workouts</CustomText>
           <SurfaceCard style={{ padding: 0 }}>

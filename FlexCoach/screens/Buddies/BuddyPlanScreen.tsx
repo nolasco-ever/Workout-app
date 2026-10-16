@@ -15,6 +15,7 @@ import { BottomSheet } from '../../components/overlays/BottomSheet';
 import { generalIcons } from '../../components/icons/icon-library';
 import { PlanSummaryCard } from '../Plans/components/PlanSummaryCard';
 import { AppStackParams } from '../../appNavigators/AppStack';
+import { useComfortableColumn } from '../../components/layout/useComfortableColumn';
 import { useTheme } from '../../theme';
 import { BuddyRoutes } from './routes';
 
@@ -27,6 +28,7 @@ export const BuddyPlanScreen = () => {
   const navigation = useNavigation<NavigationProp<BuddyRoutes & AppStackParams>>();
   const { params } = useRoute<RouteProp<BuddyRoutes, 'BuddyPlanScreen'>>();
   const { colors, spacing } = useTheme();
+  const column = useComfortableColumn();
   const { uid } = useAuth();
   const { plans } = usePlans();
   const [plan, setPlan] = useState<Plan | null | undefined>(undefined);
@@ -63,7 +65,7 @@ export const BuddyPlanScreen = () => {
           : `${copy.name} is under "From buddies". Edit it or activate it whenever you like.`,
         [
           { text: 'Later', style: 'cancel' },
-          { text: 'Open it', onPress: () => navigation.navigate('PlansStack', { screen: 'PlanOverviewScreen', initial: false, params: { planId: copy.id } }) },
+          { text: 'Open it', onPress: () => navigation.navigate('PlanOverviewScreen', { planId: copy.id }) },
         ],
       );
     } catch (err) {
@@ -76,7 +78,7 @@ export const BuddyPlanScreen = () => {
 
   return (
     <SafeAreaView edges={['bottom', 'left', 'right']} style={{ flex: 1, backgroundColor: colors.ground }}>
-      <ScrollView contentContainerStyle={{ padding: spacing.lg, gap: spacing.lg }}>
+      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={[{ padding: spacing.lg, gap: spacing.lg}, column]}>
         {plan === undefined ? (
           <ActivityIndicator color={colors.accent} style={{ marginTop: spacing.xxl }} />
         ) : plan === null ? (

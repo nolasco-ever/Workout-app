@@ -14,8 +14,9 @@ import { PrimaryButton } from '../../../components/buttons/PrimaryButton';
 import { SurfaceCard } from '../../../components/cards/SurfaceCard';
 import { Icon } from '../../../components/icons/Icon';
 import { directionIcons, generalIcons } from '../../../components/icons/icon-library';
+import { useNoHeaderGlass } from '../../../navigation/useNoHeaderGlass';
 import { useTheme } from '../../../theme';
-import { PlansStackParams } from '../PlansStack';
+import { PlansStackParams } from '../routes';
 import { usePlanEditor } from '../PlanEditorContext';
 import { describeSchedule } from '../components/planSummary';
 import { useLayoutFamily } from '../../../components/layout/useLayoutFamily';
@@ -42,6 +43,7 @@ const LIST_PANE_WIDTH = 320;
 export const PlansScreen = () => {
   const navigation = useNavigation<NativeStackNavigationProp<PlansStackParams>>();
   const { colors, spacing } = useTheme();
+  useNoHeaderGlass();
   const { uid } = useAuth();
   const { plans, loading, refresh } = usePlans();
   const [refreshing, setRefreshing] = useState(false);
@@ -105,9 +107,9 @@ export const PlansScreen = () => {
 
   const list = (
     <View style={wide ? { width: LIST_PANE_WIDTH } : { flex: 1 }}>
-      <ScrollView
+      <ScrollView showsVerticalScrollIndicator={false}
         contentInsetAdjustmentBehavior="automatic"
-        contentContainerStyle={{ padding: spacing.lg, gap: spacing.xl }}
+        contentContainerStyle={{ padding: spacing.lg, gap: spacing.xl}}
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.accent} />}
       >
         {loading && <ActivityIndicator color={colors.accent} style={{ marginTop: spacing.xxl }} />}

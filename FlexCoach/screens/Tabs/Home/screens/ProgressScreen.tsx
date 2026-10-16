@@ -17,6 +17,7 @@ import { directionIcons } from '../../../../components/icons/icon-library';
 import { MuscleMap } from '../../../../components/anatomy/MuscleMap';
 import { shortDate as sd } from '../../../../components/charts/scale';
 const shortDate = sd;
+import { useComfortableColumn } from '../../../../components/layout/useComfortableColumn';
 import { useTheme } from '../../../../theme';
 import { HomeStackParams } from '../HomeStack';
 import { useTabScrollInset } from '../../../../navigation/useTabBarInset';
@@ -25,6 +26,7 @@ import { useTabScrollInset } from '../../../../navigation/useTabBarInset';
 export const ProgressScreen = () => {
   const navigation = useNavigation<NativeStackNavigationProp<HomeStackParams>>();
   const { colors, spacing } = useTheme();
+  const column = useComfortableColumn();
   const bottomInset = useTabScrollInset();
   const ins = useInsights();
   const { profile } = useAuth();
@@ -34,7 +36,7 @@ export const ProgressScreen = () => {
 
   return (
     <SafeAreaView edges={['left', 'right']} style={{ flex: 1, backgroundColor: colors.ground }}>
-      <ScrollView contentContainerStyle={{ padding: spacing.lg, gap: spacing.md, paddingBottom: spacing.xl + bottomInset }}>
+      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={[{ padding: spacing.lg, gap: spacing.md, paddingBottom: spacing.xl + bottomInset}, column]}>
         <SurfaceCard>
           <CustomText variant="heading" style={{ marginBottom: spacing.sm }}>Weekly volume</CustomText>
           <BarChart

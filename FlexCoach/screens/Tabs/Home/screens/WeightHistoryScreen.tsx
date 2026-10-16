@@ -16,6 +16,7 @@ import { Icon } from '../../../../components/icons/Icon';
 import { generalIcons } from '../../../../components/icons/icon-library';
 import { LineChart } from '../../../../components/charts/LineChart';
 import { dateLabel } from '../../../../components/charts/scale';
+import { useComfortableColumn } from '../../../../components/layout/useComfortableColumn';
 import { useTheme } from '../../../../theme';
 import { HomeStackParams } from '../HomeStack';
 import { useTabScrollInset } from '../../../../navigation/useTabBarInset';
@@ -25,6 +26,7 @@ type Range = '30' | '90' | 'all';
 export const WeightHistoryScreen = () => {
   const navigation = useNavigation<NativeStackNavigationProp<HomeStackParams>>();
   const { colors, spacing } = useTheme();
+  const column = useComfortableColumn();
   const bottomInset = useTabScrollInset();
   const { uid, profile } = useAuth();
   const unit = profile?.weightUnit ?? 'lb';
@@ -46,7 +48,7 @@ export const WeightHistoryScreen = () => {
 
   return (
     <SafeAreaView edges={['left', 'right']} style={{ flex: 1, backgroundColor: colors.ground }}>
-      <ScrollView contentContainerStyle={{ padding: spacing.lg, gap: spacing.lg, paddingBottom: spacing.xl + bottomInset }}>
+      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={[{ padding: spacing.lg, gap: spacing.lg, paddingBottom: spacing.xl + bottomInset}, column]}>
         {latest && (
           <SurfaceCard>
             <View style={{ flexDirection: 'row', alignItems: 'baseline', gap: spacing.sm, marginBottom: spacing.sm, flexWrap: 'wrap' }}>

@@ -6,7 +6,7 @@ import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { validatePlan } from '../../../data/services/planService';
 import { CustomText } from '../../../components/text/customText';
 import { useTheme } from '../../../theme';
-import { PlansStackParams } from '../PlansStack';
+import { PlansStackParams, leavePlans } from '../routes';
 import { usePlanEditor } from '../PlanEditorContext';
 import { PlanSummaryCard } from '../components/PlanSummaryCard';
 import { PlanSaveFooter } from '../components/PlanSaveFooter';
@@ -21,13 +21,13 @@ export const PlanReviewScreen = () => {
   const { draft } = usePlanEditor();
   const wide = useLayoutFamily() === 'wide';
   if (!draft) return null;
-  if (wide) return <PlanWorkspace mode={params.mode} initial="review" onDone={() => navigation.popToTop()} />;
+  if (wide) return <PlanWorkspace mode={params.mode} initial="review" onDone={() => leavePlans(navigation)} />;
 
   const problems = validatePlan(draft);
 
   return (
     <SafeAreaView edges={['bottom', 'left', 'right']} style={{ flex: 1, backgroundColor: colors.ground }}>
-      <ScrollView contentContainerStyle={{ padding: spacing.lg, gap: spacing.lg }}>
+      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ padding: spacing.lg, gap: spacing.lg}}>
         <View>
           <CustomText variant="title">{draft.name}</CustomText>
           {draft.description ? <CustomText variant="body" color={colors.inkMuted}>{draft.description}</CustomText> : null}
@@ -41,7 +41,7 @@ export const PlanReviewScreen = () => {
         )}
         <PlanSummaryCard plan={draft} />
       </ScrollView>
-      <PlanSaveFooter mode={params.mode} onDone={() => navigation.popToTop()} />
+      <PlanSaveFooter mode={params.mode} onDone={() => leavePlans(navigation)} />
     </SafeAreaView>
   );
 };

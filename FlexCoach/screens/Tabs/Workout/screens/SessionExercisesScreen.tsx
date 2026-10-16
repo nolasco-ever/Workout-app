@@ -6,6 +6,7 @@ import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { Session, SessionExercise } from '../../../../data/models';
 import { HeaderButton } from '../../../../components/headers/HeaderButton';
 import { generalIcons } from '../../../../components/icons/icon-library';
+import { useComfortableColumn } from '../../../../components/layout/useComfortableColumn';
 import { useTheme } from '../../../../theme';
 import { AppStackParams } from '../../../../appNavigators/AppStack';
 import { currentSession, sendSessionCommand, subscribeSession } from '../components/sessionChannel';
@@ -22,6 +23,7 @@ export const SessionExercisesScreen = () => {
   const navigation = useNavigation<NativeStackNavigationProp<AppStackParams>>();
   const { params } = useRoute<RouteProp<AppStackParams, 'SessionExercisesScreen'>>();
   const { colors, spacing } = useTheme();
+  const column = useComfortableColumn();
   const [session, setSession] = useState<Session | null>(currentSession);
   useEffect(() => subscribeSession(setSession), []);
 
@@ -46,7 +48,7 @@ export const SessionExercisesScreen = () => {
 
   return (
     <SafeAreaView edges={['bottom', 'left', 'right']} style={{ flex: 1, backgroundColor: colors.ground }}>
-      <ScrollView contentContainerStyle={{ padding: spacing.lg, gap: spacing.lg, paddingBottom: spacing.xl }}>
+      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={[{ padding: spacing.lg, gap: spacing.lg, paddingBottom: spacing.xl}, column]}>
         <SessionExerciseList session={session} currentIndex={params.currentIndex} onJump={jump} onRemove={remove} />
       </ScrollView>
     </SafeAreaView>

@@ -2,12 +2,11 @@ import React, { useCallback, useEffect, useLayoutEffect, useRef, useState } from
 import { Alert, ScrollView, TouchableOpacity, View } from 'react-native';
 import Animated, { Easing, useAnimatedStyle, useSharedValue, withTiming } from 'react-native-reanimated';
 import { ColumnHeader } from './ColumnHeader';
-import { HeaderButton } from '../../../components/headers/HeaderButton';
 import { useAuth } from '../../../data/auth/AuthProvider';
 import { useWorkoutHome } from '../../../data/hooks/useWorkoutHome';
 import { saveActivePlan, savePlan } from '../../../data/services/planService';
 import { planRepository } from '../../../data/repositories/planRepository';
-import { useNavigation, useRoute } from '@react-navigation/native';
+import { useIsFocused, useNavigation, usePreventRemove } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { validatePlan } from '../../../data/services/planService';
 import { PlanProblem } from '../../../data/services/planService';
@@ -17,7 +16,7 @@ import { SurfaceCard } from '../../../components/cards/SurfaceCard';
 import { Icon } from '../../../components/icons/Icon';
 import { directionIcons, generalIcons } from '../../../components/icons/icon-library';
 import { useTheme } from '../../../theme';
-import { PlansStackParams } from '../PlansStack';
+import { PlansStackParams, leaveEditor } from '../routes';
 import { usePlanEditor } from '../PlanEditorContext';
 import { describeSchedule, GOAL_LABEL } from './planSummary';
 import { PlanSaveFooter } from './PlanSaveFooter';
@@ -43,7 +42,7 @@ const sectionOf = (p: PlanProblem): PlanSection => (p.field === 'name' ? 'basics
  * left. Review shows the summary and a banner per problem that opens the
  * part to fix.
  */
-export const PlanWorkspace = ({ mode, initial = 'basics', onDone }: { mode: 'create' | 'edit'; initial?: PlanSection; onDone: () => void }) => {
+export const PlanWorkspace = ({ mode, initial = 'basics', initialWorkoutId = null, initialEntryId = null, onDone }: { mode: 'create' | 'edit'; initial?: PlanSection; /** A workout (and one of its exercises) to open at once: a phone's pushed screens, re-arranged on a rotation. */ initialWorkoutId?: string | null; initialEntryId?: string | null; onDone: () => void }) => {
   const navigation = useNavigation<NativeStackNavigationProp<PlansStackParams>>();
   const { colors, spacing } = useTheme();
   const { uid } = useAuth();
@@ -51,18 +50,27 @@ export const PlanWorkspace = ({ mode, initial = 'basics', onDone }: { mode: 'cre
   const { draft, original, clear, stopAutosave } = usePlanEditor();
   const [section, setSection] = useState<PlanSection>(initial);
   // The workout whose exercises fill the third column, if one is open; it closes with its workout, or when another part is chosen.
-  const [workoutId, setWorkoutId] = useState<string | null>(null);
+  const [workoutId, setWorkoutId] = useState<string | null>(initialWorkoutId);
   const openWorkout = draft?.workouts.find(w => w.id === workoutId) ? workoutId : null;
   // The exercise whose prescription fills the fourth column, if one is open.
-  const [entryId, setEntryId] = useState<string | null>(null);
+  const [entryId, setEntryId] = useState<string | null>(initialEntryId);
   const openEntry = openWorkout && draft?.workouts.find(w => w.id === openWorkout)?.exercises.some(e => e.id === entryId) ? entryId : null;
+  // A rotation can hand the workspace a workout or exercise after it is up (a phone's sheet closing onto it).
+  useEffect(() => {
+    if (initialWorkoutId) setWorkoutId(initialWorkoutId);
+  }, [initialWorkoutId]);
+  useEffect(() => {
+    if (initialEntryId) setEntryId(initialEntryId);
+  }, [initialEntryId]);
   const choose = (next: PlanSection) => {
     setSection(next);
     setWorkoutId(null);
     setEntryId(null);
   };
-  // How many columns deep: the parts, a workout, an exercise. Two columns are in view; only the left one has a back chevron, one step back.
+  // How many columns deep: the parts, a workout, an exercise. Two columns are in view.
   const level = openEntry ? 2 : openWorkout ? 1 : 0;
+  const levelRef = useRef(level);
+  levelRef.current = level;
   // The columns slide as a strip: one column's width to the left per level.
   const [width, setWidth] = useState(0);
   const half = width / 2;
@@ -72,19 +80,20 @@ export const PlanWorkspace = ({ mode, initial = 'basics', onDone }: { mode: 'cre
   }, [level, half, shift]);
   const strip = useAnimatedStyle(() => ({ transform: [{ translateX: -shift.value }] }));
 
-  // The way back is ours: the native back and the swipe would pop the screen before any question could be asked, so they
-  // are off, and the header's left button (back, or close when this is the sheet's first screen) asks first. It only
-  // shows while the parts are in view; deeper in, the columns' own chevrons lead.
-  const route = useRoute();
-  const first = navigation.getState().routes[0]?.key === route.key;
+  // The native back button is the one way back: a column at a time while a workout or an exercise is open, then out,
+  // after the question. usePreventRemove holds the screen in place meanwhile: the native stack cancels its own pop and
+  // re-attaches the screen, and the answer dispatches the pop again. (A hand-written beforeRemove listener cannot do
+  // that: the pop would already have happened.) The footer's own way out skips the question. Leaving pops the whole
+  // run of editor screens a phone may have stacked (each would draw this workspace again); only the screen in front
+  // holds, so the ones underneath let that pop through.
   const draftRef = useRef(draft);
   draftRef.current = draft;
   const originalRef = useRef(original);
   originalRef.current = original;
   const cycleRef = useRef(home.cycle);
   cycleRef.current = home.cycle;
-  const leaveScreen = useCallback(() => (first ? navigation.getParent()?.goBack() : navigation.goBack()), [first, navigation]);
-  const askLeave = useCallback(() => {
+  const leavingRef = useRef(false);
+  const askLeave = useCallback((leaveScreen: () => void) => {
     const current = draftRef.current;
     if (!current) {
       leaveScreen();
@@ -133,16 +142,26 @@ export const PlanWorkspace = ({ mode, initial = 'basics', onDone }: { mode: 'cre
             { text: 'Save', onPress: () => { save().catch(() => undefined); } },
           ],
     );
-  }, [mode, uid, clear, stopAutosave, leaveScreen]);
+  }, [mode, uid, clear, stopAutosave]);
+  const focused = useIsFocused();
+  usePreventRemove(focused && (!!draft || level > 0), ({ data }) => {
+    const leaveScreen = () => {
+      leavingRef.current = true;
+      leaveEditor(navigation);
+    };
+    if (leavingRef.current) navigation.dispatch(data.action);
+    else if (levelRef.current === 2) setEntryId(null);
+    else if (levelRef.current === 1) setWorkoutId(null);
+    else askLeave(leaveScreen);
+  });
   useLayoutEffect(() => {
     navigation.setOptions({
       title: mode === 'create' ? 'New plan' : 'Edit plan',
-      headerBackVisible: false,
-      gestureEnabled: false,
-      headerLeft: level === 0 ? () => <HeaderButton icon={first ? generalIcons.xMark : directionIcons.angleLeft} accessibilityLabel={first ? 'Close' : 'Back'} onPress={askLeave} /> : () => null,
+      headerBackVisible: true,
     });
-  }, [navigation, mode, level, first, askLeave]);
+  }, [navigation, mode]);
   const done = () => {
+    leavingRef.current = true;
     clear();
     onDone();
   };
@@ -196,7 +215,7 @@ export const PlanWorkspace = ({ mode, initial = 'basics', onDone }: { mode: 'cre
             </View>
             {/* 2. The chosen part */}
             <View style={{ width: half, borderRightWidth: openWorkout ? 1 : 0, borderRightColor: colors.line }}>
-              <ColumnHeader title={titleOf} onBack={level === 1 ? () => setWorkoutId(null) : undefined} />
+              <ColumnHeader title={titleOf} />
               {section === 'basics' && <PlanBasicsStep mode={mode} embedded />}
               {section === 'workouts' && <PlanWorkoutsStep mode={mode} embedded onOpenWorkout={setWorkoutId} openWorkoutId={openWorkout} />}
               {section === 'schedule' && <PlanScheduleStep mode={mode} embedded />}
@@ -221,7 +240,7 @@ export const PlanWorkspace = ({ mode, initial = 'basics', onDone }: { mode: 'cre
             </View>
             {/* 3. The open workout's exercises */}
             <View style={{ width: half, borderRightWidth: openEntry ? 1 : 0, borderRightColor: colors.line }}>
-              {openWorkout && <WorkoutEditor key={openWorkout} workoutId={openWorkout} embedded onBack={level === 2 ? () => setEntryId(null) : undefined} onOpenEntry={setEntryId} openEntryId={openEntry} />}
+              {openWorkout && <WorkoutEditor key={openWorkout} workoutId={openWorkout} embedded onOpenEntry={setEntryId} openEntryId={openEntry} />}
             </View>
             {/* 4. The open exercise's prescription */}
             <View style={{ width: half }}>

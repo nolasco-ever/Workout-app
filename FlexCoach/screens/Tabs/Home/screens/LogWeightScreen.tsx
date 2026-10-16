@@ -16,6 +16,7 @@ import { TextField } from '../../../../components/inputs/TextField';
 import { ChoiceChips } from '../../../../components/inputs/ChoiceChips';
 import { PrimaryButton } from '../../../../components/buttons/PrimaryButton';
 import { SurfaceCard } from '../../../../components/cards/SurfaceCard';
+import { useComfortableColumn } from '../../../../components/layout/useComfortableColumn';
 import { useTheme } from '../../../../theme';
 import { HomeStackParams } from '../HomeStack';
 import { shortDate } from '../../../../components/charts/scale';
@@ -23,6 +24,7 @@ import { shortDate } from '../../../../components/charts/scale';
 export const LogWeightScreen = () => {
   const navigation = useNavigation<NativeStackNavigationProp<HomeStackParams>>();
   const { colors, spacing } = useTheme();
+  const column = useComfortableColumn();
   const { uid, profile } = useAuth();
   const unit = profile?.weightUnit ?? 'lb';
   const todayDate = today();
@@ -56,7 +58,7 @@ export const LogWeightScreen = () => {
   return (
     <SafeAreaView edges={['bottom', 'left', 'right']} style={{ flex: 1, backgroundColor: colors.ground }}>
       <KeyboardAvoiding>
-        <ScrollView contentContainerStyle={{ padding: spacing.lg, gap: spacing.lg }} keyboardShouldPersistTaps="handled" keyboardDismissMode="on-drag">
+        <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={[{ padding: spacing.lg, gap: spacing.lg}, column]} keyboardShouldPersistTaps="handled" keyboardDismissMode="on-drag">
           <TextField id="weight" label="Weight" placeholder={unit === 'lb' ? '178.4' : '81.2'} value={weight} onChangeText={setWeight} keyboardType="decimal-pad" suffix={unit} autoFocus />
           <View style={{ gap: spacing.sm }}>
             <CustomText variant="overline" color={colors.inkMuted}>Day</CustomText>
@@ -66,8 +68,10 @@ export const LogWeightScreen = () => {
             <TextField id="target-weight" label="Goal weight (optional)" placeholder="Leave blank for none" value={target} onChangeText={setTarget} keyboardType="decimal-pad" suffix={unit} hint="Shown as a line on the chart." />
           </SurfaceCard>
         </ScrollView>
-        <View style={{ padding: spacing.lg, borderTopWidth: 1, borderTopColor: colors.line }}>
+        <View style={{ paddingVertical: spacing.lg, borderTopWidth: 1, borderTopColor: colors.line }}>
+          <View style={[{ paddingHorizontal: spacing.lg }, column]}>
           <PrimaryButton label="Save" disabled={value === null || value <= 0} busy={busy} onPress={save} />
+          </View>
         </View>
       </KeyboardAvoiding>
     </SafeAreaView>

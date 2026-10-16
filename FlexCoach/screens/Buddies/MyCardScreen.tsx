@@ -11,6 +11,7 @@ import { PrimaryButton } from '../../components/buttons/PrimaryButton';
 import { Icon } from '../../components/icons/Icon';
 import { generalIcons } from '../../components/icons/icon-library';
 import { IronCard } from '../../components/buddies/IronCard';
+import { useComfortableColumn } from '../../components/layout/useComfortableColumn';
 import { useTheme } from '../../theme';
 
 /**
@@ -21,6 +22,7 @@ import { useTheme } from '../../theme';
  */
 export const MyCardScreen = () => {
   const { colors, spacing, radius } = useTheme();
+  const column = useComfortableColumn();
   const { uid, profile } = useAuth();
   const unit = profile?.weightUnit ?? 'lb';
   const [code, setCode] = useState<string | null>(profile?.inviteCode ?? null);
@@ -56,7 +58,7 @@ export const MyCardScreen = () => {
 
   return (
     <SafeAreaView edges={['bottom', 'left', 'right']} style={{ flex: 1, backgroundColor: colors.ground }}>
-      <ScrollView contentContainerStyle={{ padding: spacing.lg, gap: spacing.lg, paddingBottom: spacing.xxl }}>
+      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={[{ padding: spacing.lg, gap: spacing.lg, paddingBottom: spacing.xxl}, column]}>
         {error ? (
           <CustomText variant="body" color={colors.error} centered>{error}</CustomText>
         ) : !card || !code ? (

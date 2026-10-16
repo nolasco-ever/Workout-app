@@ -18,12 +18,14 @@ import { TextField } from '../../../components/inputs/TextField';
 import { ChoiceChips } from '../../../components/inputs/ChoiceChips';
 import { PrimaryButton } from '../../../components/buttons/PrimaryButton';
 import { SurfaceCard } from '../../../components/cards/SurfaceCard';
+import { useComfortableColumn } from '../../../components/layout/useComfortableColumn';
 import { useTheme } from '../../../theme';
 import { OnboardingStackParams } from '../OnboardingStack';
 
 export const AboutYouScreen = () => {
   const navigation = useNavigation<NativeStackNavigationProp<OnboardingStackParams>>();
   const { colors, spacing } = useTheme();
+  const column = useComfortableColumn();
   const { uid, profile, user } = useAuth();
   const [name, setName] = useState(profile?.displayName ?? user?.displayName ?? '');
   const [weightUnit, setWeightUnit] = useState<WeightUnit>(profile?.weightUnit ?? 'lb');
@@ -60,7 +62,7 @@ export const AboutYouScreen = () => {
   return (
     <SafeAreaView edges={['bottom', 'left', 'right']} style={{ flex: 1, backgroundColor: colors.ground }}>
       <KeyboardAvoiding>
-        <ScrollView contentContainerStyle={{ padding: spacing.lg, gap: spacing.lg }} keyboardShouldPersistTaps="handled" keyboardDismissMode="on-drag">
+        <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={[{ padding: spacing.lg, gap: spacing.lg}, column]} keyboardShouldPersistTaps="handled" keyboardDismissMode="on-drag">
           <CustomText variant="body" color={colors.inkMuted}>
             {knownName ? `Hi ${knownName.split(' ')[0]}. ` : ''}A few basics so the app speaks your units. You can change any of this later.
           </CustomText>
@@ -81,8 +83,10 @@ export const AboutYouScreen = () => {
             <TextField id="ob-goal" label="Goal weight (optional)" placeholder="Leave blank for none" value={goal} onChangeText={setGoal} keyboardType="decimal-pad" suffix={weightUnit} />
           </SurfaceCard>
         </ScrollView>
-        <View style={{ padding: spacing.lg, borderTopWidth: 1, borderTopColor: colors.line }}>
+        <View style={{ paddingVertical: spacing.lg, borderTopWidth: 1, borderTopColor: colors.line }}>
+          <View style={[{ paddingHorizontal: spacing.lg }, column]}>
           <PrimaryButton label="Next" disabled={!name.trim()} busy={busy} onPress={save} />
+          </View>
         </View>
       </KeyboardAvoiding>
     </SafeAreaView>

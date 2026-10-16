@@ -16,7 +16,7 @@ import { Icon } from '../../../components/icons/Icon';
 import { generalIcons } from '../../../components/icons/icon-library';
 import { useTheme } from '../../../theme';
 import { MuscleMap } from '../../../components/anatomy/MuscleMap';
-import { PlansStackParams } from '../PlansStack';
+import { PlansStackParams } from '../routes';
 import { usePlanEditor } from '../PlanEditorContext';
 import { useAuth } from '../../../data/auth/AuthProvider';
 
@@ -181,7 +181,7 @@ export const ExercisePickerScreen = () => {
           {sessionMode ? "Tap an exercise to see how it's done, or + to add it to this workout. Your plan stays as it is." : "Tap an exercise to see how it's done, or + to add it straight away."}
         </CustomText>
       )}
-      <FlatList
+      <FlatList showsVerticalScrollIndicator={false}
         data={results}
         keyExtractor={e => e.id}
         keyboardShouldPersistTaps="handled" keyboardDismissMode="on-drag"

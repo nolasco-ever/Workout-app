@@ -17,6 +17,7 @@ import { SurfaceCard } from '../../../../components/cards/SurfaceCard';
 import { SegmentedControl } from '../../../../components/inputs/SegmentedControl';
 import { Icon } from '../../../../components/icons/Icon';
 import { directionIcons, generalIcons } from '../../../../components/icons/icon-library';
+import { useNoHeaderGlass } from '../../../../navigation/useNoHeaderGlass';
 import { useTheme } from '../../../../theme';
 import { useTabScrollInset } from '../../../../navigation/useTabBarInset';
 import { useLayoutFamily } from '../../../../components/layout/useLayoutFamily';
@@ -47,6 +48,7 @@ interface CycleRow {
 export const HistoryScreen = () => {
   const navigation = useNavigation<NativeStackNavigationProp<ProfileStackParams>>();
   const { colors, spacing } = useTheme();
+  useNoHeaderGlass();
   const bottomInset = useTabScrollInset();
   const { uid, profile } = useAuth();
   const unit = profile?.weightUnit ?? 'lb';
@@ -103,7 +105,7 @@ export const HistoryScreen = () => {
   }
 
   const list = (
-      <ScrollView style={wide ? { width: LIST_PANE_WIDTH, flexGrow: 0 } : undefined} contentContainerStyle={{ padding: spacing.lg, gap: spacing.lg, paddingBottom: spacing.xl + bottomInset }}>
+      <ScrollView contentInsetAdjustmentBehavior="automatic" showsVerticalScrollIndicator={false} style={wide ? { width: LIST_PANE_WIDTH, flexGrow: 0 } : undefined} contentContainerStyle={{ padding: spacing.lg, gap: spacing.lg, paddingBottom: spacing.xl + bottomInset}}>
         <SegmentedControl<Tab> options={[{ value: 'workouts', label: 'Workouts' }, { value: 'cycles', label: 'Cycles' }]} value={tab} onChange={setTab} />
         {tab === 'cycles' && (
           <>

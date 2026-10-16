@@ -11,6 +11,7 @@ import { PrimaryButton } from '../../components/buttons/PrimaryButton';
 import { Icon } from '../../components/icons/Icon';
 import { directionIcons } from '../../components/icons/icon-library';
 import { Avatar } from '../../components/buddies/Avatar';
+import { useComfortableColumn } from '../../components/layout/useComfortableColumn';
 import { useTheme } from '../../theme';
 import { BuddyRoutes } from './routes';
 
@@ -18,6 +19,7 @@ import { BuddyRoutes } from './routes';
 export const BuddyPlansScreen = () => {
   const navigation = useNavigation<NavigationProp<BuddyRoutes>>();
   const { colors, spacing } = useTheme();
+  const column = useComfortableColumn();
   const { buddies, loading: buddiesLoading } = useBuddies();
   const shared = useBuddyPlans(buddies);
   const [refreshing, setRefreshing] = useState(false);
@@ -39,9 +41,9 @@ export const BuddyPlansScreen = () => {
 
   return (
     <SafeAreaView edges={['bottom', 'left', 'right']} style={{ flex: 1, backgroundColor: colors.ground }}>
-      <ScrollView
+      <ScrollView showsVerticalScrollIndicator={false}
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.accent} />}
-        contentContainerStyle={{ padding: spacing.lg, gap: spacing.lg, paddingBottom: spacing.xxl, flexGrow: 1 }}
+        contentContainerStyle={[{ padding: spacing.lg, gap: spacing.lg, paddingBottom: spacing.xxl, flexGrow: 1}, column]}
       >
         {loading && <ActivityIndicator color={colors.accent} style={{ marginTop: spacing.xxl }} />}
         {!loading && shared.plans.length === 0 && (

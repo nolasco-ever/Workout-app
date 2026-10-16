@@ -3,7 +3,6 @@ import { Alert, ScrollView, View } from 'react-native';
 import { SafeAreaView } from '../../../components/layout/SafeAreaView';
 import { RouteProp, useNavigation, useRoute } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { useHeaderHeight } from '@react-navigation/elements';
 import { useAuth } from '../../../data/auth/AuthProvider';
 import { usePlans } from '../../../data/hooks/usePlans';
 import { useWorkoutHome } from '../../../data/hooks/useWorkoutHome';
@@ -17,7 +16,7 @@ import { generalIcons } from '../../../components/icons/icon-library';
 import { CustomText } from '../../../components/text/customText';
 import { PrimaryButton } from '../../../components/buttons/PrimaryButton';
 import { useTheme } from '../../../theme';
-import { PlansStackParams } from '../PlansStack';
+import { PlansStackParams, leavePlans } from '../routes';
 import { usePlanEditor } from '../PlanEditorContext';
 import { PlanSummaryCard } from '../components/PlanSummaryCard';
 import { StartDateSheet } from '../components/StartDateSheet';
@@ -36,7 +35,6 @@ export const PlanOverviewScreen = () => {
 export const PlanOverview = ({ planId, embedded = false, onGone }: { planId: string; embedded?: boolean; onGone?: () => void }) => {
   const navigation = useNavigation<NativeStackNavigationProp<PlansStackParams>>();
   const params = { planId };
-  const headerHeight = useHeaderHeight();
   const { colors, spacing } = useTheme();
   const { uid, profile } = useAuth();
   const { plans } = usePlans();
@@ -197,7 +195,7 @@ export const PlanOverview = ({ planId, embedded = false, onGone }: { planId: str
           setPickingStart(false);
           const activate = async () => {
             await activatePlan(uid, plan, startDate);
-            navigation.popToTop();
+            leavePlans(navigation);
           };
           const other = plans.find(p => p.status === 'active');
           if (other) {
@@ -210,7 +208,7 @@ export const PlanOverview = ({ planId, embedded = false, onGone }: { planId: str
     </>
   );
   // Beside the list the pane starts below the header rather than scrolling under it: a second glass edge, cut off at the list, looked wrong.
-  if (embedded) return <View style={{ flex: 1, backgroundColor: colors.ground, paddingTop: headerHeight }}>{body}</View>;
+  if (embedded) return <View style={{ flex: 1, backgroundColor: colors.ground }}>{body}</View>;
   return (
     <SafeAreaView edges={['bottom', 'left', 'right']} style={{ flex: 1, backgroundColor: colors.ground }}>
       {body}

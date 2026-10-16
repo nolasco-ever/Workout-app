@@ -17,6 +17,7 @@ import { compactNumber, shortDate } from '../../../../components/charts/scale';
 import { MuscleMap } from '../../../../components/anatomy/MuscleMap';
 import { Icon } from '../../../../components/icons/Icon';
 import { directionIcons } from '../../../../components/icons/icon-library';
+import { useComfortableColumn } from '../../../../components/layout/useComfortableColumn';
 import { useTheme } from '../../../../theme';
 import { HomeStackParams } from '../HomeStack';
 import { useTabScrollInset } from '../../../../navigation/useTabBarInset';
@@ -25,6 +26,7 @@ export const MuscleDetailScreen = () => {
   const navigation = useNavigation<NativeStackNavigationProp<HomeStackParams>>();
   const { params } = useRoute<RouteProp<HomeStackParams, 'MuscleDetailScreen'>>();
   const { colors, spacing } = useTheme();
+  const column = useComfortableColumn();
   const bottomInset = useTabScrollInset();
   const { profile } = useAuth();
   const unit = profile?.weightUnit ?? 'lb';
@@ -36,7 +38,7 @@ export const MuscleDetailScreen = () => {
 
   return (
     <SafeAreaView edges={['left', 'right']} style={{ flex: 1, backgroundColor: colors.ground }}>
-      <ScrollView contentContainerStyle={{ padding: spacing.lg, gap: spacing.lg, paddingBottom: spacing.xl + bottomInset }}>
+      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={[{ padding: spacing.lg, gap: spacing.lg, paddingBottom: spacing.xl + bottomInset}, column]}>
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.md }}>
           <MuscleMap primary={[params.muscle as MuscleGroup]} height={90} views="auto" />
           <View style={{ flex: 1, flexDirection: 'row', gap: spacing.sm }}>

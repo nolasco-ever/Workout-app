@@ -10,6 +10,7 @@ import { PrimaryButton } from '../../../components/buttons/PrimaryButton';
 import { SurfaceCard } from '../../../components/cards/SurfaceCard';
 import { Icon } from '../../../components/icons/Icon';
 import { generalIcons } from '../../../components/icons/icon-library';
+import { useComfortableColumn } from '../../../components/layout/useComfortableColumn';
 import { useTheme } from '../../../theme';
 import { OnboardingStackParams } from '../OnboardingStack';
 
@@ -22,6 +23,7 @@ import { OnboardingStackParams } from '../OnboardingStack';
 export const NotificationsOnboardingScreen = () => {
   const navigation = useNavigation<NativeStackNavigationProp<OnboardingStackParams>>();
   const { colors, spacing } = useTheme();
+  const column = useComfortableColumn();
   const { uid } = useAuth();
   const [busy, setBusy] = useState(false);
 
@@ -48,7 +50,7 @@ export const NotificationsOnboardingScreen = () => {
   return (
     <SafeAreaView edges={['bottom', 'left', 'right']} style={{ flex: 1, backgroundColor: colors.ground }}>
       {/* Centred when there is room; scrolls on a short window (a folded phone's outer display). */}
-      <ScrollView contentContainerStyle={{ flexGrow: 1, padding: spacing.lg, gap: spacing.lg, justifyContent: 'center' }}>
+      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={[{ flexGrow: 1, padding: spacing.lg, gap: spacing.lg, justifyContent: 'center'}, column]}>
         <View style={{ alignItems: 'center', gap: spacing.md }}>
           <View style={{ width: 96, height: 96, borderRadius: 48, backgroundColor: colors.accentTint, alignItems: 'center', justifyContent: 'center' }}>
             <Icon icon={generalIcons.bell} size={44} color={colors.accent} />

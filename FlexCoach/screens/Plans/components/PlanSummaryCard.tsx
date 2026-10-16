@@ -11,7 +11,7 @@ import { MuscleMap } from '../../../components/anatomy/MuscleMap';
 import { Icon } from '../../../components/icons/Icon';
 import { directionIcons, generalIcons } from '../../../components/icons/icon-library';
 import { useTheme } from '../../../theme';
-import { PlansStackParams } from '../PlansStack';
+import { PlansStackParams } from '../routes';
 import { cycleLengthDays, describeEntry, GOAL_LABEL, muscleCoverage, scheduleRows } from './planSummary';
 import { useLayoutFamily } from '../../../components/layout/useLayoutFamily';
 

@@ -19,6 +19,7 @@ import { Avatar } from '../../components/buddies/Avatar';
 import { Reactions } from '../../components/buddies/Reactions';
 import { Icon } from '../../components/icons/Icon';
 import { generalIcons } from '../../components/icons/icon-library';
+import { useComfortableColumn } from '../../components/layout/useComfortableColumn';
 import { useTheme } from '../../theme';
 import { BuddyRoutes } from './routes';
 
@@ -190,6 +191,7 @@ const SharedExerciseCard = ({ ex, units }: { ex: SharedExercise; units: Units })
 export const BuddyWorkoutScreen = () => {
   const { params } = useRoute<RouteProp<BuddyRoutes, 'BuddyWorkoutScreen'>>();
   const { colors, spacing } = useTheme();
+  const column = useComfortableColumn();
   const { uid, profile } = useAuth();
   const { buddies } = useBuddies();
   const buddy = buddies.find(b => b.userId === params.uid) ?? null;
@@ -251,7 +253,7 @@ export const BuddyWorkoutScreen = () => {
 
   return (
     <SafeAreaView edges={['bottom', 'left', 'right']} style={{ flex: 1, backgroundColor: colors.ground }}>
-      <ScrollView contentContainerStyle={{ padding: spacing.lg, gap: spacing.lg, paddingBottom: spacing.xxl }}>
+      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={[{ padding: spacing.lg, gap: spacing.lg, paddingBottom: spacing.xxl}, column]}>
         {item === undefined && <ActivityIndicator color={colors.accent} style={{ marginTop: spacing.xxl }} />}
         {item === null && (
           <View style={{ marginTop: spacing.xxl, gap: spacing.sm }}>

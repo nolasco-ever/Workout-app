@@ -9,12 +9,14 @@ import { SurfaceCard } from '../../../../components/cards/SurfaceCard';
 import { Row } from '../../../../components/list-items/Row';
 import { TextField } from '../../../../components/inputs/TextField';
 import { PrimaryButton } from '../../../../components/buttons/PrimaryButton';
+import { useComfortableColumn } from '../../../../components/layout/useComfortableColumn';
 import { useTheme } from '../../../../theme';
 
 const providerLabel = { password: 'Email and password', google: 'Google', apple: 'Apple' } as const;
 
 export const AccountScreen = () => {
   const { colors, spacing } = useTheme();
+  const column = useComfortableColumn();
   const { user, profile } = useAuth();
   const provider = profile?.authProvider ?? 'password';
   const [current, setCurrent] = useState('');
@@ -65,7 +67,7 @@ export const AccountScreen = () => {
   return (
     <SafeAreaView edges={['bottom', 'left', 'right']} style={{ flex: 1, backgroundColor: colors.ground }}>
       <KeyboardAvoiding>
-        <ScrollView contentContainerStyle={{ padding: spacing.lg, gap: spacing.lg }} keyboardShouldPersistTaps="handled" keyboardDismissMode="on-drag">
+        <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={[{ padding: spacing.lg, gap: spacing.lg}, column]} keyboardShouldPersistTaps="handled" keyboardDismissMode="on-drag">
           <SurfaceCard style={{ padding: 0 }}>
             <Row title="Signed in with" right={providerLabel[provider]} chevron={false} />
             <Row title="Email" right={user?.email ?? '—'} chevron={false} divider />

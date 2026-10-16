@@ -13,6 +13,7 @@ import { LineChart } from '../../../../components/charts/LineChart';
 import { StatTile } from '../../../../components/charts/StatTile';
 import { compactNumber } from '../../../../components/charts/scale';
 import { MuscleMap } from '../../../../components/anatomy/MuscleMap';
+import { useComfortableColumn } from '../../../../components/layout/useComfortableColumn';
 import { useTheme } from '../../../../theme';
 import { HomeStackParams } from '../HomeStack';
 import { useTabScrollInset } from '../../../../navigation/useTabBarInset';
@@ -20,6 +21,7 @@ import { useTabScrollInset } from '../../../../navigation/useTabBarInset';
 export const ExerciseProgressScreen = () => {
   const { params } = useRoute<RouteProp<HomeStackParams, 'ExerciseProgressScreen'>>();
   const { colors, spacing } = useTheme();
+  const column = useComfortableColumn();
   const bottomInset = useTabScrollInset();
   const { profile } = useAuth();
   const unit = profile?.weightUnit ?? 'lb';
@@ -47,7 +49,7 @@ export const ExerciseProgressScreen = () => {
 
   return (
     <SafeAreaView edges={['left', 'right']} style={{ flex: 1, backgroundColor: colors.ground }}>
-      <ScrollView contentContainerStyle={{ padding: spacing.lg, gap: spacing.lg, paddingBottom: spacing.xl + bottomInset }}>
+      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={[{ padding: spacing.lg, gap: spacing.lg, paddingBottom: spacing.xl + bottomInset}, column]}>
         {cat && (
           <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.md }}>
             <MuscleMap primary={cat.primaryMuscles} secondary={cat.secondaryMuscles} height={80} views="auto" />

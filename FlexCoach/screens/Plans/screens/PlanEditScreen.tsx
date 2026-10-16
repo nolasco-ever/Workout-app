@@ -10,7 +10,7 @@ import { CustomText } from '../../../components/text/customText';
 import { Icon } from '../../../components/icons/Icon';
 import { directionIcons } from '../../../components/icons/icon-library';
 import { useTheme } from '../../../theme';
-import { PlansStackParams } from '../PlansStack';
+import { PlansStackParams, leavePlans } from '../routes';
 import { usePlanEditor } from '../PlanEditorContext';
 import { PlanSaveFooter } from '../components/PlanSaveFooter';
 import { PlanWorkspace } from '../components/PlanWorkspace';
@@ -58,9 +58,7 @@ export const PlanEditScreen = () => {
     if (plan && !editingThis) begin(plan, plan);
   }, [plan, editingThis, begin]);
 
-  // The hub can be the modal's first screen (from the cycle review): saving then closes the modal, otherwise it returns to the plan page.
-  const first = navigation.getState().routes[0]?.name === 'PlanEditScreen';
-  const done = () => (first ? navigation.getParent()?.goBack() : navigation.popToTop());
+  const done = () => leavePlans(navigation);
 
   if (!draft || !editingThis) return <SafeAreaView edges={['bottom', 'left', 'right']} style={{ flex: 1, backgroundColor: colors.ground }} />;
   if (wide) return <PlanWorkspace mode="edit" onDone={done} />;
@@ -72,7 +70,7 @@ export const PlanEditScreen = () => {
 
   return (
     <SafeAreaView edges={['bottom', 'left', 'right']} style={{ flex: 1, backgroundColor: colors.ground }}>
-      <ScrollView contentContainerStyle={{ padding: spacing.lg, gap: spacing.md }}>
+      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ padding: spacing.lg, gap: spacing.md}}>
         <CustomText variant="body" color={colors.inkMuted} style={{ marginBottom: spacing.xs }}>Tap a part of the plan to change it.</CustomText>
         <Section title="Basics" detail={`${draft.name.trim() || 'No name yet'} · ${GOAL_LABEL[draft.goal ?? 'hypertrophy']}${draft.description ? ` · ${draft.description}` : ''}`} warn={!draft.name.trim()} onPress={() => navigation.navigate('PlanBasicsScreen', { mode: 'edit' })} />
         <Section title="Workouts" detail={workoutsDetail} warn={draft.workouts.length === 0 || empty.length > 0} onPress={() => navigation.navigate('PlanWorkoutsScreen', { mode: 'edit' })} />

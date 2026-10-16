@@ -12,6 +12,7 @@ import { PrimaryButton } from '../../components/buttons/PrimaryButton';
 import { Icon } from '../../components/icons/Icon';
 import { directionIcons, generalIcons } from '../../components/icons/icon-library';
 import { Avatar } from '../../components/buddies/Avatar';
+import { useNoHeaderGlass } from '../../navigation/useNoHeaderGlass';
 import { useTheme } from '../../theme';
 import { BuddyRoutes } from './routes';
 import { BuddyCard } from './BuddyCardScreen';
@@ -39,6 +40,7 @@ const LIST_PANE_WIDTH = 320;
 export const BuddiesScreen = () => {
   const navigation = useNavigation<NavigationProp<BuddyRoutes>>();
   const { colors, spacing } = useTheme();
+  useNoHeaderGlass();
   const { uid, profile } = useAuth();
   const { loading, buddies } = useBuddies();
   // On a wide window the chosen buddy's card stands beside the list: the first buddy until a row is tapped.
@@ -55,7 +57,7 @@ export const BuddiesScreen = () => {
   const empty = !loading && buddies.length === 0;
 
   const list = (
-      <ScrollView style={wide ? { width: LIST_PANE_WIDTH, flexGrow: 0 } : undefined} contentContainerStyle={{ padding: spacing.lg, gap: spacing.lg, paddingBottom: spacing.xxl }}>
+      <ScrollView contentInsetAdjustmentBehavior="automatic" showsVerticalScrollIndicator={false} style={wide ? { width: LIST_PANE_WIDTH, flexGrow: 0 } : undefined} contentContainerStyle={{ padding: spacing.lg, gap: spacing.lg, paddingBottom: spacing.xxl}}>
         {loading && <ActivityIndicator color={colors.accent} style={{ marginTop: spacing.xl }} />}
 
         {empty && (

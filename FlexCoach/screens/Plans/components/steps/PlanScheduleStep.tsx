@@ -13,7 +13,7 @@ import { Stepper } from '../../../../components/inputs/Stepper';
 import { Icon } from '../../../../components/icons/Icon';
 import { directionIcons, generalIcons } from '../../../../components/icons/icon-library';
 import { useTheme } from '../../../../theme';
-import { EditorMode, PlansStackParams } from '../../PlansStack';
+import { EditorMode, PlansStackParams } from '../../routes';
 import { StepRoot } from '../StepRoot';
 import { usePlanEditor } from '../../PlanEditorContext';
 import { StepFooter } from '../StepFooter';
@@ -70,7 +70,7 @@ export const PlanScheduleStep = ({ mode, embedded = false }: { mode: EditorMode;
 
   return (
     <StepRoot embedded={embedded}>
-      <Animated.ScrollView ref={scrollRef} showsVerticalScrollIndicator={!embedded} contentContainerStyle={{ padding: spacing.lg, gap: spacing.lg }}>
+      <Animated.ScrollView ref={scrollRef} showsVerticalScrollIndicator={false} contentContainerStyle={{ padding: spacing.lg, gap: spacing.lg}}>
         <View style={{ gap: spacing.sm }}>
           <ChoiceChips<'rotation' | 'weekly'>
             options={[

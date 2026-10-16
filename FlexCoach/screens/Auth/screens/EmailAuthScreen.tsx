@@ -10,6 +10,7 @@ import { generalIcons } from '../../../components/icons/icon-library';
 import { CustomText } from '../../../components/text/customText';
 import { TextField } from '../../../components/inputs/TextField';
 import { PrimaryButton } from '../../../components/buttons/PrimaryButton';
+import { useComfortableColumn } from '../../../components/layout/useComfortableColumn';
 import { useTheme } from '../../../theme';
 import { AuthStackParams } from '../AuthStack';
 
@@ -21,6 +22,7 @@ export const EmailAuthScreen = () => {
   const navigation = useNavigation<NativeStackNavigationProp<AuthStackParams>>();
   const { params } = useRoute<RouteProp<AuthStackParams, 'EmailAuthScreen'>>();
   const { colors, spacing } = useTheme();
+  const column = useComfortableColumn();
   const [mode, setMode] = useState(params.mode);
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
@@ -58,7 +60,7 @@ export const EmailAuthScreen = () => {
   return (
     <SafeAreaView edges={['bottom', 'left', 'right']} style={{ flex: 1, backgroundColor: colors.ground }}>
       <KeyboardAvoiding>
-        <ScrollView contentContainerStyle={{ padding: spacing.lg, gap: spacing.lg }} keyboardShouldPersistTaps="handled" keyboardDismissMode="on-drag">
+        <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={[{ padding: spacing.lg, gap: spacing.lg}, column]} keyboardShouldPersistTaps="handled" keyboardDismissMode="on-drag">
           {create && <TextField id="auth-name" label="Your name" placeholder="Full Name" value={name} onChangeText={setName} autoCapitalize="words" autoComplete="name" textContentType="name" returnKeyType="next" autoFocus />}
           <TextField id="auth-email" label="Email" placeholder="you@example.com" value={email} onChangeText={setEmail} autoCapitalize="none" autoCorrect={false} keyboardType="email-address" autoComplete="email" textContentType="emailAddress" returnKeyType="next" autoFocus={!create} />
           <View style={{ gap: spacing.xs }}>

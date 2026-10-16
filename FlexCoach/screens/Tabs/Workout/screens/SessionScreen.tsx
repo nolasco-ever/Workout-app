@@ -534,7 +534,7 @@ export const SessionScreen = () => {
           </View>
         )}
         <View style={{ flex: 1 }}>
-        <ScrollView contentContainerStyle={{ padding: spacing.lg, paddingBottom: wide ? spacing.lg + insets.bottom : spacing.lg }} keyboardShouldPersistTaps="handled" keyboardDismissMode="on-drag">
+        <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ padding: spacing.lg, paddingBottom: wide ? spacing.lg + insets.bottom : spacing.lg }} keyboardShouldPersistTaps="handled" keyboardDismissMode="on-drag">
           {/* Keyed by exercise so a change mounts fresh content that slides in from the side it came from. */}
           {!exercise && (
             <View style={{ alignItems: 'center', gap: spacing.md, paddingTop: spacing.xxl }}>

@@ -14,7 +14,7 @@ import { PrimaryButton } from '../../../../components/buttons/PrimaryButton';
 import { Icon } from '../../../../components/icons/Icon';
 import { generalIcons } from '../../../../components/icons/icon-library';
 import { useTheme } from '../../../../theme';
-import { EditorMode, PlansStackParams } from '../../PlansStack';
+import { EditorMode, PlansStackParams } from '../../routes';
 import { StepRoot } from '../StepRoot';
 import { usePlanEditor } from '../../PlanEditorContext';
 import { StepFooter } from '../StepFooter';
@@ -57,7 +57,7 @@ export const PlanWorkoutsStep = ({ mode, embedded = false, onOpenWorkout, openWo
 
   return (
     <StepRoot embedded={embedded}>
-      <Animated.ScrollView ref={scrollRef} showsVerticalScrollIndicator={!embedded} contentContainerStyle={{ padding: spacing.lg, gap: spacing.lg }} keyboardShouldPersistTaps="handled" keyboardDismissMode="on-drag">
+      <Animated.ScrollView ref={scrollRef} showsVerticalScrollIndicator={false} contentContainerStyle={{ padding: spacing.lg, gap: spacing.lg}} keyboardShouldPersistTaps="handled" keyboardDismissMode="on-drag">
         <CustomText variant="body" color={colors.inkMuted}>
           {mode === 'edit' ? 'Tap a workout to change its exercises, or drag to reorder.' : "Name each day you train, like Push, Pull or Legs. Next you'll pick the exercises for each one, then set which days they land on."}
         </CustomText>

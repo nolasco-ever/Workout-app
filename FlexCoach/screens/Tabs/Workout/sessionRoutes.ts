@@ -20,5 +20,9 @@ export type SessionRoutes = {
    * running session) or swap mode (a stand-in for one of its exercises);
    * the pick comes back through swapChannel.
    */
-  ExercisePickerScreen: { mode: 'session'; excludeIds: string[]; planWorkouts?: Workout[]; sessionExerciseId?: undefined; exerciseId?: undefined } | { mode: 'swap'; sessionExerciseId: string; exerciseId: string; excludeIds: string[]; planWorkouts?: undefined };
+  ExercisePickerScreen:
+    | { mode: 'session'; excludeIds: string[]; planWorkouts?: Workout[]; sessionExerciseId?: undefined; exerciseId?: undefined; workoutId?: undefined }
+    | { mode: 'swap'; sessionExerciseId: string; exerciseId: string; excludeIds: string[]; planWorkouts?: undefined; workoutId?: undefined }
+    /** The plan editor: add to this workout of the draft. */
+    | { workoutId: string; mode?: undefined; excludeIds?: undefined; planWorkouts?: undefined; sessionExerciseId?: undefined; exerciseId?: undefined };
 };

@@ -95,7 +95,7 @@ export const WorkoutHomeScreen = () => {
     });
 
   const openPlans = (planId?: string) =>
-    (navigation as unknown as NavigationProp<AppStackParams>).navigate('PlansStack', planId ? { screen: 'PlanOverviewScreen', initial: false, params: { planId } } : undefined);
+    (planId ? (navigation as unknown as NavigationProp<AppStackParams>).navigate('PlanOverviewScreen', { planId }) : (navigation as unknown as NavigationProp<AppStackParams>).navigate('PlansScreen'));
 
   const activate = (draft: Plan) =>
     run(`activate-${draft.id}`, async () => {
@@ -319,7 +319,7 @@ export const WorkoutHomeScreen = () => {
 
   return (
     <SafeAreaView edges={['left', 'right']} style={{ flex: 1, backgroundColor: colors.ground }}>
-      <ScrollView
+      <ScrollView showsVerticalScrollIndicator={false}
         ref={scrollRef}
         alwaysBounceVertical={false}
         contentContainerStyle={{ padding: spacing.lg, paddingTop: headerHeight + spacing.sm, gap: spacing.lg, paddingBottom: bottomRoom + bottomInset }}

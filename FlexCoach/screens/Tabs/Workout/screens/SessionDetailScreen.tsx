@@ -230,19 +230,15 @@ export const SessionDetail = ({ sessionId, workoutName, embedded = false }: { se
 
   const body = (
       <KeyboardAvoiding>
-        {/* Drawn inside another screen: the workout's name, since the header is the host's. */}
-        {embedded && (
-          <View style={{ paddingHorizontal: spacing.lg, paddingTop: spacing.lg }}>
-            <CustomText variant="heading" numberOfLines={1}>{shown.workoutName}</CustomText>
-          </View>
-        )}
-        <ScrollView
-          showsVerticalScrollIndicator={!embedded}
-          contentContainerStyle={{ padding: spacing.lg, gap: spacing.lg, paddingBottom: (editing ? spacing.lg : spacing.xl + bottomInset) }}
+        <ScrollView contentInsetAdjustmentBehavior="automatic"
+          showsVerticalScrollIndicator={false}
+          contentContainerStyle={{ padding: spacing.lg, gap: spacing.lg, paddingBottom: (editing ? spacing.lg : spacing.xl + bottomInset)}}
           keyboardShouldPersistTaps="handled"
           keyboardDismissMode="on-drag"
           refreshControl={editing ? undefined : <RefreshControl refreshing={refreshing} onRefresh={() => { refresh().catch(() => undefined); }} tintColor={colors.accent} />}
         >
+          {/* Drawn inside another screen: the workout's name, since the header is the host's. It scrolls with the rest. */}
+          {embedded && <CustomText variant="heading" numberOfLines={1}>{shown.workoutName}</CustomText>}
           <View>
             <CustomText variant="overline" color={colors.inkMuted}>{longDate(shown.date)}</CustomText>
             <View style={{ flexDirection: 'row', gap: spacing.lg, marginTop: spacing.sm }}>

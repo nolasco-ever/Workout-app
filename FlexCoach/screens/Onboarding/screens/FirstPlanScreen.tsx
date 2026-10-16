@@ -8,6 +8,7 @@ import { PrimaryButton } from '../../../components/buttons/PrimaryButton';
 import { SurfaceCard } from '../../../components/cards/SurfaceCard';
 import { Icon } from '../../../components/icons/Icon';
 import { generalIcons } from '../../../components/icons/icon-library';
+import { useComfortableColumn } from '../../../components/layout/useComfortableColumn';
 import { useTheme } from '../../../theme';
 
 /**
@@ -16,6 +17,7 @@ import { useTheme } from '../../../theme';
  */
 export const FirstPlanScreen = () => {
   const { colors, spacing } = useTheme();
+  const column = useComfortableColumn();
   const { uid } = useAuth();
   const [busy, setBusy] = useState(false);
 
@@ -38,7 +40,7 @@ export const FirstPlanScreen = () => {
   return (
     <SafeAreaView edges={['bottom', 'left', 'right']} style={{ flex: 1, backgroundColor: colors.ground }}>
       {/* Centred when there is room; scrolls on a short window (a folded phone's outer display). */}
-      <ScrollView contentContainerStyle={{ flexGrow: 1, padding: spacing.lg, gap: spacing.lg, justifyContent: 'center' }}>
+      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={[{ flexGrow: 1, padding: spacing.lg, gap: spacing.lg, justifyContent: 'center'}, column]}>
         <CustomText variant="title">You're set. Here's how it works.</CustomText>
         <SurfaceCard style={{ gap: spacing.lg }}>
           {steps.map(s => (
@@ -54,8 +56,10 @@ export const FirstPlanScreen = () => {
           ))}
         </SurfaceCard>
       </ScrollView>
-      <View style={{ padding: spacing.lg, borderTopWidth: 1, borderTopColor: colors.line }}>
+      <View style={{ paddingVertical: spacing.lg, borderTopWidth: 1, borderTopColor: colors.line }}>
+        <View style={[{ paddingHorizontal: spacing.lg }, column]}>
         <PrimaryButton label="Build my first plan" busy={busy} onPress={finish} />
+        </View>
       </View>
     </SafeAreaView>
   );

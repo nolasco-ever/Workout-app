@@ -118,7 +118,7 @@ export const ProfileScreen = () => {
             <View style={{ gap: spacing.sm }}>
               <CustomText variant="overline" color={colors.inkMuted}>Training</CustomText>
               <SurfaceCard style={{ padding: 0 }}>
-                <Row icon={generalIcons.dumbbell} iconColor={colors.accent} title="My plans" description={active ? `Active: ${active.name}` : 'No active plan'} onPress={() => navigation.navigate('PlansStack')} />
+                <Row icon={generalIcons.dumbbell} iconColor={colors.accent} title="My plans" description={active ? `Active: ${active.name}` : 'No active plan'} onPress={() => navigation.navigate('PlansScreen')} />
                 <Row icon={generalIcons.clock} title="History" description="Every workout you've logged" divider onPress={() => navigation.navigate('HistoryScreen')} />
                 <Row icon={generalIcons.users} title="Buddies" description="Train alongside people you know" divider onPress={() => navigation.navigate('BuddiesScreen')} />
               </SurfaceCard>
@@ -144,7 +144,7 @@ export const ProfileScreen = () => {
 
   return (
     <SafeAreaView edges={['left', 'right']} style={{ flex: 1, backgroundColor: colors.ground }}>
-      <ScrollView ref={scrollRef} contentContainerStyle={{ padding: spacing.lg, paddingTop: headerHeight + spacing.sm, gap: spacing.lg, paddingBottom: bottomRoom + bottomInset }}>
+      <ScrollView showsVerticalScrollIndicator={false} ref={scrollRef} contentContainerStyle={{ padding: spacing.lg, paddingTop: headerHeight + spacing.sm, gap: spacing.lg, paddingBottom: bottomRoom + bottomInset }}>
         {/* On a wide window the column keeps a comfortable width, centred, instead of stretching across the display. */}
         <View style={wide ? { width: '100%', maxWidth: COLUMN_MAX_WIDTH, alignSelf: 'center', gap: spacing.lg } : { gap: spacing.lg }}>
           {identity}

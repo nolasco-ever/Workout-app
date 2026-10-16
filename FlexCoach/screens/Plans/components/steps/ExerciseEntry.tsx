@@ -17,7 +17,7 @@ import { PrimaryButton } from '../../../../components/buttons/PrimaryButton';
 import { MuscleMap } from '../../../../components/anatomy/MuscleMap';
 import { useTheme } from '../../../../theme';
 import { StepRoot } from '../StepRoot';
-import { PlansStackParams } from '../../PlansStack';
+import { PlansStackParams } from '../../routes';
 import { usePlanEditor } from '../../PlanEditorContext';
 
 const str = (n: number | null) => (n === null ? '' : String(n));
@@ -66,7 +66,7 @@ export const ExerciseEntry = ({ workoutId, entryId, embedded = false, onDone }: 
   return (
     <StepRoot embedded={embedded}>
       <KeyboardAvoiding>
-        <ScrollView showsVerticalScrollIndicator={!embedded} contentContainerStyle={{ padding: spacing.lg, gap: spacing.lg }} keyboardShouldPersistTaps="handled" keyboardDismissMode="on-drag">
+        <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ padding: spacing.lg, gap: spacing.lg}} keyboardShouldPersistTaps="handled" keyboardDismissMode="on-drag">
           <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.md }}>
             {catalog && <MuscleMap primary={catalog.primaryMuscles} secondary={catalog.secondaryMuscles} height={80} views="auto" />}
             <View style={{ flex: 1 }}>

@@ -6,6 +6,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { CustomText } from '../text/customText';
 import { Icon } from '../icons/Icon';
 import { generalIcons } from '../icons/icon-library';
+import { useComfortableColumn } from '../layout/useComfortableColumn';
 import { useTheme } from '../../theme';
 
 interface Props {
@@ -37,6 +38,7 @@ const SPRING = { damping: 20, stiffness: 220 };
  */
 export const BottomSheet = ({ open, title, onClose, children, footer, headerRight }: Props) => {
   const { colors, spacing, radius } = useTheme();
+  const column = useComfortableColumn();
   const insets = useSafeAreaInsets();
   const { height: windowHeight } = useWindowDimensions();
   const [mounted, setMounted] = useState(open);
@@ -152,9 +154,9 @@ export const BottomSheet = ({ open, title, onClose, children, footer, headerRigh
             <GestureDetector gesture={contentPan}>
               <View collapsable={false} style={{ flexShrink: 1 }}>
                 <GestureDetector gesture={scrollGesture}>
-                  <Animated.ScrollView
+                  <Animated.ScrollView showsVerticalScrollIndicator={false}
                     style={{ flexGrow: 0 }}
-                    contentContainerStyle={{ paddingHorizontal: spacing.lg, paddingBottom: spacing.md, gap: spacing.lg }}
+                    contentContainerStyle={[{ paddingHorizontal: spacing.lg, paddingBottom: spacing.md, gap: spacing.lg }, column]}
                     keyboardShouldPersistTaps="handled"
                     scrollEnabled={scrolls}
                     // No bounce at the top: the pull moves the sheet instead.

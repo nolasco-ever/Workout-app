@@ -7,6 +7,7 @@ import { CustomText } from '../../../../components/text/customText';
 import { SurfaceCard } from '../../../../components/cards/SurfaceCard';
 import { Icon } from '../../../../components/icons/Icon';
 import { directionIcons } from '../../../../components/icons/icon-library';
+import { useComfortableColumn } from '../../../../components/layout/useComfortableColumn';
 import { useTheme } from '../../../../theme';
 import { AppStackParams } from '../../../../appNavigators/AppStack';
 import { pickCopyWorkout } from '../components/swapChannel';
@@ -20,6 +21,7 @@ export const ActivePlanWorkoutsScreen = () => {
   const navigation = useNavigation<NativeStackNavigationProp<AppStackParams>>();
   const { params } = useRoute<RouteProp<AppStackParams, 'ActivePlanWorkoutsScreen'>>();
   const { colors, spacing } = useTheme();
+  const column = useComfortableColumn();
   const workouts = [...params.workouts].sort((a, b) => a.order - b.order);
 
   const choose = (workoutId: string) => {
@@ -30,7 +32,7 @@ export const ActivePlanWorkoutsScreen = () => {
 
   return (
     <SafeAreaView edges={['bottom', 'left', 'right']} style={{ flex: 1, backgroundColor: colors.ground }}>
-      <ScrollView contentContainerStyle={{ padding: spacing.lg, paddingBottom: spacing.xl }}>
+      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={[{ padding: spacing.lg, paddingBottom: spacing.xl}, column]}>
         <SurfaceCard style={{ padding: 0, overflow: 'hidden' }}>
           {workouts.map((w, i) => {
             const names = [...w.exercises].sort((a, b) => a.order - b.order).map(e => e.exerciseName);

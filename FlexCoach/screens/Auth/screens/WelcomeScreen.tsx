@@ -7,6 +7,7 @@ import { appleAuth } from '@invertase/react-native-apple-authentication';
 import { authService, AuthError } from '../../../data/auth/authService';
 import { features } from '../../../config/features';
 import { CustomText } from '../../../components/text/customText';
+import { useComfortableColumn } from '../../../components/layout/useComfortableColumn';
 import { useTheme } from '../../../theme';
 import { BrandMark } from '../../../components/brand/BrandMark';
 import { AuthStackParams } from '../AuthStack';
@@ -15,6 +16,7 @@ import { ProviderButton } from '../components/ProviderButton';
 export const WelcomeScreen = () => {
   const navigation = useNavigation<NativeStackNavigationProp<AuthStackParams>>();
   const { colors, spacing } = useTheme();
+  const column = useComfortableColumn();
   const [busy, setBusy] = useState<'apple' | 'google' | null>(null);
   const showApple = features.appleSignIn && appleAuth.isSupported;
 
@@ -32,7 +34,7 @@ export const WelcomeScreen = () => {
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: colors.ground }}>
-      <View style={{ flex: 1, padding: spacing.xl, justifyContent: 'space-between' }}>
+      <View style={[{ flex: 1, padding: spacing.xl, justifyContent: 'space-between' }, column]}>
         <View style={{ flex: 1, justifyContent: 'center', gap: spacing.lg }}>
           <BrandMark size={72} />
           <View style={{ gap: spacing.sm }}>

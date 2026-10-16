@@ -8,6 +8,7 @@ import { CustomText } from '../../components/text/customText';
 import { SurfaceCard } from '../../components/cards/SurfaceCard';
 import { PrimaryButton } from '../../components/buttons/PrimaryButton';
 import { ActivityRow } from '../../components/buddies/ActivityRow';
+import { useComfortableColumn } from '../../components/layout/useComfortableColumn';
 import { useTheme } from '../../theme';
 import { BuddyRoutes } from './routes';
 
@@ -25,6 +26,7 @@ const dayGroup = (ts: number, now = Date.now()): string => {
 export const BuddyActivityScreen = () => {
   const navigation = useNavigation<NavigationProp<BuddyRoutes>>();
   const { colors, spacing } = useTheme();
+  const column = useComfortableColumn();
   const { buddies, loading: buddiesLoading } = useBuddies();
   const feed = useBuddyActivity(buddies, 60);
   const [refreshing, setRefreshing] = useState(false);
@@ -53,9 +55,9 @@ export const BuddyActivityScreen = () => {
 
   return (
     <SafeAreaView edges={['bottom', 'left', 'right']} style={{ flex: 1, backgroundColor: colors.ground }}>
-      <ScrollView
+      <ScrollView showsVerticalScrollIndicator={false}
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.accent} />}
-        contentContainerStyle={{ padding: spacing.lg, gap: spacing.lg, paddingBottom: spacing.xxl, flexGrow: 1 }}
+        contentContainerStyle={[{ padding: spacing.lg, gap: spacing.lg, paddingBottom: spacing.xxl, flexGrow: 1}, column]}
       >
         {(buddiesLoading || feed.loading) && <ActivityIndicator color={colors.accent} style={{ marginTop: spacing.xxl }} />}
         {!buddiesLoading && !feed.loading && feed.items.length === 0 && (

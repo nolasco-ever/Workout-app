@@ -10,6 +10,7 @@ import { TextField } from '../../../components/inputs/TextField';
 import { PrimaryButton } from '../../../components/buttons/PrimaryButton';
 import { Icon } from '../../../components/icons/Icon';
 import { generalIcons } from '../../../components/icons/icon-library';
+import { useComfortableColumn } from '../../../components/layout/useComfortableColumn';
 import { useTheme } from '../../../theme';
 import { AuthStackParams } from '../AuthStack';
 
@@ -17,6 +18,7 @@ export const ForgotPasswordScreen = () => {
   const navigation = useNavigation<NativeStackNavigationProp<AuthStackParams>>();
   const { params } = useRoute<RouteProp<AuthStackParams, 'ForgotPasswordScreen'>>();
   const { colors, spacing } = useTheme();
+  const column = useComfortableColumn();
   const [email, setEmail] = useState(params.email ?? '');
   const [sent, setSent] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -38,7 +40,7 @@ export const ForgotPasswordScreen = () => {
   return (
     <SafeAreaView edges={['bottom', 'left', 'right']} style={{ flex: 1, backgroundColor: colors.ground }}>
       <KeyboardAvoiding>
-        <ScrollView contentContainerStyle={{ padding: spacing.lg, gap: spacing.lg }} keyboardShouldPersistTaps="handled" keyboardDismissMode="on-drag">
+        <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={[{ padding: spacing.lg, gap: spacing.lg}, column]} keyboardShouldPersistTaps="handled" keyboardDismissMode="on-drag">
           {sent ? (
             <View style={{ alignItems: 'center', gap: spacing.md, paddingVertical: spacing.xl }}>
               <View style={{ width: 64, height: 64, borderRadius: 32, backgroundColor: colors.successTint, alignItems: 'center', justifyContent: 'center' }}>

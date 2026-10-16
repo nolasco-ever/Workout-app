@@ -12,6 +12,7 @@ import { BadgeSvg } from '../../components/achievements/BadgeSvg';
 import { artFor } from '../../components/achievements/badgeArt';
 import { preloadBadges } from '../../components/achievements/preloadBadges';
 import { CustomText } from '../../components/text/customText';
+import { useNoHeaderGlass } from '../../navigation/useNoHeaderGlass';
 import { useTheme } from '../../theme';
 import { AppStackParams } from '../../appNavigators/AppStack';
 
@@ -94,6 +95,7 @@ const Skeleton = ({ cell }: { cell: number }) => {
 /** Every badge of every family, five to a row, grouped by family; tap one to see it in 3D. */
 export const AchievementsScreen = () => {
   const { colors, spacing } = useTheme();
+  useNoHeaderGlass();
   const { width } = useWindowDimensions();
   const insets = useSafeAreaInsets();
   const layout = useLayoutFamily();
@@ -122,7 +124,7 @@ export const AchievementsScreen = () => {
     preloadBadges(state.unlocks.map(u => ({ family: u.family, tier: u.tier })));
   }, [state.unlocks]);
   const grid = (
-      <ScrollView showsVerticalScrollIndicator={!wide} contentContainerStyle={{ padding: spacing.lg, gap: spacing.xl, paddingBottom: spacing.xxl + (wide ? insets.bottom : 0) }}>
+      <ScrollView contentInsetAdjustmentBehavior="automatic" showsVerticalScrollIndicator={false} contentContainerStyle={{ padding: spacing.lg, gap: spacing.xl, paddingBottom: spacing.xxl + (wide ? insets.bottom : 0)}}>
         {state.loading ? (
           <Skeleton cell={cell} />
         ) : (
