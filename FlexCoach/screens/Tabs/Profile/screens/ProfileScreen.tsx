@@ -14,9 +14,11 @@ import { directionIcons, generalIcons } from '../../../../components/icons/icon-
 import { useAchievements } from '../../../../data/hooks/useAchievements';
 import { features } from '../../../../config/features';
 import { useTheme } from '../../../../theme';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { ProfileStackParams } from '../ProfileStack';
 import { useTabBarSidePlaced, useTabScrollInset } from '../../../../navigation/useTabBarInset';
-import { TabHeader } from '../../../../components/headers/TabHeader';
+import { useLayoutFamily } from '../../../../components/layout/useLayoutFamily';
+import { StickyTabHeader, estimateStickyHeaderHeight } from '../../../../components/headers/StickyTabHeader';
 import { EDIT_BADGE, PhotoOrigin, ProfilePhotoModal } from '../../../../components/media/ProfilePhotoModal';
 import { AvatarPicker } from '../../../../components/media/AvatarPicker';
 import { Avatar } from '../../../../components/buddies/Avatar';
@@ -28,11 +30,18 @@ import { toLocalDate } from '../../../../data/engine/dates';
 /** The avatar on the Profile tab. Big enough to be the focus of the top of the page. */
 const AVATAR = 120;
 
+/** The column's width on a wide window, centred: a settings list across the whole display reads as a stretched phone. */
+const COLUMN_MAX_WIDTH = 560;
+
 export const ProfileScreen = () => {
   const navigation = useNavigation<NavigationProp<ProfileStackParams & AppStackParams>>();
   const achievements = useAchievements(false);
   const { colors, spacing } = useTheme();
   const bottomInset = useTabScrollInset();
+  const insets = useSafeAreaInsets();
+  // The title row is a bar over the scroll view; the content starts under it.
+  const [headerHeight, setHeaderHeight] = useState(() => estimateStickyHeaderHeight(insets.top, spacing));
+  const wide = useLayoutFamily() === 'wide';
   // Room under the last card: less when no tab bar floats over the bottom.
   const bottomRoom = useTabBarSidePlaced() ? spacing.lg : spacing.xxl;
   const { profile, user } = useAuth();
@@ -69,67 +78,83 @@ export const ProfileScreen = () => {
       { text: 'Sign out', style: 'destructive', onPress: () => authService.signOut().catch(err => Alert.alert("Couldn't sign out", err.message)) },
     ]);
 
+  // The tab in pieces; the layout family arranges them below.
+  const identity = (
+            <View style={{ alignItems: 'center', gap: spacing.sm }}>
+              <TouchableOpacity ref={avatarRef} onPress={openPhoto} disabled={photo.busy} accessibilityRole="button" accessibilityLabel="View or change profile photo" style={{ width: AVATAR, height: AVATAR, opacity: avatarHidden ? 0 : 1 }}>
+                <Avatar uri={profile?.photoUrl} name={profile?.displayName} size={AVATAR} fallback="icon" />
+                {/* Edit badge so the avatar reads as tappable. */}
+                <View style={{ position: 'absolute', right: 0, bottom: 0, width: EDIT_BADGE, height: EDIT_BADGE, borderRadius: EDIT_BADGE / 2, backgroundColor: colors.accent, borderWidth: 3, borderColor: colors.ground, alignItems: 'center', justifyContent: 'center' }}>
+                  {photo.busy ? <ActivityIndicator size="small" color={colors.onAccent} /> : <Icon icon={generalIcons.pencil} size={18} color={colors.onAccent} strokeWidth={2.5} />}
+                </View>
+              </TouchableOpacity>
+              <CustomText variant="heading">{profile?.displayName ?? 'Your name'}</CustomText>
+              <CustomText variant="caption" color={colors.inkMuted}>{joined ? `Training since ${joined}` : ' '}</CustomText>
+            </View>
+  );
+  const achievementsCard = (
+            <TouchableOpacity onPress={() => navigation.navigate('AchievementsScreen')} activeOpacity={0.7} accessibilityRole="button" accessibilityLabel="Achievements" disabled={!features.achievements}>
+              <SurfaceCard>
+                <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.md }}>
+                  <View style={{ width: 40, height: 40, borderRadius: 20, backgroundColor: colors.accentTint, alignItems: 'center', justifyContent: 'center' }}>
+                    <Icon icon={generalIcons.award} size={20} color={colors.accent} />
+                  </View>
+                  <View style={{ flex: 1 }}>
+                    <CustomText variant="bodyStrong">Achievements</CustomText>
+                    <CustomText variant="caption" color={colors.inkMuted}>
+                      {!features.achievements
+                        ? 'Milestones for streaks, volume, and records land in a later update.'
+                        : achievements.unlocks.length === 0
+                        ? 'Finish a workout to earn your first badge.'
+                        : `${achievements.earned} of ${achievements.progress.length} badges · ${achievements.unlocks.length} tier${achievements.unlocks.length === 1 ? '' : 's'} earned`}
+                    </CustomText>
+                  </View>
+                  {features.achievements && <Icon icon={directionIcons.angleRight} size={18} color={colors.inactive} />}
+                </View>
+              </SurfaceCard>
+            </TouchableOpacity>
+  );
+  const training = (
+            <View style={{ gap: spacing.sm }}>
+              <CustomText variant="overline" color={colors.inkMuted}>Training</CustomText>
+              <SurfaceCard style={{ padding: 0 }}>
+                <Row icon={generalIcons.dumbbell} iconColor={colors.accent} title="My plans" description={active ? `Active: ${active.name}` : 'No active plan'} onPress={() => navigation.navigate('PlansStack')} />
+                <Row icon={generalIcons.clock} title="History" description="Every workout you've logged" divider onPress={() => navigation.navigate('HistoryScreen')} />
+                <Row icon={generalIcons.users} title="Buddies" description="Train alongside people you know" divider onPress={() => navigation.navigate('BuddiesScreen')} />
+              </SurfaceCard>
+            </View>
+  );
+  const settings = (
+            <View style={{ gap: spacing.sm }}>
+              <CustomText variant="overline" color={colors.inkMuted}>Settings</CustomText>
+              <SurfaceCard style={{ padding: 0 }}>
+                <Row icon={generalIcons.bell} title="Notifications" description="Reminders, rest timer, buddy activity" onPress={() => navigation.navigate('NotificationSettingsScreen')} />
+                <Row icon={generalIcons.eye} title="What buddies see" description="Workouts, records, totals, skipped days" divider onPress={() => navigation.navigate('SharingScreen')} />
+                <Row icon={generalIcons.user} title="Account" description={user?.email ?? undefined} divider onPress={() => navigation.navigate('AccountScreen')} />
+                <Row icon={generalIcons.key} title="Privacy" divider onPress={placeholder('Privacy')} />
+                <Row icon={generalIcons.envelope} title="Contact us" divider onPress={placeholder('Contact us')} />
+              </SurfaceCard>
+            </View>
+  );
+  const signOutCard = (
+            <SurfaceCard style={{ padding: 0 }}>
+              <Row icon={generalIcons.signOut} title="Sign out" tone="destructive" chevron={false} onPress={signOut} />
+            </SurfaceCard>
+  );
+
   return (
-    <SafeAreaView edges={['top', 'left', 'right']} style={{ flex: 1, backgroundColor: colors.ground }}>
-      <ScrollView ref={scrollRef} contentContainerStyle={{ padding: spacing.lg, gap: spacing.lg, paddingBottom: bottomRoom + bottomInset }}>
-        <TabHeader title="Profile" action={{ icon: generalIcons.users, accessibilityLabel: 'Buddies and my Iron Card', onPress: () => navigation.navigate('CardStack') }} />
-        <View style={{ alignItems: 'center', gap: spacing.sm }}>
-          <TouchableOpacity ref={avatarRef} onPress={openPhoto} disabled={photo.busy} accessibilityRole="button" accessibilityLabel="View or change profile photo" style={{ width: AVATAR, height: AVATAR, opacity: avatarHidden ? 0 : 1 }}>
-            <Avatar uri={profile?.photoUrl} name={profile?.displayName} size={AVATAR} fallback="icon" />
-            {/* Edit badge so the avatar reads as tappable. */}
-            <View style={{ position: 'absolute', right: 0, bottom: 0, width: EDIT_BADGE, height: EDIT_BADGE, borderRadius: EDIT_BADGE / 2, backgroundColor: colors.accent, borderWidth: 3, borderColor: colors.ground, alignItems: 'center', justifyContent: 'center' }}>
-              {photo.busy ? <ActivityIndicator size="small" color={colors.onAccent} /> : <Icon icon={generalIcons.pencil} size={18} color={colors.onAccent} strokeWidth={2.5} />}
-            </View>
-          </TouchableOpacity>
-          <CustomText variant="heading">{profile?.displayName ?? 'Your name'}</CustomText>
-          <CustomText variant="caption" color={colors.inkMuted}>{joined ? `Training since ${joined}` : ' '}</CustomText>
+    <SafeAreaView edges={['left', 'right']} style={{ flex: 1, backgroundColor: colors.ground }}>
+      <ScrollView ref={scrollRef} contentContainerStyle={{ padding: spacing.lg, paddingTop: headerHeight + spacing.sm, gap: spacing.lg, paddingBottom: bottomRoom + bottomInset }}>
+        {/* On a wide window the column keeps a comfortable width, centred, instead of stretching across the display. */}
+        <View style={wide ? { width: '100%', maxWidth: COLUMN_MAX_WIDTH, alignSelf: 'center', gap: spacing.lg } : { gap: spacing.lg }}>
+          {identity}
+          {achievementsCard}
+          {training}
+          {settings}
+          {signOutCard}
         </View>
-
-        <TouchableOpacity onPress={() => navigation.navigate('AchievementsScreen')} activeOpacity={0.7} accessibilityRole="button" accessibilityLabel="Achievements" disabled={!features.achievements}>
-          <SurfaceCard>
-            <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.md }}>
-              <View style={{ width: 40, height: 40, borderRadius: 20, backgroundColor: colors.accentTint, alignItems: 'center', justifyContent: 'center' }}>
-                <Icon icon={generalIcons.award} size={20} color={colors.accent} />
-              </View>
-              <View style={{ flex: 1 }}>
-                <CustomText variant="bodyStrong">Achievements</CustomText>
-                <CustomText variant="caption" color={colors.inkMuted}>
-                  {!features.achievements
-                    ? 'Milestones for streaks, volume, and records land in a later update.'
-                    : achievements.unlocks.length === 0
-                    ? 'Finish a workout to earn your first badge.'
-                    : `${achievements.earned} of ${achievements.progress.length} badges · ${achievements.unlocks.length} tier${achievements.unlocks.length === 1 ? '' : 's'} earned`}
-                </CustomText>
-              </View>
-              {features.achievements && <Icon icon={directionIcons.angleRight} size={18} color={colors.inactive} />}
-            </View>
-          </SurfaceCard>
-        </TouchableOpacity>
-
-        <View style={{ gap: spacing.sm }}>
-          <CustomText variant="overline" color={colors.inkMuted}>Training</CustomText>
-          <SurfaceCard style={{ padding: 0 }}>
-            <Row icon={generalIcons.dumbbell} iconColor={colors.accent} title="My plans" description={active ? `Active: ${active.name}` : 'No active plan'} onPress={() => navigation.navigate('PlansStack')} />
-            <Row icon={generalIcons.clock} title="History" description="Every workout you've logged" divider onPress={() => navigation.navigate('HistoryScreen')} />
-            <Row icon={generalIcons.users} title="Buddies" description="Train alongside people you know" divider onPress={() => navigation.navigate('BuddiesScreen')} />
-          </SurfaceCard>
-        </View>
-
-        <View style={{ gap: spacing.sm }}>
-          <CustomText variant="overline" color={colors.inkMuted}>Settings</CustomText>
-          <SurfaceCard style={{ padding: 0 }}>
-            <Row icon={generalIcons.bell} title="Notifications" description="Reminders, rest timer, buddy activity" onPress={() => navigation.navigate('NotificationSettingsScreen')} />
-            <Row icon={generalIcons.eye} title="What buddies see" description="Workouts, records, totals, skipped days" divider onPress={() => navigation.navigate('SharingScreen')} />
-            <Row icon={generalIcons.user} title="Account" description={user?.email ?? undefined} divider onPress={() => navigation.navigate('AccountScreen')} />
-            <Row icon={generalIcons.key} title="Privacy" divider onPress={placeholder('Privacy')} />
-            <Row icon={generalIcons.envelope} title="Contact us" divider onPress={placeholder('Contact us')} />
-          </SurfaceCard>
-        </View>
-
-        <SurfaceCard style={{ padding: 0 }}>
-          <Row icon={generalIcons.signOut} title="Sign out" tone="destructive" chevron={false} onPress={signOut} />
-        </SurfaceCard>
       </ScrollView>
+      <StickyTabHeader title="Profile" action={{ icon: generalIcons.users, accessibilityLabel: 'Buddies and my Iron Card', onPress: () => navigation.navigate('CardStack') }} onHeight={setHeaderHeight} />
       <ProfilePhotoModal
         open={photoOpen}
         origin={photoOrigin}
