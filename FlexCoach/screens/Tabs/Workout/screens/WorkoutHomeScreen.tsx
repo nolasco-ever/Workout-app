@@ -326,7 +326,7 @@ export const WorkoutHomeScreen = () => {
         {loading && <ActivityIndicator color={colors.accent} style={{ marginTop: spacing.xxl }} />}
 
         {/* Resume, whatever else is going on: a quick workout has no plan behind it. */}
-        {!loading && resume && (
+        {!loading && resume && family === 'phone' && (
           <Card tone="accent">
             <CustomText variant="overline" color={colors.accent}>In progress</CustomText>
             <CustomText variant="heading" style={{ marginTop: spacing.xs }}>{resume.workoutName}</CustomText>
@@ -334,6 +334,24 @@ export const WorkoutHomeScreen = () => {
               Started {new Date(resume.startedAt).toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' })}
             </CustomText>
             <PrimaryButton label="Resume workout" icon={generalIcons.play} onPress={() => navigation.navigate('SessionScreen', { plan: resume.planId && plan ? plan : null, cycle: resume.cycleId && cycle ? cycle : null, session: resume })} />
+          </Card>
+        )}
+        {/* On a wide window the card takes the today card's shape: the workout on the left, Resume on the right behind a standing divider. */}
+        {!loading && resume && family !== 'phone' && (
+          <Card tone="accent">
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.lg }}>
+              <View style={{ flex: 1 }}>
+                <CustomText variant="overline" color={colors.accent}>In progress</CustomText>
+                <CustomText variant="heading" style={{ marginTop: spacing.xs }}>{resume.workoutName}</CustomText>
+                <CustomText variant="caption" color={colors.inkMuted}>
+                  Started {new Date(resume.startedAt).toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' })}
+                </CustomText>
+              </View>
+              <View style={{ width: 1, alignSelf: 'stretch', backgroundColor: colors.line }} />
+              <View style={{ flex: 1 }}>
+                <PrimaryButton label="Resume workout" icon={generalIcons.play} onPress={() => navigation.navigate('SessionScreen', { plan: resume.planId && plan ? plan : null, cycle: resume.cycleId && cycle ? cycle : null, session: resume })} />
+              </View>
+            </View>
           </Card>
         )}
 
