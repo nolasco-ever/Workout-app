@@ -24,7 +24,8 @@ import { MuscleRow } from '../components/MuscleRow';
 import { MuscleGroup } from '../../../../data/models';
 import { useTheme } from '../../../../theme';
 import { HomeStackParams } from '../HomeStack';
-import { useTabScrollInset } from '../../../../navigation/useTabBarInset';
+import { useTabBarSidePlaced, useTabScrollInset } from '../../../../navigation/useTabBarInset';
+import { useLayoutFamily } from '../../../../components/layout/useLayoutFamily';
 import { TabHeader } from '../../../../components/headers/TabHeader';
 import { useNotificationFeed } from '../../../../data/notifications/useNotificationFeed';
 import { AppStackParams } from '../../../../appNavigators/AppStack';
@@ -87,6 +88,10 @@ export const HomeScreen = () => {
   const navigation = useNavigation<NativeStackNavigationProp<HomeStackParams>>();
   const { colors, spacing } = useTheme();
   const bottomInset = useTabScrollInset();
+  // Room under the last card: less when no tab bar floats over the bottom.
+  const bottomRoom = useTabBarSidePlaced() ? spacing.lg : spacing.xxl;
+  const family = useLayoutFamily();
+  const medium = family === 'medium';
   const { uid, profile } = useAuth();
   const unit = profile?.weightUnit ?? 'lb';
   const dist = profile?.distanceUnit ?? 'mi';
@@ -178,224 +183,293 @@ export const HomeScreen = () => {
             ? { tone: colors.error, kicker: 'Today', headline: `${todayOcc.workoutName} skipped`, detail: 'Skipped for this cycle.', action: 'Open' }
             : { tone: colors.inkMuted, kicker: 'Today', headline: 'Rest day', detail: home.upcoming[0] ? `Next: ${home.upcoming[0].workoutName} on ${shortDate(home.upcoming[0].date)}` : 'Nothing scheduled.', action: 'Open' };
 
+  // The dashboard in pieces; the layout family arranges them below.
+  const reportCard = (
+            reportCycle && (
+              <SurfaceCard tone="accent">
+                <CustomText variant="overline" color={colors.accent}>Cycle {reportCycle.number}</CustomText>
+                <CustomText variant="title">Your cycle report is ready</CustomText>
+                <CustomText variant="caption" color={colors.inkMuted} style={{ marginBottom: spacing.md }}>Review it to see your stats and any changes to your next cycle.</CustomText>
+                <PrimaryButton label="Review" onPress={openReport} />
+              </SurfaceCard>
+            )
+  );
+  const todayCard = (
+            <TouchableOpacity onPress={ins.todaySession && !home.inProgressSession ? () => goSession(ins.todaySession!.id, ins.todaySession!.workoutName) : goWorkout} activeOpacity={0.7} style={medium ? { flex: 1 } : undefined}>
+              <SurfaceCard tone={todayStatus.tone === colors.accent ? 'accent' : 'surface'} style={medium ? { flex: 1, justifyContent: 'center' } : undefined}>
+                <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.md }}>
+                  <View style={{ flex: 1 }}>
+                    <CustomText variant="overline" color={todayStatus.tone}>{todayStatus.kicker}</CustomText>
+                    <CustomText variant="title">{todayStatus.headline}</CustomText>
+                    <CustomText variant="caption" color={colors.inkMuted}>{todayStatus.detail}</CustomText>
+                    {canDefer && (
+                      <TouchableOpacity onPress={notToday} hitSlop={8} style={{ alignSelf: 'flex-start', marginTop: spacing.sm }}>
+                        <CustomText variant="label" color={colors.inkMuted}>Not today? Move or skip</CustomText>
+                      </TouchableOpacity>
+                    )}
+                    {canQuick && (
+                      <TouchableOpacity onPress={quickWorkout} hitSlop={8} accessibilityRole="button" style={{ alignSelf: 'flex-start', marginTop: spacing.sm }}>
+                        <CustomText variant="label" color={colors.accent}>Still want to train? Quick workout</CustomText>
+                      </TouchableOpacity>
+                    )}
+                  </View>
+                  {ins.todaySession && !home.inProgressSession ? (
+                    <View style={{ width: 40, height: 40, borderRadius: 20, backgroundColor: colors.successTint, alignItems: 'center', justifyContent: 'center' }}>
+                      <Icon icon={generalIcons.check} size={22} color={colors.success} strokeWidth={3} />
+                    </View>
+                  ) : (
+                    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 2 }}>
+                      <CustomText variant="label" color={colors.accent}>{todayStatus.action}</CustomText>
+                      <Icon icon={directionIcons.angleRight} size={16} color={colors.accent} />
+                    </View>
+                  )}
+                </View>
+              </SurfaceCard>
+            </TouchableOpacity>
+
+  );
+  // Beside the today card (medium) the pair fills its height; a tile already fills its width.
+  const tiles = (
+            <View style={{ flexDirection: 'row', gap: spacing.sm, flex: medium ? 1 : undefined }}>
+              <StatTile label="Streak" value={`${ins.streakDays}d`} delta={ins.streakDays > 0 ? 'Keep it going' : 'Train to start one'} onPress={() => setStreakInfo(true)} accessibilityLabel={`Streak ${ins.streakDays} days, what counts`} />
+              <StatTile
+                label="This week"
+                value={String(ins.week.sessionsDone)}
+                delta={ins.weekRemaining > 0 ? `${ins.week.sessionsDone === 1 ? 'workout' : 'workouts'} · ${ins.weekRemaining} more planned` : ins.week.sessionsDone === 1 ? 'workout' : 'workouts'}
+              />
+            </View>
+
+  );
+  const musclesCard = (
+            <SurfaceCard>
+              <CardHeader label="Muscles, last 30 days" action={ins.muscles30d.length > 0 ? 'All' : undefined} onAction={() => navigation.navigate('MusclesScreen')} />
+              {ins.muscles30d.length > 0 ? (
+                <View style={medium ? { flexDirection: 'row', alignItems: 'center', gap: spacing.lg } : undefined}>
+                  <View style={{ alignItems: 'center', marginBottom: medium ? 0 : spacing.sm }}>
+                    <MuscleMap primary={coverage.slice(0, 6)} secondary={coverage.slice(6)} height={170} />
+                  </View>
+                  <View style={medium ? { flex: 1 } : undefined}>
+                  {ins.muscles30d.slice(0, 4).map((m, i) => (
+                    <View key={m.muscle} style={{ borderTopWidth: i ? 1 : 0, borderTopColor: colors.line }}>
+                      <MuscleRow muscle={m.muscle} sets={m.sets} max={maxSets} onPress={() => navigation.navigate('MuscleDetailScreen', { muscle: m.muscle })} />
+                    </View>
+                  ))}
+                  {ins.muscles30d.length > 4 && (
+                    <CustomText variant="caption" color={colors.inkMuted} style={{ marginTop: spacing.xs }}>+{ins.muscles30d.length - 4} more in All</CustomText>
+                  )}
+                  </View>
+                </View>
+              ) : (
+                <CustomText variant="body" color={colors.inkMuted}>Finish a workout and your muscle coverage shows here.</CustomText>
+              )}
+            </SurfaceCard>
+
+  );
+  const volumeAndWeight = (
+            <View style={{ flexDirection: 'row', gap: spacing.sm, alignItems: 'stretch' }}>
+              <View style={{ flex: 1 }}>
+                <LinkCard label="Volume" onPress={() => navigation.navigate('ProgressScreen')}>
+                  <CustomText variant="display">{fmtVolume(ins.week.volumeKg)}</CustomText>
+                  <CustomText variant="caption" color={colors.inkMuted}>{unit} this week</CustomText>
+                  {/* No comparison until something is logged: "-100%" on a Monday says nothing. */}
+                  <CustomText variant="caption" color={ins.week.volumeKg === 0 || ins.week.volumeChange === null ? colors.inkMuted : ins.week.volumeChange >= 0 ? colors.success : colors.error}>
+                    {ins.week.volumeKg === 0 ? 'Nothing logged yet' : ins.week.volumeChange === null ? 'No last week yet' : `${ins.week.volumeChange >= 0 ? '+' : ''}${Math.round(ins.week.volumeChange * 100)}% vs last week`}
+                  </CustomText>
+                </LinkCard>
+              </View>
+              <View style={{ flex: 1 }}>
+            <LinkCard label="Body weight" onPress={() => navigation.navigate(latestWeight ? 'WeightHistoryScreen' : 'LogWeightScreen')}>
+              {latestWeight ? (
+                <View style={{ gap: 2 }}>
+                  <CustomText variant="display">{formatWeight(latestWeight.weightKg, unit)}</CustomText>
+                  <CustomText variant="caption" color={colors.inkMuted}>as of {dateLabel(latestWeight.date)}</CustomText>
+                  {weightDelta !== null && (
+                    <CustomText variant="caption" color={weightDelta <= 0 ? colors.success : colors.warning}>
+                      {weightDelta > 0 ? '+' : ''}{toDisplayWeight(weightDelta, unit)} {unit} {ins.weightChangeCycle !== null ? 'this cycle' : 'in 30 days'}
+                    </CustomText>
+                  )}
+                  {target !== null && (
+                    <CustomText variant="caption" color={colors.inkMuted}>{formatWeight(Math.abs(latestWeight.trendKg - target), unit)} to go</CustomText>
+                  )}
+                </View>
+              ) : (
+                <CustomText variant="body" color={colors.inkMuted}>Log your first weigh-in.</CustomText>
+              )}
+            </LinkCard>
+              </View>
+            </View>
+
+  );
+  const recordsCard = (
+            ins.recentRecords.length > 0 && (
+              <SurfaceCard>
+                <CardHeader label="Recent records" />
+                {ins.recentRecords.map(pr => (
+                  <TouchableOpacity
+                    key={`${pr.exerciseId}-${pr.sessionId}`}
+                    onPress={() => navigation.navigate('ExerciseProgressScreen', { exerciseId: pr.exerciseId, exerciseName: pr.exerciseName })}
+                    style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.md, paddingVertical: spacing.sm }}
+                  >
+                    <Icon icon={generalIcons.trophy} size={18} color={colors.warning} />
+                    <View style={{ flex: 1 }}>
+                      <CustomText variant="bodyStrong">{pr.exerciseName}</CustomText>
+                      <CustomText variant="caption" color={colors.inkMuted}>{dateLabel(pr.date)}{pr.previousValue !== null ? ` · up from ${formatRecordValue(pr.kind, pr.previousValue, unit, dist)}` : ' · first record'}</CustomText>
+                    </View>
+                    <CustomText variant="bodyStrong" color={colors.accent}>{formatRecordValue(pr.kind, pr.value, unit, dist)}</CustomText>
+                  </TouchableOpacity>
+                ))}
+              </SurfaceCard>
+            )
+  );
+  const buddyActivityCard = (
+            <LinkCard label="Buddy activity" onPress={() => goBuddies(buddies.length ? 'BuddyActivityScreen' : 'BuddiesScreen')}>
+              {buddies.length === 0 ? (
+                <CustomText variant="body" color={colors.inkMuted}>Add a buddy and their workouts, streaks and records show up here.</CustomText>
+              ) : buddyFeed.items.length === 0 ? (
+                <CustomText variant="body" color={colors.inkMuted}>Nothing yet. Finished workouts and streaks land here.</CustomText>
+              ) : (
+                buddyFeed.items.map(item => <ActivityRow key={item.id} item={item} compact />)
+              )}
+            </LinkCard>
+
+  );
+  const buddyPlansCard = (
+            buddyPlans.plans.length > 0 && (
+              <LinkCard label="Plans from buddies" onPress={() => goBuddies('BuddyPlansScreen')}>
+                {buddyPlans.plans.slice(0, 3).map((sp, i) => (
+                    <TouchableOpacity
+                      key={`${sp.ownerUid}:${sp.plan.id}`}
+                      onPress={() => (navigation as unknown as NavigationProp<BuddyRoutes>).navigate('BuddyPlanScreen', { ownerUid: sp.ownerUid, planId: sp.plan.id, ownerName: sp.ownerName })}
+                      style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.md, paddingVertical: spacing.sm, borderTopWidth: i ? 1 : 0, borderTopColor: colors.line }}
+                    >
+                      <Avatar uri={sp.ownerPhoto} name={sp.ownerName} size={32} />
+                      <View style={{ flex: 1 }}>
+                        <CustomText variant="body" numberOfLines={1}>{sp.plan.name}</CustomText>
+                        <CustomText variant="caption" color={colors.inkMuted} numberOfLines={1}>by {sp.ownerName ?? 'a buddy'} · {sp.plan.workouts.length} workout{sp.plan.workouts.length === 1 ? '' : 's'}</CustomText>
+                      </View>
+                    </TouchableOpacity>
+                ))}
+              </LinkCard>
+            )
+  );
+  const stepsCard = (
+            <SurfaceCard>
+              <CardHeader label="Steps" />
+              {steps.available === false ? (
+                <CustomText variant="body" color={colors.inkMuted}>{steps.platformName === 'none' ? 'Step tracking needs a phone with a health app.' : `${steps.platformName} isn't available on this device.`}</CustomText>
+              ) : !steps.connected ? (
+                <>
+                  <CustomText variant="body" color={colors.inkMuted}>Connect {steps.platformName} to see today's steps and your weekly average. Weigh-ins sync both ways.</CustomText>
+                  <View style={{ marginTop: spacing.md }}>
+                    <PrimaryButton label={`Connect ${steps.platformName}`} icon={generalIcons.personRunning} onPress={() => steps.connect()} />
+                  </View>
+                </>
+              ) : (
+                <>
+                  <View style={{ flexDirection: 'row', alignItems: 'baseline', gap: spacing.sm, marginBottom: spacing.sm }}>
+                    <CustomText variant="display">{steps.today === null ? '—' : steps.today.toLocaleString()}</CustomText>
+                    <CustomText variant="caption" color={colors.inkMuted}>today</CustomText>
+                    {steps.weekAverage !== null && (
+                      <CustomText variant="caption" color={colors.inkMuted}>· {steps.weekAverage.toLocaleString()} avg over 7 days</CustomText>
+                    )}
+                  </View>
+                  {steps.days.length > 0 && (
+                    <BarChart bars={steps.days.map(d => ({ label: shortDate(d.date).replace(' ', '\u00a0'), value: d.steps }))} format={v => compactNumber(v)} height={120} />
+                  )}
+                  {steps.days.length === 0 && !steps.loading && (
+                    steps.error ? (
+                      <>
+                        <CustomText variant="body" color={colors.inkMuted}>
+                          {steps.platformName} isn't sharing steps right now. That can happen after reinstalling the app or a system update. Reconnect to pick it back up.
+                        </CustomText>
+                        <View style={{ marginTop: spacing.md }}>
+                          <PrimaryButton label={`Reconnect ${steps.platformName}`} icon={generalIcons.personRunning} onPress={() => steps.connect()} />
+                        </View>
+                      </>
+                    ) : (
+                      <CustomText variant="caption" color={colors.inkMuted}>
+                        No step data yet. If you declined access, allow it in {steps.platformName} settings.
+                      </CustomText>
+                    )
+                  )}
+                </>
+              )}
+            </SurfaceCard>
+
+  );
+
   return (
     <SafeAreaView edges={['top', 'left', 'right']} style={{ flex: 1, backgroundColor: colors.ground }}>
       <ScrollView
         ref={scrollRef}
-        contentContainerStyle={{ padding: spacing.lg, gap: spacing.lg, paddingBottom: spacing.xxl + bottomInset }}
+        contentContainerStyle={{ padding: spacing.lg, gap: spacing.lg, paddingBottom: bottomRoom + bottomInset }}
         showsVerticalScrollIndicator={false}
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.accent} />}
       >
         {/* One scroll view for every state; the title row scrolls with the content. */}
         <TabHeader title="Home" action={{ icon: generalIcons.bell, badge: unreadCount > 0, accessibilityLabel: 'Notifications', onPress: openNotifications }} />
         {loading && <ActivityIndicator color={colors.accent} style={{ marginTop: spacing.xxl }} />}
-        {!loading && (
-        <>
-        {reportCycle && (
-          <SurfaceCard tone="accent">
-            <CustomText variant="overline" color={colors.accent}>Cycle {reportCycle.number}</CustomText>
-            <CustomText variant="title">Your cycle report is ready</CustomText>
-            <CustomText variant="caption" color={colors.inkMuted} style={{ marginBottom: spacing.md }}>Review it to see your stats and any changes to your next cycle.</CustomText>
-            <PrimaryButton label="Review" onPress={openReport} />
-          </SurfaceCard>
+        {!loading && family === 'phone' && (
+          <>
+            {reportCard}
+            <SectionHeader label="Today" first={!reportCycle} />
+            {todayCard}
+            {tiles}
+            <SectionHeader label="Progress" />
+            {musclesCard}
+            {volumeAndWeight}
+            {recordsCard}
+            <SectionHeader label="Buddies" />
+            {buddyActivityCard}
+            {buddyPlansCard}
+            <SectionHeader label="Activity" />
+            {stepsCard}
+          </>
         )}
-        <SectionHeader label="Today" first={!reportCycle} />
-        {/* Today */}
-        <TouchableOpacity onPress={ins.todaySession && !home.inProgressSession ? () => goSession(ins.todaySession!.id, ins.todaySession!.workoutName) : goWorkout} activeOpacity={0.7}>
-          <SurfaceCard tone={todayStatus.tone === colors.accent ? 'accent' : 'surface'}>
-            <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.md }}>
-              <View style={{ flex: 1 }}>
-                <CustomText variant="overline" color={todayStatus.tone}>{todayStatus.kicker}</CustomText>
-                <CustomText variant="title">{todayStatus.headline}</CustomText>
-                <CustomText variant="caption" color={colors.inkMuted}>{todayStatus.detail}</CustomText>
-                {canDefer && (
-                  <TouchableOpacity onPress={notToday} hitSlop={8} style={{ alignSelf: 'flex-start', marginTop: spacing.sm }}>
-                    <CustomText variant="label" color={colors.inkMuted}>Not today? Move or skip</CustomText>
-                  </TouchableOpacity>
-                )}
-                {canQuick && (
-                  <TouchableOpacity onPress={quickWorkout} hitSlop={8} accessibilityRole="button" style={{ alignSelf: 'flex-start', marginTop: spacing.sm }}>
-                    <CustomText variant="label" color={colors.accent}>Still want to train? Quick workout</CustomText>
-                  </TouchableOpacity>
-                )}
+        {/* Two columns: today and buddies beside progress and activity. */}
+        {!loading && family === 'wide' && (
+          <>
+            {reportCard}
+            {/* Each column is as tall as its own cards; nothing in it grows to match the other. */}
+            <View style={{ flexDirection: 'row', gap: spacing.lg, alignItems: 'flex-start' }}>
+              <View style={{ flex: 1, gap: spacing.lg, alignSelf: 'flex-start' }}>
+                <SectionHeader label="Today" first />
+                {todayCard}
+                {tiles}
+                <SectionHeader label="Buddies" />
+                {buddyActivityCard}
+                {buddyPlansCard}
               </View>
-              {ins.todaySession && !home.inProgressSession ? (
-                <View style={{ width: 40, height: 40, borderRadius: 20, backgroundColor: colors.successTint, alignItems: 'center', justifyContent: 'center' }}>
-                  <Icon icon={generalIcons.check} size={22} color={colors.success} strokeWidth={3} />
-                </View>
-              ) : (
-                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 2 }}>
-                  <CustomText variant="label" color={colors.accent}>{todayStatus.action}</CustomText>
-                  <Icon icon={directionIcons.angleRight} size={16} color={colors.accent} />
-                </View>
-              )}
+              <View style={{ flex: 1, gap: spacing.lg, alignSelf: 'flex-start' }}>
+                <SectionHeader label="Progress" first />
+                {musclesCard}
+                {volumeAndWeight}
+                {recordsCard}
+                <SectionHeader label="Activity" />
+                {stepsCard}
+              </View>
             </View>
-          </SurfaceCard>
-        </TouchableOpacity>
-
-        {/* This week */}
-        <View style={{ flexDirection: 'row', gap: spacing.sm }}>
-          <StatTile label="Streak" value={`${ins.streakDays}d`} delta={ins.streakDays > 0 ? 'Keep it going' : 'Train to start one'} onPress={() => setStreakInfo(true)} accessibilityLabel={`Streak ${ins.streakDays} days, what counts`} />
-          <StatTile
-            label="This week"
-            value={String(ins.week.sessionsDone)}
-            delta={ins.weekRemaining > 0 ? `${ins.week.sessionsDone === 1 ? 'workout' : 'workouts'} · ${ins.weekRemaining} more planned` : ins.week.sessionsDone === 1 ? 'workout' : 'workouts'}
-          />
-        </View>
-
-        <SectionHeader label="Progress" />
-        {/* Muscles, last 30 days */}
-        <SurfaceCard>
-          <CardHeader label="Muscles, last 30 days" action={ins.muscles30d.length > 0 ? 'All' : undefined} onAction={() => navigation.navigate('MusclesScreen')} />
-          {ins.muscles30d.length > 0 ? (
-            <>
-              <View style={{ alignItems: 'center', marginBottom: spacing.sm }}>
-                <MuscleMap primary={coverage.slice(0, 6)} secondary={coverage.slice(6)} height={170} />
-              </View>
-              {ins.muscles30d.slice(0, 4).map((m, i) => (
-                <View key={m.muscle} style={{ borderTopWidth: i ? 1 : 0, borderTopColor: colors.line }}>
-                  <MuscleRow muscle={m.muscle} sets={m.sets} max={maxSets} onPress={() => navigation.navigate('MuscleDetailScreen', { muscle: m.muscle })} />
-                </View>
-              ))}
-              {ins.muscles30d.length > 4 && (
-                <CustomText variant="caption" color={colors.inkMuted} style={{ marginTop: spacing.xs }}>+{ins.muscles30d.length - 4} more in All</CustomText>
-              )}
-            </>
-          ) : (
-            <CustomText variant="body" color={colors.inkMuted}>Finish a workout and your muscle coverage shows here.</CustomText>
-          )}
-        </SurfaceCard>
-
-        {/* Volume + body weight tiles */}
-        <View style={{ flexDirection: 'row', gap: spacing.sm, alignItems: 'stretch' }}>
-          <View style={{ flex: 1 }}>
-            <LinkCard label="Volume" onPress={() => navigation.navigate('ProgressScreen')}>
-              <CustomText variant="display">{fmtVolume(ins.week.volumeKg)}</CustomText>
-              <CustomText variant="caption" color={colors.inkMuted}>{unit} this week</CustomText>
-              {/* No comparison until something is logged: "-100%" on a Monday says nothing. */}
-              <CustomText variant="caption" color={ins.week.volumeKg === 0 || ins.week.volumeChange === null ? colors.inkMuted : ins.week.volumeChange >= 0 ? colors.success : colors.error}>
-                {ins.week.volumeKg === 0 ? 'Nothing logged yet' : ins.week.volumeChange === null ? 'No last week yet' : `${ins.week.volumeChange >= 0 ? '+' : ''}${Math.round(ins.week.volumeChange * 100)}% vs last week`}
-              </CustomText>
-            </LinkCard>
-          </View>
-          <View style={{ flex: 1 }}>
-        <LinkCard label="Body weight" onPress={() => navigation.navigate(latestWeight ? 'WeightHistoryScreen' : 'LogWeightScreen')}>
-          {latestWeight ? (
-            <View style={{ gap: 2 }}>
-              <CustomText variant="display">{formatWeight(latestWeight.weightKg, unit)}</CustomText>
-              <CustomText variant="caption" color={colors.inkMuted}>as of {dateLabel(latestWeight.date)}</CustomText>
-              {weightDelta !== null && (
-                <CustomText variant="caption" color={weightDelta <= 0 ? colors.success : colors.warning}>
-                  {weightDelta > 0 ? '+' : ''}{toDisplayWeight(weightDelta, unit)} {unit} {ins.weightChangeCycle !== null ? 'this cycle' : 'in 30 days'}
-                </CustomText>
-              )}
-              {target !== null && (
-                <CustomText variant="caption" color={colors.inkMuted}>{formatWeight(Math.abs(latestWeight.trendKg - target), unit)} to go</CustomText>
-              )}
+          </>
+        )}
+        {/* One column, cards gone wide: today beside its tiles, the muscle map beside its rows. */}
+        {!loading && family === 'medium' && (
+          <>
+            {reportCard}
+            <SectionHeader label="Today" first={!reportCycle} />
+            <View style={{ flexDirection: 'row', gap: spacing.sm, alignItems: 'stretch' }}>
+              <View style={{ flex: 1.4 }}>{todayCard}</View>
+              <View style={{ flex: 1 }}>{tiles}</View>
             </View>
-          ) : (
-            <CustomText variant="body" color={colors.inkMuted}>Log your first weigh-in.</CustomText>
-          )}
-        </LinkCard>
-          </View>
-        </View>
-
-        {/* Personal records */}
-        {ins.recentRecords.length > 0 && (
-          <SurfaceCard>
-            <CardHeader label="Recent records" />
-            {ins.recentRecords.map(pr => (
-              <TouchableOpacity
-                key={`${pr.exerciseId}-${pr.sessionId}`}
-                onPress={() => navigation.navigate('ExerciseProgressScreen', { exerciseId: pr.exerciseId, exerciseName: pr.exerciseName })}
-                style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.md, paddingVertical: spacing.sm }}
-              >
-                <Icon icon={generalIcons.trophy} size={18} color={colors.warning} />
-                <View style={{ flex: 1 }}>
-                  <CustomText variant="bodyStrong">{pr.exerciseName}</CustomText>
-                  <CustomText variant="caption" color={colors.inkMuted}>{dateLabel(pr.date)}{pr.previousValue !== null ? ` · up from ${formatRecordValue(pr.kind, pr.previousValue, unit, dist)}` : ' · first record'}</CustomText>
-                </View>
-                <CustomText variant="bodyStrong" color={colors.accent}>{formatRecordValue(pr.kind, pr.value, unit, dist)}</CustomText>
-              </TouchableOpacity>
-            ))}
-          </SurfaceCard>
-        )}
-
-        <SectionHeader label="Buddies" />
-        {/* Buddy activity: the latest few lines, or a nudge to add someone. */}
-        <LinkCard label="Buddy activity" onPress={() => goBuddies(buddies.length ? 'BuddyActivityScreen' : 'BuddiesScreen')}>
-          {buddies.length === 0 ? (
-            <CustomText variant="body" color={colors.inkMuted}>Add a buddy and their workouts, streaks and records show up here.</CustomText>
-          ) : buddyFeed.items.length === 0 ? (
-            <CustomText variant="body" color={colors.inkMuted}>Nothing yet. Finished workouts and streaks land here.</CustomText>
-          ) : (
-            buddyFeed.items.map(item => <ActivityRow key={item.id} item={item} compact />)
-          )}
-        </LinkCard>
-        {/* Plans buddies share: the newest three. Nothing shared, no card. */}
-        {buddyPlans.plans.length > 0 && (
-          <LinkCard label="Plans from buddies" onPress={() => goBuddies('BuddyPlansScreen')}>
-            {buddyPlans.plans.slice(0, 3).map((sp, i) => (
-                <TouchableOpacity
-                  key={`${sp.ownerUid}:${sp.plan.id}`}
-                  onPress={() => (navigation as unknown as NavigationProp<BuddyRoutes>).navigate('BuddyPlanScreen', { ownerUid: sp.ownerUid, planId: sp.plan.id, ownerName: sp.ownerName })}
-                  style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.md, paddingVertical: spacing.sm, borderTopWidth: i ? 1 : 0, borderTopColor: colors.line }}
-                >
-                  <Avatar uri={sp.ownerPhoto} name={sp.ownerName} size={32} />
-                  <View style={{ flex: 1 }}>
-                    <CustomText variant="body" numberOfLines={1}>{sp.plan.name}</CustomText>
-                    <CustomText variant="caption" color={colors.inkMuted} numberOfLines={1}>by {sp.ownerName ?? 'a buddy'} · {sp.plan.workouts.length} workout{sp.plan.workouts.length === 1 ? '' : 's'}</CustomText>
-                  </View>
-                </TouchableOpacity>
-            ))}
-          </LinkCard>
-        )}
-
-        <SectionHeader label="Activity" />
-        {/* Steps */}
-        <SurfaceCard>
-          <CardHeader label="Steps" />
-          {steps.available === false ? (
-            <CustomText variant="body" color={colors.inkMuted}>{steps.platformName === 'none' ? 'Step tracking needs a phone with a health app.' : `${steps.platformName} isn't available on this device.`}</CustomText>
-          ) : !steps.connected ? (
-            <>
-              <CustomText variant="body" color={colors.inkMuted}>Connect {steps.platformName} to see today's steps and your weekly average. Weigh-ins sync both ways.</CustomText>
-              <View style={{ marginTop: spacing.md }}>
-                <PrimaryButton label={`Connect ${steps.platformName}`} icon={generalIcons.personRunning} onPress={() => steps.connect()} />
-              </View>
-            </>
-          ) : (
-            <>
-              <View style={{ flexDirection: 'row', alignItems: 'baseline', gap: spacing.sm, marginBottom: spacing.sm }}>
-                <CustomText variant="display">{steps.today === null ? '—' : steps.today.toLocaleString()}</CustomText>
-                <CustomText variant="caption" color={colors.inkMuted}>today</CustomText>
-                {steps.weekAverage !== null && (
-                  <CustomText variant="caption" color={colors.inkMuted}>· {steps.weekAverage.toLocaleString()} avg over 7 days</CustomText>
-                )}
-              </View>
-              {steps.days.length > 0 && (
-                <BarChart bars={steps.days.map(d => ({ label: shortDate(d.date).replace(' ', '\u00a0'), value: d.steps }))} format={v => compactNumber(v)} height={120} />
-              )}
-              {steps.days.length === 0 && !steps.loading && (
-                steps.error ? (
-                  <>
-                    <CustomText variant="body" color={colors.inkMuted}>
-                      {steps.platformName} isn't sharing steps right now. That can happen after reinstalling the app or a system update. Reconnect to pick it back up.
-                    </CustomText>
-                    <View style={{ marginTop: spacing.md }}>
-                      <PrimaryButton label={`Reconnect ${steps.platformName}`} icon={generalIcons.personRunning} onPress={() => steps.connect()} />
-                    </View>
-                  </>
-                ) : (
-                  <CustomText variant="caption" color={colors.inkMuted}>
-                    No step data yet. If you declined access, allow it in {steps.platformName} settings.
-                  </CustomText>
-                )
-              )}
-            </>
-          )}
-        </SurfaceCard>
-        </>
+            <SectionHeader label="Progress" />
+            {musclesCard}
+            {volumeAndWeight}
+            {recordsCard}
+            <SectionHeader label="Buddies" />
+            {buddyActivityCard}
+            {buddyPlansCard}
+            <SectionHeader label="Activity" />
+            {stepsCard}
+          </>
         )}
       </ScrollView>
 

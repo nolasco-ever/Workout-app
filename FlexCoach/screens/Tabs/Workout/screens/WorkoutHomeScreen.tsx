@@ -15,7 +15,7 @@ import { Icon } from '../../../../components/icons/Icon';
 import { generalIcons } from '../../../../components/icons/icon-library';
 import { useTheme } from '../../../../theme';
 import { WorkoutStackParams } from '../WorkoutStack';
-import { useTabScrollInset } from '../../../../navigation/useTabBarInset';
+import { useTabBarSidePlaced, useTabScrollInset } from '../../../../navigation/useTabBarInset';
 import { TabHeader } from '../../../../components/headers/TabHeader';
 import { SurfaceCard as Card } from '../../../../components/cards/SurfaceCard';
 import { PrimaryButton } from '../../../../components/buttons/PrimaryButton';
@@ -36,6 +36,8 @@ export const WorkoutHomeScreen = () => {
   useScrollToTop(scrollRef);
   const { colors, spacing, radius } = useTheme();
   const bottomInset = useTabScrollInset();
+  // Room under the last card: less when no tab bar floats over the bottom.
+  const bottomRoom = useTabBarSidePlaced() ? spacing.lg : spacing.xxl;
   const { uid, profile } = useAuth();
   const state = useWorkoutHome();
   const { plans } = usePlans();
@@ -109,7 +111,7 @@ export const WorkoutHomeScreen = () => {
       <ScrollView
         ref={scrollRef}
         alwaysBounceVertical={false}
-        contentContainerStyle={{ padding: spacing.lg, gap: spacing.lg, paddingBottom: spacing.xxl + bottomInset }}
+        contentContainerStyle={{ padding: spacing.lg, gap: spacing.lg, paddingBottom: bottomRoom + bottomInset }}
       >
         {/* One scroll view for every state; the title row scrolls with the content.
             The content is never stretched to fill the screen, so short states don't scroll. */}

@@ -15,7 +15,7 @@ import { useAchievements } from '../../../../data/hooks/useAchievements';
 import { features } from '../../../../config/features';
 import { useTheme } from '../../../../theme';
 import { ProfileStackParams } from '../ProfileStack';
-import { useTabScrollInset } from '../../../../navigation/useTabBarInset';
+import { useTabBarSidePlaced, useTabScrollInset } from '../../../../navigation/useTabBarInset';
 import { TabHeader } from '../../../../components/headers/TabHeader';
 import { EDIT_BADGE, PhotoOrigin, ProfilePhotoModal } from '../../../../components/media/ProfilePhotoModal';
 import { AvatarPicker } from '../../../../components/media/AvatarPicker';
@@ -33,6 +33,8 @@ export const ProfileScreen = () => {
   const achievements = useAchievements(false);
   const { colors, spacing } = useTheme();
   const bottomInset = useTabScrollInset();
+  // Room under the last card: less when no tab bar floats over the bottom.
+  const bottomRoom = useTabBarSidePlaced() ? spacing.lg : spacing.xxl;
   const { profile, user } = useAuth();
   const { plans } = usePlans();
   const photo = useProfilePhoto();
@@ -69,7 +71,7 @@ export const ProfileScreen = () => {
 
   return (
     <SafeAreaView edges={['top', 'left', 'right']} style={{ flex: 1, backgroundColor: colors.ground }}>
-      <ScrollView ref={scrollRef} contentContainerStyle={{ padding: spacing.lg, gap: spacing.lg, paddingBottom: spacing.xxl + bottomInset }}>
+      <ScrollView ref={scrollRef} contentContainerStyle={{ padding: spacing.lg, gap: spacing.lg, paddingBottom: bottomRoom + bottomInset }}>
         <TabHeader title="Profile" action={{ icon: generalIcons.users, accessibilityLabel: 'Buddies and my Iron Card', onPress: () => navigation.navigate('CardStack') }} />
         <View style={{ alignItems: 'center', gap: spacing.sm }}>
           <TouchableOpacity ref={avatarRef} onPress={openPhoto} disabled={photo.busy} accessibilityRole="button" accessibilityLabel="View or change profile photo" style={{ width: AVATAR, height: AVATAR, opacity: avatarHidden ? 0 : 1 }}>

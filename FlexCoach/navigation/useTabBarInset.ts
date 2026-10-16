@@ -23,6 +23,9 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 const SIDE_PLACED = 160;
 const bottomBar = (height: number): number => (height > SIDE_PLACED ? 0 : height);
 
+/** True when the tab bar stands in a column at the side of the display (a folding phone), so nothing floats over the bottom of the content. */
+export const useTabBarSidePlaced = (): boolean => (useContext(BottomTabBarHeightContext) ?? 0) > SIDE_PLACED;
+
 export const useTabBarInset = (): number => {
   const tabBar = bottomBar(useContext(BottomTabBarHeightContext) ?? 0);
   const { bottom } = useSafeAreaInsets();
