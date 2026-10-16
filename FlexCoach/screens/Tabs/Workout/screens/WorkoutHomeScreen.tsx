@@ -16,6 +16,7 @@ import { generalIcons } from '../../../../components/icons/icon-library';
 import { useTheme } from '../../../../theme';
 import { WorkoutStackParams } from '../WorkoutStack';
 import { useTabBarSidePlaced, useTabScrollInset } from '../../../../navigation/useTabBarInset';
+import { useLayoutFamily } from '../../../../components/layout/useLayoutFamily';
 import { TabHeader } from '../../../../components/headers/TabHeader';
 import { SurfaceCard as Card } from '../../../../components/cards/SurfaceCard';
 import { PrimaryButton } from '../../../../components/buttons/PrimaryButton';
@@ -36,6 +37,9 @@ export const WorkoutHomeScreen = () => {
   useScrollToTop(scrollRef);
   const { colors, spacing, radius } = useTheme();
   const bottomInset = useTabScrollInset();
+  const family = useLayoutFamily();
+  // Short states (no plan, no cycle) keep one comfortable column on a wide window.
+  const narrow = family === 'phone' ? undefined : ({ width: '100%', maxWidth: 560, alignSelf: 'center' } as const);
   // Room under the last card: less when no tab bar floats over the bottom.
   const bottomRoom = useTabBarSidePlaced() ? spacing.lg : spacing.xxl;
   const { uid, profile } = useAuth();
@@ -106,6 +110,209 @@ export const WorkoutHomeScreen = () => {
     });
   const quickButton = <PrimaryButton label="Quick workout" variant="outline" icon={generalIcons.zap} busy={busy === 'quick'} onPress={startQuick} />;
 
+  // The cycle view in pieces; the layout family arranges them below.
+  const cycleView =
+    plan && cycle
+      ? {
+          headline: (
+            <View style={{ gap: spacing.xs }}>
+              <CustomText variant="overline" color={colors.inkMuted}>
+                {plan.name} · Cycle {cycle.number}
+              </CustomText>
+              {/* The title shrinks and wraps before the count does, so "Starts Mon, Sep 28" can't run into it. */}
+              <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-end', gap: spacing.md }}>
+                <CustomText variant="title" style={{ flex: 1, flexShrink: 1 }}>{dayLabel}</CustomText>
+                <CustomText variant="caption" color={colors.inkMuted} style={{ flexShrink: 0, paddingBottom: 4 }}>
+                  {workoutsDone} of {workoutsTotal} workouts done
+                </CustomText>
+              </View>
+              <View style={{ height: 6, borderRadius: 3, backgroundColor: colors.surfaceRaised, overflow: 'hidden' }}>
+                <View style={{ height: 6, width: `${workoutsTotal ? (workoutsDone / workoutsTotal) * 100 : 0}%`, backgroundColor: colors.accent }} />
+              </View>
+            </View>
+          ),
+          report:
+            state.cycleFinished && !state.reportReviewed ? (
+              <Card tone="accent">
+                <CustomText variant="overline" color={colors.accent}>Cycle {cycle.number}</CustomText>
+                <CustomText variant="heading">Your cycle report is ready</CustomText>
+                <CustomText variant="body" color={colors.inkMuted} style={{ marginTop: spacing.xs, marginBottom: spacing.md }}>
+                  Review it to see your stats and any changes to your next cycle.
+                </CustomText>
+                <PrimaryButton label="Review report" onPress={() => navigation.navigate('CycleReviewScreen', { plan, cycle })} />
+              </Card>
+            ) : state.cycleFinished && state.reportReviewed ? (
+              <Card tone="accent">
+                <CustomText variant="heading">Cycle {cycle.number} is done</CustomText>
+                <CustomText variant="body" color={colors.inkMuted} style={{ marginTop: spacing.xs, marginBottom: spacing.md }}>
+                  Start the next one whenever you're ready.
+                </CustomText>
+                <View style={{ gap: spacing.sm }}>
+                  <PrimaryButton label={`Start cycle ${cycle.number + 1}`} busy={busy === 'next-cycle'} onPress={() => run('next-cycle', async () => { if (uid) await startNextCycle(uid, plan, cycle); })} />
+                  <PrimaryButton label="See the report again" variant="quiet" onPress={() => navigation.navigate('CycleReviewScreen', { plan, cycle })} />
+                </View>
+              </Card>
+            ) : null,
+          missed: !state.cycleFinished
+            ? state.overdue.map(o => (
+                <Card key={o.id}>
+                  <CustomText variant="overline" color={colors.warning}>Missed</CustomText>
+                  <CustomText variant="heading" style={{ marginTop: spacing.xs }}>{o.workoutName}</CustomText>
+                  <CustomText variant="caption" color={colors.inkMuted} style={{ marginBottom: spacing.md }}>
+                    Was scheduled for {longDate(o.date)}
+                  </CustomText>
+                  <View style={{ flexDirection: 'row', gap: spacing.sm }}>
+                    <View style={{ flex: 1 }}>
+                      <PrimaryButton label="Skip" variant="outline" busy={busy === `skip-${o.id}`} onPress={() => run(`skip-${o.id}`, async () => { if (uid) await skipWorkout(uid, cycle, o.id, profile); })} />
+                    </View>
+                    <View style={{ flex: 1 }}>
+                      <PrimaryButton label="Do it today" busy={busy === `push-${o.id}`} onPress={() => run(`push-${o.id}`, async () => { if (uid) await pushWorkoutTo(uid, plan, cycle, o.id, state.todayDate, profile); })} />
+                    </View>
+                  </View>
+                </Card>
+              ))
+            : null,
+          permission: <NotificationPermissionCard />,
+          today:
+            !state.cycleFinished && !resume ? (
+              <Card>
+                <CustomText variant="overline" color={colors.inkMuted}>Today · {longDate(state.todayDate)}</CustomText>
+                {notStarted ? (
+                  <>
+                    <CustomText variant="heading" style={{ marginTop: spacing.xs }}>Not started yet</CustomText>
+                    <CustomText variant="body" color={colors.inkMuted}>
+                      {state.upcoming[0] ? `First up: ${state.upcoming[0].workoutName} on ${longDate(state.upcoming[0].date)}.` : `The cycle begins ${longDate(cycle.startDate)}.`}
+                    </CustomText>
+                  </>
+                ) : state.todayOccurrence && todayWorkout ? (
+                  <>
+                    <CustomText variant="heading" style={{ marginTop: spacing.xs }}>{todayWorkout.name}</CustomText>
+                    <CustomText variant="caption" color={colors.inkMuted} style={{ marginBottom: spacing.md }}>
+                      {todayWorkout.exercises.length} exercises · about {Math.round(todayWorkout.exercises.reduce((s, e) => s + e.sets * (e.restSec + 45), 0) / 60)} min
+                    </CustomText>
+                    {state.todayOccurrence.status === 'completed' ? (
+                      <PrimaryButton
+                        label="Completed · see workout"
+                        variant="quiet"
+                        icon={generalIcons.check}
+                        onPress={() => state.todayOccurrence?.sessionId && navigation.navigate('SessionDetailScreen', { sessionId: state.todayOccurrence.sessionId, workoutName: todayWorkout.name })}
+                      />
+                    ) : state.todayOccurrence.status === 'skipped' ? (
+                      <PrimaryButton label="Skipped" variant="quiet" disabled onPress={() => {}} />
+                    ) : (
+                      <View style={{ gap: spacing.sm }}>
+                        <PrimaryButton label="Start workout" icon={generalIcons.play} busy={busy === `start-${state.todayOccurrence.id}`} onPress={() => start(state.todayOccurrence!)} />
+                        <View style={{ flexDirection: 'row' }}>
+                          <View style={{ flex: 1 }}>
+                            <PrimaryButton label="Preview exercises" variant="quiet" onPress={() => openPreview(state.todayOccurrence!)} />
+                          </View>
+                          <View style={{ flex: 1 }}>
+                            <PrimaryButton
+                              label="Not today"
+                              variant="quiet"
+                              busy={busy === `not-today-${state.todayOccurrence.id}`}
+                              onPress={() => uid && askNotToday(uid, plan, cycle, state.todayOccurrence!, state.todayDate, profile, fn => run(`not-today-${state.todayOccurrence!.id}`, fn))}
+                            />
+                          </View>
+                        </View>
+                      </View>
+                    )}
+                  </>
+                ) : (
+                  <>
+                    <CustomText variant="heading" style={{ marginTop: spacing.xs }}>Rest day</CustomText>
+                    <CustomText variant="body" color={colors.inkMuted}>
+                      {state.upcoming[0] ? `Next up: ${state.upcoming[0].workoutName} on ${longDate(state.upcoming[0].date)}` : 'Nothing else scheduled this cycle.'}
+                    </CustomText>
+                  </>
+                )}
+              </Card>
+            ) : null,
+          /** The today card gone wide: the workout on the left, Start on the right behind a standing divider, Preview and Not today along the bottom. */
+          todayWide:
+            !state.cycleFinished && !resume ? (
+              <Card>
+                <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.lg }}>
+                  <View style={{ flex: 1 }}>
+                    <CustomText variant="overline" color={colors.inkMuted}>Today · {longDate(state.todayDate)}</CustomText>
+                    {notStarted ? (
+                      <>
+                        <CustomText variant="heading" style={{ marginTop: spacing.xs }}>Not started yet</CustomText>
+                        <CustomText variant="body" color={colors.inkMuted}>
+                          {state.upcoming[0] ? `First up: ${state.upcoming[0].workoutName} on ${longDate(state.upcoming[0].date)}.` : `The cycle begins ${longDate(cycle.startDate)}.`}
+                        </CustomText>
+                      </>
+                    ) : state.todayOccurrence && todayWorkout ? (
+                      <>
+                        <CustomText variant="heading" style={{ marginTop: spacing.xs }}>{todayWorkout.name}</CustomText>
+                        <CustomText variant="caption" color={colors.inkMuted}>
+                          {todayWorkout.exercises.length} exercises · about {Math.round(todayWorkout.exercises.reduce((s, e) => s + e.sets * (e.restSec + 45), 0) / 60)} min
+                        </CustomText>
+                      </>
+                    ) : (
+                      <>
+                        <CustomText variant="heading" style={{ marginTop: spacing.xs }}>Rest day</CustomText>
+                        <CustomText variant="body" color={colors.inkMuted}>
+                          {state.upcoming[0] ? `Next up: ${state.upcoming[0].workoutName} on ${longDate(state.upcoming[0].date)}` : 'Nothing else scheduled this cycle.'}
+                        </CustomText>
+                      </>
+                    )}
+                  </View>
+                  {/* Three siblings, so the divider stands exactly in the middle: left half, line, right half. */}
+                  {!notStarted && state.todayOccurrence && todayWorkout && <View style={{ width: 1, alignSelf: 'stretch', backgroundColor: colors.line }} />}
+                  {!notStarted && state.todayOccurrence && todayWorkout && (
+                    <View style={{ flex: 1 }}>
+                      {state.todayOccurrence.status === 'completed' ? (
+                        <PrimaryButton
+                          label="Completed · see workout"
+                          variant="quiet"
+                          icon={generalIcons.check}
+                          onPress={() => state.todayOccurrence?.sessionId && navigation.navigate('SessionDetailScreen', { sessionId: state.todayOccurrence.sessionId, workoutName: todayWorkout.name })}
+                        />
+                      ) : state.todayOccurrence.status === 'skipped' ? (
+                        <PrimaryButton label="Skipped" variant="quiet" disabled onPress={() => {}} />
+                      ) : (
+                        <PrimaryButton label="Start workout" icon={generalIcons.play} busy={busy === `start-${state.todayOccurrence.id}`} onPress={() => start(state.todayOccurrence!)} />
+                      )}
+                    </View>
+                  )}
+                </View>
+                {!notStarted && state.todayOccurrence && todayWorkout && state.todayOccurrence.status === 'scheduled' && (
+                  <>
+                    <View style={{ flexDirection: 'row', gap: spacing.sm, marginTop: spacing.md }}>
+                      <View style={{ flex: 1 }}>
+                        <PrimaryButton label="Preview exercises" variant="quiet" onPress={() => openPreview(state.todayOccurrence!)} />
+                      </View>
+                      <View style={{ flex: 1 }}>
+                        <PrimaryButton
+                          label="Not today"
+                          variant="quiet"
+                          busy={busy === `not-today-${state.todayOccurrence.id}`}
+                          onPress={() => uid && askNotToday(uid, plan, cycle, state.todayOccurrence!, state.todayDate, profile, fn => run(`not-today-${state.todayOccurrence!.id}`, fn))}
+                        />
+                      </View>
+                    </View>
+                  </>
+                )}
+              </Card>
+            ) : null,
+          quick: !resume ? quickButton : null,
+          list: (
+            <View>
+              <CustomText variant="heading" style={{ marginBottom: spacing.sm }}>This cycle</CustomText>
+              <Card style={{ padding: 0 }}>
+                {/* One row per calendar day, start to end: a day two workouts landed on shows both, and a day nothing sits on any more is a rest day. */}
+                {cycleDays.map((date, i) => (
+                  <View key={date} style={{ borderTopWidth: i === 0 ? 0 : 1, borderTopColor: colors.line }}>
+                    <DayRow date={date} occurrences={cycle.occurrences.filter(o => o.date === date)} isToday={date === state.todayDate} onOpen={openOccurrence} />
+                  </View>
+                ))}
+              </Card>
+            </View>
+          ),
+        }
+      : null;
+
   return (
     <SafeAreaView edges={['top', 'left', 'right']} style={{ flex: 1, backgroundColor: colors.ground }}>
       <ScrollView
@@ -131,7 +338,7 @@ export const WorkoutHomeScreen = () => {
         )}
 
         {!loading && plan && !cycle && (
-          <View style={{ gap: spacing.lg, padding: spacing.sm, paddingTop: spacing.xl }}>
+          <View style={[{ gap: spacing.lg, padding: spacing.sm, paddingTop: spacing.xl }, narrow]}>
             <CustomText variant="overline" color={colors.inkMuted}>{plan.name}</CustomText>
             <CustomText variant="title">Ready when you are</CustomText>
             <CustomText variant="body" color={colors.inkMuted}>This plan is active but has no cycle running. Start one and today's workout appears here.</CustomText>
@@ -141,7 +348,7 @@ export const WorkoutHomeScreen = () => {
         )}
 
         {!loading && !plan && (
-          <View style={{ gap: spacing.lg, padding: spacing.sm, paddingTop: spacing.xl }}>
+          <View style={[{ gap: spacing.lg, padding: spacing.sm, paddingTop: spacing.xl }, narrow]}>
             <Icon icon={generalIcons.dumbbell} color={colors.accent} size={40} />
             <CustomText variant="title">No active plan</CustomText>
             <CustomText variant="body" color={colors.inkMuted}>
@@ -195,144 +402,45 @@ export const WorkoutHomeScreen = () => {
           </View>
         )}
 
-        {!loading && plan && cycle && (
-        <>
-        {/* Cycle header */}
-        <View style={{ gap: spacing.xs }}>
-          <CustomText variant="overline" color={colors.inkMuted}>
-            {plan.name} · Cycle {cycle.number}
-          </CustomText>
-          {/* The title shrinks and wraps before the count does, so "Starts Mon, Sep 28" can't run into it. */}
-          <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-end', gap: spacing.md }}>
-            <CustomText variant="title" style={{ flex: 1, flexShrink: 1 }}>{dayLabel}</CustomText>
-            <CustomText variant="caption" color={colors.inkMuted} style={{ flexShrink: 0, paddingBottom: 4 }}>
-              {workoutsDone} of {workoutsTotal} workouts done
-            </CustomText>
-          </View>
-          <View style={{ height: 6, borderRadius: 3, backgroundColor: colors.surfaceRaised, overflow: 'hidden' }}>
-            <View style={{ height: 6, width: `${workoutsTotal ? (workoutsDone / workoutsTotal) * 100 : 0}%`, backgroundColor: colors.accent }} />
-          </View>
-        </View>
-
-        {/* Finished cycle: the report must be reviewed before the next cycle can start. */}
-        {state.cycleFinished && !state.reportReviewed && (
-          <Card tone="accent">
-            <CustomText variant="overline" color={colors.accent}>Cycle {cycle.number}</CustomText>
-            <CustomText variant="heading">Your cycle report is ready</CustomText>
-            <CustomText variant="body" color={colors.inkMuted} style={{ marginTop: spacing.xs, marginBottom: spacing.md }}>
-              Review it to see your stats and any changes to your next cycle.
-            </CustomText>
-            <PrimaryButton label="Review report" onPress={() => navigation.navigate('CycleReviewScreen', { plan, cycle })} />
-          </Card>
+        {!loading && cycleView && family === 'phone' && (
+          <>
+            {cycleView.headline}
+            {cycleView.report}
+            {cycleView.missed}
+            {cycleView.permission}
+            {cycleView.today}
+            {cycleView.quick}
+            {cycleView.list}
+          </>
         )}
-        {state.cycleFinished && state.reportReviewed && (
-          <Card tone="accent">
-            <CustomText variant="heading">Cycle {cycle.number} is done</CustomText>
-            <CustomText variant="body" color={colors.inkMuted} style={{ marginTop: spacing.xs, marginBottom: spacing.md }}>
-              Start the next one whenever you're ready.
-            </CustomText>
-            <View style={{ gap: spacing.sm }}>
-              <PrimaryButton label={`Start cycle ${cycle.number + 1}`} busy={busy === 'next-cycle'} onPress={() => run('next-cycle', async () => { if (uid) await startNextCycle(uid, plan, cycle); })} />
-              <PrimaryButton label="See the report again" variant="quiet" onPress={() => navigation.navigate('CycleReviewScreen', { plan, cycle })} />
+        {/* Two columns: the cycle and today's workout beside the day list. */}
+        {!loading && cycleView && family === 'wide' && (
+          <View style={{ flexDirection: 'row', gap: spacing.lg, alignItems: 'flex-start' }}>
+            <View style={{ flex: 1, gap: spacing.lg, alignSelf: 'flex-start' }}>
+              {cycleView.headline}
+              {cycleView.report}
+              {cycleView.missed}
+              {cycleView.permission}
+              {cycleView.today}
+              {cycleView.quick}
             </View>
-          </Card>
+            <View style={{ flex: 1, alignSelf: 'flex-start' }}>{cycleView.list}</View>
+          </View>
         )}
-
-        {/* Overdue decisions */}
-        {!state.cycleFinished &&
-          state.overdue.map(o => (
-            <Card key={o.id}>
-              <CustomText variant="overline" color={colors.warning}>Missed</CustomText>
-              <CustomText variant="heading" style={{ marginTop: spacing.xs }}>{o.workoutName}</CustomText>
-              <CustomText variant="caption" color={colors.inkMuted} style={{ marginBottom: spacing.md }}>
-                Was scheduled for {longDate(o.date)}
-              </CustomText>
-              <View style={{ flexDirection: 'row', gap: spacing.sm }}>
-                <View style={{ flex: 1 }}>
-                  <PrimaryButton label="Skip" variant="outline" busy={busy === `skip-${o.id}`} onPress={() => run(`skip-${o.id}`, async () => { if (uid) await skipWorkout(uid, cycle, o.id, profile); })} />
-                </View>
-                <View style={{ flex: 1 }}>
-                  <PrimaryButton label="Do it today" busy={busy === `push-${o.id}`} onPress={() => run(`push-${o.id}`, async () => { if (uid) await pushWorkoutTo(uid, plan, cycle, o.id, state.todayDate, profile); })} />
-                </View>
-              </View>
-            </Card>
-          ))}
-
-        {/* Notification permission, asked here rather than at launch. */}
-        {!!cycle && <NotificationPermissionCard />}
-
-        {/* Today */}
-        {!state.cycleFinished && !resume && (
-          <Card>
-            <CustomText variant="overline" color={colors.inkMuted}>Today · {longDate(state.todayDate)}</CustomText>
-            {notStarted ? (
-              <>
-                <CustomText variant="heading" style={{ marginTop: spacing.xs }}>Not started yet</CustomText>
-                <CustomText variant="body" color={colors.inkMuted}>
-                  {state.upcoming[0] ? `First up: ${state.upcoming[0].workoutName} on ${longDate(state.upcoming[0].date)}.` : `The cycle begins ${longDate(cycle.startDate)}.`}
-                </CustomText>
-              </>
-            ) : state.todayOccurrence && todayWorkout ? (
-              <>
-                <CustomText variant="heading" style={{ marginTop: spacing.xs }}>{todayWorkout.name}</CustomText>
-                <CustomText variant="caption" color={colors.inkMuted} style={{ marginBottom: spacing.md }}>
-                  {todayWorkout.exercises.length} exercises · about {Math.round(todayWorkout.exercises.reduce((s, e) => s + e.sets * (e.restSec + 45), 0) / 60)} min
-                </CustomText>
-                {state.todayOccurrence.status === 'completed' ? (
-                  <PrimaryButton
-                    label="Completed · see workout"
-                    variant="quiet"
-                    icon={generalIcons.check}
-                    onPress={() => state.todayOccurrence?.sessionId && navigation.navigate('SessionDetailScreen', { sessionId: state.todayOccurrence.sessionId, workoutName: todayWorkout.name })}
-                  />
-                ) : state.todayOccurrence.status === 'skipped' ? (
-                  <PrimaryButton label="Skipped" variant="quiet" disabled onPress={() => {}} />
-                ) : (
-                  <View style={{ gap: spacing.sm }}>
-                    <PrimaryButton label="Start workout" icon={generalIcons.play} busy={busy === `start-${state.todayOccurrence.id}`} onPress={() => start(state.todayOccurrence!)} />
-                    <View style={{ flexDirection: 'row' }}>
-                      <View style={{ flex: 1 }}>
-                        <PrimaryButton label="Preview exercises" variant="quiet" onPress={() => openPreview(state.todayOccurrence!)} />
-                      </View>
-                      <View style={{ flex: 1 }}>
-                        <PrimaryButton
-                          label="Not today"
-                          variant="quiet"
-                          busy={busy === `not-today-${state.todayOccurrence.id}`}
-                          onPress={() => uid && askNotToday(uid, plan, cycle, state.todayOccurrence!, state.todayDate, profile, fn => run(`not-today-${state.todayOccurrence!.id}`, fn))}
-                        />
-                      </View>
-                    </View>
-                  </View>
-                )}
-              </>
-            ) : (
-              <>
-                <CustomText variant="heading" style={{ marginTop: spacing.xs }}>Rest day</CustomText>
-                <CustomText variant="body" color={colors.inkMuted}>
-                  {state.upcoming[0] ? `Next up: ${state.upcoming[0].workoutName} on ${longDate(state.upcoming[0].date)}` : 'Nothing else scheduled this cycle.'}
-                </CustomText>
-              </>
-            )}
-          </Card>
-        )}
-
-        {/* Off-plan, any day: a quick workout. */}
-        {!resume && quickButton}
-
-        {/* Cycle list */}
-        <View>
-          <CustomText variant="heading" style={{ marginBottom: spacing.sm }}>This cycle</CustomText>
-          <Card style={{ padding: 0 }}>
-            {/* One row per calendar day, start to end: a day two workouts landed on shows both, and a day nothing sits on any more is a rest day. */}
-            {cycleDays.map((date, i) => (
-              <View key={date} style={{ borderTopWidth: i === 0 ? 0 : 1, borderTopColor: colors.line }}>
-                <DayRow date={date} occurrences={cycle.occurrences.filter(o => o.date === date)} isToday={date === state.todayDate} onOpen={openOccurrence} />
-              </View>
-            ))}
-          </Card>
-        </View>
-        </>
+        {/* One column: the cycle headline with the quick workout at its right, the today card gone wide, then the day list. */}
+        {!loading && cycleView && family === 'medium' && (
+          <>
+            {cycleView.report}
+            {cycleView.missed}
+            {cycleView.permission}
+            {/* The same geometry as the today card below (its padding, and its divider's room), so the quick workout button lines up over Start. */}
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.lg * 2 + 1, paddingHorizontal: spacing.lg }}>
+              <View style={{ flex: 1 }}>{cycleView.headline}</View>
+              {cycleView.quick && <View style={{ flex: 1 }}>{cycleView.quick}</View>}
+            </View>
+            {cycleView.todayWide}
+            {cycleView.list}
+          </>
         )}
       </ScrollView>
     </SafeAreaView>
