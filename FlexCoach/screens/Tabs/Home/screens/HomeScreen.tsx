@@ -23,10 +23,11 @@ import { MuscleMap } from '../../../../components/anatomy/MuscleMap';
 import { MuscleRow } from '../components/MuscleRow';
 import { MuscleGroup } from '../../../../data/models';
 import { useTheme } from '../../../../theme';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { HomeStackParams } from '../HomeStack';
 import { useTabBarSidePlaced, useTabScrollInset } from '../../../../navigation/useTabBarInset';
 import { useLayoutFamily } from '../../../../components/layout/useLayoutFamily';
-import { TabHeader } from '../../../../components/headers/TabHeader';
+import { StickyTabHeader, estimateStickyHeaderHeight } from '../../../../components/headers/StickyTabHeader';
 import { useNotificationFeed } from '../../../../data/notifications/useNotificationFeed';
 import { AppStackParams } from '../../../../appNavigators/AppStack';
 import { devFlags } from '../../../../dev/flags';
@@ -88,6 +89,9 @@ export const HomeScreen = () => {
   const navigation = useNavigation<NativeStackNavigationProp<HomeStackParams>>();
   const { colors, spacing } = useTheme();
   const bottomInset = useTabScrollInset();
+  const insets = useSafeAreaInsets();
+  // The title row is a bar over the scroll view; the content starts under it.
+  const [headerHeight, setHeaderHeight] = useState(() => estimateStickyHeaderHeight(insets.top, spacing));
   // Room under the last card: less when no tab bar floats over the bottom.
   const bottomRoom = useTabBarSidePlaced() ? spacing.lg : spacing.xxl;
   const family = useLayoutFamily();
@@ -399,15 +403,14 @@ export const HomeScreen = () => {
   );
 
   return (
-    <SafeAreaView edges={['top', 'left', 'right']} style={{ flex: 1, backgroundColor: colors.ground }}>
+    <SafeAreaView edges={['left', 'right']} style={{ flex: 1, backgroundColor: colors.ground }}>
       <ScrollView
         ref={scrollRef}
-        contentContainerStyle={{ padding: spacing.lg, gap: spacing.lg, paddingBottom: bottomRoom + bottomInset }}
+        contentContainerStyle={{ padding: spacing.lg, paddingTop: headerHeight + spacing.sm, gap: spacing.lg, paddingBottom: bottomRoom + bottomInset }}
         showsVerticalScrollIndicator={false}
-        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.accent} />}
+        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.accent} progressViewOffset={headerHeight} />}
       >
         {/* One scroll view for every state; the title row scrolls with the content. */}
-        <TabHeader title="Home" action={{ icon: generalIcons.bell, badge: unreadCount > 0, accessibilityLabel: 'Notifications', onPress: openNotifications }} />
         {loading && <ActivityIndicator color={colors.accent} style={{ marginTop: spacing.xxl }} />}
         {!loading && family === 'phone' && (
           <>
@@ -472,6 +475,7 @@ export const HomeScreen = () => {
           </>
         )}
       </ScrollView>
+      <StickyTabHeader title="Home" action={{ icon: generalIcons.bell, badge: unreadCount > 0, accessibilityLabel: 'Notifications', onPress: openNotifications }} onHeight={setHeaderHeight} />
 
       <BottomSheet open={streakInfo} title="Your streak" onClose={() => setStreakInfo(false)}>
         <View style={{ gap: spacing.md }}>

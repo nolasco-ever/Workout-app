@@ -14,10 +14,11 @@ import { CustomText } from '../../../../components/text/customText';
 import { Icon } from '../../../../components/icons/Icon';
 import { generalIcons } from '../../../../components/icons/icon-library';
 import { useTheme } from '../../../../theme';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { WorkoutStackParams } from '../WorkoutStack';
 import { useTabBarSidePlaced, useTabScrollInset } from '../../../../navigation/useTabBarInset';
 import { useLayoutFamily } from '../../../../components/layout/useLayoutFamily';
-import { TabHeader } from '../../../../components/headers/TabHeader';
+import { StickyTabHeader, estimateStickyHeaderHeight } from '../../../../components/headers/StickyTabHeader';
 import { SurfaceCard as Card } from '../../../../components/cards/SurfaceCard';
 import { PrimaryButton } from '../../../../components/buttons/PrimaryButton';
 import { NotificationPermissionCard } from '../../../../components/cards/NotificationPermissionCard';
@@ -37,6 +38,9 @@ export const WorkoutHomeScreen = () => {
   useScrollToTop(scrollRef);
   const { colors, spacing, radius } = useTheme();
   const bottomInset = useTabScrollInset();
+  const insets = useSafeAreaInsets();
+  // The title row is a bar over the scroll view; the content starts under it.
+  const [headerHeight, setHeaderHeight] = useState(() => estimateStickyHeaderHeight(insets.top, spacing));
   const family = useLayoutFamily();
   // Short states (no plan, no cycle) keep one comfortable column on a wide window.
   const narrow = family === 'phone' ? undefined : ({ width: '100%', maxWidth: 560, alignSelf: 'center' } as const);
@@ -314,15 +318,14 @@ export const WorkoutHomeScreen = () => {
       : null;
 
   return (
-    <SafeAreaView edges={['top', 'left', 'right']} style={{ flex: 1, backgroundColor: colors.ground }}>
+    <SafeAreaView edges={['left', 'right']} style={{ flex: 1, backgroundColor: colors.ground }}>
       <ScrollView
         ref={scrollRef}
         alwaysBounceVertical={false}
-        contentContainerStyle={{ padding: spacing.lg, gap: spacing.lg, paddingBottom: bottomRoom + bottomInset }}
+        contentContainerStyle={{ padding: spacing.lg, paddingTop: headerHeight + spacing.sm, gap: spacing.lg, paddingBottom: bottomRoom + bottomInset }}
       >
         {/* One scroll view for every state; the title row scrolls with the content.
             The content is never stretched to fill the screen, so short states don't scroll. */}
-        <TabHeader title="Workout" action={{ icon: generalIcons.list, accessibilityLabel: 'My plans', onPress: () => openPlans() }} />
         {loading && <ActivityIndicator color={colors.accent} style={{ marginTop: spacing.xxl }} />}
 
         {/* Resume, whatever else is going on: a quick workout has no plan behind it. */}
@@ -461,6 +464,7 @@ export const WorkoutHomeScreen = () => {
           </>
         )}
       </ScrollView>
+      <StickyTabHeader title="Workout" action={{ icon: generalIcons.list, accessibilityLabel: 'My plans', onPress: () => openPlans() }} onHeight={setHeaderHeight} />
     </SafeAreaView>
   );
 };
