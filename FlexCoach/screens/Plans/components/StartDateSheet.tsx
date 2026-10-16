@@ -8,6 +8,10 @@ import { ChoiceChips } from '../../../components/inputs/ChoiceChips';
 import { PrimaryButton } from '../../../components/buttons/PrimaryButton';
 import { CustomText } from '../../../components/text/customText';
 import { useTheme } from '../../../theme';
+import { useLayoutFamily } from '../../../components/layout/useLayoutFamily';
+
+/** The calendar's width on a wide window: a phone's, centred. */
+const CALENDAR_MAX_WIDTH = 400;
 
 const DAY = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
 const longDate = (d: LocalDate) => fromLocalDate(d).toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric' });
@@ -27,6 +31,7 @@ interface Props {
  */
 export const StartDateSheet = ({ open, plan, busy = false, onClose, onConfirm }: Props) => {
   const { colors, spacing } = useTheme();
+  const phone = useLayoutFamily() === 'phone';
   const todayDate = today();
   const [date, setDate] = useState<LocalDate>(todayDate);
   useEffect(() => {
@@ -53,7 +58,10 @@ export const StartDateSheet = ({ open, plan, busy = false, onClose, onConfirm }:
       footer={<PrimaryButton label={`Start ${actualStart === todayDate ? 'today' : longDate(actualStart)}`} busy={busy} onPress={() => onConfirm(date)} />}
     >
       <ChoiceChips<LocalDate> options={quick} value={quick.some(q => q.value === date) ? date : null} onChange={setDate} />
-      <CalendarPicker value={date} onChange={setDate} minDate={todayDate} today={todayDate} />
+      {/* On a wide window the calendar keeps a phone's width, centred; stretched across the sheet its days sat far apart. */}
+      <View style={phone ? undefined : { width: '100%', maxWidth: CALENDAR_MAX_WIDTH, alignSelf: 'center' }}>
+        <CalendarPicker value={date} onChange={setDate} minDate={todayDate} today={todayDate} />
+      </View>
       <CustomText variant="caption" color={colors.inkMuted}>
         {weekly
           ? shifted

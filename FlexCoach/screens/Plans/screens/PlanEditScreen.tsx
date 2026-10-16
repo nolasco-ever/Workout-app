@@ -13,6 +13,8 @@ import { useTheme } from '../../../theme';
 import { PlansStackParams } from '../PlansStack';
 import { usePlanEditor } from '../PlanEditorContext';
 import { PlanSaveFooter } from '../components/PlanSaveFooter';
+import { PlanWorkspace } from '../components/PlanWorkspace';
+import { useLayoutFamily } from '../../../components/layout/useLayoutFamily';
 import { describeSchedule, GOAL_LABEL } from '../components/planSummary';
 
 /** One section of the plan: what it holds now, and a tap into its editor. */
@@ -47,6 +49,7 @@ export const PlanEditScreen = () => {
   const { colors, spacing } = useTheme();
   const { plans } = usePlans();
   const { draft, begin } = usePlanEditor();
+  const wide = useLayoutFamily() === 'wide';
   const plan = plans.find(p => p.id === params.planId);
 
   // Start the editor on this plan unless it is already editing it (coming back from a section).
@@ -60,6 +63,7 @@ export const PlanEditScreen = () => {
   const done = () => (first ? navigation.getParent()?.goBack() : navigation.popToTop());
 
   if (!draft || !editingThis) return <SafeAreaView edges={['bottom', 'left', 'right']} style={{ flex: 1, backgroundColor: colors.ground }} />;
+  if (wide) return <PlanWorkspace mode="edit" onDone={done} />;
 
   const problems = validatePlan(draft);
   const exercises = draft.workouts.reduce((n, w) => n + w.exercises.length, 0);
@@ -69,7 +73,7 @@ export const PlanEditScreen = () => {
   return (
     <SafeAreaView edges={['bottom', 'left', 'right']} style={{ flex: 1, backgroundColor: colors.ground }}>
       <ScrollView contentContainerStyle={{ padding: spacing.lg, gap: spacing.md }}>
-        <CustomText variant="body" color={colors.inkMuted} style={{ marginBottom: spacing.xs }}>Tap a part of the plan to change it. Nothing is saved until you save.</CustomText>
+        <CustomText variant="body" color={colors.inkMuted} style={{ marginBottom: spacing.xs }}>Tap a part of the plan to change it.</CustomText>
         <Section title="Basics" detail={`${draft.name.trim() || 'No name yet'} · ${GOAL_LABEL[draft.goal ?? 'hypertrophy']}${draft.description ? ` · ${draft.description}` : ''}`} warn={!draft.name.trim()} onPress={() => navigation.navigate('PlanBasicsScreen', { mode: 'edit' })} />
         <Section title="Workouts" detail={workoutsDetail} warn={draft.workouts.length === 0 || empty.length > 0} onPress={() => navigation.navigate('PlanWorkoutsScreen', { mode: 'edit' })} />
         <Section title="Schedule" detail={describeSchedule(draft)} onPress={() => navigation.navigate('PlanScheduleScreen', { mode: 'edit' })} />

@@ -10,6 +10,8 @@ import { PlansStackParams } from '../PlansStack';
 import { usePlanEditor } from '../PlanEditorContext';
 import { PlanSummaryCard } from '../components/PlanSummaryCard';
 import { PlanSaveFooter } from '../components/PlanSaveFooter';
+import { PlanWorkspace } from '../components/PlanWorkspace';
+import { useLayoutFamily } from '../../../components/layout/useLayoutFamily';
 
 /** The creator's last step: the whole plan as it will be saved, and the buttons that save it. */
 export const PlanReviewScreen = () => {
@@ -17,7 +19,9 @@ export const PlanReviewScreen = () => {
   const { params } = useRoute<RouteProp<PlansStackParams, 'PlanReviewScreen'>>();
   const { colors, spacing } = useTheme();
   const { draft } = usePlanEditor();
+  const wide = useLayoutFamily() === 'wide';
   if (!draft) return null;
+  if (wide) return <PlanWorkspace mode={params.mode} initial="review" onDone={() => navigation.popToTop()} />;
 
   const problems = validatePlan(draft);
 

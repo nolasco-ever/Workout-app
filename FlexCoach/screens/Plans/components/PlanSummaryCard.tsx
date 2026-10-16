@@ -68,13 +68,14 @@ const WorkoutRow = ({ workout, first }: { workout: Workout; first: boolean }) =>
 };
 
 /** Shared between the review step and the plan overview. */
-export const PlanSummaryCard = ({ plan }: { plan: Plan }) => {
+export const PlanSummaryCard = ({ plan, stacked = false }: { plan: Plan; /** One column whatever the window: for a pane that is already narrow. */ stacked?: boolean }) => {
   const { colors, spacing } = useTheme();
   const schedule = scheduleRows(plan);
   const coverage = muscleCoverage(plan);
   const workouts = [...plan.workouts].sort((a, b) => a.order - b.order);
   // On a wide window the workouts and the schedule sit side by side, the shorter card stretched to the taller; the coverage goes full width below.
-  const pair = useLayoutFamily() !== 'phone';
+  const family = useLayoutFamily();
+  const pair = !stacked && family !== 'phone';
   return (
     <View style={{ gap: spacing.md }}>
       <View style={pair ? { flexDirection: 'row', alignItems: 'stretch', gap: spacing.md } : { gap: spacing.md }}>
