@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { ActivityIndicator, ScrollView, TouchableOpacity, View } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { SafeAreaView } from '../../../../components/layout/SafeAreaView';
 import { NavigationProp, useNavigation, useScrollToTop } from '@react-navigation/native';
 import { useWorkoutHome } from '../../../../data/hooks/useWorkoutHome';
 import { usePlans } from '../../../../data/hooks/usePlans';

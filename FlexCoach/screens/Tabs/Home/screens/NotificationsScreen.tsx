@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { ActivityIndicator, RefreshControl, ScrollView, TouchableOpacity, View } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { SafeAreaView } from '../../../../components/layout/SafeAreaView';
 import { useFocusEffect } from '@react-navigation/native';
 import { FeedNotification, FeedNotificationKind } from '../../../../data/models';
 import { useNotificationFeed } from '../../../../data/notifications/useNotificationFeed';

@@ -71,7 +71,7 @@ export const InAppBannerHost = () => {
   return (
     <View pointerEvents="box-none" style={{ position: 'absolute', top: 0, left: 0, right: 0 }}>
       <GestureDetector gesture={pan}>
-        <Animated.View style={[{ paddingTop: insets.top + spacing.xs, paddingHorizontal: spacing.md }, style]}>
+        <Animated.View style={[{ paddingTop: insets.top + spacing.xs, paddingLeft: insets.left + spacing.md, paddingRight: insets.right + spacing.md }, style]}>
           <Pressable
             onPress={onPress}
             accessibilityRole="alert"

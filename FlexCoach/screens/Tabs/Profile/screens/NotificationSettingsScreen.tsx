@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { AppState, Platform, ScrollView, View } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { SafeAreaView } from '../../../../components/layout/SafeAreaView';
 import { useFocusEffect } from '@react-navigation/native';
 import { useAuth } from '../../../../data/auth/AuthProvider';
 import { ClockTime, NotificationPrefs, Weekday } from '../../../../data/models';

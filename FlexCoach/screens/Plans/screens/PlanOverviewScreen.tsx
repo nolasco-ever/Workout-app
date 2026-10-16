@@ -1,6 +1,6 @@
 import React, { useLayoutEffect, useState } from 'react';
 import { Alert, ScrollView, View } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { SafeAreaView } from '../../../components/layout/SafeAreaView';
 import { RouteProp, useNavigation, useRoute } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useAuth } from '../../../data/auth/AuthProvider';
@@ -48,7 +48,7 @@ export const PlanOverviewScreen = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [navigation, canEdit, plan]);
 
-  if (!plan || !uid) return <SafeAreaView edges={['bottom']} style={{ flex: 1, backgroundColor: colors.ground }} />;
+  if (!plan || !uid) return <SafeAreaView edges={['bottom', 'left', 'right']} style={{ flex: 1, backgroundColor: colors.ground }} />;
 
   const run = (key: string, fn: () => Promise<void>) => async () => {
     setBusy(key);

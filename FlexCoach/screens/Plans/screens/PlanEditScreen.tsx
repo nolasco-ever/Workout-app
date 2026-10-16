@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
 import { ScrollView, TouchableOpacity, View } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { SafeAreaView } from '../../../components/layout/SafeAreaView';
 import { RouteProp, useNavigation, useRoute } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { usePlans } from '../../../data/hooks/usePlans';
@@ -59,7 +59,7 @@ export const PlanEditScreen = () => {
   const first = navigation.getState().routes[0]?.name === 'PlanEditScreen';
   const done = () => (first ? navigation.getParent()?.goBack() : navigation.popToTop());
 
-  if (!draft || !editingThis) return <SafeAreaView edges={['bottom']} style={{ flex: 1, backgroundColor: colors.ground }} />;
+  if (!draft || !editingThis) return <SafeAreaView edges={['bottom', 'left', 'right']} style={{ flex: 1, backgroundColor: colors.ground }} />;
 
   const problems = validatePlan(draft);
   const exercises = draft.workouts.reduce((n, w) => n + w.exercises.length, 0);

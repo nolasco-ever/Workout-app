@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Image, ScrollView, TouchableOpacity, View } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { SafeAreaView } from '../../../../components/layout/SafeAreaView';
 import { RouteProp, useNavigation, useRoute } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { newEntry } from '../../../../data/services/planService';
@@ -61,7 +61,7 @@ export const ExerciseDetailScreen = () => {
 
   if (!ex) {
     return (
-      <SafeAreaView edges={['bottom']} style={{ flex: 1, backgroundColor: colors.ground, padding: spacing.lg }}>
+      <SafeAreaView edges={['bottom', 'left', 'right']} style={{ flex: 1, backgroundColor: colors.ground, padding: spacing.lg }}>
         <CustomText variant="body" color={colors.inkMuted}>This exercise isn't in the catalog.</CustomText>
       </SafeAreaView>
     );

@@ -1,5 +1,5 @@
 import { Icon } from '../../../components/icons/Icon';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { SafeAreaView } from '../../../components/layout/SafeAreaView';
 import React from 'react';
 import { View, Text, StyleSheet, ScrollView } from 'react-native';
 import { colors } from '../../../colors';

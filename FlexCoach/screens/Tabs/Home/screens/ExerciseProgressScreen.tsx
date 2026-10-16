@@ -1,6 +1,6 @@
 import React from 'react';
 import { ScrollView, View } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { SafeAreaView } from '../../../../components/layout/SafeAreaView';
 import { RouteProp, useRoute } from '@react-navigation/native';
 import { useAuth } from '../../../../data/auth/AuthProvider';
 import { useInsights } from '../../../../data/hooks/useInsights';

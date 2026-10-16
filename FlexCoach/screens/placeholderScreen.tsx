@@ -1,6 +1,6 @@
 import React from 'react';
 import { View } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { SafeAreaView } from '../components/layout/SafeAreaView';
 import { CustomText } from '../components/text/customText';
 import { Icon } from '../components/icons/Icon';
 import { generalIcons } from '../components/icons/icon-library';

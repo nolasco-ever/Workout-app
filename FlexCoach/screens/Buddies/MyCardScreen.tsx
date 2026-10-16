@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { ActivityIndicator, Share, TouchableOpacity, View, ScrollView } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { SafeAreaView } from '../../components/layout/SafeAreaView';
 import QRCode from 'react-native-qrcode-svg';
 import { useAuth } from '../../data/auth/AuthProvider';
 import { PublicProfile } from '../../data/models';

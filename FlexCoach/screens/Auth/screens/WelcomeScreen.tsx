@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Alert, View } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { SafeAreaView } from '../../../components/layout/SafeAreaView';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { appleAuth } from '@invertase/react-native-apple-authentication';

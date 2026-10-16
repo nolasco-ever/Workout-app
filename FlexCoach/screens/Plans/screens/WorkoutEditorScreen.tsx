@@ -2,7 +2,7 @@ import React, { useLayoutEffect, useState } from 'react';
 import { TouchableOpacity, View } from 'react-native';
 import Animated, { useAnimatedRef } from 'react-native-reanimated';
 import { SortableRows } from '../../../components/lists/SortableRows';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { SafeAreaView } from '../../../components/layout/SafeAreaView';
 import { RouteProp, useNavigation, useRoute } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useAuth } from '../../../data/auth/AuthProvider';

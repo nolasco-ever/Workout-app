@@ -1,6 +1,6 @@
 import React, { useCallback, useState } from 'react';
 import { ActivityIndicator, RefreshControl, ScrollView, View } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { SafeAreaView } from '../../components/layout/SafeAreaView';
 import { NavigationProp, useFocusEffect, useNavigation } from '@react-navigation/native';
 import { useBuddies } from '../../data/hooks/useBuddies';
 import { useBuddyActivity } from '../../data/hooks/useBuddyActivity';

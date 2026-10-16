@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { ActivityIndicator, ScrollView, TouchableOpacity, View } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { SafeAreaView } from '../../../../components/layout/SafeAreaView';
 import { NavigationProp, RouteProp, useNavigation, useRoute } from '@react-navigation/native';
 import type { AppStackParams } from '../../../../appNavigators/AppStack';
 import { useAuth } from '../../../../data/auth/AuthProvider';
@@ -85,7 +85,7 @@ export const CycleReviewScreen = () => {
 
   if (missing) {
     return (
-      <SafeAreaView edges={['bottom']} style={{ flex: 1, backgroundColor: colors.ground, alignItems: 'center', justifyContent: 'center', padding: spacing.xl, gap: spacing.md }}>
+      <SafeAreaView edges={['bottom', 'left', 'right']} style={{ flex: 1, backgroundColor: colors.ground, alignItems: 'center', justifyContent: 'center', padding: spacing.xl, gap: spacing.md }}>
         <Icon icon={generalIcons.error} size={36} color={colors.inactive} />
         <CustomText variant="heading" centered>Cycle not found</CustomText>
         <CustomText variant="body" color={colors.inkMuted} centered>It may have been removed with its plan.</CustomText>
@@ -95,7 +95,7 @@ export const CycleReviewScreen = () => {
 
   if (!loaded || !review) {
     return (
-      <SafeAreaView edges={['bottom']} style={{ flex: 1, backgroundColor: colors.ground, alignItems: 'center', justifyContent: 'center' }}>
+      <SafeAreaView edges={['bottom', 'left', 'right']} style={{ flex: 1, backgroundColor: colors.ground, alignItems: 'center', justifyContent: 'center' }}>
         <ActivityIndicator color={colors.accent} />
       </SafeAreaView>
     );

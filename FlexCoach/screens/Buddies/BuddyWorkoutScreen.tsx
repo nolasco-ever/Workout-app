@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { ActivityIndicator, ScrollView, TouchableOpacity, View } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { SafeAreaView } from '../../components/layout/SafeAreaView';
 import { RouteProp, useRoute } from '@react-navigation/native';
 import { useAuth } from '../../data/auth/AuthProvider';
 import { Activity, RecordKind, SharedExercise, SharedSet } from '../../data/models';

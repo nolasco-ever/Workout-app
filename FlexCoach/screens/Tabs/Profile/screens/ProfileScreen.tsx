@@ -1,6 +1,6 @@
 import React, { useState, useRef } from 'react';
 import { ActivityIndicator, Alert, ScrollView, TouchableOpacity, View } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { SafeAreaView } from '../../../../components/layout/SafeAreaView';
 import { NavigationProp, useNavigation, useScrollToTop } from '@react-navigation/native';
 import { useAuth } from '../../../../data/auth/AuthProvider';
 import { authService } from '../../../../data/auth/authService';

@@ -3,7 +3,7 @@ import { Alert, TouchableOpacity, View } from 'react-native';
 import Animated, { useAnimatedRef } from 'react-native-reanimated';
 import { SortableRows } from '../../../components/lists/SortableRows';
 import { Workout } from '../../../data/models';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { SafeAreaView } from '../../../components/layout/SafeAreaView';
 import { RouteProp, useNavigation, useRoute } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { newWorkout } from '../../../data/services/planService';

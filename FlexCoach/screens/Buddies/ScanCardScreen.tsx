@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { AppState, Linking, PermissionsAndroid, Platform, StyleSheet, View } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { SafeAreaView } from '../../components/layout/SafeAreaView';
 import { NavigationProp, useNavigation } from '@react-navigation/native';
 import { Camera, CameraApi, CameraType } from 'react-native-camera-kit';
 import { parseInviteCode } from '../../data/engine/buddies';

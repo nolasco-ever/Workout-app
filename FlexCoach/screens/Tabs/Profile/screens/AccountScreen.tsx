@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Alert, ScrollView, View } from 'react-native';
 import { KeyboardAvoiding } from '../../../../components/layout/KeyboardAvoiding';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { SafeAreaView } from '../../../../components/layout/SafeAreaView';
 import { useAuth } from '../../../../data/auth/AuthProvider';
 import { authService, passwordOk } from '../../../../data/auth/authService';
 import { CustomText } from '../../../../components/text/customText';

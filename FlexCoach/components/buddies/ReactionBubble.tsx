@@ -74,7 +74,7 @@ export const ReactionBubble = ({ anchor, mine, onPick, onClose }: Props) => {
   }));
 
   if (!mounted || !anchor) return null;
-  const left = Math.min(Math.max(spacing.md, anchor.x + anchor.width / 2 - WIDTH / 2), screenWidth - WIDTH - spacing.md);
+  const left = Math.min(Math.max(insets.left + spacing.md, anchor.x + anchor.width / 2 - WIDTH / 2), screenWidth - insets.right - WIDTH - spacing.md);
   // Under the button, so a button on a title line is not covered by the header; above it only when the bottom of the screen is in the way.
   const below = anchor.y + anchor.height + GAP + HEIGHT <= screenHeight - insets.bottom - spacing.md;
   const top = below ? anchor.y + anchor.height + GAP : anchor.y - HEIGHT - GAP;
