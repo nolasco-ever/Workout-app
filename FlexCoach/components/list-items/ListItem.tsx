@@ -1,6 +1,6 @@
 import { Icon, IconSource } from '../icons/Icon';
 import React from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, Dimensions, useColorScheme } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet, useColorScheme } from 'react-native';
 import { colors } from '../../colors';
 import { generalIcons } from '../icons/icon-library';
 import { useModalContext } from '../../packages/core-contexts/modal-context';

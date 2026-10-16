@@ -1,5 +1,5 @@
 import React from 'react';
-import { StyleSheet, TouchableOpacity, Text, Dimensions } from 'react-native';
+import { StyleSheet, TouchableOpacity, Text } from 'react-native';
 import { colors } from '../../colors';
 
 interface ButtonProps {
@@ -19,7 +19,6 @@ export const Button = ({
   rightIcon,
   onPress
 }: ButtonProps) => {
-  const screenWidth = Dimensions.get('window').width;
   const appColors = colors();
 
   const getButtonColor = () => {
