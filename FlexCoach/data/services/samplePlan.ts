@@ -16,7 +16,8 @@ const entry = (
   if (!ex) throw new Error(`Sample plan references unknown exercise ${exerciseId}`);
   return {
     id: newId(),
-    exerciseId,
+    // The library's own id, whichever library the sample was written against.
+    exerciseId: ex.id,
     exerciseName: ex.name,
     measurement: ex.measurement,
     order,

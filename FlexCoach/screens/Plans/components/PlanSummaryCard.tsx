@@ -56,7 +56,7 @@ const WorkoutRow = ({ workout, first }: { workout: Workout; first: boolean }) =>
                   </CustomText>
                 </View>
                 {cat && (
-                  <TouchableOpacity onPress={() => navigation.navigate('ExerciseDetailScreen', { exerciseId: e.exerciseId })} hitSlop={8} accessibilityRole="button" accessibilityLabel={`How to do ${e.exerciseName}`}>
+                  <TouchableOpacity onPress={() => navigation.navigate('ExerciseDetailScreen', { exerciseId: e.exerciseId, knownAs: e.exerciseName })} hitSlop={8} accessibilityRole="button" accessibilityLabel={`How to do ${e.exerciseName}`}>
                     <Icon icon={generalIcons.info} size={20} color={colors.inkMuted} />
                   </TouchableOpacity>
                 )}

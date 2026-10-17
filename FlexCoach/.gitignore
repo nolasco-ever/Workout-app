@@ -89,3 +89,6 @@ android/keystore.properties
 Gemfile.lock
 ios/FlexCoach.xcodeproj/project.xcworkspace/
 firebase-debug.log
+
+# The licensed exercise animations: built by tools/exercisedb/build.py from the ExerciseDB package, deployed to Hosting, never committed (EULA).
+hosting/exercises/

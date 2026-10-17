@@ -1,3 +1,4 @@
+import { sameExercise } from '../catalog/exerciseIds';
 import { Id, LocalDate, RecordKind, Session, SessionExercise, SharedExercise, SharedSet, SharingPrefs, WeightUnit } from '../models';
 import { countWorkingSets, totalVolumeKg } from './stats';
 import { formatWeight } from './units';
@@ -116,7 +117,7 @@ export const recordSeries = (sessions: Session[], exerciseId: Id, kind: RecordKi
     .filter(s => s.status === 'completed')
     .sort((a, b) => a.startedAt - b.startedAt)
     .flatMap(s => {
-      const ex = s.exercises.find(e => e.exerciseId === exerciseId);
+      const ex = s.exercises.find(e => sameExercise(e.exerciseId, exerciseId));
       if (!ex) return [];
       const vals = ex.sets.filter(set => set.completed && !set.warmup).map(field).filter((v): v is number => v !== null);
       return vals.length ? [{ date: s.date, value: Math.max(...vals) }] : [];

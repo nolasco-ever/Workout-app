@@ -1,5 +1,6 @@
 import React, { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
 import { Plan } from '../../data/models';
+import { catalogName } from '../../data/catalog/exerciseCatalog';
 import { useAuth } from '../../data/auth/AuthProvider';
 import { planRepository } from '../../data/repositories/planRepository';
 import { pruneSchedule } from '../../data/services/planService';
@@ -43,7 +44,9 @@ export const PlanEditorProvider = ({ children }: { children: React.ReactNode }) 
 
   const begin = useCallback((plan: Plan, orig: Plan | null) => {
     cancelTimer();
-    setDraft(plan);
+    // The names the library has for the plan's exercises now (an old id's twin in the new library reads by its new name).
+    const named: Plan = { ...plan, workouts: plan.workouts.map(w => ({ ...w, exercises: w.exercises.map(e => ({ ...e, exerciseName: catalogName(e.exerciseId, e.exerciseName) })) })) };
+    setDraft(named);
     setOriginal(orig);
     autosaveOn.current = orig === null;
   }, []);

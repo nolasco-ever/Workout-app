@@ -1,3 +1,4 @@
+import { catalogName } from '../catalog/exerciseCatalog';
 import {
   Cycle,
   CycleSummary,
@@ -105,7 +106,8 @@ export const startSession = async (uid: Id, plan: Plan, cycle: Cycle, occurrence
     startedAt: now,
     finishedAt: null,
     status: 'in_progress',
-    exercises: buildWorkoutExercises(workout, entry => targets.get(entry.id)?.target ?? null, [], { id: '' }, unit, newId, true),
+    // Under the library's current names: an old plan's "Air Bike" starts today's session as "Bicycle Crunch".
+    exercises: buildWorkoutExercises(workout, entry => targets.get(entry.id)?.target ?? null, [], { id: '' }, unit, newId, true).map(ex => ({ ...ex, exerciseName: catalogName(ex.exerciseId, ex.exerciseName) })),
     createdAt: now,
     updatedAt: now,
   };

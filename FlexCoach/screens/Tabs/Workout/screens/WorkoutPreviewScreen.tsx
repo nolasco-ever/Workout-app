@@ -79,7 +79,7 @@ export const WorkoutPreviewScreen = () => {
   const canStart = occurrence.status === 'scheduled';
   const startLabel = occurrence.date === todayDate ? 'Start workout' : occurrence.date > todayDate ? 'Do this workout today' : 'Do it today';
 
-  const openTutorial = (entry: WorkoutExercise) => navigation.navigate('ExerciseDetailScreen', { exerciseId: entry.exerciseId });
+  const openTutorial = (entry: WorkoutExercise) => navigation.navigate('ExerciseDetailScreen', { exerciseId: entry.exerciseId, knownAs: entry.exerciseName });
 
   return (
     <SafeAreaView edges={['left', 'right']} style={{ flex: 1, backgroundColor: colors.ground }}>

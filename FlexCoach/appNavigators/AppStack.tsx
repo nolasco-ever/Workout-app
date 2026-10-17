@@ -52,7 +52,7 @@ export type AppStackParams = BuddyRoutes & SessionRoutes & Omit<PlansStackParams
     NotificationsScreen: undefined;
     AccountScreen: undefined;
     /** How-to for an exercise opened from a buddy's plan or the running workout's picker; the plan creator and Workout tab have their own copies. */
-    ExerciseDetailScreen: { exerciseId: string; addToSession?: boolean; swapForSessionExerciseId?: string; addToWorkoutId?: string };
+    ExerciseDetailScreen: { exerciseId: string; knownAs?: string; addToSession?: boolean; swapForSessionExerciseId?: string; addToWorkoutId?: string };
     /** The badge grid; `achievementId` opens that badge's family. */
     AchievementsScreen: { achievementId?: string } | undefined;
     BadgeScreen: { family: AchievementFamilyId; tier: number };

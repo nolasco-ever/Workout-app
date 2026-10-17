@@ -1,3 +1,4 @@
+import { canonicalExerciseId } from '../catalog/exerciseIds';
 import { Cycle, CycleSummary, Id, PersonalRecord, Session, SessionExercise } from '../models';
 import { isWorkingSet, workingSets } from './sets';
 
@@ -38,8 +39,9 @@ export const computeRecords = (sessions: Session[]): Map<Id, { kind: PersonalRec
     for (const ex of s.exercises) {
       const best = bestValue(ex);
       if (!best) continue;
-      const prev = records.get(ex.exerciseId);
-      if (!prev || best.value > prev.value) records.set(ex.exerciseId, best);
+      const id = canonicalExerciseId(ex.exerciseId);
+      const prev = records.get(id);
+      if (!prev || best.value > prev.value) records.set(id, best);
     }
   }
   return records;
@@ -58,10 +60,11 @@ export const findPersonalRecords = (sessions: Session[], history: Session[]): Pe
     for (const ex of s.exercises) {
       const best = bestValue(ex);
       if (!best) continue;
-      const previous = Math.max(prior.get(ex.exerciseId)?.value ?? -Infinity, seen.get(ex.exerciseId) ?? -Infinity);
+      const id = canonicalExerciseId(ex.exerciseId);
+      const previous = Math.max(prior.get(id)?.value ?? -Infinity, seen.get(id) ?? -Infinity);
       if (best.value > previous) {
         prs.push({
-          exerciseId: ex.exerciseId,
+          exerciseId: id,
           exerciseName: ex.exerciseName,
           kind: best.kind,
           value: best.value,
@@ -69,7 +72,7 @@ export const findPersonalRecords = (sessions: Session[], history: Session[]): Pe
           sessionId: s.id,
           date: s.date,
         });
-        seen.set(ex.exerciseId, best.value);
+        seen.set(id, best.value);
       }
     }
   }

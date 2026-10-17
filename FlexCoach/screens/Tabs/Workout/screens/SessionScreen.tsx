@@ -727,7 +727,7 @@ export const SessionScreen = () => {
               <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.lg, marginTop: spacing.xs }}>
                 {catalog && (
                   <TouchableOpacity
-                    onPress={() => navigation.navigate('ExerciseDetailScreen', { exerciseId: catalog.id })}
+                    onPress={() => navigation.navigate('ExerciseDetailScreen', { exerciseId: catalog.id, knownAs: exercise.exerciseName })}
                     hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
                     accessibilityRole="link"
                     style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.xs }}
@@ -916,7 +916,7 @@ export const SessionScreen = () => {
                 </CustomText>
                 <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.xl, marginTop: spacing.xs }}>
                   {catalog && (
-                    <TouchableOpacity onPress={() => navigation.navigate('ExerciseDetailScreen', { exerciseId: catalog.id })} hitSlop={8} accessibilityRole="link" style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.xs }}>
+                    <TouchableOpacity onPress={() => navigation.navigate('ExerciseDetailScreen', { exerciseId: catalog.id, knownAs: exercise.exerciseName })} hitSlop={8} accessibilityRole="link" style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.xs }}>
                       <Icon icon={generalIcons.info} color={colors.accent} size={18} />
                       <CustomText variant="bodyStrong" color={colors.accent}>How to</CustomText>
                     </TouchableOpacity>

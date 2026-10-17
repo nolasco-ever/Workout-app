@@ -1,3 +1,4 @@
+import { sameExercise } from '../catalog/exerciseIds';
 import { Cycle, Id, LoggedSet, MeasurementType, Plan, Session, SessionExercise, SetGoal, SetTarget, WeightUnit, WorkoutExercise } from '../models';
 import { workingSets } from './sets';
 import { KG_PER_LB } from './units';
@@ -254,11 +255,11 @@ export const progressPlan = (plan: Plan, sessions: Session[], judgedCycleId: Id 
   const out: ExerciseProgression[] = [];
   for (const workout of plan.workouts) {
     for (const entry of workout.exercises) {
-      const logs = judgedCycleId === null ? [] : completed.filter(s => s.cycleId === judgedCycleId).flatMap(s => s.exercises.filter(ex => ex.exerciseId === entry.exerciseId));
+      const logs = judgedCycleId === null ? [] : completed.filter(s => s.cycleId === judgedCycleId).flatMap(s => s.exercises.filter(ex => sameExercise(ex.exerciseId, entry.exerciseId)));
       let fallback: SessionExercise | null = null;
       for (let i = completed.length - 1; i >= 0 && !fallback; i--) {
         if (completed[i].cycleId === judgedCycleId) continue;
-        fallback = completed[i].exercises.find(ex => ex.exerciseId === entry.exerciseId) ?? null;
+        fallback = completed[i].exercises.find(ex => sameExercise(ex.exerciseId, entry.exerciseId)) ?? null;
       }
       out.push(progressExercise(entry, logs, fallback, unit));
     }

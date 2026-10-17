@@ -17,7 +17,7 @@ export type WorkoutStackParams = SessionRoutes & {
   /** Either the live objects, or just an id (from a notification or the feed). */
   SessionDetailScreen: { sessionId: string; workoutName?: string };
   /** The how-to from the preview; the root stack has its own for the running workout. */
-  ExerciseDetailScreen: { exerciseId: string };
+  ExerciseDetailScreen: { exerciseId: string; knownAs?: string };
 };
 
 const Stack = createNativeStackNavigator<WorkoutStackParams>();

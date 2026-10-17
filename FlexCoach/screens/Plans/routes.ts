@@ -13,7 +13,7 @@ export type PlansStackParams = {
   ExerciseEntryScreen: { workoutId: string; entryId: string };
   PlanScheduleScreen: { mode: EditorMode };
   PlanReviewScreen: { mode: EditorMode };
-  ExerciseDetailScreen: { exerciseId: string; addToWorkoutId?: string; addToSession?: boolean; swapForSessionExerciseId?: string };
+  ExerciseDetailScreen: { exerciseId: string; knownAs?: string; addToWorkoutId?: string; addToSession?: boolean; swapForSessionExerciseId?: string };
 };
 
 import { StackActions } from '@react-navigation/native';

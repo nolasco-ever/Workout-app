@@ -1,3 +1,4 @@
+import { sameExercise } from '../catalog/exerciseIds';
 import { paths } from '../firebase/paths';
 import { Id, LoggedSet, Session } from '../models';
 import { listDocs, orderBy, patchDoc, readDoc, touch, watchDocs, where, writeDoc, Unsubscribe } from './base';
@@ -63,6 +64,6 @@ export const sessionRepository = {
   /** Most recent completed session containing an exercise, for progression. */
   lastForExercise: async (uid: Id, exerciseId: Id): Promise<Session | null> => {
     const sessions = (await listDocs<Session>(paths.sessions(uid), orderBy('startedAt', 'desc'))).filter(s => s.status === 'completed');
-    return sessions.find(s => s.exercises.some(ex => ex.exerciseId === exerciseId)) ?? null;
+    return sessions.find(s => s.exercises.some(ex => sameExercise(ex.exerciseId, exerciseId))) ?? null;
   },
 };

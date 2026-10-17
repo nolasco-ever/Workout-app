@@ -108,7 +108,7 @@ export const WorkoutEditor = ({ workoutId, embedded = false, onOpenEntry, openEn
                         <CustomText variant="caption" color={colors.accent}>{describeEntry(e, unit, dist)}</CustomText>
                       </View>
                     </TouchableOpacity>
-                    <TouchableOpacity onPress={() => navigation.navigate('ExerciseDetailScreen', { exerciseId: e.exerciseId })} hitSlop={8} style={{ padding: spacing.sm }}>
+                    <TouchableOpacity onPress={() => navigation.navigate('ExerciseDetailScreen', { exerciseId: e.exerciseId, knownAs: e.exerciseName })} hitSlop={8} style={{ padding: spacing.sm }}>
                       <Icon icon={generalIcons.info} size={20} color={colors.inkMuted} />
                     </TouchableOpacity>
                     <TouchableOpacity onPress={() => removeEntry(e.id)} hitSlop={6} style={{ padding: spacing.sm }}>

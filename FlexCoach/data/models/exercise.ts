@@ -71,8 +71,20 @@ export interface Exercise {
   category: ExerciseCategory;
   level: ExerciseLevel | null;
   instructions: string[];
-  /** Fully qualified image URLs, in order (start position, end position). */
+  /** Fully qualified image URLs, in order (start position, end position). Empty for the animated library. */
   images: string[];
+  /** The exercise in motion, hosted: the GIF plays on iOS, the WebP on Android. */
+  animation?: { gif: string; webp: string };
+  /** A sentence on what the exercise is. */
+  description?: string | null;
+  /** Other names people call it, searchable. */
+  aliases?: string[];
+  /** The library's coarse region: chest, back, upper arms, waist, upper legs, lower legs, shoulders, lower arms, neck, cardio. */
+  bodyPart?: string;
+  /** One side at a time. */
+  unilateral?: boolean;
+  /** Curated links to other catalog exercises, by id. */
+  relations?: { similar: string[]; substitutions: string[]; progressions: string[]; regressions: string[] };
   /** Video tutorial URL, if one exists. */
   videoUrl: string | null;
   /** 'catalog' for bundled exercises, 'custom' for user-created ones. */

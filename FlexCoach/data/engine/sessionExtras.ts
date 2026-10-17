@@ -1,3 +1,4 @@
+import { sameExercise } from '../catalog/exerciseIds';
 import { Exercise, Id, Plan, Session, SessionExercise, SetTarget, wantsWarmup, WeightUnit, Workout, WorkoutExercise } from '../models';
 import { newEntry } from './planDefaults';
 import { buildPlannedSets, buildWarmupSets, progressExercise } from './progression';
@@ -9,7 +10,7 @@ import { findWorkout } from './schedule';
 const lastLogOf = (exerciseId: Id, history: Session[], session: Session): SessionExercise | null => {
   const completed = history.filter(s => s.status === 'completed' && s.id !== session.id).sort((a, b) => a.startedAt - b.startedAt);
   for (let i = completed.length - 1; i >= 0; i--) {
-    const found = completed[i].exercises.find(e => e.exerciseId === exerciseId);
+    const found = completed[i].exercises.find(e => sameExercise(e.exerciseId, exerciseId));
     if (found) return found;
   }
   return null;

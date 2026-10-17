@@ -1,3 +1,4 @@
+import { canonicalExerciseId, sameExercise } from '../catalog/exerciseIds';
 import { BodyWeightEntry, Id, LocalDate, Session } from '../models';
 import { addDays, daysBetween, weekdayOf } from './dates';
 import { isWorkingSet, workingSets } from './sets';
@@ -58,7 +59,7 @@ export const exerciseHistory = (sessions: Session[], exerciseId: Id): ExercisePo
     .filter(s => s.status === 'completed')
     .sort((a, b) => a.startedAt - b.startedAt)
     .flatMap(s => {
-      const ex = s.exercises.find(e => e.exerciseId === exerciseId);
+      const ex = s.exercises.find(e => sameExercise(e.exerciseId, exerciseId));
       if (!ex) return [];
       const done = workingSets(ex.sets);
       if (done.length === 0) return [];
@@ -86,12 +87,16 @@ export const loggedExercises = (sessions: Session[]): { exerciseId: Id; exercise
     if (s.status !== 'completed') continue;
     for (const ex of s.exercises) {
       if (!ex.sets.some(isWorkingSet)) continue;
-      const cur = map.get(ex.exerciseId);
+      const id = canonicalExerciseId(ex.exerciseId);
+      const cur = map.get(id);
       if (cur) {
         cur.sessions += 1;
-        if (s.date > cur.lastDate) cur.lastDate = s.date;
+        if (s.date > cur.lastDate) {
+          cur.lastDate = s.date;
+          cur.exerciseName = ex.exerciseName;
+        }
       } else {
-        map.set(ex.exerciseId, { exerciseId: ex.exerciseId, exerciseName: ex.exerciseName, sessions: 1, lastDate: s.date });
+        map.set(id, { exerciseId: id, exerciseName: ex.exerciseName, sessions: 1, lastDate: s.date });
       }
     }
   }

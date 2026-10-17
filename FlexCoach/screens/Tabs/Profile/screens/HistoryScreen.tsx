@@ -14,7 +14,7 @@ import { fromLocalDate } from '../../../../data/engine/dates';
 import { dateLabel } from '../../../../components/charts/scale';
 import { CustomText } from '../../../../components/text/customText';
 import { SurfaceCard } from '../../../../components/cards/SurfaceCard';
-import { SegmentedControl } from '../../../../components/inputs/SegmentedControl';
+import { SegmentedPager } from '../../../../components/layout/SegmentedPager';
 import { Icon } from '../../../../components/icons/Icon';
 import { directionIcons, generalIcons } from '../../../../components/icons/icon-library';
 import { useNoHeaderGlass } from '../../../../navigation/useNoHeaderGlass';
@@ -107,11 +107,9 @@ export const HistoryScreen = () => {
     else groups.push({ month, sessions: [s] });
   }
 
-  const list = (
-      <ScrollView contentInsetAdjustmentBehavior="automatic" showsVerticalScrollIndicator={false} style={wide ? { width: book?.left ?? LIST_PANE_WIDTH, flexGrow: 0 } : undefined} contentContainerStyle={{ padding: spacing.lg, gap: spacing.lg, paddingBottom: spacing.xl + bottomInset}}>
-        <SegmentedControl<Tab> options={[{ value: 'workouts', label: 'Workouts' }, { value: 'cycles', label: 'Cycles' }]} value={tab} onChange={setTab} />
-        {tab === 'cycles' && (
-          <>
+  const pageStyle = { padding: spacing.lg, gap: spacing.lg, paddingBottom: spacing.xl + bottomInset };
+  const cyclesPage = (
+    <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={pageStyle}>
             {cycles === null && <ActivityIndicator color={colors.accent} style={{ marginTop: spacing.xxl }} />}
             {cycles !== null && cycles.length === 0 && (
               <View style={{ alignItems: 'center', gap: spacing.md, paddingTop: spacing.xxl }}>
@@ -145,17 +143,19 @@ export const HistoryScreen = () => {
                 })}
               </SurfaceCard>
             )}
-          </>
-        )}
-        {tab === 'workouts' && sessions === null && <ActivityIndicator color={colors.accent} style={{ marginTop: spacing.xxl }} />}
-        {tab === 'workouts' && sessions !== null && sessions.length === 0 && (
+    </ScrollView>
+  );
+  const workoutsPage = (
+    <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={pageStyle}>
+        {sessions === null && <ActivityIndicator color={colors.accent} style={{ marginTop: spacing.xxl }} />}
+        {sessions !== null && sessions.length === 0 && (
           <View style={{ alignItems: 'center', gap: spacing.md, paddingTop: spacing.xxl }}>
             <Icon icon={generalIcons.clock} size={36} color={colors.inactive} />
             <CustomText variant="heading" centered>No workouts yet</CustomText>
             <CustomText variant="body" color={colors.inkMuted} centered>Finish a workout and it shows up here with every set you logged.</CustomText>
           </View>
         )}
-        {tab === 'workouts' && groups.map(group => (
+        {groups.map(group => (
           <View key={group.month} style={{ gap: spacing.sm }}>
             <CustomText variant="overline" color={colors.inkMuted}>{group.month}</CustomText>
             <SurfaceCard style={{ padding: 0 }}>
@@ -182,7 +182,20 @@ export const HistoryScreen = () => {
             </SurfaceCard>
           </View>
         ))}
-      </ScrollView>
+    </ScrollView>
+  );
+  // The two lists under one segmented control, a swipe apart; below the native header, which the pages do not scroll under.
+  const list = (
+    <View style={[{ paddingTop: spacing.md }, wide ? { width: book?.left ?? LIST_PANE_WIDTH } : { flex: 1 }]}>
+      <SegmentedPager<Tab>
+        value={tab}
+        onChange={setTab}
+        pages={[
+          { value: 'workouts', label: 'Workouts', render: () => workoutsPage },
+          { value: 'cycles', label: 'Cycles', render: () => cyclesPage },
+        ]}
+      />
+    </View>
   );
 
   return (

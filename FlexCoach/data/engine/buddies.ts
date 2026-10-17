@@ -1,3 +1,4 @@
+import { canonicalExerciseId } from '../catalog/exerciseIds';
 import { AchievementUnlock, BestRecord, Id, LocalDate, Plan, PublicProfile, Session, UserProfile } from '../models';
 import { addDays } from './dates';
 import { computeRecords, currentStreakDays, totalVolumeKg } from './stats';
@@ -26,7 +27,7 @@ export const longestStreakDays = (sessions: Session[]): number => {
 /** The single best lift: the heaviest weight record, else the most reps, else the longest hold. */
 export const bestRecord = (sessions: Session[]): BestRecord | null => {
   const names = new Map<Id, string>();
-  for (const s of sessions) for (const ex of s.exercises) names.set(ex.exerciseId, ex.exerciseName);
+  for (const s of sessions) for (const ex of s.exercises) names.set(canonicalExerciseId(ex.exerciseId), ex.exerciseName);
   const records = [...computeRecords(sessions).entries()].map(([exerciseId, r]) => ({ exerciseName: names.get(exerciseId) ?? 'Exercise', kind: r.kind, value: r.value }));
   const order: BestRecord['kind'][] = ['weight', 'reps', 'duration', 'distance'];
   for (const kind of order) {

@@ -1,21 +1,33 @@
 import { Equipment, Exercise, ExerciseCategory, Id, MuscleGroup, MeasurementType } from '../models';
-import catalogJson from './exercises.json';
-import extraJson from './extraExercises.json';
+import catalogJson from './exercisedb.json';
+import legacyJson from './exercises.json';
+import legacyExtraJson from './extraExercises.json';
+import { canonicalExerciseId } from './exerciseIds';
 
 /**
- * Bundled, read-only exercise catalog seeded from the public-domain
- * free-exercise-db project (https://github.com/yuhonas/free-exercise-db),
- * plus a hand-written supplement of common gym movements that project lacks
- * (extraExercises.json; no photos yet). Kept in one alphabetical list.
+ * Bundled, read-only exercise catalog: the licensed ExerciseDB Pro library
+ * (1,394 exercises, built by tools/exercisedb/build.py; animations hosted on
+ * Firebase Hosting), alphabetical. Behind it, hidden from the picker and the
+ * search, the two lists the app shipped before (free-exercise-db and the
+ * hand-written extras): an old id in a plan or a session resolves to its
+ * twin in the new library (see exerciseIds.ts), or, with no twin, to its old
+ * entry, so nothing a lifter logged ever stops answering by name.
  * Custom exercises live in Firestore and are merged in by the repository layer.
  */
-const catalog = ([...(catalogJson as Exercise[]), ...(extraJson as Exercise[])] as Exercise[]).sort((a, b) => a.name.localeCompare(b.name));
+const catalog = (catalogJson as Exercise[]).slice().sort((a, b) => a.name.localeCompare(b.name));
+
+const legacy = new Map<string, Exercise>(([...(legacyJson as Exercise[]), ...(legacyExtraJson as Exercise[])] as Exercise[]).map(e => [e.id, e]));
 
 const byId = new Map<string, Exercise>(catalog.map(e => [e.id, e]));
 
+/** The library on offer: what the picker and the search show. */
 export const getCatalogExercises = (): readonly Exercise[] => catalog;
 
-export const getCatalogExercise = (id: string): Exercise | undefined => byId.get(id);
+/** Any id the app has ever stored: the new library's, an old id's twin in it, or the old entry itself. */
+export const getCatalogExercise = (id: string): Exercise | undefined => byId.get(id) ?? byId.get(canonicalExerciseId(id)) ?? legacy.get(id);
+
+/** The name the catalog has for an id now, else the name that was stored with it. */
+export const catalogName = (id: string, stored: string): string => getCatalogExercise(id)?.name ?? stored;
 
 export interface CatalogFilter {
   query?: string;
@@ -77,7 +89,6 @@ const ALIASES: Record<string, string[]> = {
   bb: ['barbell'],
   kb: ['kettlebell'],
   ez: ['e', 'z'],
-  ohp: ['overhead', 'press'],
   rdl: ['romanian', 'deadlift'],
   bss: ['bulgarian', 'split', 'squat'],
   pullup: ['pull', 'up'],
@@ -85,14 +96,20 @@ const ALIASES: Record<string, string[]> = {
   pushup: ['push', 'up'],
   situp: ['sit', 'up'],
   deadbug: ['dead', 'bug'],
+  // Gym names the licensed library spells its own way.
   skullcrusher: ['skull', 'crusher'],
+  bulgarian: ['rear', 'foot', 'elevated'],
+  military: ['overhead'],
+  ohp: ['overhead', 'press'],
 };
 
-const queryWords = (q: string): string[] => words(q).flatMap(w => ALIASES[w] ?? [w]);
+// Shorthand may expand to a word that is itself spelled the library's way ("bss" -> "bulgarian" -> "rear foot elevated").
+const queryWords = (q: string): string[] => words(q).flatMap(w => ALIASES[w] ?? [w]).flatMap(w => ALIASES[w] ?? [w]).map(stem);
 
 const index: Indexed[] = catalog.map(exercise => ({
   exercise,
-  nameWords: words(exercise.name),
+  // An alias counts as a name: "air bike" finds the bicycle crunch.
+  nameWords: [...new Set([...words(exercise.name), ...(exercise.aliases ?? []).flatMap(words)])],
   tagWords: words([...exercise.primaryMuscles, ...exercise.secondaryMuscles, exercise.equipment ?? '', exercise.category].join(' ')),
 }));
 
@@ -189,9 +206,18 @@ export const MUSCLE_GROUPS: MuscleGroup[] = [
 export const comparableExercises = (exercise: Exercise, exclude: Set<Id> = new Set(), limit = 12): Exercise[] => {
   const primary = new Set(exercise.primaryMuscles);
   const ranked: { exercise: Exercise; rank: number }[] = [];
+  // The library's own curated links lead: substitutions, then the closest similar exercises.
+  const linked = [...(exercise.relations?.substitutions ?? []), ...(exercise.relations?.similar ?? [])];
+  const seen = new Set<Id>([exercise.id]);
+  for (let i = 0; i < linked.length; i++) {
+    const e = byId.get(linked[i]);
+    if (!e || seen.has(e.id) || exclude.has(e.id) || e.category === 'stretching' || e.measurement !== exercise.measurement) continue;
+    seen.add(e.id);
+    ranked.push({ exercise: e, rank: -100 + i });
+  }
   for (const item of index) {
     const e = item.exercise;
-    if (e.id === exercise.id || exclude.has(e.id) || e.category === 'stretching') continue;
+    if (seen.has(e.id) || exclude.has(e.id) || e.category === 'stretching') continue;
     if (e.measurement !== exercise.measurement) continue;
     const shared = e.primaryMuscles.filter(m => primary.has(m)).length;
     if (shared === 0) continue;
