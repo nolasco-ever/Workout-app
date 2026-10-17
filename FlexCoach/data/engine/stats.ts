@@ -1,5 +1,5 @@
 import { canonicalExerciseId } from '../catalog/exerciseIds';
-import { Cycle, CycleSummary, Id, PersonalRecord, Session, SessionExercise } from '../models';
+import { Cycle, CycleSummary, Id, LoggedSet, PersonalRecord, Session, SessionExercise } from '../models';
 import { isWorkingSet, workingSets } from './sets';
 
 /**
@@ -47,9 +47,17 @@ export const computeRecords = (sessions: Session[]): Map<Id, { kind: PersonalRec
   return records;
 };
 
+/** A set's value by the kind of record. */
+const valueOf = (kind: PersonalRecord['kind'], set: LoggedSet): number | null =>
+  kind === 'weight' ? set.weightKg : kind === 'reps' ? set.reps : kind === 'duration' ? set.durationSec : set.distanceM;
+
 /**
  * Personal records set during `sessions`, judged against everything in
  * `history` that came before. Used both for achievements and the cycle summary.
+ *
+ * The first set ever logged of an exercise is the starting point, not a
+ * record: it has nothing to beat. A later set that beats it is one, in that
+ * same session or any after.
  */
 export const findPersonalRecords = (sessions: Session[], history: Session[]): PersonalRecord[] => {
   const prior = computeRecords(history);
@@ -61,18 +69,23 @@ export const findPersonalRecords = (sessions: Session[], history: Session[]): Pe
       const best = bestValue(ex);
       if (!best) continue;
       const id = canonicalExerciseId(ex.exerciseId);
-      const previous = Math.max(prior.get(id)?.value ?? -Infinity, seen.get(id) ?? -Infinity);
+      let previous = Math.max(prior.get(id)?.value ?? -Infinity, seen.get(id) ?? -Infinity);
+      if (!isFinite(previous)) {
+        const first = workingSets(ex.sets).map(st => valueOf(best.kind, st)).find((v): v is number => v !== null);
+        if (first === undefined) continue;
+        previous = first;
+      }
+      seen.set(id, Math.max(best.value, previous));
       if (best.value > previous) {
         prs.push({
           exerciseId: id,
           exerciseName: ex.exerciseName,
           kind: best.kind,
           value: best.value,
-          previousValue: isFinite(previous) ? previous : null,
+          previousValue: previous,
           sessionId: s.id,
           date: s.date,
         });
-        seen.set(id, best.value);
       }
     }
   }

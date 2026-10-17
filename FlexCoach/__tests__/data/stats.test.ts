@@ -34,6 +34,28 @@ describe('personal records', () => {
     const current = [session('c1', '2026-09-08', [lastSession({}, [set({ weightKg: 60 })])])];
     expect(findPersonalRecords(current, history)).toHaveLength(0);
   });
+
+  it('first time ever: the first set is the starting point, not a record', () => {
+    const current = [session('c1', '2026-09-08', [lastSession({}, [set({ weightKg: 60 }), set({ weightKg: 60 }), set({ weightKg: 60 })])])];
+    expect(findPersonalRecords(current, [])).toHaveLength(0);
+  });
+
+  it('first time ever: a later set that beats the first one is a record', () => {
+    const current = [session('c1', '2026-09-08', [lastSession({}, [set({ weightKg: 50 }), set({ weightKg: 80 }), set({ weightKg: 100 })])])];
+    const prs = findPersonalRecords(current, []);
+    expect(prs).toHaveLength(1);
+    expect(prs[0]).toMatchObject({ kind: 'weight', value: 100, previousValue: 50 });
+  });
+
+  it('first time ever: the next session is judged against that first one', () => {
+    const current = [
+      session('c1', '2026-09-08', [lastSession({}, [set({ weightKg: 60 })])], 10),
+      session('c2', '2026-09-15', [lastSession({}, [set({ weightKg: 62.5 })])], 20),
+    ];
+    const prs = findPersonalRecords(current, []);
+    expect(prs).toHaveLength(1);
+    expect(prs[0]).toMatchObject({ value: 62.5, previousValue: 60, sessionId: 'c2' });
+  });
 });
 
 describe('volume and streaks', () => {
@@ -61,7 +83,8 @@ describe('warm-up sets in stats', () => {
     const ex = lastSession({ reps: 10, weightKg: 100 }, [set({ reps: 8, weightKg: 120, warmup: true, completed: true }), set({ reps: 10, weightKg: 100 })]);
     const s = session('s1', '2026-09-25', [ex]);
     expect(totalVolumeKg([s])).toBe(1000);
-    const prs = findPersonalRecords([s], []);
+    // Against a 90 kg record, the 120 kg warm-up is not the new one; the 100 kg working set is.
+    const prs = findPersonalRecords([s], [session('h1', '2026-09-18', [lastSession({}, [set({ weightKg: 90 })])])]);
     expect(prs).toHaveLength(1);
     expect(prs[0].value).toBe(100);
   });
