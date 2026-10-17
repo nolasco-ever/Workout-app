@@ -1,7 +1,7 @@
 import { Session } from '../../data/models';
 import { searchCatalog } from '../../data/catalog/exerciseCatalog';
 import { Workout } from '../../data/models';
-import { addExerciseTo, fillFromWorkout, isQuickSession, newQuickSession, removeExerciseFrom, substituteExercise } from '../../data/engine/sessionExtras';
+import { addExerciseTo, fillFromWorkout, isQuickSession, newQuickSession, pastExercisesLike, removeExerciseFrom, substituteExercise } from '../../data/engine/sessionExtras';
 
 let n = 0;
 const makeId = () => `id-${++n}`;
@@ -140,5 +140,33 @@ describe('copying a plan workout into a quick workout', () => {
     expect(fromLog.exercises[0].sets.filter(s => !s.warmup)[0].weightKg).toBe(80);
     const fromCycle = fillFromWorkout(quick, workout, entry => (entry.id === 'we1' ? { sets: 3, reps: 8, weightKg: 100, durationSec: null, distanceM: null } : null), [earlier], 'kg', makeId);
     expect(fromCycle.exercises[0].sets.filter(s => !s.warmup)[0].weightKg).toBe(100);
+  });
+});
+
+describe('past exercises like one being swapped', () => {
+  const lift = (q: string) => searchCatalog({ query: q }).find(e => e.measurement === 'weight_reps' && e.primaryMuscles.includes('chest'))!;
+  const bench = lift('barbell bench press');
+  const incline = lift('incline dumbbell press');
+  const fly = lift('cable fly');
+  const sets = (n: number, done = true) => Array.from({ length: n }, (_, i) => ({ id: `s${i}`, setNumber: i + 1, weightKg: 40, reps: 10, durationSec: null, distanceM: null, completed: done, completedAt: done ? 5 : null }));
+  const logged = (id: string, startedAt: number, date: string, ex: { exerciseId: string; sets: ReturnType<typeof sets> }[]): Session => ({
+    ...base, id, status: 'completed', startedAt, finishedAt: startedAt + 1, date,
+    exercises: ex.map((e, i) => ({ id: `${id}-${i}`, workoutExerciseId: null, exerciseId: e.exerciseId, exerciseName: e.exerciseId, measurement: 'weight_reps' as const, order: i, notes: null, target: { sets: 3, reps: 10, weightKg: 40, durationSec: null, distanceM: null }, sets: e.sets })),
+  });
+
+  it('lists what was done before for the same muscle, newest first, with the last sets', () => {
+    const history = [
+      logged('a', 1, '2026-09-01', [{ exerciseId: incline.id, sets: sets(3) }]),
+      logged('b', 2, '2026-09-08', [{ exerciseId: fly.id, sets: sets(2) }, { exerciseId: incline.id, sets: sets(4) }]),
+    ];
+    const past = pastExercisesLike(bench, history);
+    expect(past.map(p => p.exercise.id)).toEqual([fly.id, incline.id]);
+    expect(past[1].lastSets).toHaveLength(4);
+    expect(past[1].date).toBe('2026-09-08');
+  });
+
+  it('skips the exercise itself, what is already in the workout, and logs with nothing completed', () => {
+    const history = [logged('a', 1, '2026-09-01', [{ exerciseId: bench.id, sets: sets(3) }, { exerciseId: incline.id, sets: sets(3) }, { exerciseId: fly.id, sets: sets(3, false) }])];
+    expect(pastExercisesLike(bench, history, new Set([incline.id]))).toEqual([]);
   });
 });

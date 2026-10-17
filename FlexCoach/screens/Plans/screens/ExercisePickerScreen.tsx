@@ -1,9 +1,11 @@
-import React, { useCallback, useDeferredValue, useMemo, useState } from 'react';
-import { FlatList, TouchableOpacity, View } from 'react-native';
+import React, { useCallback, useDeferredValue, useEffect, useMemo, useState } from 'react';
+import { FlatList, ScrollView, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from '../../../components/layout/SafeAreaView';
 import { RouteProp, useNavigation, useRoute } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { Equipment, Exercise, ExerciseCategory, MuscleGroup, Workout } from '../../../data/models';
+import { Equipment, Exercise, ExerciseCategory, MuscleGroup, Session, Workout } from '../../../data/models';
+import { PastExercise, pastExercisesLike } from '../../../data/engine/sessionExtras';
+import { sessionRepository } from '../../../data/repositories/sessionRepository';
 import { CATEGORY_OPTIONS, comparableExercises, EQUIPMENT_OPTIONS, getCatalogExercise, MUSCLE_GROUPS, searchCatalog } from '../../../data/catalog/exerciseCatalog';
 import { newEntry } from '../../../data/services/planService';
 import { pickAdd, pickSwap } from '../../Tabs/Workout/components/swapChannel';
@@ -69,6 +71,38 @@ const ExerciseRow = React.memo(({ item, inWorkout, muscle, onOpen, onAdd, swap =
   );
 });
 
+/** A "previously done" card: the figure on the left, the words on the right, so it reads like a row and a long name has the width. */
+const CARD_WIDTH = 248;
+const CARD_MAP_HEIGHT = 72;
+
+/** One card in the "previously done" strip: the row's content, side by side. The figure of the primary muscle's side, the name, the muscles and equipment, and the swap button. */
+const PastCard = React.memo(({ past, onOpen, onSwap }: { past: PastExercise; onOpen: (ex: Exercise) => void; onSwap: (ex: Exercise) => void }) => {
+  const { colors, spacing, radius } = useTheme();
+  const ex = past.exercise;
+  return (
+    <TouchableOpacity onPress={() => onOpen(ex)} activeOpacity={0.8} accessibilityRole="button" accessibilityLabel={ex.name} style={{ width: CARD_WIDTH, flexDirection: 'row', alignItems: 'center', gap: spacing.md, padding: spacing.md, borderRadius: radius.md, backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.line }}>
+      <MuscleMap primary={ex.primaryMuscles} secondary={ex.secondaryMuscles} height={CARD_MAP_HEIGHT} views="auto" />
+      <View style={{ flex: 1, gap: spacing.xs }}>
+        <CustomText variant="bodyStrong" numberOfLines={2}>{ex.name}</CustomText>
+        <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.sm }}>
+          <CustomText variant="caption" color={colors.inkMuted} numberOfLines={2} style={{ flex: 1 }}>
+            {ex.primaryMuscles.map(title).join(', ')}{ex.equipment ? ` · ${title(ex.equipment)}` : ''}
+          </CustomText>
+          <TouchableOpacity
+            onPress={() => onSwap(ex)}
+            hitSlop={8}
+            accessibilityRole="button"
+            accessibilityLabel={`Swap in ${ex.name}`}
+            style={{ width: 36, height: 36, borderRadius: radius.sm, backgroundColor: colors.accentTint, alignItems: 'center', justifyContent: 'center' }}
+          >
+            <Icon icon={generalIcons.swap} size={18} color={colors.accent} strokeWidth={2.5} />
+          </TouchableOpacity>
+        </View>
+      </View>
+    </TouchableOpacity>
+  );
+});
+
 type PickerParams = {
   /**
    * Plan editor: add to this workout of the draft. Session: hand the pick
@@ -96,7 +130,7 @@ export const ExercisePickerScreen = () => {
   const swapping = swapMode && params.exerciseId ? getCatalogExercise(params.exerciseId) : null;
   const { colors, spacing, radius } = useTheme();
   const { draft, update } = usePlanEditor();
-  const { profile } = useAuth();
+  const { uid, profile } = useAuth();
   const unit = profile?.weightUnit ?? 'lb';
   // Held like a book, the keyboard would claim a half and push this sheet onto the other, over the content it came from: the search waits for a tap.
   const book = useFold().posture === 'book';
@@ -129,6 +163,18 @@ export const ExercisePickerScreen = () => {
     }
     return found.slice(0, 120);
   }, [filters, swapping, already]);
+
+  // Swapping: what the lifter has done before for the same muscle, with their last log of each, from their history.
+  const [history, setHistory] = useState<Session[] | null>(null);
+  useEffect(() => {
+    if (!swapping || !uid) return;
+    let on = true;
+    sessionRepository.listCompleted(uid).then(s => { if (on) setHistory(s); }).catch(() => { if (on) setHistory([]); });
+    return () => { on = false; };
+  }, [swapping, uid]);
+  const past = useMemo(() => (swapping && history ? pastExercisesLike(swapping, history, already) : []), [swapping, history, already]);
+  const browsing = !filters.query && filters.muscle === 'all' && filters.equipment === 'any' && filters.category === 'any';
+  const stripShown = swapMode && browsing && past.length > 0;
 
   const workoutId = params.workoutId;
   const add = useCallback(
@@ -191,9 +237,21 @@ export const ExercisePickerScreen = () => {
         keyExtractor={e => e.id}
         keyboardShouldPersistTaps="handled" keyboardDismissMode="on-drag"
         contentContainerStyle={{ paddingHorizontal: spacing.lg, paddingBottom: spacing.xl }}
+        ListHeaderComponent={
+          stripShown ? (
+            <View style={{ gap: spacing.sm, marginHorizontal: -spacing.lg, marginBottom: spacing.md }}>
+              <CustomText variant="overline" color={colors.inkMuted} style={{ paddingHorizontal: spacing.lg }}>Previously done</CustomText>
+              <ScrollView horizontal showsHorizontalScrollIndicator={false} keyboardShouldPersistTaps="handled" contentContainerStyle={{ paddingHorizontal: spacing.lg, gap: spacing.md }}>
+                {past.map(p => <PastCard key={p.exercise.id} past={p} onOpen={open} onSwap={add} />)}
+              </ScrollView>
+              <CustomText variant="overline" color={colors.inkMuted} style={{ paddingHorizontal: spacing.lg, paddingTop: spacing.sm }}>Similar exercises</CustomText>
+            </View>
+          ) : undefined
+        }
         ItemSeparatorComponent={() => <View style={{ height: 1, backgroundColor: colors.line }} />}
         ListEmptyComponent={<CustomText variant="body" color={colors.inkMuted} centered style={{ padding: spacing.xl }}>No exercises match.</CustomText>}
-        getItemLayout={(_, index) => ({ length: ROW_HEIGHT + 1, offset: (ROW_HEIGHT + 1) * index, index })}
+        // Row offsets are only known without the strip above them.
+        getItemLayout={stripShown ? undefined : (_, index) => ({ length: ROW_HEIGHT + 1, offset: (ROW_HEIGHT + 1) * index, index })}
         initialNumToRender={10}
         maxToRenderPerBatch={8}
         windowSize={7}

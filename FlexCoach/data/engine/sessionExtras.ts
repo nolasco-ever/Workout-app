@@ -1,5 +1,6 @@
-import { sameExercise } from '../catalog/exerciseIds';
-import { Exercise, Id, Plan, Session, SessionExercise, SetTarget, wantsWarmup, WeightUnit, Workout, WorkoutExercise } from '../models';
+import { canonicalExerciseId, sameExercise } from '../catalog/exerciseIds';
+import { getCatalogExercise } from '../catalog/exerciseCatalog';
+import { Exercise, Id, LoggedSet, Plan, Session, SessionExercise, SetTarget, wantsWarmup, WeightUnit, Workout, WorkoutExercise } from '../models';
 import { newEntry } from './planDefaults';
 import { buildPlannedSets, buildWarmupSets, progressExercise } from './progression';
 import { findWorkout } from './schedule';
@@ -151,3 +152,42 @@ export const newQuickSession = (uid: Id, date: string, makeId: () => Id, now: nu
 
 /** A session that stands on its own, outside any plan. */
 export const isQuickSession = (session: Pick<Session, 'planId' | 'cycleId'>): boolean => session.planId === null && session.cycleId === null;
+
+/** An exercise the lifter has logged before that could stand in for another, with what they did last time. */
+export interface PastExercise {
+  exercise: Exercise;
+  /** The day of the last log, ISO. */
+  date: string;
+  /** The completed working sets of that last log, in order. */
+  lastSets: LoggedSet[];
+}
+
+/**
+ * For the swap sheet: exercises in the lifter's history that hit one of
+ * `like`'s primary muscles and are measured the same way, most recently done
+ * first, each with its last log. Never `like` itself, nothing already in the
+ * workout, no stretches. Only exercises with a completed working set count:
+ * one that was planned and skipped was never done.
+ */
+export const pastExercisesLike = (like: Exercise, history: Session[], exclude: Set<Id> = new Set(), limit = 10): PastExercise[] => {
+  const primary = new Set(like.primaryMuscles);
+  const excluded = new Set([...exclude].map(canonicalExerciseId));
+  const seen = new Set<Id>([canonicalExerciseId(like.id)]);
+  const found: PastExercise[] = [];
+  const completed = history.filter(s => s.status === 'completed').sort((a, b) => b.startedAt - a.startedAt);
+  for (const session of completed) {
+    for (const logged of session.exercises) {
+      const id = canonicalExerciseId(logged.exerciseId);
+      if (seen.has(id) || excluded.has(id)) continue;
+      const working = logged.sets.filter(st => st.completed && !st.warmup);
+      if (working.length === 0) continue;
+      const exercise = getCatalogExercise(logged.exerciseId);
+      if (!exercise || exercise.category === 'stretching' || exercise.measurement !== like.measurement) continue;
+      if (!exercise.primaryMuscles.some(m => primary.has(m))) continue;
+      seen.add(id);
+      found.push({ exercise, date: session.date, lastSets: working });
+      if (found.length >= limit) return found;
+    }
+  }
+  return found;
+};
