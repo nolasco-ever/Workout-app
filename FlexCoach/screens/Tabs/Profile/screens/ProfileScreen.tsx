@@ -106,7 +106,7 @@ export const ProfileScreen = () => {
                         ? 'Milestones for streaks, volume, and records land in a later update.'
                         : achievements.unlocks.length === 0
                         ? 'Finish a workout to earn your first badge.'
-                        : `${achievements.earned} of ${achievements.progress.length} badges · ${achievements.unlocks.length} tier${achievements.unlocks.length === 1 ? '' : 's'} earned`}
+                        : `${achievements.earned}/${achievements.total} badges unlocked`}
                     </CustomText>
                   </View>
                   {features.achievements && <Icon icon={directionIcons.angleRight} size={18} color={colors.inactive} />}

@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useAuth } from '../auth/AuthProvider';
 import { AchievementUnlock, WeightUnit } from '../models';
-import { ACHIEVEMENT_FAMILIES, AchievementValues, FamilyProgress, measureAchievements, progressFor } from '../engine/achievements';
+import { ACHIEVEMENT_FAMILIES, AchievementValues, FamilyProgress, measureAchievements, progressFor, thresholdsFor } from '../engine/achievements';
 import { achievementRepository } from '../repositories/achievementRepository';
 import { buddyRepository } from '../repositories/buddyRepository';
 import { cycleRepository } from '../repositories/cycleRepository';
@@ -12,8 +12,10 @@ export interface AchievementsState {
   unlocks: AchievementUnlock[];
   /** Every family, in catalog order, with where the user stands on it. */
   progress: FamilyProgress[];
-  /** Families with at least one tier. */
+  /** Badges unlocked: every tier reached, over every family. */
   earned: number;
+  /** Badges there are to unlock: every tier of every family. */
+  total: number;
   unit: WeightUnit;
 }
 
@@ -58,7 +60,8 @@ export const useAchievements = (measure = true): AchievementsState => {
       loading: unlocks === null || (measure && values === null),
       unlocks: stored,
       progress,
-      earned: progress.filter(p => p.tier > 0).length,
+      earned: progress.reduce((n, p) => n + p.tier, 0),
+      total: ACHIEVEMENT_FAMILIES.reduce((n, f) => n + thresholdsFor(f, unit).length, 0),
       unit,
     };
   }, [unlocks, values, unit, measure]);
