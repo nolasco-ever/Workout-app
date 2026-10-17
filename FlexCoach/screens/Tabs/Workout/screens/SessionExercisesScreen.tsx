@@ -11,6 +11,7 @@ import { useTheme } from '../../../../theme';
 import { AppStackParams } from '../../../../appNavigators/AppStack';
 import { currentSession, sendSessionCommand, subscribeSession } from '../components/sessionChannel';
 import { SessionExerciseList } from '../components/SessionExerciseList';
+import { useSessionOrientation } from '../../../../navigation/useSessionOrientation';
 
 /**
  * The running workout at a glance, opened from the session's title: the
@@ -20,6 +21,7 @@ import { SessionExerciseList } from '../components/SessionExerciseList';
  * opens above this screen and comes back to it); extras swipe away.
  */
 export const SessionExercisesScreen = () => {
+  useSessionOrientation();
   const navigation = useNavigation<NativeStackNavigationProp<AppStackParams>>();
   const { params } = useRoute<RouteProp<AppStackParams, 'SessionExercisesScreen'>>();
   const { colors, spacing } = useTheme();

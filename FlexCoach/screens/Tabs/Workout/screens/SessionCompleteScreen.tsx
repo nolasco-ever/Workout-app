@@ -14,6 +14,7 @@ import { AppStackParams } from '../../../../appNavigators/AppStack';
 import { useTabBarInset } from '../../../../navigation/useTabBarInset';
 import { SurfaceCard as Card } from '../../../../components/cards/SurfaceCard';
 import { PrimaryButton } from '../../../../components/buttons/PrimaryButton';
+import { useSessionOrientation } from '../../../../navigation/useSessionOrientation';
 
 const Stat = ({ label, value }: { label: string; value: string }) => {
   const { colors } = useTheme();
@@ -27,6 +28,7 @@ const Stat = ({ label, value }: { label: string; value: string }) => {
 };
 
 export const SessionCompleteScreen = () => {
+  useSessionOrientation();
   const navigation = useNavigation<NativeStackNavigationProp<AppStackParams>>();
   const { params } = useRoute<RouteProp<AppStackParams, 'SessionCompleteScreen'>>();
   const { result } = params;

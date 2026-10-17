@@ -20,6 +20,7 @@ import { PlansStackParams } from '../routes';
 import { usePlanEditor } from '../PlanEditorContext';
 import { useAuth } from '../../../data/auth/AuthProvider';
 import { useFold } from '../../../data/fold/useFold';
+import { useSessionOrientation } from '../../../navigation/useSessionOrientation';
 
 const title = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
 
@@ -87,6 +88,7 @@ type PickerParams = {
  * or standing in for one exercise (mode 'swap', comparable ones first).
  */
 export const ExercisePickerScreen = () => {
+  useSessionOrientation();
   const navigation = useNavigation<NativeStackNavigationProp<PlansStackParams>>();
   const { params } = useRoute<RouteProp<PickerParams, 'ExercisePickerScreen'>>();
   const sessionMode = params.mode === 'session' || params.mode === 'swap';

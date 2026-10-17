@@ -34,6 +34,8 @@ interface Props {
   onStart: () => void;
   onStop: () => void;
   onToggleDone: () => void;
+  /** Fill the space given (a landscape pane): the card grows to it and the clock with it. */
+  fill?: boolean;
 }
 
 /**
@@ -42,7 +44,7 @@ interface Props {
  * underneath, and Start / Stop / Resume with a check to log it. The
  * exercise's single set holds the numbers.
  */
-export const CardioSetCard = ({ set, draft, unitLabel, timer, targetSec, onChange, onStart, onStop, onToggleDone }: Props) => {
+export const CardioSetCard = ({ set, draft, unitLabel, timer, targetSec, onChange, onStart, onStop, onToggleDone, fill = false }: Props) => {
   const { colors, radius, spacing, fonts } = useTheme();
   const running = timer !== null;
   useTick(running ? 1000 : 0);
@@ -57,12 +59,12 @@ export const CardioSetCard = ({ set, draft, unitLabel, timer, targetSec, onChang
   const clockColor = done || reached ? colors.success : started ? colors.ink : colors.inactive;
   const caption = countdown ? `Elapsed ${formatDuration(seconds)}` : reached ? `Target ${formatDuration(targetSec)} reached` : null;
   return (
-    <View style={{ backgroundColor: colors.surface, borderRadius: radius.lg, borderWidth: 1, borderColor: colors.line, padding: spacing.lg, gap: spacing.lg, opacity: done ? 0.85 : 1 }}>
+    <View style={{ backgroundColor: colors.surface, borderRadius: radius.lg, borderWidth: 1, borderColor: colors.line, padding: spacing.lg, gap: spacing.lg, opacity: done ? 0.85 : 1, ...(fill ? { flex: 1, justifyContent: 'space-between' as const } : {}) }}>
       <CustomText
         accessibilityLabel={`${countdown ? 'Time left' : 'Time'} ${formatDuration(clock)}${running ? ', running' : ''}`}
         color={clockColor}
         centered
-        style={{ fontFamily: fonts.display.bold, fontSize: 64, lineHeight: 72, letterSpacing: -1, fontVariant: ['tabular-nums'] }}
+        style={{ fontFamily: fonts.display.bold, fontSize: fill ? 80 : 64, lineHeight: fill ? 88 : 72, letterSpacing: -1, fontVariant: ['tabular-nums'], marginTop: fill ? spacing.lg : 0 }}
       >
         {formatDuration(clock)}
       </CustomText>

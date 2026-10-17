@@ -11,6 +11,7 @@ import { useComfortableColumn } from '../../../../components/layout/useComfortab
 import { useTheme } from '../../../../theme';
 import { AppStackParams } from '../../../../appNavigators/AppStack';
 import { pickCopyWorkout } from '../components/swapChannel';
+import { useSessionOrientation } from '../../../../navigation/useSessionOrientation';
 
 /**
  * The active plan's workouts, opened from the exercise picker while a quick
@@ -18,6 +19,7 @@ import { pickCopyWorkout } from '../components/swapChannel';
  * choice goes back through swapChannel and both modals close.
  */
 export const ActivePlanWorkoutsScreen = () => {
+  useSessionOrientation();
   const navigation = useNavigation<NativeStackNavigationProp<AppStackParams>>();
   const { params } = useRoute<RouteProp<AppStackParams, 'ActivePlanWorkoutsScreen'>>();
   const { colors, spacing } = useTheme();

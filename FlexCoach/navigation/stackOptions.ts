@@ -20,6 +20,8 @@ export const useStackOptions = () => {
     headerLargeTitleStyle: { fontFamily: fonts.display.bold, color: colors.ink },
     headerBackButtonDisplayMode: 'minimal',
     headerShadowVisible: false,
+    // Portrait everywhere (the folding phone's inner display ignores this and turns anyway); the live session lifts it on a folding phone for tent mode, see useSessionOrientation.
+    orientation: 'portrait',
     contentStyle: { backgroundColor: colors.ground },
     ...(Platform.OS === 'android' ? { headerStyle: { backgroundColor: colors.ground } } : {}),
   };

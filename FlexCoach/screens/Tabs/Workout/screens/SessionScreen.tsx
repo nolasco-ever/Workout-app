@@ -1,12 +1,13 @@
 import React, { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
-import { Alert, AppState, Keyboard, KeyboardEvent, Platform, ScrollView, TextInput, TouchableOpacity, Vibration, View } from 'react-native';
+import { Alert, AppState, Keyboard, KeyboardEvent, Platform, ScrollView, TextInput, TouchableOpacity, useWindowDimensions, Vibration, View } from 'react-native';
 import { KeyboardAvoiding } from '../../../../components/layout/KeyboardAvoiding';
 import { SafeAreaView } from '../../../../components/layout/SafeAreaView';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useSideRail } from '../../../../navigation/useSideRail';
-import { useLayoutFamily } from '../../../../components/layout/useLayoutFamily';
+import { useLayoutFamily, WIDE_MIN } from '../../../../components/layout/useLayoutFamily';
 import { useBookGutter } from '../../../../components/layout/useBookGutter';
 import { useFold } from '../../../../data/fold/useFold';
+import { useSessionOrientation } from '../../../../navigation/useSessionOrientation';
 import { SessionExerciseList, SessionProgressStrip } from '../components/SessionExerciseList';
 import { RouteProp, useIsFocused, useNavigation, useRoute } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
@@ -58,6 +59,12 @@ export const SessionScreen = () => {
   const fold = useFold();
   const laptop = fold.posture === 'tabletop' && fold.fold?.axis === 'horizontal' && fold.halves !== null;
   const topHalf = laptop && fold.halves ? fold.halves[0].height : 0;
+  // Standing on its edges (tent mode): the closed phone's outer display on its side, the only landscape in the app.
+  useSessionOrientation();
+  const { width: winWidth, height: winHeight } = useWindowDimensions();
+  const tent = fold.foldable && !laptop && winWidth > winHeight && winWidth < WIDE_MIN;
+  // The tent's root pads every inset itself (the rail runs along the top or the bottom edge, whichever way it was turned), so the header row adds none.
+  const sideInset = tent ? 0 : insets.right;
   const creaseHeight = laptop && fold.fold ? fold.fold.rect.height : 0;
   // While the keyboard is up (it takes the flat half) the flat pane slides up over the standing half by exactly what
   // the keyboard covers of it, a transform only: nothing re-lays out, so the field being typed in keeps its focus. A
@@ -578,7 +585,7 @@ export const SessionScreen = () => {
   const headerRow = (
     <>
         {/* The top inset by hand: beside a folding phone's status column the inset is 0, so the row drops to the Dynamic Island's level, clear of the round corners. */}
-        <View style={{ height: 56, justifyContent: 'center', paddingHorizontal: spacing.md, paddingRight: spacing.md + insets.right, marginTop: laptop ? insets.top : headerTop }} onLayout={e => setRowWidth(e.nativeEvent.layout.width - spacing.md * 2 - insets.right)}>
+        <View style={{ height: 56, justifyContent: 'center', paddingHorizontal: spacing.md, paddingRight: spacing.md + sideInset, marginTop: laptop ? insets.top : tent ? spacing.sm : headerTop }} onLayout={e => setRowWidth(e.nativeEvent.layout.width - spacing.md * 2 - sideInset)}>
           {/* The row only passes touches to its buttons, so the title beneath it stays tappable. */}
           <View pointerEvents="box-none" style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
             <GlassIconButton icon={directionIcons.angleLeft} nudgeX={-1} accessibilityLabel="Back" onPress={() => confirmLeaveRef.current(() => navigation.goBack())} />
@@ -646,6 +653,7 @@ export const SessionScreen = () => {
             onStart={() => startCardioTimer(exercise.sets[0])}
             onStop={stopCardioTimer}
             onToggleDone={() => toggleCardioDone(exercise.sets[0])}
+            fill={tent}
           />
           ) : (
           <View style={{ backgroundColor: colors.surface, borderRadius: radius.lg, borderWidth: 1, borderColor: colors.line, paddingVertical: spacing.md, overflow: 'hidden' }}>
@@ -685,8 +693,9 @@ export const SessionScreen = () => {
             </View>
           </View>
           )) : null;
-  const footer = (
-        <View style={{ padding: spacing.lg, paddingBottom: spacing.lg + tabBarInset, gap: spacing.sm, borderTopWidth: 1, borderTopColor: colors.line, backgroundColor: colors.ground }}>
+  // The way between exercises (or, with nothing in the workout yet, the way to add one); the footer wraps it on a phone.
+  const navRow = (
+    <>
           {!exercise && <PrimaryButton label="Add exercise" icon={generalIcons.plus} onPress={addExercise} />}
           {exercise && (
           <View style={{ flexDirection: 'row', gap: spacing.sm }}>
@@ -706,8 +715,67 @@ export const SessionScreen = () => {
             </View>
           </View>
           )}
+    </>
+  );
+  const footer = (
+        <View style={{ padding: spacing.lg, paddingBottom: spacing.lg + tabBarInset, gap: spacing.sm, borderTopWidth: 1, borderTopColor: colors.line, backgroundColor: colors.ground }}>
+          {navRow}
         </View>
   );
+
+  // Tent mode: one row of header, the progress strip, then the muscle map, the exercise's details and the way between
+  // exercises down the left, and the sets filling the right. No tab bar, so the content runs to the edges; only the
+  // status rail is kept clear, along whichever long edge it landed on (a small bottom inset is the home indicator, run under).
+  if (tent) {
+    const railBottom = insets.bottom >= 60 ? insets.bottom : 0;
+    // The map takes what the header (56), the strip (30), two lines of details (44), previous / next (52) and the gaps leave.
+    const mapHeight = Math.min(220, Math.max(72, winHeight - insets.top - railBottom - 210));
+    return (
+      <View style={{ flex: 1, backgroundColor: colors.ground, paddingTop: insets.top, paddingBottom: railBottom }}>
+        <KeyboardAvoiding>
+          {headerRow}
+          <View style={{ paddingHorizontal: spacing.lg }}>
+            <SessionProgressStrip session={session} currentIndex={index} />
+          </View>
+          <View style={{ flex: 1, flexDirection: 'row', gap: spacing.lg, paddingHorizontal: spacing.lg, paddingTop: spacing.sm }}>
+            <View style={{ width: '38%', gap: spacing.sm }}>
+              <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
+                {exercise && catalog && <MuscleMap primary={catalog.primaryMuscles} secondary={catalog.secondaryMuscles} height={mapHeight} views="auto" />}
+              </View>
+              {/* The details without How to and Swap: on the floor, neither is wanted. */}
+              {exercise && (
+                <View style={{ flexShrink: 0, alignItems: 'center' }}>
+                  <CustomText variant="title" numberOfLines={2} centered>{exercise.exerciseName}</CustomText>
+                  <CustomText variant="caption" color={colors.inkMuted} centered>
+                    {catalog?.primaryMuscles.join(', ')}
+                    {workoutEntry?.repRangeMin ? ` · ${workoutEntry.repRangeMin}–${workoutEntry.repRangeMax} reps` : ''}{timedExercise ? '' : ` · rest ${restSec}s`}
+                  </CustomText>
+                </View>
+              )}
+              {/* The display's corners are rounded: the buttons and the card stop short of them. */}
+              <View style={{ flexShrink: 0, paddingTop: spacing.xs, paddingBottom: spacing.lg }}>{navRow}</View>
+            </View>
+            {/* A timed exercise's card fills the pane; sets scroll to the screen's edge. */}
+            {timedExercise ? (
+              <View style={{ flex: 1, paddingBottom: spacing.lg }}>{setsCard}</View>
+            ) : (
+            <View style={{ flex: 1 }}>
+              <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: spacing.lg }} keyboardShouldPersistTaps="handled" keyboardDismissMode="on-drag">
+                {setsCard ?? (
+                  <View style={{ alignItems: 'center', gap: spacing.md, paddingTop: spacing.xl }}>
+                    <Icon icon={generalIcons.dumbbell} size={36} color={colors.inactive} />
+                    <CustomText variant="heading" centered>What are you doing today?</CustomText>
+                    <CustomText variant="body" color={colors.inkMuted} centered>Add an exercise, a run, a stretch, whatever it is. It all counts.</CustomText>
+                  </View>
+                )}
+              </ScrollView>
+            </View>
+            )}
+          </View>
+        </KeyboardAvoiding>
+      </View>
+    );
+  }
 
   // Placed on a surface: the standing half holds the header, the progress strip, the exercise's details and the muscle
   // map at full height, none of it tapped; the flat half holds the sets and the way between exercises. With the keyboard

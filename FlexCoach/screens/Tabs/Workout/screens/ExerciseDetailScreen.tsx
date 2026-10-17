@@ -15,6 +15,7 @@ import { CustomText } from '../../../../components/text/customText';
 import { useTheme } from '../../../../theme';
 import { SurfaceCard as Card } from '../../../../components/cards/SurfaceCard';
 import { PhotoViewer } from '../../../../components/media/PhotoViewer';
+import { useSessionOrientation } from '../../../../navigation/useSessionOrientation';
 
 const title = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
 
@@ -32,6 +33,7 @@ const Chip = ({ label }: { label: string }) => {
  * photos, and step-by-step instructions. Video comes later.
  */
 export const ExerciseDetailScreen = () => {
+  useSessionOrientation();
   const { params } = useRoute<RouteProp<{ ExerciseDetailScreen: { exerciseId: string; addToWorkoutId?: string; addToSession?: boolean; swapForSessionExerciseId?: string } }, 'ExerciseDetailScreen'>>();
   const navigation = useNavigation<NativeStackNavigationProp<Record<string, object | undefined>>>();
   const { colors, spacing, radius } = useTheme();
