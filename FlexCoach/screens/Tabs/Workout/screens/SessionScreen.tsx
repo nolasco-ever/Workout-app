@@ -224,10 +224,9 @@ export const SessionScreen = () => {
     const merged = fromDraft(exercise, set, draft, units);
     const done = !set.completed;
     persist(exercise, { ...merged, completed: done, completedAt: done ? Date.now() : null });
-    // No rest after the workout's final set: there is nothing left to rest for.
-    const workoutDone = done && index === session.exercises.length - 1 && exercise.sets.every(s => s.id === set.id || s.completed);
+    // The rest runs after the workout's final set too: lifters asked for it (build 18), and the finish is their call.
     setRestFor(set.warmup ? warmupRestSec(restSec) : restSec);
-    setRestStartedAt(done && !workoutDone ? Date.now() : null);
+    setRestStartedAt(done ? Date.now() : null);
   };
 
   // The stopwatch for timed and cardio sets. Time comes only from it: the
