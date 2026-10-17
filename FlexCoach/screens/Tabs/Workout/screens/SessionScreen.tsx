@@ -21,6 +21,10 @@ import { sessionRepository } from '../../../../data/repositories/sessionReposito
 import { subscribeAdd, subscribeCopyWorkout, subscribeSwap } from '../components/swapChannel';
 import { publishSession, subscribeSessionCommands } from '../components/sessionChannel';
 import { warmupRestSec } from '../../../../data/engine/progression';
+import { DONE_LINGER_SECONDS, liveActivity } from '../../../../data/liveActivity/liveActivity';
+import { liveActivityRepository } from '../../../../data/repositories/liveActivityRepository';
+import { currentDeviceToken } from '../../../../data/notifications/pushService';
+import { buildLiveActivityState, describeFinish } from '../components/liveActivityState';
 import { planRestOverNotification, planTimerDoneNotification, withPrefDefaults } from '../../../../data/engine/notifications';
 import { cancelRestOver, cancelTimerDone, exactAlarmsAllowed, openExactAlarmSettings, scheduleRestOver, scheduleTimerDone } from '../../../../data/notifications/notificationService';
 import { userRepository } from '../../../../data/repositories/userRepository';
@@ -469,6 +473,9 @@ export const SessionScreen = () => {
     setFinishing(true);
     try {
       const result = await finishSession(uid, profile, session, cycle);
+      // The activity's last word: the summary lingers on the lock screen while the screen goes.
+      activityEndedRef.current = true;
+      liveActivity.end({ ...activityStateRef.current, phase: 'done', summary: describeFinish(result.setsCompleted, result.volumeKg, result.personalRecords.length, units) }, DONE_LINGER_SECONDS);
       navigation.replace('SessionCompleteScreen', { result });
     } catch (err) {
       console.warn(err);
@@ -485,7 +492,31 @@ export const SessionScreen = () => {
     slideIn.value = withTiming(0, { duration: 240, easing: Easing.out(Easing.cubic) });
   }, [exerciseId, slideIn]);
 
-  const dismissRest = () => setRestStartedAt(null);
+  // A rest put away after it ran out (the pill folding, or a tap then) is announced as over; a skip mid-rest is not.
+  const dismissRest = () => {
+    const over = restStartedAt !== null && Date.now() >= restStartedAt + restFor * 1000;
+    setRestStartedAt(null);
+    if (over) setRestJustEnded(true);
+  };
+  // The rest ends by the clock, not only by the pill's fold-away animation (which does not run while the app is behind
+  // another screen): a moment after it runs out the state moves on, so the Live Activity gets its next set. The system
+  // does the same on its own from the activity's stale date when the app is asleep; this covers the app being awake.
+  // A rest that ran out is announced for a few seconds ("Rest over", the Island opening on it) before the plain next set.
+  const [restJustEnded, setRestJustEnded] = useState(false);
+  useEffect(() => {
+    if (restStartedAt === null) return;
+    const endAt = restStartedAt + restFor * 1000;
+    const id = setTimeout(() => {
+      setRestStartedAt(current => (current === restStartedAt ? null : current));
+      setRestJustEnded(true);
+    }, Math.max(0, endAt + 1500 - Date.now()));
+    return () => clearTimeout(id);
+  }, [restStartedAt, restFor]);
+  useEffect(() => {
+    if (!restJustEnded) return;
+    const id = setTimeout(() => setRestJustEnded(false), 6000);
+    return () => clearTimeout(id);
+  }, [restJustEnded]);
   // Android 14+ holds timers back unless the app may set exact alarms, and
   // nobody finds the switch for it in Settings. Ask once, the first time a
   // workout runs on a phone where it is off.
@@ -523,8 +554,90 @@ export const SessionScreen = () => {
   }, []);
   const inBackground = appState !== 'active';
 
+  // The workout's Live Activity (iOS): started with the screen, updated on every change of what it shows, ended on
+  // leave; finishing ends it with the summary instead. Its buttons come back as commands, live while the app runs and
+  // from the App Group queue after it was in the background or killed.
+  const activityState = buildLiveActivityState({ session, index, drafts, units, restStartedAt, restFor, restSec, clock: cardioTimer, restJustEnded });
+  const activityStateRef = useRef(activityState);
+  activityStateRef.current = activityState;
+  const activityEndedRef = useRef(false);
+  const activityStartedRef = useRef(false);
   useEffect(() => {
-    if (restStartedAt === null || !restOverEnabled || !inBackground) {
+    activityStartedRef.current = liveActivity.start(sessionRef.current.workoutName, sessionRef.current.id, activityStateRef.current);
+    return () => {
+      if (!activityEndedRef.current) liveActivity.end();
+    };
+    // Once per screen: the session it shows does not change identity.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+  const activityJson = JSON.stringify(activityState);
+  useEffect(() => {
+    // No alert from here: the native side announces the rest's end itself (its own timer, or the server's push), so the app's update is quiet.
+    if (activityStartedRef.current && !activityEndedRef.current) liveActivity.update(activityStateRef.current);
+  }, [activityJson]);
+  // A phone with a Dynamic Island (the top inset of an Island phone, or a folding phone's rail) gets the rest's end
+  // on the Island from a server push, timed to the second while the app sleeps, instead of the local notification.
+  const islandPush = Platform.OS === 'ios' && (fold.foldable || insets.top >= 54);
+  const [activityPushToken, setActivityPushToken] = useState<string | null>(() => liveActivity.pushToken());
+  useEffect(() => liveActivity.onPushToken(setActivityPushToken), []);
+  useEffect(() => {
+    if (!uid || !islandPush || !activityPushToken) return;
+    const resting = restStartedAt !== null;
+    liveActivityRepository
+      .save(uid, {
+        sessionId: sessionRef.current.id,
+        token: activityPushToken,
+        deviceToken: currentDeviceToken(),
+        restId: resting ? String(restStartedAt) : null,
+        restEndsAt: resting ? restStartedAt + restFor * 1000 : null,
+        // What the push shows: the next set, announced as rest over.
+        state: resting ? { ...activityStateRef.current, phase: 'restOver', restEndsAt: undefined } : null,
+        updatedAt: Date.now(),
+      })
+      .catch(err => console.warn('live activity schedule failed', err));
+  }, [uid, islandPush, activityPushToken, restStartedAt, restFor]);
+  useEffect(() => {
+    if (!uid || !islandPush) return;
+    const sessionId = sessionRef.current.id;
+    return () => {
+      liveActivityRepository.remove(uid, sessionId).catch(() => undefined);
+    };
+  }, [uid, islandPush]);
+  const applyCommandRef = useRef((command: { kind: string; id: string }) => {});
+  applyCommandRef.current = command => {
+    switch (command.kind) {
+      case 'completeSet': {
+        for (const ex of sessionRef.current.exercises) {
+          const set = ex.sets.find(st => st.id === command.id);
+          if (!set) continue;
+          if (set.completed) return;
+          const at = sessionRef.current.exercises.indexOf(ex);
+          if (at !== index) goTo(at);
+          toggleDone(set);
+          return;
+        }
+        return;
+      }
+      case 'skipRest':
+        dismissRest();
+        return;
+      case 'stopCardio':
+        stopCardioTimer();
+        return;
+    }
+  };
+  useEffect(() => liveActivity.onCommand(command => applyCommandRef.current(command)), []);
+  useEffect(() => {
+    if (inBackground) return;
+    // Back in front: whatever was tapped on the activity meanwhile, in order, for this workout only.
+    for (const command of liveActivity.drainCommands()) {
+      if (command.at >= sessionRef.current.startedAt) applyCommandRef.current(command);
+    }
+  }, [inBackground]);
+
+  useEffect(() => {
+    // An Island phone hears the rest's end on the Island instead (the server's push), unless no token came.
+    if (restStartedAt === null || !restOverEnabled || !inBackground || (islandPush && activityPushToken !== null)) {
       cancelRestOver().catch(() => undefined);
       return;
     }

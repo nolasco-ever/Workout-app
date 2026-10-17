@@ -88,3 +88,4 @@ android/keystore.properties
 # Ruby/CocoaPods lock and Xcode user workspace state (local to each machine)
 Gemfile.lock
 ios/FlexCoach.xcodeproj/project.xcworkspace/
+firebase-debug.log

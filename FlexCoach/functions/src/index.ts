@@ -6,6 +6,8 @@ import { logger } from 'firebase-functions/v2';
 import { FieldValue } from 'firebase-admin/firestore';
 import { ServerFamily, serverAchievementId, tiersReached } from './ladders';
 
+export { restOverPush, scheduleRestOver } from './liveActivity';
+
 initializeApp();
 const db = getFirestore();
 

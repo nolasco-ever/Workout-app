@@ -2783,7 +2783,7 @@ SPEC CHECKSUMS:
   React-viewtransitionnativemodule: 4efffc1f835b85ea2bdb1205baa07eeb4e0ebe83
   React-webperformancenativemodule: 2caa33504c064a19f1a84721d431e5e4320dfead
   ReactAppDependencyProvider: 531dee09fa5ac21ef8a236a0c4767c3b2f9db977
-  ReactCodegen: 6020ed2b5e5dcddeca70e61976a3a1afa07d2f19
+  ReactCodegen: df03d0c13f7b561fefc0aec6490e720271498f3e
   ReactCommon: 7d2d036b7250e66dce71d19f47160d4b31fbb92a
   ReactNativeCameraKit: 9843fd9b6e089e4b203983ed5402c2fdd2b0663b
   ReactNativeDependencies: 94c922c39e0e6150ee9ad05e2ca1946e0ef55783

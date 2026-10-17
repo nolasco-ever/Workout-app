@@ -84,7 +84,8 @@
       },
       "modulesProvider": {
         "NativeBadgeModels": "NativeBadgeModels",
-        "NativeFold": "NativeFold"
+        "NativeFold": "NativeFold",
+        "NativeLiveActivity": "NativeLiveActivity"
       }
     }
   }

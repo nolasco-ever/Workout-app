@@ -99,6 +99,8 @@
 	<array>
 		<string>arm64</string>
 	</array>
+	<key>NSSupportsLiveActivities</key>
+	<true/>
 	<key>UISupportedInterfaceOrientations</key>
 	<array>
 		<string>UIInterfaceOrientationPortrait</string>

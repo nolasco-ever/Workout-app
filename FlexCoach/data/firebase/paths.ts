@@ -21,6 +21,8 @@ export const paths = {
   customExercise: (uid: Id, exerciseId: Id) => `users/${uid}/customExercises/${exerciseId}`,
   notifications: (uid: Id) => `users/${uid}/notifications`,
   notification: (uid: Id, notificationId: Id) => `users/${uid}/notifications/${notificationId}`,
+  /** The running workout's Live Activity, for the server's rest-over push. */
+  liveActivity: (uid: Id, sessionId: Id) => `users/${uid}/liveActivities/${sessionId}`,
   devices: (uid: Id) => `users/${uid}/devices`,
   device: (uid: Id, token: string) => `users/${uid}/devices/${token}`,
   publicProfile: (uid: Id) => `publicProfiles/${uid}`,

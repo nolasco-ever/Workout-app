@@ -23,6 +23,9 @@ const messaging = () => getMessaging();
 
 let currentToken: string | null = null;
 
+/** This install's FCM registration token, once registered. */
+export const currentDeviceToken = (): string | null => currentToken;
+
 /**
  * Register this install for the user. Safe to call repeatedly. The device
  * itself is registered with APNs automatically at launch (firebase.json
