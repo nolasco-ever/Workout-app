@@ -33,6 +33,14 @@ export const describeSchedule = (plan: Plan): string => {
   return `${days.join(', ')} · ${s.weeksPerCycle}-week cycle${s.weeksPerCycle > 1 ? 's' : ''}`;
 };
 
+/** The schedule in a few words for a list row: "7-day cycle", "2-week cycle". The day-by-day account is describeSchedule. */
+export const describeCycle = (plan: Plan): string => {
+  const s = plan.schedule;
+  if (s.mode === 'rotation') return s.slots.length === 0 ? 'No schedule yet' : `${s.slots.length * s.passesPerCycle}-day cycle`;
+  if (!s.weekdays.some(Boolean)) return 'No schedule yet';
+  return `${s.weeksPerCycle}-week cycle`;
+};
+
 export const cycleLengthDays = (plan: Plan): number =>
   plan.schedule.mode === 'rotation' ? plan.schedule.slots.length * plan.schedule.passesPerCycle : 7 * plan.schedule.weeksPerCycle;
 

@@ -27,7 +27,7 @@ import { DayRow } from '../components/OccurrenceRow';
 import { askNotToday } from '../components/notToday';
 import { AppStackParams } from '../../../../appNavigators/AppStack';
 import { devFlags } from '../../../../dev/flags';
-import { describeSchedule } from '../../../../screens/Plans/components/planSummary';
+import { describeCycle } from '../../../../screens/Plans/components/planSummary';
 
 const longDate = (d: string) => fromLocalDate(d).toLocaleDateString(undefined, { weekday: 'long', month: 'short', day: 'numeric' });
 const shortDate = (d: string) => fromLocalDate(d).toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric' });
@@ -399,7 +399,7 @@ export const WorkoutHomeScreen = () => {
                       <View style={{ flex: 1 }}>
                         <CustomText variant="bodyStrong">{draft.name || 'Untitled plan'}</CustomText>
                         <CustomText variant="caption" color={colors.inkMuted}>
-                          {complete ? `${draft.workouts.length} workout${draft.workouts.length === 1 ? '' : 's'} · ${describeSchedule(draft)}` : 'Not finished yet'}
+                          {complete ? `${draft.workouts.length} workout${draft.workouts.length === 1 ? '' : 's'} · ${describeCycle(draft)}` : 'Not finished yet'}
                         </CustomText>
                       </View>
                       <TouchableOpacity

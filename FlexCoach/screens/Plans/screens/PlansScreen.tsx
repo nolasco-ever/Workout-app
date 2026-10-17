@@ -18,7 +18,7 @@ import { useNoHeaderGlass } from '../../../navigation/useNoHeaderGlass';
 import { useTheme } from '../../../theme';
 import { PlansStackParams } from '../routes';
 import { usePlanEditor } from '../PlanEditorContext';
-import { describeSchedule } from '../components/planSummary';
+import { describeCycle } from '../components/planSummary';
 import { useLayoutFamily } from '../../../components/layout/useLayoutFamily';
 import { useBookGutter } from '../../../components/layout/useBookGutter';
 
@@ -31,7 +31,7 @@ const PlanRow = ({ plan, selected = false, onPress }: { plan: Plan; selected?: b
       <View style={{ flex: 1 }}>
         <CustomText variant="bodyStrong">{plan.name || 'Untitled plan'}</CustomText>
         <CustomText variant="caption" color={colors.inkMuted}>
-          {plan.sharedFrom ? `${plan.sharedFrom.synced ? 'in sync with' : 'by'} ${plan.sharedFrom.displayName ?? 'a buddy'} · ` : ''}{plan.workouts.length} workout{plan.workouts.length === 1 ? '' : 's'} · {describeSchedule(plan)}{plan.visibleToBuddies ? ' · shared' : ''}
+          {plan.sharedFrom ? `${plan.sharedFrom.synced ? 'in sync with' : 'by'} ${plan.sharedFrom.displayName ?? 'a buddy'} · ` : ''}{plan.workouts.length} workout{plan.workouts.length === 1 ? '' : 's'} · {describeCycle(plan)}{plan.visibleToBuddies ? ' · shared' : ''}
         </CustomText>
       </View>
       <Icon icon={directionIcons.angleRight} color={colors.inactive} size={20} />

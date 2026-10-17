@@ -8,7 +8,7 @@ import { buddyRepository } from '../../data/repositories/buddyRepository';
 import { planRepository } from '../../data/repositories/planRepository';
 import { addBuddy, lookupInviteCode, removeBuddy, shareMessage } from '../../data/services/buddyService';
 import { formatInviteCode } from '../../data/engine/buddies';
-import { describeSchedule } from '../Plans/components/planSummary';
+import { describeCycle } from '../Plans/components/planSummary';
 import { CustomText } from '../../components/text/customText';
 import { SurfaceCard } from '../../components/cards/SurfaceCard';
 import { PrimaryButton } from '../../components/buttons/PrimaryButton';
@@ -198,7 +198,7 @@ export const BuddyCard = ({ params, embedded = false }: { params: BuddyCardParam
                   >
                     <View style={{ flex: 1 }}>
                       <CustomText variant="bodyStrong">{p.name}</CustomText>
-                      <CustomText variant="caption" color={colors.inkMuted}>{p.workouts.length} workout{p.workouts.length === 1 ? '' : 's'} · {describeSchedule(p)}</CustomText>
+                      <CustomText variant="caption" color={colors.inkMuted}>{p.workouts.length} workout{p.workouts.length === 1 ? '' : 's'} · {describeCycle(p)}</CustomText>
                     </View>
                     <Icon icon={directionIcons.angleRight} size={20} color={colors.inactive} />
                   </TouchableOpacity>

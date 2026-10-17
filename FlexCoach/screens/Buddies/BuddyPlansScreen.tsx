@@ -4,7 +4,7 @@ import { SafeAreaView } from '../../components/layout/SafeAreaView';
 import { NavigationProp, useFocusEffect, useNavigation } from '@react-navigation/native';
 import { useBuddies } from '../../data/hooks/useBuddies';
 import { useBuddyPlans } from '../../data/hooks/useBuddyPlans';
-import { describeSchedule } from '../Plans/components/planSummary';
+import { describeCycle } from '../Plans/components/planSummary';
 import { CustomText } from '../../components/text/customText';
 import { SurfaceCard } from '../../components/cards/SurfaceCard';
 import { PrimaryButton } from '../../components/buttons/PrimaryButton';
@@ -67,7 +67,7 @@ export const BuddyPlansScreen = () => {
                 <View style={{ flex: 1 }}>
                   <CustomText variant="bodyStrong">{s.plan.name}</CustomText>
                   <CustomText variant="caption" color={colors.inkMuted}>
-                    by {s.ownerName ?? 'a buddy'} · {s.plan.workouts.length} workout{s.plan.workouts.length === 1 ? '' : 's'} · {describeSchedule(s.plan)}
+                    by {s.ownerName ?? 'a buddy'} · {s.plan.workouts.length} workout{s.plan.workouts.length === 1 ? '' : 's'} · {describeCycle(s.plan)}
                   </CustomText>
                 </View>
                 <Icon icon={directionIcons.angleRight} size={20} color={colors.inactive} />
