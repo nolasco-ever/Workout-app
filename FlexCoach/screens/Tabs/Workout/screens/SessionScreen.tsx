@@ -388,6 +388,7 @@ export const SessionScreen = () => {
     () =>
       subscribeSessionCommands(command => {
         if (command.kind === 'jump') goToRef.current(command.index);
+        else if (command.kind === 'activity') applyCommandRef.current({ kind: command.command, id: command.id });
         else {
           const ex = sessionRef.current.exercises.find(e => e.id === command.sessionExerciseId);
           if (ex) askRemoveRef.current(ex);

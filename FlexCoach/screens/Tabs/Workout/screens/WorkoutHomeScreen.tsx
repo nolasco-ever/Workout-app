@@ -151,7 +151,7 @@ export const WorkoutHomeScreen = () => {
                 <CustomText variant="body" color={colors.inkMuted} style={{ marginTop: spacing.xs, marginBottom: spacing.md }}>
                   Review it to see your stats and any changes to your next cycle.
                 </CustomText>
-                <PrimaryButton label="Review report" onPress={() => navigation.navigate('CycleReviewScreen', { plan, cycle })} />
+                <PrimaryButton label="Review report" onPress={() => (navigation as unknown as NavigationProp<AppStackParams>).navigate('CycleReviewScreen', { plan, cycle })} />
               </Card>
             ) : state.cycleFinished && state.reportReviewed ? (
               <Card tone="accent">
@@ -161,7 +161,7 @@ export const WorkoutHomeScreen = () => {
                 </CustomText>
                 <View style={{ gap: spacing.sm }}>
                   <PrimaryButton label={`Start cycle ${cycle.number + 1}`} busy={busy === 'next-cycle'} onPress={() => run('next-cycle', async () => { if (uid) await startNextCycle(uid, plan, cycle); })} />
-                  <PrimaryButton label="See the report again" variant="quiet" onPress={() => navigation.navigate('CycleReviewScreen', { plan, cycle })} />
+                  <PrimaryButton label="See the report again" variant="quiet" onPress={() => (navigation as unknown as NavigationProp<AppStackParams>).navigate('CycleReviewScreen', { plan, cycle })} />
                 </View>
               </Card>
             ) : null,

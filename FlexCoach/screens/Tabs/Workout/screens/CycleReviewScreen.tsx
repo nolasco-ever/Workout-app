@@ -53,7 +53,7 @@ const DetailRow = ({ label, value, tone, first = false }: { label: string; value
  */
 export const CycleReviewScreen = () => {
   const navigation = useNavigation<NavigationProp<WorkoutStackParams>>();
-  const { params } = useRoute<RouteProp<WorkoutStackParams, 'CycleReviewScreen'>>();
+  const { params } = useRoute<RouteProp<AppStackParams, 'CycleReviewScreen'>>();
   return <CycleReviewView cycleId={params.cycleId} plan={params.plan} cycle={params.cycle} onOpenSession={(sessionId, workoutName) => navigation.navigate('SessionDetailScreen', { sessionId, workoutName })} />;
 };
 
@@ -258,14 +258,14 @@ export const CycleReviewView = ({ cycleId, plan: planProp, cycle: cycleProp, onO
             </Card>
           </View>
         )}
+        {/* Swap an exercise or move a day before the next cycle starts; a synced copy of a buddy's plan is theirs to change. */}
+        {cycle.status === 'active' && !plan.sharedFrom?.synced && (
+          <PrimaryButton label="Adjust plan" variant="outline" onPress={() => (navigation as unknown as NavigationProp<AppStackParams>).navigate('PlanEditScreen', { planId: plan.id })} />
+        )}
       </ScrollView>
       {/* Pinned, so starting the next cycle is one tap from anywhere in the review. */}
       {cycle.status === 'active' && (
-        <View style={{ padding: spacing.lg, paddingBottom: spacing.lg + bottomInset, gap: spacing.sm, borderTopWidth: 1, borderTopColor: colors.line, backgroundColor: colors.ground }}>
-          {/* Swap an exercise or move a day before the next cycle starts; a synced copy of a buddy's plan is theirs to change. */}
-          {!plan.sharedFrom?.synced && (
-            <PrimaryButton label="Adjust plan" variant="quiet" onPress={() => (navigation as unknown as NavigationProp<AppStackParams>).navigate('PlanEditScreen', { planId: plan.id })} />
-          )}
+        <View style={{ padding: spacing.lg, paddingBottom: spacing.lg + bottomInset, borderTopWidth: 1, borderTopColor: colors.line, backgroundColor: colors.ground }}>
           <PrimaryButton label={`Start cycle ${nextCycleNumberAfter(cycle)}`} busy={busy} onPress={() => { startNext().catch(err => console.warn(err)); }} />
         </View>
       )}

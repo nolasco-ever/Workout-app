@@ -25,7 +25,11 @@ export const subscribeSession = (listener: (session: Session) => void): (() => v
   };
 };
 
-export type SessionCommand = { kind: 'jump'; index: number } | { kind: 'remove'; sessionExerciseId: string };
+export type SessionCommand =
+  | { kind: 'jump'; index: number }
+  | { kind: 'remove'; sessionExerciseId: string }
+  /** A button on the workout's notification (Android) or Live Activity: log the next set, skip the rest, stop the clock. */
+  | { kind: 'activity'; command: 'completeSet' | 'skipRest' | 'stopCardio'; id: string };
 const commandListeners = new Set<(command: SessionCommand) => void>();
 
 export const sendSessionCommand = (command: SessionCommand): void => {

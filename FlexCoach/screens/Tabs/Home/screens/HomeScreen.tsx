@@ -132,7 +132,7 @@ export const HomeScreen = () => {
   const openReport = () => {
     if (!home.cycle) return;
     setReportModal(false);
-    (navigation as any).navigate('WorkoutStack', { screen: 'CycleReviewScreen', params: { cycleId: home.cycle.id }, initial: false });
+    (navigation as any).navigate('CycleReviewScreen', { cycleId: home.cycle.id });
   };
   const reportLater = () => {
     setReportModal(false);

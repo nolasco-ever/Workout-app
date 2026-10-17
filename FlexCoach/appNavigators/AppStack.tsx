@@ -35,7 +35,7 @@ import { BuddyPlanScreen } from '../screens/Buddies/BuddyPlanScreen';
 import { BuddyWorkoutScreen } from '../screens/Buddies/BuddyWorkoutScreen';
 import { AchievementsScreen } from '../screens/Achievements/AchievementsScreen';
 import { BadgeScreen } from '../screens/Achievements/BadgeScreen';
-import { AchievementFamilyId } from '../data/models';
+import { AchievementFamilyId, Plan, Cycle } from '../data/models';
 import type { BuddyRoutes } from '../screens/Buddies/routes';
 import { HeaderButton } from '../components/headers/HeaderButton';
 import { generalIcons } from '../components/icons/icon-library';
@@ -58,7 +58,8 @@ export type AppStackParams = BuddyRoutes & SessionRoutes & Omit<PlansStackParams
     BadgeScreen: { family: AchievementFamilyId; tier: number };
     /** A logged workout or a cycle's review, pushed over whatever is open (a badge, the notifications feed) so back returns there. The tabs have their own copies for their own lists. */
     SessionDetailScreen: { sessionId: string; workoutName?: string };
-    CycleReviewScreen: { cycleId: string };
+    /** The review of a finished cycle: by id, or with the plan and cycle in hand straight from the Workout tab. */
+    CycleReviewScreen: { plan: Plan; cycle: Cycle; cycleId?: undefined } | { cycleId: string; plan?: undefined; cycle?: undefined };
 };
 
 const Stack = createNativeStackNavigator<AppStackParams>();
