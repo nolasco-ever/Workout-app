@@ -3,6 +3,34 @@
 Newest build first. **Store notes** is the tester-facing text, identical for
 TestFlight and Google Play (under 500 characters). **Details** is for us.
 
+## Build 19 (2026-10-17)
+
+### Store notes
+
+Build 19
+
+• Live Activity on iPhone: rest timer, next set and cardio clock on the Lock Screen and Dynamic Island. Log a set or skip rest from there
+
+• 1,394 exercises with animations; plans and history carry over
+
+• Folding iPhone ready: book, laptop and tent poses
+
+• Rest-over alert returns to the workout; Done no longer asks to leave
+
+• Rest runs after the last set; a first set is not a record
+
+• Swap shows exercises you've done for the same muscle
+
+• New icons, shorter plan rows, badge fix
+
+### Details
+
+- Commits afbf623..4a39b6c: foldable support in three tiers (native fold module, wide/medium layouts for every tab, book gutter, laptop and tent poses for the live session, plans and cycle review flattened onto the root stack); Lucide to Phosphor icons; iOS Live Activity + Dynamic Island with a server rest-over push (Cloud Task queue `restOverPush`, Firestore `liveActivities`); ExerciseDB Pro library (1,394 exercises, animations on Firebase Hosting, 511 of 913 old ids mapped, the rest kept as hidden legacy entries); How-to sheet as a pager (How to / Muscles / Instructions); build 18 additional feedback (fb-9/7 + notification tap routing, fb-1 badge count, fb-8 rest after last set, fb-6 plan rows, fb-12 swap strip, fb-2 first-set record rule).
+- BEFORE TESTING the Live Activity: `npx firebase deploy --only firestore:rules,functions` (new `liveActivities` rule and the `scheduleRestOver` function); the APNs key must be in Firebase for the rest-over push. Island phones rely on the push once the app is suspended (~30 s in the background).
+- Not device-tested by us: the Live Activity (simulator cannot receive the push), foldable poses (no hardware yet), the notification-tap routing fix, animated WebP on Android hardware (checked on the Pixel 8 emulator only).
+- Android: the ongoing workout card was built on Notifee and removed (v2 #10, native rewrite); Fresco animated-webp added for the animations.
+- Parked in the master list (v1 #15–21): notifications screen pass, Account/Privacy/Contact screens, badges in History, per-family tier art, cardio records, calibration ramp, offline state.
+
 ## Build 18 (2026-10-14)
 
 ### Store notes
