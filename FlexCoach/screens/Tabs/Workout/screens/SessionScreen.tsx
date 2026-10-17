@@ -1,12 +1,13 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { Alert, AppState, Platform, ScrollView, TouchableOpacity, Vibration, View } from 'react-native';
+import React, { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
+import { Alert, AppState, Keyboard, KeyboardEvent, Platform, ScrollView, TextInput, TouchableOpacity, Vibration, View } from 'react-native';
 import { KeyboardAvoiding } from '../../../../components/layout/KeyboardAvoiding';
 import { SafeAreaView } from '../../../../components/layout/SafeAreaView';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useSideRail } from '../../../../navigation/useSideRail';
 import { useLayoutFamily } from '../../../../components/layout/useLayoutFamily';
 import { useBookGutter } from '../../../../components/layout/useBookGutter';
-import { SessionExerciseList } from '../components/SessionExerciseList';
+import { useFold } from '../../../../data/fold/useFold';
+import { SessionExerciseList, SessionProgressStrip } from '../components/SessionExerciseList';
 import { RouteProp, useIsFocused, useNavigation, useRoute } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useAuth } from '../../../../data/auth/AuthProvider';
@@ -36,7 +37,7 @@ import { RestPill, SessionTitle } from '../components/SessionHeader';
 import { SetDraft, SetRow } from '../components/SetRow';
 import { CardioSetCard, CardioTimer, timerElapsed } from '../components/CardioSetCard';
 import { SwipeToDelete } from '../../../../components/list-items/SwipeToDelete';
-import Animated, { SlideInLeft, SlideInRight } from 'react-native-reanimated';
+import Animated, { Easing, useAnimatedStyle, useSharedValue, withTiming } from 'react-native-reanimated';
 import { fromDraft, toDraft, Units, unitLabels } from '../components/setDrafts';
 
 /** The exercise list's pane beside the current exercise on a wide window. */
@@ -53,6 +54,56 @@ export const SessionScreen = () => {
   const wide = useLayoutFamily() === 'wide';
   // Held like a book, the panes split on the crease.
   const book = useBookGutter();
+  // Placed on a surface like a laptop (half open, hinge flat): the standing half is looked at, the flat half is tapped.
+  const fold = useFold();
+  const laptop = fold.posture === 'tabletop' && fold.fold?.axis === 'horizontal' && fold.halves !== null;
+  const topHalf = laptop && fold.halves ? fold.halves[0].height : 0;
+  const creaseHeight = laptop && fold.fold ? fold.fold.rect.height : 0;
+  // While the keyboard is up (it takes the flat half) the flat pane slides up over the standing half by exactly what
+  // the keyboard covers of it, a transform only: nothing re-lays out, so the field being typed in keeps its focus. A
+  // thin accessory bar (a hardware keyboard) lifts it a little, a full keyboard most of the way; the pane never goes
+  // above the top inset.
+  const [keyboardUp, setKeyboardUp] = useState(false);
+  const lift = useSharedValue(0);
+  const liftStyle = useAnimatedStyle(() => ({ transform: [{ translateY: -lift.value }] }));
+  const windowHeight = fold.window.height;
+  const liftFor = useCallback((keyboardTop: number) => Math.min(Math.max(0, topHalf + creaseHeight - insets.top), Math.max(0, windowHeight - keyboardTop)), [topHalf, creaseHeight, insets.top, windowHeight]);
+  useEffect(() => {
+    if (!laptop) {
+      setKeyboardUp(false);
+      lift.value = 0;
+      return;
+    }
+    // A keyboard worth lifting for: a real one on screen, not the thin bar a hardware keyboard leaves.
+    const realKeyboard = (frame: { height: number; screenY: number } | undefined) => !!frame && frame.height >= 100 && frame.screenY < windowHeight;
+    const show = (frame: { height: number; screenY: number } | undefined, duration?: number) => {
+      const up = realKeyboard(frame);
+      setKeyboardUp(up);
+      const to = up && frame ? liftFor(frame.screenY) : 0;
+      lift.value = duration === undefined ? to : withTiming(to, { duration: Math.max(10, duration), easing: Easing.out(Easing.cubic) });
+    };
+    // Entering the pose with the keyboard already up (a field kept its focus through the fold): start lifted. Pose
+    // changes can leave Keyboard.isVisible() stale, so here a focused field is required too. (Not on the show notice
+    // itself: that can arrive before the field's own focus event.)
+    const focused = TextInput.State.currentlyFocusedInput() !== null;
+    show(focused && Keyboard.isVisible() ? Keyboard.metrics() ?? undefined : undefined);
+    const onShow = (e: KeyboardEvent) => show(e.endCoordinates, e?.duration ?? 250);
+    const onHide = (e: KeyboardEvent) => show(undefined, e?.duration ?? 250);
+    const subs =
+      Platform.OS === 'ios'
+        ? [Keyboard.addListener('keyboardWillShow', onShow), Keyboard.addListener('keyboardWillHide', onHide), Keyboard.addListener('keyboardDidHide', onHide)]
+        : [Keyboard.addListener('keyboardDidShow', onShow), Keyboard.addListener('keyboardDidHide', onHide)];
+    return () => subs.forEach(sub => sub.remove());
+  }, [laptop, lift, liftFor, windowHeight]);
+  // Done puts the keyboard away; it also drops the pane itself, in case no hide notice follows.
+  const dismissKeyboard = () => {
+    Keyboard.dismiss();
+    TextInput.State.blurTextInput(TextInput.State.currentlyFocusedInput());
+    setKeyboardUp(false);
+    lift.value = withTiming(0, { duration: 220, easing: Easing.out(Easing.cubic) });
+  };
+  // The standing half's muscle map fills the height left under the header and the progress strip (arithmetic, not a measurement: a measured height fed back into the map could chase itself).
+  const mapHeight = Math.max(96, topHalf - insets.top - 56 - 44 - spacing.lg * 2);
   const tabBarInset = useTabBarInset();
   const { uid, profile } = useAuth();
   const units: Units = { weight: profile?.weightUnit ?? 'lb', distance: profile?.distanceUnit ?? 'mi' };
@@ -71,6 +122,11 @@ export const SessionScreen = () => {
   });
   /** Which way the last exercise change went, so the new one slides in from that side. */
   const slideDir = useRef<1 | -1>(1);
+  // A change of exercise slides the new content in from the side it came from. A transform driven by hand rather than
+  // Reanimated's entering animation: that one keeps its own index of the view tree, and a fold or a rotation that
+  // re-parents the whole screen put it out of step (an assertion in LayoutAnimationsProxy froze the app).
+  const slideIn = useSharedValue(0);
+  const slideStyle = useAnimatedStyle(() => ({ transform: [{ translateX: slideIn.value }], opacity: 1 - Math.abs(slideIn.value) / 96 }));
   // The rest timer belongs to the set just finished, not to the exercise on
   // screen, so moving between exercises leaves it running.
   const goTo = (next: number) => {
@@ -415,6 +471,12 @@ export const SessionScreen = () => {
   };
 
   const isLast = index === total - 1;
+  const exerciseId = exercise?.id ?? null;
+  useLayoutEffect(() => {
+    if (!exerciseId) return;
+    slideIn.value = slideDir.current * 48;
+    slideIn.value = withTiming(0, { duration: 240, easing: Easing.out(Easing.cubic) });
+  }, [exerciseId, slideIn]);
 
   const dismissRest = () => setRestStartedAt(null);
   // Android 14+ holds timers back unless the app may set exact alarms, and
@@ -513,17 +575,10 @@ export const SessionScreen = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [restStartedAt, restFor, session.id, restOverEnabled]);
 
-  return (
-    <SafeAreaView edges={wide ? ['left', 'right'] : ['bottom', 'left', 'right']} style={{ flex: 1, backgroundColor: colors.ground }}>
-      <KeyboardAvoiding>
-        {/*
-          Our own header row instead of the native one: the title with the
-          running clock sits dead centre of the screen whatever is beside it.
-          The native bar centred it between the back button and the rest
-          pill, so the pill shoved it left.
-        */}
+  const headerRow = (
+    <>
         {/* The top inset by hand: beside a folding phone's status column the inset is 0, so the row drops to the Dynamic Island's level, clear of the round corners. */}
-        <View style={{ height: 56, justifyContent: 'center', paddingHorizontal: spacing.md, paddingRight: spacing.md + insets.right, marginTop: headerTop }} onLayout={e => setRowWidth(e.nativeEvent.layout.width - spacing.md * 2 - insets.right)}>
+        <View style={{ height: 56, justifyContent: 'center', paddingHorizontal: spacing.md, paddingRight: spacing.md + insets.right, marginTop: laptop ? insets.top : headerTop }} onLayout={e => setRowWidth(e.nativeEvent.layout.width - spacing.md * 2 - insets.right)}>
           {/* The row only passes touches to its buttons, so the title beneath it stays tappable. */}
           <View pointerEvents="box-none" style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
             <GlassIconButton icon={directionIcons.angleLeft} nudgeX={-1} accessibilityLabel="Back" onPress={() => confirmLeaveRef.current(() => navigation.goBack())} />
@@ -538,31 +593,10 @@ export const SessionScreen = () => {
             </View>
           </View>
         </View>
-
-        <View style={{ flex: 1, flexDirection: wide ? 'row' : 'column', gap: wide ? book?.gap ?? spacing.lg : 0, paddingLeft: wide ? spacing.lg : 0 }}>
-        {wide && (
-          <View style={{ width: book ? Math.max(0, book.left - spacing.lg) : LIST_PANE_WIDTH }}>
-            <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ gap: spacing.lg, paddingBottom: spacing.lg + insets.bottom }}>
-              <SessionExerciseList session={session} currentIndex={index} onJump={goTo} onRemove={ex => askRemoveRef.current(ex)} />
-              <PrimaryButton label="Add exercise" variant="outline" icon={generalIcons.plus} onPress={addExercise} />
-            </ScrollView>
-          </View>
-        )}
-        <View style={{ flex: 1 }}>
-        <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ padding: spacing.lg, paddingBottom: wide ? spacing.lg + insets.bottom : spacing.lg }} keyboardShouldPersistTaps="handled" keyboardDismissMode="on-drag">
-          {/* Keyed by exercise so a change mounts fresh content that slides in from the side it came from. */}
-          {!exercise && (
-            <View style={{ alignItems: 'center', gap: spacing.md, paddingTop: spacing.xxl }}>
-              <Icon icon={generalIcons.dumbbell} size={36} color={colors.inactive} />
-              <CustomText variant="heading" centered>What are you doing today?</CustomText>
-              <CustomText variant="body" color={colors.inkMuted} centered>Add an exercise, a run, a stretch, whatever it is. It all counts.</CustomText>
-            </View>
-          )}
-          {exercise && (
-          <Animated.View key={exercise.id} entering={(slideDir.current === 1 ? SlideInRight : SlideInLeft).duration(240)} style={{ gap: spacing.lg }}>
-          {/* Only the How-to link opens the tutorial, so a stray tap on the header doesn't leave the workout. */}
-          <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.md }}>
-            {catalog && <MuscleMap primary={catalog.primaryMuscles} secondary={catalog.secondaryMuscles} height={84} views="auto" />}
+    </>
+  );
+  // The exercise's name, muscles, targets and links: beside the small map on a phone, beside the tall one in the laptop pose.
+  const details = exercise ? (
             <View style={{ flex: 1 }}>
               <CustomText variant="title">{exercise.exerciseName}</CustomText>
               <CustomText variant="caption" color={colors.inkMuted}>
@@ -600,9 +634,8 @@ export const SessionScreen = () => {
                 <CustomText variant="caption" color={colors.inkMuted} style={{ marginTop: spacing.xs }}>Added for this workout</CustomText>
               )}
             </View>
-          </View>
-
-          {timedExercise ? (
+  ) : null;
+  const setsCard = exercise ? (timedExercise ? (
           <CardioSetCard
             set={exercise.sets[0]}
             draft={drafts[exercise.sets[0].id] ?? { a: '', b: '' }}
@@ -651,12 +684,8 @@ export const SessionScreen = () => {
               </TouchableOpacity>
             </View>
           </View>
-          )}
-          </Animated.View>
-          )}
-        </ScrollView>
-
-        {!wide && (
+          )) : null;
+  const footer = (
         <View style={{ padding: spacing.lg, paddingBottom: spacing.lg + tabBarInset, gap: spacing.sm, borderTopWidth: 1, borderTopColor: colors.line, backgroundColor: colors.ground }}>
           {!exercise && <PrimaryButton label="Add exercise" icon={generalIcons.plus} onPress={addExercise} />}
           {exercise && (
@@ -678,8 +707,127 @@ export const SessionScreen = () => {
           </View>
           )}
         </View>
+  );
 
+  // Placed on a surface: the standing half holds the header, the progress strip, the exercise's details and the muscle
+  // map at full height, none of it tapped; the flat half holds the sets and the way between exercises. With the keyboard
+  // up, the flat half's pane lifts over the standing half, down to the keyboard's edge, so the set being typed stays in view.
+  if (laptop) {
+    return (
+      <SafeAreaView edges={['left', 'right']} style={{ flex: 1, backgroundColor: colors.ground }}>
+        <View style={{ height: topHalf }}>
+          {headerRow}
+          <View style={{ paddingHorizontal: spacing.lg, paddingTop: spacing.sm }}>
+            <SessionProgressStrip session={session} currentIndex={index} />
+          </View>
+          {exercise ? (
+            <View style={{ flex: 1, flexDirection: 'row', alignItems: 'center', gap: spacing.xl, padding: spacing.lg }}>
+              {/* The map at the left, the side the primary muscle is on; the details at the right, large enough to read from the bar. */}
+              <View style={{ width: '40%', alignItems: 'center', justifyContent: 'center' }}>
+                {catalog && <MuscleMap primary={catalog.primaryMuscles} secondary={catalog.secondaryMuscles} height={mapHeight} views="auto" />}
+              </View>
+              <View style={{ flex: 1, gap: spacing.sm }}>
+                <CustomText variant="title">{exercise.exerciseName}</CustomText>
+                <CustomText variant="body" color={colors.inkMuted}>
+                  {catalog?.primaryMuscles.join(', ')}
+                  {workoutEntry?.repRangeMin ? ` · ${workoutEntry.repRangeMin}–${workoutEntry.repRangeMax} reps` : ''}{timedExercise ? '' : ` · rest ${restSec}s`}
+                </CustomText>
+                <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.xl, marginTop: spacing.xs }}>
+                  {catalog && (
+                    <TouchableOpacity onPress={() => navigation.navigate('ExerciseDetailScreen', { exerciseId: catalog.id })} hitSlop={8} accessibilityRole="link" style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.xs }}>
+                      <Icon icon={generalIcons.info} color={colors.accent} size={18} />
+                      <CustomText variant="bodyStrong" color={colors.accent}>How to</CustomText>
+                    </TouchableOpacity>
+                  )}
+                  <TouchableOpacity
+                    onPress={() => navigation.navigate('ExercisePickerScreen', { mode: 'swap', sessionExerciseId: exercise.id, exerciseId: exercise.exerciseId, excludeIds: session.exercises.map(e => e.exerciseId) })}
+                    hitSlop={8}
+                    accessibilityRole="link"
+                    style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.xs }}
+                  >
+                    <Icon icon={generalIcons.swap} color={colors.accent} size={18} />
+                    <CustomText variant="bodyStrong" color={colors.accent}>Swap</CustomText>
+                  </TouchableOpacity>
+                </View>
+                {exercise.substitutedFor && <CustomText variant="body" color={colors.inkMuted}>In place of {exercise.substitutedFor.exerciseName} for this workout</CustomText>}
+                {!quick && exercise.workoutExerciseId === null && !exercise.substitutedFor && <CustomText variant="body" color={colors.inkMuted}>Added for this workout</CustomText>}
+              </View>
+            </View>
+          ) : (
+            <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', gap: spacing.md, padding: spacing.lg }}>
+              <Icon icon={generalIcons.dumbbell} size={36} color={colors.inactive} />
+              <CustomText variant="heading" centered>What are you doing today?</CustomText>
+              <CustomText variant="body" color={colors.inkMuted} centered>Add an exercise, a run, a stretch, whatever it is. It all counts.</CustomText>
+            </View>
+          )}
+        </View>
+        {/* The crease: the system's reserved band, left empty. */}
+        <View style={{ height: creaseHeight }} />
+        <Animated.View style={[{ flex: 1, backgroundColor: colors.ground }, liftStyle]}>
+          <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ padding: spacing.lg }} keyboardShouldPersistTaps="handled" keyboardDismissMode="on-drag">
+            {setsCard}
+          </ScrollView>
+          {/* With the keyboard up there is no empty ground to tap: a Done pill at the right, where previous / next were, puts it away. A pill, not a button, so it does not read as "done with the workout". */}
+          {keyboardUp ? (
+            <View style={{ padding: spacing.lg, paddingBottom: spacing.lg + tabBarInset, borderTopWidth: 1, borderTopColor: colors.line, backgroundColor: colors.ground, flexDirection: 'row', justifyContent: 'flex-end', alignItems: 'center', minHeight: 52 + spacing.lg * 2 + tabBarInset }}>
+              <TouchableOpacity onPress={dismissKeyboard} accessibilityRole="button" accessibilityLabel="Hide keyboard" hitSlop={8} style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.xs, height: 40, paddingHorizontal: spacing.lg, borderRadius: radius.pill, backgroundColor: colors.accentTint }}>
+                <Icon icon={directionIcons.angleDown} size={16} color={colors.accent} strokeWidth={2.5} />
+                <CustomText variant="label" color={colors.accent}>Done</CustomText>
+              </TouchableOpacity>
+            </View>
+          ) : (
+            footer
+          )}
+        </Animated.View>
+      </SafeAreaView>
+    );
+  }
+
+  return (
+    <SafeAreaView edges={wide ? ['left', 'right'] : ['bottom', 'left', 'right']} style={{ flex: 1, backgroundColor: colors.ground }}>
+      <KeyboardAvoiding>
+        {/*
+          Our own header row instead of the native one: the title with the
+          running clock sits dead centre of the screen whatever is beside it.
+          The native bar centred it between the back button and the rest
+          pill, so the pill shoved it left.
+        */}
+        {headerRow}
+
+        <View style={{ flex: 1, flexDirection: wide ? 'row' : 'column', gap: wide ? book?.gap ?? spacing.lg : 0, paddingLeft: wide ? spacing.lg : 0 }}>
+        {wide && (
+          <View style={{ width: book ? Math.max(0, book.left - spacing.lg) : LIST_PANE_WIDTH }}>
+            <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ gap: spacing.lg, paddingBottom: spacing.lg + insets.bottom }}>
+              <SessionExerciseList session={session} currentIndex={index} onJump={goTo} onRemove={ex => askRemoveRef.current(ex)} />
+              <PrimaryButton label="Add exercise" variant="outline" icon={generalIcons.plus} onPress={addExercise} />
+            </ScrollView>
+          </View>
         )}
+        <View style={{ flex: 1 }}>
+        <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ padding: spacing.lg, paddingBottom: wide ? spacing.lg + insets.bottom : spacing.lg }} keyboardShouldPersistTaps="handled" keyboardDismissMode="on-drag">
+          {/* Keyed by exercise so a change mounts fresh content that slides in from the side it came from. */}
+          {!exercise && (
+            <View style={{ alignItems: 'center', gap: spacing.md, paddingTop: spacing.xxl }}>
+              <Icon icon={generalIcons.dumbbell} size={36} color={colors.inactive} />
+              <CustomText variant="heading" centered>What are you doing today?</CustomText>
+              <CustomText variant="body" color={colors.inkMuted} centered>Add an exercise, a run, a stretch, whatever it is. It all counts.</CustomText>
+            </View>
+          )}
+          {exercise && (
+          <Animated.View key={exercise.id} style={[{ gap: spacing.lg }, slideStyle]}>
+          {/* Only the How-to link opens the tutorial, so a stray tap on the header doesn't leave the workout. */}
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.md }}>
+            {catalog && <MuscleMap primary={catalog.primaryMuscles} secondary={catalog.secondaryMuscles} height={84} views="auto" />}
+            {details}
+          </View>
+
+          {setsCard}
+
+          </Animated.View>
+          )}
+        </ScrollView>
+
+        {!wide && footer}
         {/* No footer beside the list: a tap on the list moves between exercises. Finish shows once every set is in. */}
         {wide && allComplete && (
           <View style={{ padding: spacing.lg, paddingBottom: spacing.lg + insets.bottom, borderTopWidth: 1, borderTopColor: colors.line, backgroundColor: colors.ground }}>

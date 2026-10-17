@@ -17,10 +17,28 @@ import { useTheme } from '../../../../theme';
  * a phone; on a wide window the session keeps it standing beside the
  * current exercise.
  */
-export const SessionExerciseList = ({ session, currentIndex, onJump, onRemove }: { session: Session; currentIndex: number; onJump: (index: number) => void; onRemove: (ex: SessionExercise) => void }) => {
+/** Progress at a glance: one segment per exercise, green when all its sets are in, the current one in accent; the count beneath. */
+export const SessionProgressStrip = ({ session, currentIndex }: { session: Session; currentIndex: number }) => {
   const { colors, spacing } = useTheme();
   const completedSets = session.exercises.reduce((n, ex) => n + ex.sets.filter(s => s.completed).length, 0);
   const totalSets = session.exercises.reduce((n, ex) => n + ex.sets.length, 0);
+  return (
+    <View style={{ gap: spacing.sm }}>
+      <View style={{ flexDirection: 'row', gap: 4 }}>
+        {session.exercises.map((ex, i) => {
+          const done = ex.sets.length > 0 && ex.sets.every(s => s.completed);
+          return <View key={ex.id} style={{ flex: 1, height: 4, borderRadius: 2, backgroundColor: done ? colors.success : i === currentIndex ? colors.accent : colors.surfaceRaised }} />;
+        })}
+      </View>
+      <CustomText variant="caption" color={colors.inkMuted}>
+        {session.exercises.length === 0 ? 'No exercises yet' : `Exercise ${currentIndex + 1} of ${session.exercises.length} · ${completedSets}/${totalSets} sets`}
+      </CustomText>
+    </View>
+  );
+};
+
+export const SessionExerciseList = ({ session, currentIndex, onJump, onRemove }: { session: Session; currentIndex: number; onJump: (index: number) => void; onRemove: (ex: SessionExercise) => void }) => {
+  const { colors, spacing } = useTheme();
   const groups = [
     { key: 'planned', label: null as string | null, items: session.exercises.map((ex, i) => ({ ex, i })).filter(({ ex }) => ex.workoutExerciseId !== null) },
     { key: 'added', label: 'Additional exercises' as string | null, items: session.exercises.map((ex, i) => ({ ex, i })).filter(({ ex }) => ex.workoutExerciseId === null) },
@@ -28,18 +46,7 @@ export const SessionExerciseList = ({ session, currentIndex, onJump, onRemove }:
 
   return (
     <>
-      {/* Progress at a glance: one segment per exercise, green when all its sets are in, the current one in accent. */}
-      <View style={{ gap: spacing.sm }}>
-        <View style={{ flexDirection: 'row', gap: 4 }}>
-          {session.exercises.map((ex, i) => {
-            const done = ex.sets.length > 0 && ex.sets.every(s => s.completed);
-            return <View key={ex.id} style={{ flex: 1, height: 4, borderRadius: 2, backgroundColor: done ? colors.success : i === currentIndex ? colors.accent : colors.surfaceRaised }} />;
-          })}
-        </View>
-        <CustomText variant="caption" color={colors.inkMuted}>
-          {session.exercises.length === 0 ? 'No exercises yet' : `Exercise ${currentIndex + 1} of ${session.exercises.length} · ${completedSets}/${totalSets} sets`}
-        </CustomText>
-      </View>
+      <SessionProgressStrip session={session} currentIndex={currentIndex} />
       {groups.map(group => (
         <View key={group.key} style={{ gap: spacing.sm }}>
           {group.label && <CustomText variant="overline" color={colors.inkMuted}>{group.label}</CustomText>}

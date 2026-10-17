@@ -39,6 +39,8 @@ static const CGFloat kOpenWidth = 600;
   NSString *_hingeStatus;
   double _hingeAngleDeg;
   BOOL _hingeKnown;
+  BOOL _refreshQueued;
+  BOOL _refreshing;
 }
 
 + (NSString *)moduleName
@@ -119,7 +121,7 @@ static const CGFloat kOpenWidth = 600;
   probe.accessibilityElementsHidden = YES;
   __weak NativeFold *weakSelf = self;
   probe.onLayout = ^{
-    [weakSelf refresh];
+    [weakSelf scheduleRefresh];
   };
   [window insertSubview:probe atIndex:0];
   _probe = probe;
@@ -140,11 +142,11 @@ static const CGFloat kOpenWidth = 600;
         strong->_hingeStatus = @"none";
         strong->_hingeAngleDeg = -1;
       }
-      [strong refresh];
+      [strong scheduleRefresh];
       // The division region's active flag can settle a beat after the hinge reports, and a flat window lays out nothing new: read again shortly.
       for (NSNumber *delay in @[ @0.25, @1.0 ]) {
         dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(delay.doubleValue * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
-          [weakSelf refresh];
+          [weakSelf scheduleRefresh];
         });
       }
     }];
@@ -166,10 +168,23 @@ static const CGFloat kOpenWidth = 600;
 }
 #endif
 
+/// Main thread. One read per run-loop turn, after the layout pass that asked for it: reading the reserved regions from
+/// inside layoutSubviews could ask for another layout, and a storm of layouts a storm of reads.
+- (void)scheduleRefresh
+{
+  if (_refreshQueued) return;
+  _refreshQueued = YES;
+  dispatch_async(dispatch_get_main_queue(), ^{
+    self->_refreshQueued = NO;
+    [self refresh];
+  });
+}
+
 /// Main thread. Reads the fold from UIKit, works out the pose, and tells JavaScript if anything changed.
 - (void)refresh
 {
-  if (!_probe) return;
+  if (!_probe || _refreshing) return;
+  _refreshing = YES;
   CGRect bounds = _probe.bounds;
   NSString *axis = @"none";
   CGRect fold = CGRectZero;
@@ -229,6 +244,7 @@ static const CGFloat kOpenWidth = 600;
     changed = ![next isEqualToDictionary:_state];
     if (changed) _state = next;
   }
+  _refreshing = NO;
   // The emitter is wired up once JavaScript holds the module; before that there is no one to tell.
   if (changed && _eventEmitterCallback) [self emitOnChange:next];
 }
