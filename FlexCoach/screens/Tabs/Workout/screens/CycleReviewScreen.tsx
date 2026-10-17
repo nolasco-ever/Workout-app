@@ -128,8 +128,9 @@ export const CycleReviewView = ({ cycleId, plan: planProp, cycle: cycleProp, onO
     setBusy(true);
     try {
       await startNextCycle(uid, plan, cycle);
-      // Spelled out from the root: this screen is also pushed over the tabs (from a badge or a notification), where a bare 'WorkoutHomeScreen' is unknown.
-      (navigation as unknown as NavigationProp<AppStackParams>).navigate('TabNavigator', { screen: 'WorkoutStack', params: { screen: 'WorkoutHomeScreen' } } as never);
+      // Spelled out from the root: this screen sits over the tabs, where a bare 'WorkoutHomeScreen' is unknown. `pop`
+      // goes back down to the tabs instead of pushing a second copy of them over this screen.
+      (navigation as unknown as NavigationProp<AppStackParams>).navigate('TabNavigator', { screen: 'WorkoutStack', params: { screen: 'WorkoutHomeScreen' } } as never, { pop: true });
     } finally {
       setBusy(false);
     }
