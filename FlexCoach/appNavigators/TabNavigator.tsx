@@ -15,8 +15,18 @@ export type TabNavigatorParams = {
 
 const Tab = createNativeBottomTabNavigator<TabNavigatorParams>();
 
-/** SF Symbols on iOS (Liquid Glass on iOS 26); Lucide vector drawables on Android. */
-const icon = (sfSymbol: 'house' | 'dumbbell' | 'person', drawable: string) => () => (Platform.OS === 'ios' ? { sfSymbol } : { uri: drawable });
+/**
+ * Phosphor's regular glyphs, so the tab bar matches the rest of the app: template PNGs on iOS (the native bar tints
+ * them, Liquid Glass on iOS 26), vector drawables on Android. Both are drawn from the same Phosphor paths.
+ */
+const TAB_IMAGES = {
+  home: { outline: require('../assets/tabs/home.png'), fill: require('../assets/tabs/home-fill.png') },
+  workout: { outline: require('../assets/tabs/workout.png'), fill: require('../assets/tabs/workout-fill.png') },
+  profile: { outline: require('../assets/tabs/profile.png'), fill: require('../assets/tabs/profile-fill.png') },
+} as const;
+/** The chosen tab shows the filled glyph, the others the outline. */
+const icon = (name: keyof typeof TAB_IMAGES, drawable: string) => ({ focused }: { focused: boolean }) =>
+  Platform.OS === 'ios' ? TAB_IMAGES[name][focused ? 'fill' : 'outline'] : { uri: focused ? `${drawable}_fill` : drawable };
 
 export const TabNavigator = () => {
     const { colors } = useTheme();
@@ -31,9 +41,9 @@ export const TabNavigator = () => {
             minimizeBehavior="never"
             labeled
         >
-            <Tab.Screen name="HomeStack" component={HomeStack} options={{ title: 'Home', tabBarIcon: icon('house', 'ic_tab_home') }} />
-            <Tab.Screen name="WorkoutStack" component={WorkoutStack} options={{ title: 'Workout', tabBarIcon: icon('dumbbell', 'ic_tab_workout') }} />
-            <Tab.Screen name="ProfileStack" component={ProfileStack} options={{ title: 'Profile', tabBarIcon: icon('person', 'ic_tab_profile') }} />
+            <Tab.Screen name="HomeStack" component={HomeStack} options={{ title: 'Home', tabBarIcon: icon('home', 'ic_tab_home') }} />
+            <Tab.Screen name="WorkoutStack" component={WorkoutStack} options={{ title: 'Workout', tabBarIcon: icon('workout', 'ic_tab_workout') }} />
+            <Tab.Screen name="ProfileStack" component={ProfileStack} options={{ title: 'Profile', tabBarIcon: icon('profile', 'ic_tab_profile') }} />
         </Tab.Navigator>
     );
 };

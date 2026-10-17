@@ -322,7 +322,7 @@ export const HomeScreen = () => {
                     onPress={() => navigation.navigate('ExerciseProgressScreen', { exerciseId: pr.exerciseId, exerciseName: pr.exerciseName })}
                     style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.md, paddingVertical: spacing.sm }}
                   >
-                    <Icon icon={generalIcons.trophy} size={18} color={colors.warning} />
+                    <Icon icon={generalIcons.trophy} size={24} color={colors.warning} />
                     <View style={{ flex: 1 }}>
                       <CustomText variant="bodyStrong">{pr.exerciseName}</CustomText>
                       <CustomText variant="caption" color={colors.inkMuted}>{dateLabel(pr.date)}{pr.previousValue !== null ? ` · up from ${formatRecordValue(pr.kind, pr.previousValue, unit, dist)}` : ' · first record'}</CustomText>

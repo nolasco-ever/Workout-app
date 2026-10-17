@@ -1,4 +1,6 @@
-import { Anchor, Crown, Dumbbell, Flame, Heart, Mountain, Rocket, Shield, Star, Sun, Target, Zap } from 'lucide-react-native';
+import { avatarMarks } from '../icons/icon-library';
+
+const { AnchorIcon: Anchor, CrownIcon: Crown, BarbellIcon: Dumbbell, FireIcon: Flame, HeartIcon: Heart, MountainsIcon: Mountain, RocketIcon: Rocket, ShieldIcon: Shield, StarIcon: Star, SunIcon: Sun, TargetIcon: Target, LightningIcon: Zap } = avatarMarks;
 import { FaceId, IconAvatarId } from '../../data/engine/avatars';
 import { FaceSpec } from './FaceAvatar';
 import { IconSource } from '../icons/Icon';
