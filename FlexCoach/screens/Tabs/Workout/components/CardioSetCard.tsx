@@ -41,8 +41,9 @@ interface Props {
 /**
  * A timed or cardio exercise as one card, no sets: a big stopwatch that
  * only the timer can fill, the distance (or added weight) typed
- * underneath, and Start / Stop / Resume with a check to log it. The
- * exercise's single set holds the numbers.
+ * underneath, and the same controls as the Watch (owner, 2026-10-24):
+ * Start; Pause while it runs; Start and End once paused, End logging it.
+ * The exercise's single set holds the numbers.
  */
 export const CardioSetCard = ({ set, draft, unitLabel, timer, targetSec, onChange, onStart, onStop, onToggleDone, fill = false }: Props) => {
   const { colors, radius, spacing, fonts } = useTheme();
@@ -113,19 +114,17 @@ export const CardioSetCard = ({ set, draft, unitLabel, timer, targetSec, onChang
         <View style={{ flexDirection: 'row', gap: spacing.sm }}>
           <View style={{ flex: 1 }}>
             {running ? (
-              <PrimaryButton label="Stop" icon={generalIcons.square} variant="outline" onPress={onStop} />
+              <PrimaryButton label="Pause" icon={generalIcons.pause} variant="outline" onPress={onStop} />
             ) : (
-              <PrimaryButton label={seconds > 0 ? 'Resume' : 'Start timer'} icon={generalIcons.play} variant={seconds > 0 ? 'outline' : 'filled'} onPress={onStart} />
+              <PrimaryButton label="Start" icon={generalIcons.play} variant={seconds > 0 ? 'outline' : 'filled'} onPress={onStart} />
             )}
           </View>
-          <TouchableOpacity
-            onPress={onToggleDone}
-            accessibilityRole="button"
-            accessibilityLabel="Log set"
-            style={{ width: 56, alignItems: 'center', justifyContent: 'center', borderRadius: radius.md, backgroundColor: colors.surfaceRaised }}
-          >
-            <Icon icon={generalIcons.check} color={colors.inkMuted} size={22} strokeWidth={3} />
-          </TouchableOpacity>
+          {/* Paused with time on the clock: End logs it. Nothing to end before it has run. */}
+          {!running && seconds > 0 && (
+            <View style={{ flex: 1 }}>
+              <PrimaryButton label="End" icon={generalIcons.check} variant="outline" onPress={onToggleDone} />
+            </View>
+          )}
         </View>
       )}
     </View>

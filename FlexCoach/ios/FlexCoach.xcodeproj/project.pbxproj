@@ -9,18 +9,26 @@
 /* Begin PBXBuildFile section */
 		00B7B4A1D2040BE93E9AF8CD /* AppIntents.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A852A682339EBDD1AD4A4EC7 /* AppIntents.framework */; };
 		00C2CFD9EBEBE2708B7099E5 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 491EB4EA11B89806927E38E5 /* Foundation.framework */; };
+		0D6CFAF93160FB4850B698E0 /* Sora-Bold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = AAD32DE9E2CE44C6A2525831 /* Sora-Bold.ttf */; };
 		13B07FBF1A68108700A75B9A /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 13B07FB51A68108700A75B9A /* Images.xcassets */; };
+		2951EA662731BDA1BCC4CBDD /* FlexCoachWatch.app in Embed Watch Content */ = {isa = PBXBuildFile; fileRef = E3B4EAC8B6739CABAB6A36B2 /* FlexCoachWatch.app */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		2FCE7899BD2363B99243A24E /* WorkoutActivityAttributes.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB3FD5209E43AF20BE2852D2 /* WorkoutActivityAttributes.swift */; };
+		2FF55A083D0B09738FEB73A5 /* WorkoutActivityAttributes.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB3FD5209E43AF20BE2852D2 /* WorkoutActivityAttributes.swift */; };
 		30C0B82C7453F5A7B1D9EA30 /* WorkoutActivityIntents.swift in Sources */ = {isa = PBXBuildFile; fileRef = 005CC37A36BEAFA00372071D /* WorkoutActivityIntents.swift */; };
 		357A49FEC181430DABE3F6B9 /* Manrope-Medium.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 47392A1E174B44D2A8B56C8D /* Manrope-Medium.ttf */; };
 		36334D67B9AB4CBDDA5653E1 /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 0C51CB0A697223AE786785BB /* GoogleService-Info.plist */; };
+		375BD7901BB88674F490BA92 /* FlexCoachWatchApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 25DC1FF61D0751AAA7D389B6 /* FlexCoachWatchApp.swift */; };
 		391D0BCAB879AE8F8710D045 /* BadgeSceneView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 289B63D03307B7EAECF68A1C /* BadgeSceneView.swift */; };
 		393DD280E97049879573A247 /* Manrope-SemiBold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 2FCD7E429DFA487BA9AC2945 /* Manrope-SemiBold.ttf */; };
 		3A34F5671654404CB5D6CEAC /* Manrope-Regular.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 41B742B3F2F7425CB3130A2E /* Manrope-Regular.ttf */; };
+		41812B6DBE2D6BCBB81E5AE1 /* WatchViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = D1A536C1F4059B94BCA9117A /* WatchViews.swift */; };
 		48BA2384F449ED4DB2C69938 /* SwiftUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 43BCD3B3F6153F84601AB4D2 /* SwiftUI.framework */; };
 		4F812C63D862D43DBDF8706A /* BadgeModels in Resources */ = {isa = PBXBuildFile; fileRef = 8A6099CA797449FC43A571AE /* BadgeModels */; };
+		53990C078BE00CEDF820CF7C /* WatchBridge.swift in Sources */ = {isa = PBXBuildFile; fileRef = 26A51768D64790DD563EEAEF /* WatchBridge.swift */; };
 		54E7298C724649B3060F1000 /* FlexCoachLiveActivity.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 4F914C6FDBE1C95717F1DD6D /* FlexCoachLiveActivity.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		575242871C9724EF8CD803C0 /* WorkoutActivityIntents.swift in Sources */ = {isa = PBXBuildFile; fileRef = 005CC37A36BEAFA00372071D /* WorkoutActivityIntents.swift */; };
+		5C37CD2F0E10388594474B84 /* WatchSession.swift in Sources */ = {isa = PBXBuildFile; fileRef = CCFE42CF95F8348867C7C133 /* WatchSession.swift */; };
+		5D71E0C089652223409CC9EF /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 166DBEC44D6BAD65B5748322 /* Foundation.framework */; };
 		60FA6B6B40B27D4A1AA2026F /* WidgetKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A2DB9981AC41462D8ACFDAE3 /* WidgetKit.framework */; };
 		761780ED2CA45674006654EE /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 761780EC2CA45674006654EE /* AppDelegate.swift */; };
 		81AB9BB82411601600AC10FF /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 81AB9BB72411601600AC10FF /* LaunchScreen.storyboard */; };
@@ -28,18 +36,21 @@
 		8B967B7F25F9E67C031F968D /* FirebaseCore in Frameworks */ = {isa = PBXBuildFile; productRef = B440C06462D48E094AC631CE /* FirebaseCore */; };
 		9C0F66BE04AE97F79C273E34 /* BadgeView.mm in Sources */ = {isa = PBXBuildFile; fileRef = 293A1241524658A484918039 /* BadgeView.mm */; };
 		9C4B287E1FE0855EE9BBBC81 /* WorkoutActivityController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0D079C4B77283C7A258AFC4C /* WorkoutActivityController.swift */; };
+		A1879BEF80FB654E5731CE68 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = A0AC0ACCAFD1D724B2D7E34B /* Assets.xcassets */; };
 		A80DD3512BF3182D0BAD3BF6 /* ActivityKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 812B1A54E800F770207AA714 /* ActivityKit.framework */; };
 		C969F60DCDDD4566B22A119E /* Sora-SemiBold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 1F2D31DB537D4659AA67E8BF /* Sora-SemiBold.ttf */; };
 		CB99C4E13959419483CC03A9 /* Pods_FlexCoach.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F205662FF7054D1711856F3B /* Pods_FlexCoach.framework */; };
 		D1CEC3CC9F647C36F0344487 /* WorkoutActivityAttributes.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB3FD5209E43AF20BE2852D2 /* WorkoutActivityAttributes.swift */; };
 		D2C507A959D14769AA9F8C58 /* Manrope-Bold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = EBF138ACCC1E4D54B3059A15 /* Manrope-Bold.ttf */; };
 		D408186AC8EC86FBD1089177 /* NativeLiveActivity.mm in Sources */ = {isa = PBXBuildFile; fileRef = 2C145C761A94F953CD568A51 /* NativeLiveActivity.mm */; };
+		DB8824D0912BA44FF6CA4D5B /* Manrope-SemiBold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 2FCD7E429DFA487BA9AC2945 /* Manrope-SemiBold.ttf */; };
 		DC37C8AD27D71F75E7BB78CA /* NativeFold.mm in Sources */ = {isa = PBXBuildFile; fileRef = 8BA049AD2F521D826E6F2DF9 /* NativeFold.mm */; };
 		DE148586F8DF4F91DFF166BE /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = 13B07FB81A68108700A75B9A /* PrivacyInfo.xcprivacy */; };
 		E0CD4B6FE54672C9EC2EDEE8 /* WorkoutActivityController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0D079C4B77283C7A258AFC4C /* WorkoutActivityController.swift */; };
 		E5D0749E8B9340A58677A21E /* Sora-Bold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = AAD32DE9E2CE44C6A2525831 /* Sora-Bold.ttf */; };
 		EBCBB8558CA64914B56A1464 /* Sora-Medium.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 9E468FA679E0496B8351BC9A /* Sora-Medium.ttf */; };
 		ED9C4C67E4D2A01067168D70 /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 22DF11EA1FE0F0912026CA10 /* SceneDelegate.swift */; };
+		F339AF7C5291B3CC8BB8813B /* Manrope-Bold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = EBF138ACCC1E4D54B3059A15 /* Manrope-Bold.ttf */; };
 		F72B19AC33D111C4AA29EFF3 /* NativeBadgeModels.mm in Sources */ = {isa = PBXBuildFile; fileRef = C871AF154FB5F0E764FEF1F9 /* NativeBadgeModels.mm */; };
 		F84117CDF7832E237998B3D4 /* WorkoutLiveActivity.swift in Sources */ = {isa = PBXBuildFile; fileRef = BFA50D76303971B0D30197EF /* WorkoutLiveActivity.swift */; };
 /* End PBXBuildFile section */
@@ -51,6 +62,13 @@
 			proxyType = 1;
 			remoteGlobalIDString = F6D8AA71C1FA9CC073EBC925;
 			remoteInfo = FlexCoachLiveActivity;
+		};
+		B7E6853DD75FB11F428B2159 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 83CBB9F71A601CBA00E9B192 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = E0BCAC1BAEE978B2DD81F0FA;
+			remoteInfo = FlexCoachWatch;
 		};
 /* End PBXContainerItemProxy section */
 
@@ -66,6 +84,17 @@
 			name = "Embed Foundation Extensions";
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		CADEB0FE60E75A9597B177E0 /* Embed Watch Content */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "$(CONTENTS_FOLDER_PATH)/Watch";
+			dstSubfolderSpec = 16;
+			files = (
+				2951EA662731BDA1BCC4CBDD /* FlexCoachWatch.app in Embed Watch Content */,
+			);
+			name = "Embed Watch Content";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
@@ -77,13 +106,17 @@
 		13B07FB51A68108700A75B9A /* Images.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; name = Images.xcassets; path = FlexCoach/Images.xcassets; sourceTree = "<group>"; };
 		13B07FB61A68108700A75B9A /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = Info.plist; path = FlexCoach/Info.plist; sourceTree = "<group>"; };
 		13B07FB81A68108700A75B9A /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = PrivacyInfo.xcprivacy; path = FlexCoach/PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
+		166DBEC44D6BAD65B5748322 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = Platforms/WatchOS.platform/Developer/SDKs/WatchOS7.0.sdk/System/Library/Frameworks/Foundation.framework; sourceTree = DEVELOPER_DIR; };
 		1F2D31DB537D4659AA67E8BF /* Sora-SemiBold.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 517466845161; includeInIndex = 0; lastKnownFileType = unknown; name = "Sora-SemiBold.ttf"; path = "../assets/fonts/Sora-SemiBold.ttf"; sourceTree = "<group>"; };
 		22DF11EA1FE0F0912026CA10 /* SceneDelegate.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = SceneDelegate.swift; path = FlexCoach/SceneDelegate.swift; sourceTree = "<group>"; };
+		25DC1FF61D0751AAA7D389B6 /* FlexCoachWatchApp.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = FlexCoachWatchApp.swift; sourceTree = "<group>"; };
+		26A51768D64790DD563EEAEF /* WatchBridge.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = WatchBridge.swift; path = FlexCoach/WatchBridge.swift; sourceTree = "<group>"; };
 		289B63D03307B7EAECF68A1C /* BadgeSceneView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = BadgeSceneView.swift; path = FlexCoach/BadgeSceneView.swift; sourceTree = SOURCE_ROOT; };
 		293A1241524658A484918039 /* BadgeView.mm */ = {isa = PBXFileReference; includeInIndex = 1; name = BadgeView.mm; path = FlexCoach/BadgeView.mm; sourceTree = SOURCE_ROOT; };
 		2C145C761A94F953CD568A51 /* NativeLiveActivity.mm */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.cpp.objcpp; name = NativeLiveActivity.mm; path = FlexCoach/NativeLiveActivity.mm; sourceTree = SOURCE_ROOT; };
 		2FCD7E429DFA487BA9AC2945 /* Manrope-SemiBold.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 517466845161; includeInIndex = 0; lastKnownFileType = unknown; name = "Manrope-SemiBold.ttf"; path = "../assets/fonts/Manrope-SemiBold.ttf"; sourceTree = "<group>"; };
 		3B4392A12AC88292D35C810B /* Pods-FlexCoach.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-FlexCoach.debug.xcconfig"; path = "Target Support Files/Pods-FlexCoach/Pods-FlexCoach.debug.xcconfig"; sourceTree = "<group>"; };
+		3C694AEC8D35F5B5B8532EFB /* Info.plist */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		41B742B3F2F7425CB3130A2E /* Manrope-Regular.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 517466845161; includeInIndex = 0; lastKnownFileType = unknown; name = "Manrope-Regular.ttf"; path = "../assets/fonts/Manrope-Regular.ttf"; sourceTree = "<group>"; };
 		43BCD3B3F6153F84601AB4D2 /* SwiftUI.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SwiftUI.framework; path = Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS14.0.sdk/System/Library/Frameworks/SwiftUI.framework; sourceTree = DEVELOPER_DIR; };
 		47392A1E174B44D2A8B56C8D /* Manrope-Medium.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 517466845161; includeInIndex = 0; lastKnownFileType = unknown; name = "Manrope-Medium.ttf"; path = "../assets/fonts/Manrope-Medium.ttf"; sourceTree = "<group>"; };
@@ -100,13 +133,17 @@
 		8BA049AD2F521D826E6F2DF9 /* NativeFold.mm */ = {isa = PBXFileReference; includeInIndex = 1; name = NativeFold.mm; path = FlexCoach/NativeFold.mm; sourceTree = SOURCE_ROOT; };
 		98D3DAA94E2C0245A832BA54 /* Info.plist */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		9E468FA679E0496B8351BC9A /* Sora-Medium.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 517466845161; includeInIndex = 0; lastKnownFileType = unknown; name = "Sora-Medium.ttf"; path = "../assets/fonts/Sora-Medium.ttf"; sourceTree = "<group>"; };
+		A0AC0ACCAFD1D724B2D7E34B /* Assets.xcassets */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		A2DB9981AC41462D8ACFDAE3 /* WidgetKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = WidgetKit.framework; path = Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS14.0.sdk/System/Library/Frameworks/WidgetKit.framework; sourceTree = DEVELOPER_DIR; };
 		A852A682339EBDD1AD4A4EC7 /* AppIntents.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AppIntents.framework; path = Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS14.0.sdk/System/Library/Frameworks/AppIntents.framework; sourceTree = DEVELOPER_DIR; };
 		AAD32DE9E2CE44C6A2525831 /* Sora-Bold.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 517466845161; includeInIndex = 0; lastKnownFileType = unknown; name = "Sora-Bold.ttf"; path = "../assets/fonts/Sora-Bold.ttf"; sourceTree = "<group>"; };
 		BB3FD5209E43AF20BE2852D2 /* WorkoutActivityAttributes.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = WorkoutActivityAttributes.swift; sourceTree = "<group>"; };
 		BFA50D76303971B0D30197EF /* WorkoutLiveActivity.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = WorkoutLiveActivity.swift; sourceTree = "<group>"; };
 		C871AF154FB5F0E764FEF1F9 /* NativeBadgeModels.mm */ = {isa = PBXFileReference; includeInIndex = 1; name = NativeBadgeModels.mm; path = FlexCoach/NativeBadgeModels.mm; sourceTree = SOURCE_ROOT; };
+		CCFE42CF95F8348867C7C133 /* WatchSession.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = WatchSession.swift; sourceTree = "<group>"; };
+		D1A536C1F4059B94BCA9117A /* WatchViews.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = WatchViews.swift; sourceTree = "<group>"; };
 		DA7BD56AF52E9DC3CF4787A3 /* FlexCoach.entitlements */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.plist.entitlements; path = FlexCoach.entitlements; sourceTree = "<group>"; };
+		E3B4EAC8B6739CABAB6A36B2 /* FlexCoachWatch.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = FlexCoachWatch.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		E4BE92A20EAAE39297C3B53F /* FlexCoachLiveActivityBundle.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = FlexCoachLiveActivityBundle.swift; sourceTree = "<group>"; };
 		EBF138ACCC1E4D54B3059A15 /* Manrope-Bold.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 517466845161; includeInIndex = 0; lastKnownFileType = unknown; name = "Manrope-Bold.ttf"; path = "../assets/fonts/Manrope-Bold.ttf"; sourceTree = "<group>"; };
 		ED297162215061F000B7C4FE /* JavaScriptCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = JavaScriptCore.framework; path = System/Library/Frameworks/JavaScriptCore.framework; sourceTree = SDKROOT; };
@@ -121,6 +158,14 @@
 			files = (
 				CB99C4E13959419483CC03A9 /* Pods_FlexCoach.framework in Frameworks */,
 				8B967B7F25F9E67C031F968D /* FirebaseCore in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		70FE48EEC7B33FDF6DA45AF2 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				5D71E0C089652223409CC9EF /* Foundation.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -173,6 +218,7 @@
 				8BA049AD2F521D826E6F2DF9 /* NativeFold.mm */,
 				2C145C761A94F953CD568A51 /* NativeLiveActivity.mm */,
 				7CABB883B40A90D7ABEB54E4 /* NativeLiveActivity.h */,
+				26A51768D64790DD563EEAEF /* WatchBridge.swift */,
 			);
 			name = FlexCoach;
 			sourceTree = "<group>";
@@ -183,6 +229,7 @@
 				ED297162215061F000B7C4FE /* JavaScriptCore.framework */,
 				F205662FF7054D1711856F3B /* Pods_FlexCoach.framework */,
 				EB24B64F9DA8D6AF8988EA0D /* iOS */,
+				FEE2B2529AC910929CC33D91 /* watchOS */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
@@ -206,6 +253,7 @@
 				A5E44CA1F1A1401ABA6469D3 /* Resources */,
 				DA7BD56AF52E9DC3CF4787A3 /* FlexCoach.entitlements */,
 				0089B415901245700E760ADC /* FlexCoachLiveActivity */,
+				9337811FCC87FF2F13F2DAF8 /* FlexCoachWatch */,
 			);
 			indentWidth = 2;
 			sourceTree = "<group>";
@@ -217,8 +265,22 @@
 			children = (
 				13B07F961A680F5B00A75B9A /* FlexCoach.app */,
 				4F914C6FDBE1C95717F1DD6D /* FlexCoachLiveActivity.appex */,
+				E3B4EAC8B6739CABAB6A36B2 /* FlexCoachWatch.app */,
 			);
 			name = Products;
+			sourceTree = "<group>";
+		};
+		9337811FCC87FF2F13F2DAF8 /* FlexCoachWatch */ = {
+			isa = PBXGroup;
+			children = (
+				25DC1FF61D0751AAA7D389B6 /* FlexCoachWatchApp.swift */,
+				CCFE42CF95F8348867C7C133 /* WatchSession.swift */,
+				D1A536C1F4059B94BCA9117A /* WatchViews.swift */,
+				3C694AEC8D35F5B5B8532EFB /* Info.plist */,
+				A0AC0ACCAFD1D724B2D7E34B /* Assets.xcassets */,
+			);
+			name = FlexCoachWatch;
+			path = FlexCoachWatch;
 			sourceTree = "<group>";
 		};
 		A5E44CA1F1A1401ABA6469D3 /* Resources */ = {
@@ -256,6 +318,14 @@
 			name = iOS;
 			sourceTree = "<group>";
 		};
+		FEE2B2529AC910929CC33D91 /* watchOS */ = {
+			isa = PBXGroup;
+			children = (
+				166DBEC44D6BAD65B5748322 /* Foundation.framework */,
+			);
+			name = watchOS;
+			sourceTree = "<group>";
+		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
@@ -268,6 +338,7 @@
 				13B07F8C1A680F5B00A75B9A /* Frameworks */,
 				13B07F8E1A680F5B00A75B9A /* Resources */,
 				49BD9F5674E7103DFF482F81 /* Embed Foundation Extensions */,
+				CADEB0FE60E75A9597B177E0 /* Embed Watch Content */,
 				00DD1BFF1BD5951E006B06BC /* Bundle React Native code and images */,
 				00EEFC60759A1932668264C0 /* [CP] Embed Pods Frameworks */,
 				E235C05ADACE081382539298 /* [CP] Copy Pods Resources */,
@@ -279,6 +350,7 @@
 			);
 			dependencies = (
 				EDE93D30102A33273DBB5EA7 /* PBXTargetDependency */,
+				F5C2063B0CB3AE879CEB7CE9 /* PBXTargetDependency */,
 			);
 			name = FlexCoach;
 			packageProductDependencies = (
@@ -286,6 +358,23 @@
 			);
 			productName = FlexCoach;
 			productReference = 13B07F961A680F5B00A75B9A /* FlexCoach.app */;
+			productType = "com.apple.product-type.application";
+		};
+		E0BCAC1BAEE978B2DD81F0FA /* FlexCoachWatch */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = CB92A617E48DD5D88DA8F81C /* Build configuration list for PBXNativeTarget "FlexCoachWatch" */;
+			buildPhases = (
+				A256CE1C1882DC2EF34F1A02 /* Sources */,
+				70FE48EEC7B33FDF6DA45AF2 /* Frameworks */,
+				AF83EE42B1E2335A6E5699C8 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = FlexCoachWatch;
+			productName = FlexCoachWatch;
+			productReference = E3B4EAC8B6739CABAB6A36B2 /* FlexCoachWatch.app */;
 			productType = "com.apple.product-type.application";
 		};
 		F6D8AA71C1FA9CC073EBC925 /* FlexCoachLiveActivity */ = {
@@ -341,6 +430,7 @@
 			targets = (
 				13B07F861A680F5B00A75B9A /* FlexCoach */,
 				F6D8AA71C1FA9CC073EBC925 /* FlexCoachLiveActivity */,
+				E0BCAC1BAEE978B2DD81F0FA /* FlexCoachWatch */,
 			);
 		};
 /* End PBXProject section */
@@ -369,6 +459,17 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		AF83EE42B1E2335A6E5699C8 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				A1879BEF80FB654E5731CE68 /* Assets.xcassets in Resources */,
+				0D6CFAF93160FB4850B698E0 /* Sora-Bold.ttf in Resources */,
+				DB8824D0912BA44FF6CA4D5B /* Manrope-SemiBold.ttf in Resources */,
+				F339AF7C5291B3CC8BB8813B /* Manrope-Bold.ttf in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -529,6 +630,18 @@
 				9C4B287E1FE0855EE9BBBC81 /* WorkoutActivityController.swift in Sources */,
 				30C0B82C7453F5A7B1D9EA30 /* WorkoutActivityIntents.swift in Sources */,
 				D408186AC8EC86FBD1089177 /* NativeLiveActivity.mm in Sources */,
+				53990C078BE00CEDF820CF7C /* WatchBridge.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		A256CE1C1882DC2EF34F1A02 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				375BD7901BB88674F490BA92 /* FlexCoachWatchApp.swift in Sources */,
+				5C37CD2F0E10388594474B84 /* WatchSession.swift in Sources */,
+				41812B6DBE2D6BCBB81E5AE1 /* WatchViews.swift in Sources */,
+				2FF55A083D0B09738FEB73A5 /* WorkoutActivityAttributes.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -540,6 +653,12 @@
 			name = FlexCoachLiveActivity;
 			target = F6D8AA71C1FA9CC073EBC925 /* FlexCoachLiveActivity */;
 			targetProxy = 767D6C4266CFF8104B9187F2 /* PBXContainerItemProxy */;
+		};
+		F5C2063B0CB3AE879CEB7CE9 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			name = FlexCoachWatch;
+			target = E0BCAC1BAEE978B2DD81F0FA /* FlexCoachWatch */;
+			targetProxy = B7E6853DD75FB11F428B2159 /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
 
@@ -871,6 +990,61 @@
 			};
 			name = Release;
 		};
+		9FC9DBA8BB87EEED0CA46EC0 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 19;
+				DEVELOPMENT_TEAM = 6B5A67RAPC;
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = FlexCoachWatch/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.flexcoach.watchkitapp;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = watchos;
+				SKIP_INSTALL = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 4;
+				VALIDATE_PRODUCT = YES;
+				WATCHOS_DEPLOYMENT_TARGET = 10.0;
+			};
+			name = Release;
+		};
+		A09C339E71D7B1981D7DAECB /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 19;
+				DEVELOPMENT_TEAM = 6B5A67RAPC;
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = FlexCoachWatch/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.flexcoach.watchkitapp;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = watchos;
+				SKIP_INSTALL = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 4;
+				WATCHOS_DEPLOYMENT_TARGET = 10.0;
+			};
+			name = Debug;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -897,6 +1071,15 @@
 			buildConfigurations = (
 				83CBBA201A601CBA00E9B192 /* Debug */,
 				83CBBA211A601CBA00E9B192 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		CB92A617E48DD5D88DA8F81C /* Build configuration list for PBXNativeTarget "FlexCoachWatch" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				9FC9DBA8BB87EEED0CA46EC0 /* Release */,
+				A09C339E71D7B1981D7DAECB /* Debug */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;

@@ -13,6 +13,8 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]? = nil
   ) -> Bool {
     FirebaseApp.configure()
+    // The Watch app mirrors the running workout (v1 #6).
+    WatchBridge.shared.activate()
     return true
   }
 

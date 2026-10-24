@@ -90,6 +90,11 @@ export const buildLiveActivityState = (args: {
     restSeconds: next?.set.warmup ? warmupRestSec(restSec) : restSec,
     startedAt: session.startedAt,
   };
+  // A timed set (a hold, cardio) waiting or paused: the Watch shows its time so far with Play and End.
+  if (next && (next.exercise.measurement === 'time' || next.exercise.measurement === 'distance_time')) {
+    base.timed = true;
+    base.elapsedSec = Math.max(0, Math.round(Number(drafts[next.set.id]?.b) || next.set.durationSec || 0));
+  }
   if (clock) {
     return { ...base, phase: 'cardio', cardioStartedAt: clock.startedAt - clock.baseSec * 1000, cardioTargetSeconds: clock.targetSec ?? undefined };
   }

@@ -1,5 +1,6 @@
-import ActivityKit
 import Foundation
+#if canImport(ActivityKit) && os(iOS)
+import ActivityKit
 
 /// The running workout as the Live Activity sees it. Fixed for the activity's life.
 @available(iOS 16.2, *)
@@ -14,8 +15,9 @@ public struct WorkoutActivityAttributes: ActivityAttributes {
     self.sessionId = sessionId
   }
 }
+#endif
 
-/// What the activity shows right now. The clocks are dates, so the system ticks them without an update from the app.
+/// What the activity shows right now, and what the Watch app mirrors (it compiles this file too). The clocks are dates, so the system ticks them without an update from the app.
 public struct WorkoutActivityState: Codable, Hashable {
   public enum Phase: String, Codable {
     /// Between sets: the next set's target, with a check to log it.
@@ -50,6 +52,10 @@ public struct WorkoutActivityState: Codable, Hashable {
   /// on the next set until the next update (the set logged), while the compact Island already shows the elapsed clock.
   /// Nothing has to redraw on its own for the next set to show (build 19: iOS took a minute or more to do that).
   public var restEndedAt: Date?
+  /// The next set is timed (a hold, cardio): the Watch offers Play and End for it. Absent from older apps.
+  public var timed: Bool?
+  /// A timed set's seconds so far, while it is paused.
+  public var elapsedSec: Int?
   public init(phase: Phase, exerciseName: String, setLabel: String, nextTarget: String?, nextSetId: String?, restEndsAt: Date?, restSeconds: Int, cardioStartedAt: Date?, cardioTargetSeconds: Int?, startedAt: Date, summary: String?, restEndedAt: Date? = nil) {
     self.phase = phase
     self.exerciseName = exerciseName
@@ -114,6 +120,8 @@ public struct WorkoutActivityState: Codable, Hashable {
       startedAt: Date(timeIntervalSince1970: startedMs / 1000),
       summary: d["summary"] as? String
     )
+    timed = d["timed"] as? Bool
+    elapsedSec = (d["elapsedSec"] as? Double).map { Int($0) }
   }
 }
 

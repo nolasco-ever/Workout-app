@@ -244,11 +244,12 @@ export const SessionScreen = () => {
     if (owner && set) persist(owner, fromDraft(owner, set, draft, units)).catch(err => console.warn('timer save failed', err));
     return { setId: cardioTimer.setId, draft };
   };
-  const startCardioTimer = (set: LoggedSet) => {
-    if (!exercise) return;
+  // `owner`: the set's exercise, when it is not the one on screen (Play on the Watch).
+  const startCardioTimer = (set: LoggedSet, owner: SessionExercise | undefined = exercise) => {
+    if (!owner) return;
     stopCardioTimer();
     const baseSec = Math.max(0, Math.round(Number(drafts[set.id]?.b) || 0));
-    setCardioTimer({ setId: set.id, startedAt: Date.now(), baseSec, targetSec: exercise.target.durationSec, exerciseName: exercise.exerciseName });
+    setCardioTimer({ setId: set.id, startedAt: Date.now(), baseSec, targetSec: owner.target.durationSec, exerciseName: owner.exerciseName });
   };
   const toggleCardioDone = (set: LoggedSet) => {
     const stopped = cardioTimer?.setId === set.id ? stopCardioTimer() : null;
@@ -613,7 +614,21 @@ export const SessionScreen = () => {
           if (set.completed) return;
           const at = sessionRef.current.exercises.indexOf(ex);
           if (at !== index) goTo(at);
-          toggleDone(set);
+          // A timed set still running (End on the Watch) logs the time on its clock.
+          if (cardioTimer?.setId === set.id) toggleCardioDone(set);
+          else toggleDone(set);
+          return;
+        }
+        return;
+      }
+      case 'resumeCardio': {
+        // Play on the Watch: the paused timed set's clock carries on from its time so far.
+        for (const ex of sessionRef.current.exercises) {
+          const set = ex.sets.find(st => st.id === command.id);
+          if (!set || set.completed) continue;
+          const at = sessionRef.current.exercises.indexOf(ex);
+          if (at !== index) goTo(at);
+          startCardioTimer(set, ex);
           return;
         }
         return;

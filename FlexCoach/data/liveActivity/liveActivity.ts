@@ -26,10 +26,14 @@ export type LiveActivityState = {
   startedAt: number;
   /** The done state's line: "18 sets · 12,400 lb · 1 record". */
   summary?: string;
+  /** The next set is timed (a hold or cardio): the Watch offers Play and End for it rather than Log set. */
+  timed?: boolean;
+  /** A timed set's seconds so far, when it is paused. */
+  elapsedSec?: number;
 };
 
 export type { LiveActivityCommand };
-export type LiveActivityCommandKind = 'completeSet' | 'skipRest' | 'stopCardio';
+export type LiveActivityCommandKind = 'completeSet' | 'skipRest' | 'stopCardio' | 'resumeCardio';
 
 const native = Platform.OS === 'ios' ? NativeLiveActivity : null;
 

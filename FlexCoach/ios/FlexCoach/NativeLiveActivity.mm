@@ -80,6 +80,8 @@ static NSDictionary *_Nullable stateFromJSON(NSString *json)
 {
   NSDictionary *state = stateFromJSON(stateJson);
   if (!state) return @NO;
+  // The Watch mirrors the workout whether or not Live Activities are allowed.
+  [WatchBridge.shared sendWithWorkoutName:workoutName state:state];
   __block BOOL started = NO;
   dispatch_sync(dispatch_get_main_queue(), ^{
     started = [WorkoutActivityController.shared startWithWorkoutName:workoutName sessionId:sessionId state:state];
@@ -91,6 +93,7 @@ static NSDictionary *_Nullable stateFromJSON(NSString *json)
 {
   NSDictionary *state = stateFromJSON(stateJson);
   if (!state) return;
+  [WatchBridge.shared sendWithWorkoutName:nil state:state];
   dispatch_async(dispatch_get_main_queue(), ^{
     [WorkoutActivityController.shared updateWithState:state alert:alert];
   });
@@ -99,6 +102,8 @@ static NSDictionary *_Nullable stateFromJSON(NSString *json)
 - (void)end:(NSString *)stateJson lingerSeconds:(double)lingerSeconds
 {
   NSDictionary *state = stateFromJSON(stateJson);
+  // The done summary for the Watch, or nothing: the workout was left.
+  [WatchBridge.shared sendWithWorkoutName:nil state:state];
   dispatch_async(dispatch_get_main_queue(), ^{
     [WorkoutActivityController.shared endWithState:state lingerSeconds:lingerSeconds];
   });
@@ -106,6 +111,7 @@ static NSDictionary *_Nullable stateFromJSON(NSString *json)
 
 - (void)endAll
 {
+  [WatchBridge.shared sendWithWorkoutName:nil state:nil];
   dispatch_async(dispatch_get_main_queue(), ^{
     [WorkoutActivityController.shared endAllNow];
   });

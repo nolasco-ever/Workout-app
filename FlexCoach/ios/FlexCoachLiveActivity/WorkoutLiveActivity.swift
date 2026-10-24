@@ -140,8 +140,9 @@ private struct Actions: View {
         .tint(Tone.muted)
         .foregroundStyle(Tone.ink)
       case .cardio:
+        // Pause, as on the phone and the Watch (owner, 2026-10-24): the time so far stays on the set.
         Button(intent: StopCardioIntent()) {
-          Label("Stop", systemImage: "stop.fill")
+          Label("Pause", systemImage: "pause.fill")
             .font(.subheadline.weight(.semibold))
         }
         .buttonStyle(.bordered)
