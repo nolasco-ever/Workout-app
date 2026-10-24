@@ -1,7 +1,7 @@
 import { Cycle, Id, LocalDate, Plan, Schedule, Workout } from '../models';
 import { newId } from '../engine/ids';
 import { today } from '../engine/dates';
-import { closeCycle, generateCycle, nextCycleNumber, nextCycleNumberAfter } from '../engine/schedule';
+import { closeCycle, generateCycle, nextCycleNumber, rebuildCycle } from '../engine/schedule';
 import { applySource, detachFromSource } from '../engine/planSync';
 import { planRepository } from '../repositories/planRepository';
 import { cycleRepository } from '../repositories/cycleRepository';
@@ -71,17 +71,18 @@ export const cycleNeedsRestart = (before: Plan, after: Plan): boolean => {
 
 export const savePlan = (uid: Id, plan: Plan): Promise<void> => planRepository.save(uid, pruneSchedule(plan));
 
-/** Save an edited active plan and, if needed, restart its cycle from today. */
-export const saveActivePlan = async (uid: Id, before: Plan, after: Plan, activeCycle: Cycle | null): Promise<{ restarted: boolean }> => {
+/**
+ * Save an edited active plan. A schedule or workout change lays the rest of the running cycle out again from the new
+ * plan (rebuildCycle); nothing restarts. `rebuilt` says whether the cycle changed.
+ */
+export const saveActivePlan = async (uid: Id, before: Plan, after: Plan, activeCycle: Cycle | null): Promise<{ rebuilt: boolean }> => {
   const pruned = pruneSchedule(after);
   await planRepository.save(uid, pruned);
-  if (!activeCycle || !cycleNeedsRestart(before, pruned)) return { restarted: false };
-  const { cycle: closed } = closeCycle(activeCycle);
-  await cycleRepository.save(uid, closed);
-  const next = generateCycle(pruned, uid, nextCycleNumberAfter(closed), today());
-  await cycleRepository.save(uid, next);
-  await userRepository.update(uid, { activeCycleId: next.id });
-  return { restarted: true };
+  if (!activeCycle || activeCycle.planId !== pruned.id || !cycleNeedsRestart(before, pruned)) return { rebuilt: false };
+  const rebuilt = rebuildCycle(activeCycle, pruned, today());
+  if (rebuilt === activeCycle) return { rebuilt: false };
+  await cycleRepository.save(uid, rebuilt);
+  return { rebuilt: true };
 };
 
 /**
@@ -133,14 +134,14 @@ export const duplicatePlan = async (uid: Id, source: Plan): Promise<Plan> => {
 /**
  * Bring a synced copy up to the buddy's current plan. An active copy goes
  * through the same rules as editing your own active plan: exercise edits
- * apply from the next session, schedule or workout changes restart the
- * cycle.
+ * apply from the next session, schedule or workout changes lay out the rest
+ * of the cycle again.
  */
-export const applySyncedSource = async (uid: Id, mine: Plan, source: Plan, activeCycle: Cycle | null): Promise<{ restarted: boolean }> => {
+export const applySyncedSource = async (uid: Id, mine: Plan, source: Plan, activeCycle: Cycle | null): Promise<{ rebuilt: boolean }> => {
   const after = applySource(mine, source);
   if (mine.status === 'active') return saveActivePlan(uid, mine, after, activeCycle);
   await planRepository.save(uid, pruneSchedule(after));
-  return { restarted: false };
+  return { rebuilt: false };
 };
 
 /** Keep the plan as it is now, as a plain copy that no longer follows the buddy. */

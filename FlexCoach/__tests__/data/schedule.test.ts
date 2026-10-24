@@ -1,4 +1,4 @@
-import { closeCycle, generateCycle, nextCycleStart, getOverdueOccurrences, moveOccurrenceToDate, resolveMissed, nextCycleNumber, nextCycleNumberAfter, pushOccurrence, renumberCycles, skipOccurrence, markOccurrence } from '../../data/engine/schedule';
+import { closeCycle, generateCycle, rebuildCycle, nextCycleStart, getOverdueOccurrences, moveOccurrenceToDate, resolveMissed, nextCycleNumber, nextCycleNumberAfter, pushOccurrence, renumberCycles, skipOccurrence, markOccurrence } from '../../data/engine/schedule';
 import { summarizeCycle } from '../../data/engine/stats';
 import { addDays } from '../../data/engine/dates';
 import { rotationPlan, weeklyPlan } from './support/fixtures';
@@ -255,5 +255,51 @@ describe('resolveMissed', () => {
     const again = resolveMissed(once.cycle, workouts[1].date, 6);
     expect(again.ask).toBeNull();
     expect(again.cycle).toBe(once.cycle);
+  });
+});
+
+describe('rebuildCycle: a plan edited mid-cycle', () => {
+  // 2026-09-21 is a Monday.
+  const edited = () => {
+    const plan = weeklyPlan();
+    // Pull moves from Wednesday to Thursday; Legs is replaced by Arms.
+    return { ...plan, workouts: [...plan.workouts.filter(w => w.id !== 'legs'), { id: 'arms', name: 'Arms', order: 2, exercises: [] }], schedule: { mode: 'weekly' as const, weekdays: [null, 'push', null, null, 'pull', 'arms', null], startWeekday: 1, weeksPerCycle: 1 } };
+  };
+
+  it('keeps the days behind and lays the days ahead out from the new schedule', () => {
+    const cycle = generateCycle(weeklyPlan(), 'user-1', 4, '2026-09-21');
+    const started = { ...cycle, occurrences: cycle.occurrences.map((o, i) => (i === 0 ? { ...o, status: 'completed' as const, sessionId: 's1' } : o)) };
+    const rebuilt = rebuildCycle(started, edited(), '2026-09-23');
+    expect(dates(rebuilt)).toEqual([
+      '2026-09-21:push:completed',
+      '2026-09-22:rest:rest',
+      '2026-09-23:rest:rest',
+      '2026-09-24:pull:scheduled',
+      '2026-09-25:arms:scheduled',
+      '2026-09-26:rest:rest',
+      '2026-09-27:rest:rest',
+    ]);
+    expect(rebuilt).toMatchObject({ id: started.id, number: 4, startDate: '2026-09-21', endDate: '2026-09-27' });
+  });
+
+  it('leaves a workout done today where it is', () => {
+    const cycle = generateCycle(weeklyPlan(), 'user-1', 1, '2026-09-21');
+    const doneWed = { ...cycle, occurrences: cycle.occurrences.map(o => (o.date === '2026-09-23' ? { ...o, status: 'completed' as const, sessionId: 's2' } : o)) };
+    const rebuilt = rebuildCycle(doneWed, edited(), '2026-09-23');
+    expect(dates(rebuilt).filter(d => d.startsWith('2026-09-23'))).toEqual(['2026-09-23:pull:completed']);
+  });
+
+  it('keeps a cycle that has not begun on its start date (build 19: it moved to today)', () => {
+    const cycle = generateCycle(weeklyPlan(), 'user-1', 5, '2026-09-28');
+    const rebuilt = rebuildCycle(cycle, edited(), '2026-09-26');
+    expect(rebuilt.startDate).toBe('2026-09-28');
+    expect(rebuilt.occurrences.some(o => o.date < '2026-09-28')).toBe(false);
+    expect(dates(rebuilt)[0]).toBe('2026-09-28:push:scheduled');
+  });
+
+  it('leaves a finished cycle alone', () => {
+    const cycle = generateCycle(weeklyPlan(), 'user-1', 1, '2026-09-21');
+    const done = { ...cycle, occurrences: cycle.occurrences.map(o => (o.status === 'scheduled' ? { ...o, status: 'completed' as const } : o)) };
+    expect(rebuildCycle(done, edited(), '2026-09-30')).toBe(done);
   });
 });

@@ -71,6 +71,25 @@ export const generateCycle = (
 };
 
 /**
+ * The running cycle after its plan's schedule or workouts were edited (owner, 2026-10-24: edits used to close the
+ * cycle and start a fresh one from today). Nothing restarts: the days already behind, and any workout done, skipped
+ * or under way, stay as they are; the days from today on (from the cycle's start, if it has not begun) are laid out
+ * again from the new schedule, on the calendar the cycle already had. The cycle keeps its id, number and start date;
+ * its end follows the new layout. A finished cycle is left alone.
+ */
+export const rebuildCycle = (cycle: Cycle, plan: Plan, todayDate: LocalDate, now: number = Date.now()): Cycle => {
+  if (isCycleFinished(cycle, todayDate)) return cycle;
+  const from = cycle.startDate > todayDate ? cycle.startDate : todayDate;
+  const settled = (o: Occurrence) => o.date < from || (o.status !== 'scheduled' && o.status !== 'rest');
+  const kept = cycle.occurrences.filter(settled);
+  const taken = new Set(kept.filter(o => o.status !== 'rest').map(o => o.date));
+  const fresh = generateCycle(plan, cycle.ownerId, cycle.number, cycle.startDate, now).occurrences.filter(o => o.date >= from && !taken.has(o.date));
+  const occurrences = sortByDate([...kept.filter(o => !(o.status === 'rest' && o.date >= from)), ...fresh]);
+  const last = occurrences[occurrences.length - 1];
+  return { ...cycle, occurrences, endDate: last ? last.date : cycle.endDate, updatedAt: now };
+};
+
+/**
  * Where the cycle after `previous` begins when it is started on `todayDate`.
  *
  * Weekly plans keep their calendar: the next cycle is the block that

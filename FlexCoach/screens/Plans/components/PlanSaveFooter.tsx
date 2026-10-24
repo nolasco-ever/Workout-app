@@ -14,7 +14,8 @@ import { StartDateSheet } from './StartDateSheet';
 /**
  * The bottom bar that commits the editor's draft: Activate and Save as
  * draft while creating, Activate and Save changes for an inactive plan,
- * Save changes (or Save and restart cycle) for the active one. Shared by
+ * Save changes for the active one (a schedule change lays out the rest of
+ * its cycle again). Shared by
  * the creator's last step and the edit hub, so both save the same way.
  * `onDone` runs after a successful save, once the editor is cleared.
  */
@@ -70,20 +71,13 @@ export const PlanSaveFooter = ({ mode, onDone }: { mode: 'create' | 'edit'; onDo
     }
   };
 
-  const confirmSave = () =>
-    restart
-      ? Alert.alert('Restart the cycle?', 'You changed the schedule or the set of workouts. The current cycle will close and a new one starts today.', [
-          { text: 'Cancel', style: 'cancel' },
-          { text: 'Save and restart', onPress: saveChanges },
-        ])
-      : saveChanges();
 
   return (
     <>
       <View style={{ padding: spacing.lg, gap: spacing.sm, borderTopWidth: 1, borderTopColor: colors.line, backgroundColor: colors.ground }}>
         {isActive && (
           <CustomText variant="caption" color={restart ? colors.warning : colors.inkMuted} centered>
-            {restart ? 'Schedule or workouts changed: saving restarts the current cycle.' : 'Exercise changes apply from your next session. The current cycle keeps going.'}
+            {restart ? 'Schedule or workouts changed: the rest of this cycle follows the new plan.' : 'Exercise changes apply from your next session. The current cycle keeps going.'}
           </CustomText>
         )}
         {mode === 'create' || !isActive ? (
@@ -92,7 +86,7 @@ export const PlanSaveFooter = ({ mode, onDone }: { mode: 'create' | 'edit'; onDo
             <PrimaryButton label={mode === 'create' ? 'Save as draft' : 'Save changes'} variant="outline" disabled={problems.length > 0} busy={busy === 'draft' || busy === 'save'} onPress={mode === 'create' ? saveDraft : saveChanges} />
           </>
         ) : (
-          <PrimaryButton label={restart ? 'Save and restart cycle' : 'Save changes'} disabled={problems.length > 0} busy={busy === 'save'} onPress={confirmSave} />
+          <PrimaryButton label="Save changes" disabled={problems.length > 0} busy={busy === 'save'} onPress={saveChanges} />
         )}
       </View>
       <StartDateSheet open={pickingStart} plan={draft} busy={busy === 'activate'} onClose={() => setPickingStart(false)} onConfirm={confirmActivate} />

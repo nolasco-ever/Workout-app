@@ -49,13 +49,13 @@ export const usePlanSync = (): void => {
       }
       const p = profileRef.current;
       const activeCycle = mine.status === 'active' && p?.activeCycleId ? await cycleRepository.get(uid, p.activeCycleId) : null;
-      const { restarted } = await applySyncedSource(uid, mine, source, activeCycle);
+      const { rebuilt } = await applySyncedSource(uid, mine, source, activeCycle);
       const who = source.ownerId === mine.sharedFrom?.userId ? mine.sharedFrom?.displayName?.split(' ')[0] ?? 'Your buddy' : 'Your buddy';
       await notificationRepository.ensure(uid, {
         id: `plan_synced:${mine.id}:${source.updatedAt}`,
         kind: 'plan_synced',
         title: `${source.name} was updated`,
-        body: restarted ? `${who} changed the schedule or workouts, so a fresh cycle starts today.` : `${who} edited the plan. Changes apply from your next workout.`,
+        body: rebuilt ? `${who} changed the schedule or workouts. The rest of this cycle follows the new plan.` : `${who} edited the plan. Changes apply from your next workout.`,
         target: { screen: 'workout' },
       });
     };
