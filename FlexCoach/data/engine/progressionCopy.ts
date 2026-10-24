@@ -54,6 +54,9 @@ export const describeProgression = (p: ExerciseProgression, unit: WeightUnit): {
         return `You hit every rep in ${hit}`;
       case 'drop':
         return `You missed the reps in ${missed}`;
+      case 'hold':
+        // A near miss: within a rep or two, so the target stays.
+        return p.verdict === 'missed' ? `A rep or two short in ${missed}: same target again` : 'Same target as last cycle';
       default:
         return 'Same target as last cycle';
     }

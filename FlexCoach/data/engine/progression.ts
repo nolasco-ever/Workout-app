@@ -17,8 +17,11 @@ import { KG_PER_LB } from './units';
  *   weight is not expected at the same reps straight away.
  * - Every set hit, target below the top: reps climb, to at least one step
  *   up and to whatever was managed on every set.
- * - Any set of any session missed: the reps target drops to the fewest reps
- *   managed on any set (never below the bottom of the range), weight stays.
+ * - A near miss, every set of every session within NEAR_MISS_REPS of what it
+ *   asked: the target holds, reps and weight (owner, 2026-10-24: one set at
+ *   11 of 12 used to drop the target to the fewest reps managed).
+ * - A bigger miss: the reps target drops to the fewest reps managed on any
+ *   set (never below the bottom of the range), weight stays.
  * - Not trained in the cycle: everything stays.
  *
  * Weights still belong to each set, so someone who ramps 25, 30, 35 keeps
@@ -73,6 +76,9 @@ const maxOf = (values: (number | null | undefined)[]): number | null => {
 };
 
 const roundTo = (value: number, step: number): number => Math.round(value / step) * step;
+
+/** How many reps short of its ask a set may fall and still count as a near miss, which holds the target. */
+export const NEAR_MISS_REPS = 2;
 
 /**
  * Snap a stored weight to something that can actually be loaded in the
@@ -181,6 +187,10 @@ export const progressExercise = (prescribed: WorkoutExercise, logs: SessionExerc
       const verdict: ProgressionVerdict = beatAll ? 'beat' : hitAll ? 'hit' : 'missed';
 
       const changeFor = (reps: number): ProgressionChange => (reps > targetReps ? 'climb' : reps < targetReps ? 'drop' : 'hold');
+      const nearMiss = done.every(sets => indices.every(i => (sets[i]?.reps ?? 0) >= asked[i] - NEAR_MISS_REPS));
+      if (!hitAll && nearMiss) {
+        return summary(entry, from, withPerSet(entry.sets, lastWeights.map((weightKg, i) => ({ weightKg, reps: asked[i] }))), 'hold', judged.length, hits, verdict, did);
+      }
       if (!hitAll) {
         const reps = Math.max(rangeMin, Math.min(minReps, rangeMax));
         return summary(entry, from, withPerSet(entry.sets, lastWeights.map(weightKg => ({ weightKg, reps }))), changeFor(reps), judged.length, hits, verdict, did);
