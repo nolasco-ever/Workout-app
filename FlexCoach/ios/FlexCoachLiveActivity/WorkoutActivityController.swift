@@ -177,6 +177,8 @@ public struct WorkoutActivityCommand {
   public func applyLocally(_ change: LocalChange) async {
     for activity in Activity<WorkoutActivityAttributes>.activities {
       var state = activity.content.state
+      // Any change moves on from a rest that ran out while the app slept.
+      if change != .restOverSeen { state.restEndedAt = nil }
       switch change {
       case .completeSet:
         state.phase = .rest

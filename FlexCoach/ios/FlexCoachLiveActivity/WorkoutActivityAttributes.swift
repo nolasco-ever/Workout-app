@@ -46,7 +46,11 @@ public struct WorkoutActivityState: Codable, Hashable {
   public var startedAt: Date
   /// The done state's line: "18 sets · 12,400 lb · 1 record".
   public var summary: String?
-  public init(phase: Phase, exerciseName: String, setLabel: String, nextTarget: String?, nextSetId: String?, restEndsAt: Date?, restSeconds: Int, cardioStartedAt: Date?, cardioTargetSeconds: Int?, startedAt: Date, summary: String?) {
+  /// `working` right after a rest ran out while the app slept: the opened Island and the lock screen say "Rest over"
+  /// on the next set until the next update (the set logged), while the compact Island already shows the elapsed clock.
+  /// Nothing has to redraw on its own for the next set to show (build 19: iOS took a minute or more to do that).
+  public var restEndedAt: Date?
+  public init(phase: Phase, exerciseName: String, setLabel: String, nextTarget: String?, nextSetId: String?, restEndsAt: Date?, restSeconds: Int, cardioStartedAt: Date?, cardioTargetSeconds: Int?, startedAt: Date, summary: String?, restEndedAt: Date? = nil) {
     self.phase = phase
     self.exerciseName = exerciseName
     self.setLabel = setLabel
@@ -58,6 +62,7 @@ public struct WorkoutActivityState: Codable, Hashable {
     self.cardioTargetSeconds = cardioTargetSeconds
     self.startedAt = startedAt
     self.summary = summary
+    self.restEndedAt = restEndedAt
   }
 
   /// When the shown state stops being true on its own: the end of a rest. The system re-renders the views then with
@@ -75,13 +80,14 @@ public struct WorkoutActivityState: Codable, Hashable {
   /// is never seen expanded.
   public static let restOverSeconds: TimeInterval = 6
 
-  /// What to draw: a rest that has run out reads as the next set.
+  /// What to draw: a rest that has run out reads as the next set, marked as just after a rest.
   public func displayed(stale: Bool) -> WorkoutActivityState {
     guard stale else { return self }
     var next = self
     switch phase {
     case .rest:
-      next.phase = .restOver
+      next.phase = .working
+      next.restEndedAt = restEndsAt
       next.restEndsAt = nil
     case .restOver:
       next.phase = .working

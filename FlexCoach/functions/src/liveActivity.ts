@@ -44,9 +44,15 @@ interface RestOverTask {
 /** ActivityKit decodes the pushed state with Swift's default date coding: seconds since 2001-01-01. */
 const toAppleDate = (ms: number): number => ms / 1000 - 978307200;
 
-/** The state as the activity's Swift `WorkoutActivityState` decodes it. */
-const contentState = (state: LiveActivityState): Record<string, unknown> => ({
-  phase: state.phase,
+/**
+ * The state as the activity's Swift `WorkoutActivityState` decodes it. The app saves the next set as `restOver`;
+ * the push sends it as `working` marked with the rest's end, so the compact Island shows the elapsed clock at once
+ * and the opened Island and lock screen read "Rest over" on the next set. Build 19 sent `restOver` with a stale date
+ * a few seconds on, and iOS took a minute or more to redraw it as the next set.
+ */
+const contentState = (state: LiveActivityState, restEndsAt: number): Record<string, unknown> => ({
+  phase: state.phase === 'restOver' ? 'working' : state.phase,
+  restEndedAt: state.phase === 'restOver' ? toAppleDate(restEndsAt) : null,
   exerciseName: state.exerciseName,
   setLabel: state.setLabel,
   nextTarget: state.nextTarget ?? null,
@@ -98,9 +104,7 @@ export const restOverPush = onTaskDispatched<RestOverTask>(
           aps: {
             timestamp: Math.floor(Date.now() / 1000),
             event: 'update',
-            // "Rest over" runs its course on the phone even if the app stays asleep.
-            'stale-date': Math.floor(Date.now() / 1000) + 6,
-            'content-state': contentState(state),
+            'content-state': contentState(state, schedule.restEndsAt),
             alert: { title: 'Rest over', body, sound: 'default' } as unknown as ApsAlert,
           },
         },

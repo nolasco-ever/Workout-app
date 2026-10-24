@@ -97,15 +97,30 @@ private struct RestBar: View {
   }
 }
 
-/// The cardio clock, counting up from its start.
+/// A clock counting up from `startedAt`. A running timer text asks for the width of the longest time it could reach
+/// (eight hours), so it always gets a fixed width and shrinks to fit rather than widening the Island to the whole
+/// screen (build 19, cardio).
 @available(iOS 16.2, *)
-private struct CardioClock: View {
+private struct ElapsedClock: View {
   let startedAt: Date
+  let width: CGFloat
+  var alignment: TextAlignment = .trailing
   var body: some View {
     Text(timerInterval: startedAt...startedAt.addingTimeInterval(longestWorkout), countsDown: false)
       .monospacedDigit()
-      .multilineTextAlignment(.trailing)
+      .multilineTextAlignment(alignment)
+      .lineLimit(1)
+      .minimumScaleFactor(0.6)
+      .frame(width: width, alignment: alignment == .leading ? .leading : .trailing)
   }
+}
+
+/// Clock widths: the compact Island's corner, the opened Island's top corner, the lock screen's large clock.
+private enum ClockWidth {
+  static let compact: CGFloat = 44
+  static let expanded: CGFloat = 64
+  static let large: CGFloat = 96
+  static let inline: CGFloat = 60
 }
 
 /// The buttons the state calls for; iOS 17 runs them without opening the app, iOS 16 shows none. Grey, with the
@@ -168,9 +183,7 @@ private struct Headline: View {
             .foregroundStyle(Tone.success)
         } else if state.phase != .rest && state.phase != .restOver {
           // The rest's countdown is the one clock on show while resting.
-          Text(timerInterval: state.startedAt...state.startedAt.addingTimeInterval(longestWorkout), countsDown: false)
-            .monospacedDigit()
-            .multilineTextAlignment(.leading)
+          ElapsedClock(startedAt: state.startedAt, width: ClockWidth.inline, alignment: .leading)
             .font(.caption)
             .foregroundStyle(Tone.muted)
         }
@@ -197,7 +210,8 @@ private struct Headline: View {
     case .rest: return "Resting · next \(state.nextTarget ?? state.setLabel)"
     case .cardio: return "Running · \(state.setLabel)"
     case .working:
-      return state.nextTarget.map { "\(state.setLabel) · \($0)" } ?? state.setLabel
+      let line = state.nextTarget.map { "\(state.setLabel) · \($0)" } ?? state.setLabel
+      return state.restEndedAt == nil ? line : "Rest over · \(line)"
     case .restOver:
       return "Rest over · next \(state.nextTarget ?? state.setLabel)"
     case .done: return state.summary ?? ""
@@ -219,7 +233,7 @@ private struct PhaseClock: View {
       }
     case .cardio:
       if let startedAt = state.cardioStartedAt {
-        CardioClock(startedAt: startedAt)
+        ElapsedClock(startedAt: startedAt, width: ClockWidth.large)
           .font(.title2.weight(.bold).monospacedDigit())
           .foregroundStyle(Tone.ink)
       }
@@ -295,8 +309,13 @@ private struct ExpandedLeading: View {
         Image(systemName: "checkmark.circle.fill").foregroundStyle(Tone.success)
         Text("Rest over").font(.subheadline.weight(.semibold)).foregroundStyle(Tone.success)
       case .working:
-        Image(systemName: "dumbbell.fill").foregroundStyle(Tone.ink)
-        Text(state.setLabel).font(.subheadline.weight(.semibold)).foregroundStyle(Tone.ink).lineLimit(1)
+        if state.restEndedAt != nil {
+          Image(systemName: "checkmark.circle.fill").foregroundStyle(Tone.success)
+          Text("Rest over").font(.subheadline.weight(.semibold)).foregroundStyle(Tone.success).lineLimit(1)
+        } else {
+          Image(systemName: "dumbbell.fill").foregroundStyle(Tone.ink)
+          Text(state.setLabel).font(.subheadline.weight(.semibold)).foregroundStyle(Tone.ink).lineLimit(1)
+        }
       case .done:
         Image(systemName: "checkmark.circle.fill").foregroundStyle(Tone.success)
         Text("Done").font(.subheadline.weight(.semibold)).foregroundStyle(Tone.success)
@@ -318,12 +337,10 @@ private struct ExpandedTrailing: View {
         // Skip beside the sensor, where the clock sits in the other states; the countdown is in the band below.
         Actions(state: state).controlSize(.small)
       case .cardio:
-        if let startedAt = state.cardioStartedAt { CardioClock(startedAt: startedAt).foregroundStyle(Tone.ink) }
+        if let startedAt = state.cardioStartedAt { ElapsedClock(startedAt: startedAt, width: ClockWidth.expanded).foregroundStyle(Tone.ink) }
       case .working:
         // The workout's elapsed time, as in the compact slot.
-        Text(timerInterval: state.startedAt...state.startedAt.addingTimeInterval(longestWorkout), countsDown: false)
-          .multilineTextAlignment(.trailing)
-          .foregroundStyle(Tone.muted)
+        ElapsedClock(startedAt: state.startedAt, width: ClockWidth.expanded).foregroundStyle(Tone.muted)
       case .restOver, .done:
         EmptyView()
       }
@@ -470,16 +487,12 @@ private struct CompactTrailing: View {
           .foregroundStyle(Tone.accent)
         }
       case .cardio:
-        if let startedAt = state.cardioStartedAt { CardioClock(startedAt: startedAt).foregroundStyle(Tone.ink) }
+        if let startedAt = state.cardioStartedAt { ElapsedClock(startedAt: startedAt, width: ClockWidth.compact).foregroundStyle(Tone.ink) }
       case .restOver:
-        Text("Rest over").foregroundStyle(Tone.success)
+        Text("Rest over").minimumScaleFactor(0.7).foregroundStyle(Tone.success)
       case .working:
-        // The elapsed clock reserves room for an eight-hour string; the frame holds it to "mm:ss" and scales a longer one down.
-        Text(timerInterval: state.startedAt...state.startedAt.addingTimeInterval(longestWorkout), countsDown: false)
-          .multilineTextAlignment(.trailing)
-          .minimumScaleFactor(0.9)
-          .frame(width: 58, alignment: .trailing)
-          .foregroundStyle(Tone.muted)
+        // The workout's elapsed time, from the moment a rest runs out (no "Rest over" step in the compact Island).
+        ElapsedClock(startedAt: state.startedAt, width: ClockWidth.compact).foregroundStyle(Tone.muted)
       case .done:
         EmptyView()
       }
