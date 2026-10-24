@@ -10,6 +10,7 @@ import { ProgressScreen } from './screens/ProgressScreen';
 import { ExerciseProgressScreen } from './screens/ExerciseProgressScreen';
 import { MusclesScreen } from './screens/MusclesScreen';
 import { MuscleDetailScreen } from './screens/MuscleDetailScreen';
+import { StreaksScreen } from './screens/StreaksScreen';
 import type { SessionRoutes } from '../Workout/sessionRoutes';
 
 /** Plus the running workout's screens, which live in the root stack and are reachable from here by name. */
@@ -21,6 +22,7 @@ export type HomeStackParams = SessionRoutes & {
   ExerciseProgressScreen: { exerciseId: string; exerciseName: string };
   MusclesScreen: undefined;
   MuscleDetailScreen: { muscle: string };
+  StreaksScreen: undefined;
 };
 
 const Stack = createNativeStackNavigator<HomeStackParams>();
@@ -35,6 +37,7 @@ export const HomeStack = () => {
       <Stack.Screen name="ProgressScreen" component={ProgressScreen} options={opts.screen('Progress')} />
       <Stack.Screen name="ExerciseProgressScreen" component={ExerciseProgressScreen} options={({ route }) => opts.screen(route.params.exerciseName)} />
       <Stack.Screen name="MusclesScreen" component={MusclesScreen} options={opts.screen('Muscles, last 30 days')} />
+      <Stack.Screen name="StreaksScreen" component={StreaksScreen} options={opts.screen('Streaks')} />
       <Stack.Screen name="MuscleDetailScreen" component={MuscleDetailScreen} options={({ route }) => opts.screen(route.params.muscle.charAt(0).toUpperCase() + route.params.muscle.slice(1))} />
     </Stack.Navigator>
   );
