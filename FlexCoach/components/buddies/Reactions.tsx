@@ -1,4 +1,5 @@
 import React, { useRef, useState } from 'react';
+import { useNavigation } from '@react-navigation/native';
 import { TouchableOpacity, View } from 'react-native';
 import { ActivityReaction, Id, REACTION_EMOJI } from '../../data/models';
 import { CustomText } from '../text/customText';
@@ -6,7 +7,6 @@ import { Icon } from '../icons/Icon';
 import { generalIcons } from '../icons/icon-library';
 import { useTheme } from '../../theme';
 import { BubbleAnchor, ReactionBubble } from './ReactionBubble';
-import { BottomSheet } from '../overlays/BottomSheet';
 
 interface Props {
   reactions: Record<Id, ActivityReaction> | undefined;
@@ -29,12 +29,14 @@ interface Props {
  * count, mine outlined in the accent. The smile button floats a bubble of
  * the emoji set above itself; tapping one sets it, tapping the one I
  * already gave takes it back, tapping a chip does the same for its emoji.
- * One reaction per person. A long press on any chip lists who reacted.
+ * One reaction per person. A long press on any chip opens who reacted, as a
+ * modal (v1 #5).
  */
 export const Reactions = ({ reactions, myUid, onReact, compact = false, header }: Props) => {
   const { colors, spacing, radius } = useTheme();
   const [anchor, setAnchor] = useState<BubbleAnchor | null>(null);
-  const [whoOpen, setWhoOpen] = useState(false);
+  const navigation = useNavigation();
+  const openWho = () => (navigation as any).navigate('ReactionsScreen', { reactions: reactions ?? {} });
   const button = useRef<React.ComponentRef<typeof View>>(null);
   const entries = Object.entries(reactions ?? {});
   const mine = myUid ? reactions?.[myUid]?.emoji ?? null : null;
@@ -44,14 +46,6 @@ export const Reactions = ({ reactions, myUid, onReact, compact = false, header }
   const ordered: string[] = [...known.filter(e => counts.has(e)), ...[...counts.keys()].filter(e => !known.includes(e))];
   const canReact = !!onReact && !!myUid;
   if (ordered.length === 0 && (compact || !canReact) && header === undefined) return null;
-  // Who gave what, newest first within each emoji, in the chips' order.
-  const who = ordered.map(emoji => ({
-    emoji,
-    people: entries
-      .filter(([, r]) => r.emoji === emoji)
-      .sort(([, a], [, b]) => b.at - a.at)
-      .map(([id, r]) => (id === myUid ? 'You' : r.name?.trim() || 'A buddy')),
-  }));
 
   const pick = (emoji: string) => {
     onReact?.(mine === emoji ? null : emoji);
@@ -94,8 +88,8 @@ export const Reactions = ({ reactions, myUid, onReact, compact = false, header }
           <TouchableOpacity
             key={emoji}
             disabled={!canReact && compact}
-            onPress={canReact ? () => pick(emoji) : () => setWhoOpen(true)}
-            onLongPress={() => setWhoOpen(true)}
+            onPress={canReact ? () => pick(emoji) : openWho}
+            onLongPress={openWho}
             delayLongPress={300}
             accessibilityRole="button"
             accessibilityLabel={`${emoji} ${count}${selected ? ', yours' : ''}`}
@@ -121,20 +115,6 @@ export const Reactions = ({ reactions, myUid, onReact, compact = false, header }
       </View>
       )}
       {canReact && !compact && <ReactionBubble anchor={anchor} mine={mine} onPick={pick} onClose={() => setAnchor(null)} />}
-      <BottomSheet open={whoOpen} title="Reactions" onClose={() => setWhoOpen(false)}>
-        <View style={{ gap: spacing.lg }}>
-          {who.map(group => (
-            <View key={group.emoji} style={{ flexDirection: 'row', gap: spacing.md, alignItems: 'flex-start' }}>
-              <CustomText variant="body" style={{ fontSize: 24, lineHeight: 30, width: 36 }}>{group.emoji}</CustomText>
-              <View style={{ flex: 1, gap: spacing.xs, paddingTop: 4 }}>
-                {group.people.map((person, i) => (
-                  <CustomText key={`${group.emoji}-${i}`} variant="body">{person}</CustomText>
-                ))}
-              </View>
-            </View>
-          ))}
-        </View>
-      </BottomSheet>
     </View>
   );
 };

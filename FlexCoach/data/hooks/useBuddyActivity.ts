@@ -55,18 +55,18 @@ export const useBuddyActivity = (buddies: BuddyWithCard[], max = 20): { items: A
         list?.map(a => {
           if (a.id !== item.id) return a;
           const reactions = { ...(a.reactions ?? {}) };
-          if (value) reactions[uid] = { emoji: value, at: Date.now(), name: profile?.displayName ?? null };
+          if (value) reactions[uid] = { emoji: value, at: Date.now(), name: profile?.displayName ?? null, photoUrl: profile?.photoUrl ?? null };
           else delete reactions[uid];
           return { ...a, reactions };
         }) ?? null;
       const before = item.reactions?.[uid]?.emoji ?? null;
       setRaw(list => apply(list, emoji));
-      reactToActivity({ uid, displayName: profile?.displayName ?? null }, item, emoji).catch(err => {
+      reactToActivity({ uid, displayName: profile?.displayName ?? null, photoUrl: profile?.photoUrl ?? null }, item, emoji).catch(err => {
         console.warn('reaction failed', err);
         setRaw(list => apply(list, before));
       });
     },
-    [uid, profile?.displayName],
+    [uid, profile?.displayName, profile?.photoUrl],
   );
 
   return useMemo(() => ({ items, loading: raw === null, refresh, react }), [items, raw, refresh, react]);

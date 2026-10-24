@@ -130,3 +130,17 @@ export const parseInviteCode = (raw: string): string | null => {
 
 /** Streaks worth telling buddies about: every fifth day. */
 export const isStreakMilestone = (streakDays: number): boolean => streakDays > 0 && streakDays % 5 === 0;
+
+/** "now", "12m", "3h", "Yesterday", "Oct 7": when someone reacted, short enough for the row's end. */
+export const reactedAgo = (at: number, now: number = Date.now()): string => {
+  const minutes = Math.floor((now - at) / 60000);
+  if (minutes < 1) return 'now';
+  if (minutes < 60) return `${minutes}m`;
+  const hours = Math.floor(minutes / 60);
+  if (hours < 24 && new Date(at).toDateString() === new Date(now).toDateString()) return `${hours}h`;
+  const yesterday = new Date(now);
+  yesterday.setDate(yesterday.getDate() - 1);
+  if (new Date(at).toDateString() === yesterday.toDateString()) return 'Yesterday';
+  if (hours < 24) return `${hours}h`;
+  return new Date(at).toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
+};

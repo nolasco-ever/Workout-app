@@ -207,6 +207,8 @@ export interface ActivityReaction {
   at: Timestamp;
   /** The reactor's name at the time, so a row can say who without another read. */
   name: string | null;
+  /** The reactor's photo (or `avatar:<id>`) at the time, for the who-reacted list; absent on reactions from before it was kept. */
+  photoUrl?: string | null;
 }
 
 /**

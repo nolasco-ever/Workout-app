@@ -228,10 +228,10 @@ export const BuddyWorkoutScreen = () => {
     if (!uid || !item) return;
     const before = item;
     const reactions = { ...(item.reactions ?? {}) };
-    if (emoji) reactions[uid] = { emoji, at: Date.now(), name: profile?.displayName ?? null };
+    if (emoji) reactions[uid] = { emoji, at: Date.now(), name: profile?.displayName ?? null, photoUrl: profile?.photoUrl ?? null };
     else delete reactions[uid];
     setItem({ ...item, reactions });
-    reactToActivity({ uid, displayName: profile?.displayName ?? null }, item, emoji).catch(err => {
+    reactToActivity({ uid, displayName: profile?.displayName ?? null, photoUrl: profile?.photoUrl ?? null }, item, emoji).catch(err => {
       console.warn('reaction failed', err);
       setItem(before);
     });

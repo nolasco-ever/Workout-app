@@ -211,8 +211,9 @@ export const afterWorkoutSkipped = async (uid: Id, profile: UserProfile | null, 
  * One reaction per person; a new emoji replaces the old one. The owner
  * hears about it once per line, however often the emoji changes.
  */
-export const reactToActivity = async (me: { uid: Id; displayName: string | null }, item: Activity, emoji: string | null): Promise<void> => {
-  const reaction: ActivityReaction | null = emoji ? { emoji, at: Date.now(), name: me.displayName } : null;
+export const reactToActivity = async (me: { uid: Id; displayName: string | null; photoUrl?: string | null }, item: Activity, emoji: string | null): Promise<void> => {
+  // The photo rides along with the name, so the who-reacted list can show faces without reading anyone's profile.
+  const reaction: ActivityReaction | null = emoji ? { emoji, at: Date.now(), name: me.displayName, photoUrl: me.photoUrl ?? null } : null;
   await buddyRepository.setReaction(item.ownerId, item.id, me.uid, reaction);
   if (!reaction) return;
   const what = item.kind === 'workout_done' ? item.title.replace(/^Finished /, 'your ') : item.kind === 'record' ? `your ${item.title.replace(/^New record: /, '')} record` : `your ${item.title.toLowerCase()}`;

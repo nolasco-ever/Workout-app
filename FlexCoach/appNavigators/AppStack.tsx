@@ -29,6 +29,7 @@ import type { SessionRoutes } from '../screens/Tabs/Workout/sessionRoutes';
 import { BuddiesScreen } from '../screens/Buddies/BuddiesScreen';
 import { CardStack } from '../screens/Buddies/CardStack';
 import { BuddyCardScreen } from '../screens/Buddies/BuddyCardScreen';
+import { ReactionsParams, ReactionsScreen } from '../screens/Buddies/ReactionsScreen';
 import { BuddyActivityScreen } from '../screens/Buddies/BuddyActivityScreen';
 import { BuddyPlansScreen } from '../screens/Buddies/BuddyPlansScreen';
 import { BuddyPlanScreen } from '../screens/Buddies/BuddyPlanScreen';
@@ -45,7 +46,7 @@ import { useAuth } from '../data/auth/AuthProvider';
 import { ensurePhotoCacheable } from '../data/services/profileService';
 import { useTheme } from '../theme';
 
-export type AppStackParams = BuddyRoutes & SessionRoutes & Omit<PlansStackParams, 'ExercisePickerScreen' | 'ExerciseDetailScreen'> & {
+export type AppStackParams = BuddyRoutes & SessionRoutes & ReactionsParams & Omit<PlansStackParams, 'ExercisePickerScreen' | 'ExerciseDetailScreen'> & {
     AuthStack: undefined;
     OnboardingStack: undefined;
     TabNavigator: undefined;
@@ -119,6 +120,8 @@ export const AppStack = () => {
                     {/* Your own card slides up from the Profile header; swipe it down (or X) to put it away. The scanner pushes inside the sheet. */}
                     <Stack.Screen name="CardStack" component={CardStack} options={{ presentation: 'modal', headerShown: false }} />
                     {/* A card is a sheet with an X: it can be brought up from a link, a scan, or the buddies list. */}
+                    {/* A modal rather than a sheet, so filtering by emoji never resizes it (owner, 2026-10-24). */}
+                    <Stack.Screen name="ReactionsScreen" component={ReactionsScreen} options={({ navigation, route }) => opts.modal(`Reactions · ${Object.keys(route.params.reactions ?? {}).length}`, () => <HeaderButton icon={generalIcons.xMark} accessibilityLabel="Close" onPress={() => navigation.goBack()} />)} />
                     <Stack.Screen name="BuddyCardScreen" component={BuddyCardScreen} options={({ navigation, route }) => opts.modal(route.params.displayName ?? 'Iron Card', () => <HeaderButton icon={generalIcons.xMark} accessibilityLabel="Close" onPress={() => navigation.goBack()} />)} />
                     <Stack.Screen name="AchievementsScreen" component={AchievementsScreen} options={opts.screen('Achievements')} />
                     {/* One badge on black, so the header goes dark with it. */}
