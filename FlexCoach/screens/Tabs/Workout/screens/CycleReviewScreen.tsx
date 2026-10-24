@@ -222,11 +222,22 @@ export const CycleReviewView = ({ cycleId, plan: planProp, cycle: cycleProp, onO
                           </View>
                         )}
                       </View>
-                      {/* What was done against what was asked, then the coming target and why. */}
+                      {/* What was asked beside what was done, then the coming target and why (owner, 2026-10-24: the
+                          one "Did … · asked …" line was too busy). */}
                       {did && (
-                        <CustomText variant="caption" color={colors.ink}>
-                          Did {did}{previous ? ` · asked ${previous}` : ''}
-                        </CustomText>
+                        <View style={{ flexDirection: 'row', gap: spacing.md, paddingVertical: spacing.xs }}>
+                          {(
+                            [
+                              ['Expected', previous ?? '—'],
+                              ['Actual', did],
+                            ] as const
+                          ).map(([label, value]) => (
+                            <View key={label} style={{ flex: 1, gap: 2 }}>
+                              <CustomText variant="overline" color={colors.inkMuted}>{label}</CustomText>
+                              <CustomText variant="caption" color={colors.ink}>{value}</CustomText>
+                            </View>
+                          ))}
+                        </View>
                       )}
                       <CustomText variant="label" color={tone}>Next {next}</CustomText>
                       <CustomText variant="caption" color={colors.inkMuted}>{reason}</CustomText>
