@@ -29,7 +29,9 @@
                                                                        if (!strong->_eventEmitterCallback) return;
                                                                        NSString *kind = note.userInfo[@"kind"] ?: @"";
                                                                        NSString *identifier = note.userInfo[@"id"] ?: @"";
-                                                                       [strong emitOnCommand:@{ @"kind": kind, @"id": identifier, @"at": @([NSDate date].timeIntervalSince1970 * 1000) }];
+                                                                       // The tap's own time, as queued, so the app can skip the queued copy later.
+                                                                       NSNumber *at = note.userInfo[@"at"] ?: @([NSDate date].timeIntervalSince1970 * 1000);
+                                                                       [strong emitOnCommand:@{ @"kind": kind, @"id": identifier, @"at": at }];
                                                                      }];
     _tokenObserver = [[NSNotificationCenter defaultCenter] addObserverForName:WorkoutActivityController.pushTokenNotification
                                                                        object:nil

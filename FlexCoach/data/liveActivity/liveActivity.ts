@@ -33,6 +33,21 @@ export type LiveActivityCommandKind = 'completeSet' | 'skipRest' | 'stopCardio';
 
 const native = Platform.OS === 'ios' ? NativeLiveActivity : null;
 
+/**
+ * Every command arrives twice when the app is running: live, and again in the queue drained when the app comes back
+ * to the front. Build 19 applied both, so a Stop tapped on the Island earlier in a workout stopped a later running
+ * timer as soon as the app returned. Each command is taken once, by its kind, id and tap time.
+ */
+const taken = new Set<string>();
+const TAKEN_KEPT = 200;
+export const takeCommand = (command: LiveActivityCommand): boolean => {
+  const key = `${command.kind}:${command.id}:${Math.round(command.at)}`;
+  if (taken.has(key)) return false;
+  taken.add(key);
+  if (taken.size > TAKEN_KEPT) taken.delete(taken.values().next().value as string);
+  return true;
+};
+
 /** How long the done card stays on the lock screen after a workout. */
 export const DONE_LINGER_SECONDS = 15 * 60;
 
@@ -47,7 +62,7 @@ export const liveActivity = {
   end: (state: LiveActivityState | null = null, lingerSeconds = 0): void => native?.end(state ? JSON.stringify(state) : '', lingerSeconds),
   endAll: (): void => native?.endAll(),
   /** Commands tapped while the app was not running, oldest first. */
-  drainCommands: (): LiveActivityCommand[] => (native ? native.drainCommands() : []),
+  drainCommands: (): LiveActivityCommand[] => (native ? native.drainCommands().filter(takeCommand) : []),
   /** The activity's push token (hex) once Apple has issued it: a server updates the activity with it while the app sleeps. */
   pushToken: (): string | null => (native ? native.pushToken() || null : null),
   onPushToken: (listener: (token: string) => void): (() => void) => {
@@ -58,7 +73,9 @@ export const liveActivity = {
   /** Commands tapped while the app is running. */
   onCommand: (listener: (command: LiveActivityCommand) => void): (() => void) => {
     if (!native) return () => undefined;
-    const subscription = native.onCommand(listener);
+    const subscription = native.onCommand(command => {
+      if (takeCommand(command)) listener(command);
+    });
     return () => subscription.remove();
   },
 };

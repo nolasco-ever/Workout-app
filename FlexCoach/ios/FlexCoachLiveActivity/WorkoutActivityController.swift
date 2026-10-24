@@ -9,6 +9,9 @@ public struct WorkoutActivityCommand {
   public static let notificationName = Notification.Name("FlexCoachLiveActivityCommand")
   public static let kindKey = "kind"
   public static let idKey = "id"
+  /// When it was tapped, milliseconds since 1970: the same value in the live event and the queue, so the app can
+  /// tell that a queued command is one it already applied.
+  public static let atKey = "at"
   /// The App Group store keeps commands the app has not consumed yet (it may have been in the background or killed).
   public static let appGroup = "group.com.flexcoach"
   public static let queueKey = "liveActivity.pendingCommands"
@@ -16,9 +19,10 @@ public struct WorkoutActivityCommand {
   public static func enqueue(kind: String, id: String?) {
     let defaults = UserDefaults(suiteName: appGroup)
     var queue = defaults?.array(forKey: queueKey) as? [[String: Any]] ?? []
-    queue.append(["kind": kind, "id": id ?? "", "at": Date().timeIntervalSince1970 * 1000])
+    let at = Date().timeIntervalSince1970 * 1000
+    queue.append(["kind": kind, "id": id ?? "", "at": at])
     defaults?.set(queue, forKey: queueKey)
-    NotificationCenter.default.post(name: notificationName, object: nil, userInfo: ["kind": kind, "id": id ?? ""])
+    NotificationCenter.default.post(name: notificationName, object: nil, userInfo: ["kind": kind, "id": id ?? "", "at": at])
   }
 
   /// The commands waiting, oldest first; cleared once taken.
