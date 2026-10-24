@@ -1,6 +1,7 @@
 import { closeCycle, generateCycle, rebuildCycle, nextCycleStart, getOverdueOccurrences, moveOccurrenceToDate, resolveMissed, nextCycleNumber, nextCycleNumberAfter, pushOccurrence, renumberCycles, skipOccurrence, markOccurrence } from '../../data/engine/schedule';
 import { summarizeCycle } from '../../data/engine/stats';
 import { addDays } from '../../data/engine/dates';
+import { Plan } from '../../data/models';
 import { rotationPlan, weeklyPlan } from './support/fixtures';
 
 const dates = (cycle: ReturnType<typeof generateCycle>) => cycle.occurrences.map(o => `${o.date}:${o.workoutId ?? 'rest'}:${o.status}`);
@@ -260,10 +261,11 @@ describe('resolveMissed', () => {
 
 describe('rebuildCycle: a plan edited mid-cycle', () => {
   // 2026-09-21 is a Monday.
-  const edited = () => {
+  const edited = (): Plan => {
     const plan = weeklyPlan();
     // Pull moves from Wednesday to Thursday; Legs is replaced by Arms.
-    return { ...plan, workouts: [...plan.workouts.filter(w => w.id !== 'legs'), { id: 'arms', name: 'Arms', order: 2, exercises: [] }], schedule: { mode: 'weekly' as const, weekdays: [null, 'push', null, null, 'pull', 'arms', null], startWeekday: 1, weeksPerCycle: 1 } };
+    const schedule = { ...plan.schedule, weekdays: [null, 'push', null, null, 'pull', 'arms', null] } as Plan['schedule'];
+    return { ...plan, workouts: [...plan.workouts.filter(w => w.id !== 'legs'), { id: 'arms', name: 'Arms', order: 2, exercises: [] }], schedule };
   };
 
   it('keeps the days behind and lays the days ahead out from the new schedule', () => {
