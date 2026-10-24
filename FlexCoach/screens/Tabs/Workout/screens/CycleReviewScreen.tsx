@@ -18,7 +18,7 @@ import { dateLabel } from '../../../../components/charts/scale';
 import { useTheme } from '../../../../theme';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { WorkoutStackParams } from '../WorkoutStack';
-import { useTabBarInset } from '../../../../navigation/useTabBarInset';
+import { useTabBarInset, useTabScrollInset } from '../../../../navigation/useTabBarInset';
 import { SurfaceCard as Card } from '../../../../components/cards/SurfaceCard';
 import { PrimaryButton } from '../../../../components/buttons/PrimaryButton';
 
@@ -67,6 +67,7 @@ export const CycleReviewView = ({ cycleId, plan: planProp, cycle: cycleProp, onO
   const params = { cycleId, plan: planProp, cycle: cycleProp };
   const { colors, spacing, radius } = useTheme();
   const bottomInset = useTabBarInset();
+  const scrollInset = useTabScrollInset();
   const insets = useSafeAreaInsets();
   const { uid, profile } = useAuth();
   const [loaded, setLoaded] = useState<{ plan: Plan; cycle: Cycle } | null>(params.cycle && params.plan ? { plan: params.plan, cycle: params.cycle } : null);
@@ -136,9 +137,13 @@ export const CycleReviewView = ({ cycleId, plan: planProp, cycle: cycleProp, onO
     }
   };
 
+  // With Start cycle pinned at the bottom the list ends above it. Without it (a past cycle) the list runs under the
+  // see-through tab bar and pads past it: stopping at the safe-area edge drew a hard cut-off line (build 19).
+  const pinned = cycle.status === 'active';
+  const bottomRoom = embedded ? insets.bottom : pinned ? 0 : scrollInset;
   const body = (
     <>
-      <ScrollView contentInsetAdjustmentBehavior="automatic" showsVerticalScrollIndicator={false} contentContainerStyle={{ padding: spacing.lg, gap: spacing.lg, paddingBottom: spacing.xl + (embedded ? insets.bottom : 0)}}>
+      <ScrollView contentInsetAdjustmentBehavior="automatic" showsVerticalScrollIndicator={false} contentContainerStyle={{ padding: spacing.lg, gap: spacing.lg, paddingBottom: spacing.xl + bottomRoom }}>
         {/* Which cycle, then the three numbers that matter, then the rest a size down. */}
         <CustomText variant="overline" color={colors.inkMuted}>
           {plan.name} · Cycle {cycle.number} · {dateLabel(cycle.startDate)} to {dateLabel(cycle.endDate)}
@@ -265,7 +270,7 @@ export const CycleReviewView = ({ cycleId, plan: planProp, cycle: cycleProp, onO
         )}
       </ScrollView>
       {/* Pinned, so starting the next cycle is one tap from anywhere in the review. */}
-      {cycle.status === 'active' && (
+      {pinned && (
         <View style={{ padding: spacing.lg, paddingBottom: spacing.lg + bottomInset, borderTopWidth: 1, borderTopColor: colors.line, backgroundColor: colors.ground }}>
           <PrimaryButton label={`Start cycle ${nextCycleNumberAfter(cycle)}`} busy={busy} onPress={() => { startNext().catch(err => console.warn(err)); }} />
         </View>
@@ -275,7 +280,7 @@ export const CycleReviewView = ({ cycleId, plan: planProp, cycle: cycleProp, onO
   // Inside another screen the host already keeps clear of the display's edges.
   if (embedded) return <View style={{ flex: 1, backgroundColor: colors.ground }}>{body}</View>;
   return (
-    <SafeAreaView edges={['left', 'right', 'bottom']} style={{ flex: 1, backgroundColor: colors.ground }}>
+    <SafeAreaView edges={pinned ? ['left', 'right', 'bottom'] : ['left', 'right']} style={{ flex: 1, backgroundColor: colors.ground }}>
       {body}
     </SafeAreaView>
   );
