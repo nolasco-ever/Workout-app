@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { ActivityIndicator, RefreshControl, ScrollView, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from '../../../../components/layout/SafeAreaView';
-import { NavigationProp, useNavigation, useScrollToTop } from '@react-navigation/native';
+import { NavigationProp, useIsFocused, useNavigation, useScrollToTop } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useAuth } from '../../../../data/auth/AuthProvider';
 import { useInsights } from '../../../../data/hooks/useInsights';
@@ -124,11 +124,14 @@ export const HomeScreen = () => {
   const reportCycle = home.cycleFinished && home.cycle && !home.reportReviewed ? home.cycle : null;
   const [reportModal, setReportModal] = useState(false);
   const promptedFor = useRef<string | null>(null);
+  // Only while Home is the screen in front: a tap on the "report is ready" notification opens the review over Home
+  // straight away, and the pop-up used to appear on top of it (build 19).
+  const focused = useIsFocused();
   useEffect(() => {
-    if (!reportCycle || reportCycle.reportPromptedAt || promptedFor.current === reportCycle.id) return;
+    if (!focused || !reportCycle || reportCycle.reportPromptedAt || promptedFor.current === reportCycle.id) return;
     promptedFor.current = reportCycle.id;
     setReportModal(true);
-  }, [reportCycle]);
+  }, [reportCycle, focused]);
   const openReport = () => {
     if (!home.cycle) return;
     setReportModal(false);
