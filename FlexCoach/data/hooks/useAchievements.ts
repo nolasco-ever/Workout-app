@@ -17,14 +17,17 @@ export interface AchievementsState {
   /** Badges there are to unlock: every tier of every family. */
   total: number;
   unit: WeightUnit;
+  /** Whether `progress` carries the measured values yet (always false with `measure: false`). */
+  measured: boolean;
 }
 
 /**
  * The signed-in user's badges: stored unlocks, live, plus where they stand
  * on every ladder. Measuring reads the whole history, so screens that only
- * need counts pass `measure: false`.
+ * need counts pass `measure: false`; `'background'` measures without holding
+ * `loading` for it, so the badges draw first and the values follow.
  */
-export const useAchievements = (measure = true): AchievementsState => {
+export const useAchievements = (measure: boolean | 'background' = true): AchievementsState => {
   const { uid, profile } = useAuth();
   const unit = profile?.weightUnit ?? 'lb';
   const [unlocks, setUnlocks] = useState<AchievementUnlock[] | null>(null);
@@ -57,12 +60,13 @@ export const useAchievements = (measure = true): AchievementsState => {
     const stored = unlocks ?? [];
     const progress = ACHIEVEMENT_FAMILIES.map(f => progressFor(f, values?.[f.id] ?? 0, unit, stored));
     return {
-      loading: unlocks === null || (measure && values === null),
+      loading: unlocks === null || (measure === true && values === null),
       unlocks: stored,
       progress,
       earned: progress.reduce((n, p) => n + p.tier, 0),
       total: ACHIEVEMENT_FAMILIES.reduce((n, f) => n + thresholdsFor(f, unit).length, 0),
       unit,
+      measured: values !== null,
     };
   }, [unlocks, values, unit, measure]);
 };

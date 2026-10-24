@@ -42,11 +42,23 @@ const COUNTS: Record<AchievementFamilyId, string> = {
   plan_uses: 'plans copied by buddies',
 };
 
-/** One family: its name, how far along it is, and every tier laid out in order, locked ones in pewter. */
-const FamilySection = ({ progress, unit, cell, onOpen }: { progress: FamilyProgress; unit: 'lb' | 'kg'; cell: number; onOpen: (tier: number) => void }) => {
-  const { colors, spacing } = useTheme();
+/** "12 / 25", "67k / 100k lb": where the family stands against its next tier. */
+const towardNext = (progress: FamilyProgress, unit: 'lb' | 'kg'): string => {
+  const { family, value, next } = progress;
+  const shown = (n: number) => (family.id === 'volume' ? compactCount(Math.floor(n)) : Math.floor(n).toLocaleString());
+  const suffix = family.id === 'volume' ? ` ${unit}` : '';
+  return next === null ? `${shown(value)}${suffix}` : `${shown(value)} / ${shown(next)}${suffix}`;
+};
+
+/**
+ * One family: its name, how far along it is toward the next tier (a count and a bar, owner 2026-10-24: "how long to
+ * get to the next tier"), and every tier laid out in order, locked ones in pewter.
+ */
+const FamilySection = ({ progress, unit, cell, measured, onOpen }: { progress: FamilyProgress; unit: 'lb' | 'kg'; cell: number; measured: boolean; onOpen: (tier: number) => void }) => {
+  const { colors, spacing, radius } = useTheme();
   const { family, tier } = progress;
   const thresholds = thresholdsFor(family, unit);
+  const done = progress.next === null;
   return (
     <View style={{ gap: spacing.sm }}>
       <View style={{ flexDirection: 'row', alignItems: 'flex-start', justifyContent: 'space-between', gap: spacing.sm }}>
@@ -54,7 +66,17 @@ const FamilySection = ({ progress, unit, cell, onOpen }: { progress: FamilyProgr
           <CustomText variant="heading">{family.name}</CustomText>
           <CustomText variant="caption" color={colors.inkMuted}>{COUNTS[family.id]}</CustomText>
         </View>
-        <CustomText variant="caption" color={colors.inkMuted}>{tier} of {thresholds.length}</CustomText>
+        {/* Until the history is measured, the tiers earned; then the count toward the next one, with its bar. */}
+        {measured ? (
+          <View style={{ width: 120, alignItems: 'flex-end', gap: spacing.xs, paddingTop: 2 }} accessible accessibilityLabel={done ? `${family.name}: every tier earned` : `${family.name}: ${towardNext(progress, unit)} to the next tier`}>
+            <CustomText variant="caption" color={done ? colors.success : colors.ink} numberOfLines={1}>{done ? `All ${thresholds.length} earned` : towardNext(progress, unit)}</CustomText>
+            <View style={{ width: '100%', height: 6, borderRadius: radius.pill, backgroundColor: colors.surfaceRaised, overflow: 'hidden' }}>
+              <View style={{ width: `${Math.round(Math.min(1, Math.max(0, progress.fraction)) * 100)}%`, height: '100%', borderRadius: radius.pill, backgroundColor: done ? colors.success : colors.accent }} />
+            </View>
+          </View>
+        ) : (
+          <CustomText variant="caption" color={colors.inkMuted}>{tier} of {thresholds.length}</CustomText>
+        )}
       </View>
       <View style={{ flexDirection: 'row', flexWrap: 'wrap', maxWidth: COLUMNS * cell }}>
         {thresholds.map((threshold, i) => {
@@ -112,8 +134,9 @@ export const AchievementsScreen = () => {
   const open = (family: AchievementFamilyId, tier: number) => navigation.navigate('BadgeScreen', { family, tier });
   const navigation = useNavigation<NavigationProp<AppStackParams>>();
   const { params } = useRoute<RouteProp<AppStackParams, 'AchievementsScreen'>>();
-  // Tiers come from the stored unlocks, live; measuring the whole history is not needed to draw the grid.
-  const state = useAchievements(false);
+  // Tiers come from the stored unlocks, live, so the grid draws at once; each family's count toward its next tier
+  // follows once the history is measured.
+  const state = useAchievements('background');
 
   // Opened from a feed item or a push: go straight to that badge.
   const focus = params?.achievementId ?? null;
@@ -133,7 +156,7 @@ export const AchievementsScreen = () => {
           <Skeleton cell={cell} />
         ) : (
           state.progress.map(p => (
-            <FamilySection key={p.family.id} progress={p} unit={state.unit} cell={cell} onOpen={tier => open(p.family.id, tier)} />
+            <FamilySection key={p.family.id} progress={p} unit={state.unit} cell={cell} measured={state.measured} onOpen={tier => open(p.family.id, tier)} />
           ))
         )}
       </ScrollView>
