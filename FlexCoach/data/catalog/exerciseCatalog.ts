@@ -14,11 +14,19 @@ import { canonicalExerciseId } from './exerciseIds';
  * entry, so nothing a lifter logged ever stops answering by name.
  * Custom exercises live in Firestore and are merged in by the repository layer.
  */
-const catalog = (catalogJson as Exercise[]).slice().sort((a, b) => a.name.localeCompare(b.name));
+const library = (catalogJson as Exercise[]).slice().sort((a, b) => a.name.localeCompare(b.name));
+
+/**
+ * The library films a few exercises from extra angles as separate entries ("Barbell Deep Back Squat, Side View"):
+ * the same movement three times over in the search (build 19 feedback). Only the plain entry is on offer; the angle
+ * copies still answer by id for anyone who already added one.
+ */
+const CAMERA_ANGLE = /,\s*(side|rear|front)\s+view$/i;
+const catalog = library.filter(e => !CAMERA_ANGLE.test(e.name));
 
 const legacy = new Map<string, Exercise>(([...(legacyJson as Exercise[]), ...(legacyExtraJson as Exercise[])] as Exercise[]).map(e => [e.id, e]));
 
-const byId = new Map<string, Exercise>(catalog.map(e => [e.id, e]));
+const byId = new Map<string, Exercise>(library.map(e => [e.id, e]));
 
 /** The library on offer: what the picker and the search show. */
 export const getCatalogExercises = (): readonly Exercise[] => catalog;

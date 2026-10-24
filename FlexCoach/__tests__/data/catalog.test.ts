@@ -1,6 +1,7 @@
 import { comparableExercises, getCatalogExercise, getCatalogExercises, searchCatalog, stem } from '../../data/catalog/exerciseCatalog';
 import { canonicalExerciseId, isLegacyExerciseId, sameExercise } from '../../data/catalog/exerciseIds';
 import legacyMap from '../../data/catalog/legacyExerciseMap.json';
+import exercisedb from '../../data/catalog/exercisedb.json';
 
 const names = (q: string) => searchCatalog({ query: q }).map(e => e.name);
 
@@ -29,6 +30,18 @@ describe('exercise search', () => {
 
   it('finds an exercise by an alias', () => {
     expect(names('air bike')).toContain('Bicycle Crunch');
+  });
+});
+
+describe('camera-angle copies', () => {
+  it('offers one entry per movement, not its extra angles', () => {
+    expect(names('leg press').filter(n => /view$/i.test(n))).toEqual([]);
+    expect(names('leg press')).toContain('45-Degree Sled Leg Press');
+  });
+
+  it('still opens an angle copy someone already added', () => {
+    const copy = (exercisedb as { id: string; name: string }[]).find(e => e.name === '45-Degree Sled Leg Press, Side View');
+    expect(copy && getCatalogExercise(copy.id)?.name).toBe('45-Degree Sled Leg Press, Side View');
   });
 });
 
