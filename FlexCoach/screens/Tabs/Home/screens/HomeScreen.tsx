@@ -417,7 +417,7 @@ export const HomeScreen = () => {
     <SafeAreaView edges={['left', 'right']} style={{ flex: 1, backgroundColor: colors.ground }}>
       <ScrollView
         ref={scrollRef}
-        contentContainerStyle={{ padding: spacing.lg, paddingTop: headerHeight + spacing.sm, gap: spacing.lg, paddingBottom: bottomRoom + bottomInset }}
+        contentContainerStyle={{ padding: spacing.lg, paddingTop: headerHeight + spacing.lg, gap: spacing.lg, paddingBottom: bottomRoom + bottomInset }}
         showsVerticalScrollIndicator={false}
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.accent} progressViewOffset={headerHeight} />}
       >

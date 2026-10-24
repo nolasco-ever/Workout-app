@@ -330,7 +330,7 @@ export const WorkoutHomeScreen = () => {
       <ScrollView showsVerticalScrollIndicator={false}
         ref={scrollRef}
         alwaysBounceVertical={false}
-        contentContainerStyle={{ padding: spacing.lg, paddingTop: headerHeight + spacing.sm, gap: spacing.lg, paddingBottom: bottomRoom + bottomInset }}
+        contentContainerStyle={{ padding: spacing.lg, paddingTop: headerHeight + spacing.lg, gap: spacing.lg, paddingBottom: bottomRoom + bottomInset }}
       >
         {/* One scroll view for every state; the title row scrolls with the content.
             The content is never stretched to fill the screen, so short states don't scroll. */}
