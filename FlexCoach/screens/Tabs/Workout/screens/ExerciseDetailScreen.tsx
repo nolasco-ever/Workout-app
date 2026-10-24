@@ -3,7 +3,7 @@ import { Image, Platform, ScrollView, TouchableOpacity, View } from 'react-nativ
 import { SafeAreaView } from '../../../../components/layout/SafeAreaView';
 import { RouteProp, useNavigation, useRoute } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { newEntry } from '../../../../data/services/planService';
+import { newEntry, swapEntry } from '../../../../data/services/planService';
 import { pickAdd, pickSwap } from '../components/swapChannel';
 import { usePlanEditor } from '../../../Plans/PlanEditorContext';
 import { useAuth } from '../../../../data/auth/AuthProvider';
@@ -40,7 +40,7 @@ type Section = 'howto' | 'muscles' | 'instructions';
  */
 export const ExerciseDetailScreen = () => {
   useSessionOrientation();
-  const { params } = useRoute<RouteProp<{ ExerciseDetailScreen: { exerciseId: string; knownAs?: string; addToWorkoutId?: string; addToSession?: boolean; swapForSessionExerciseId?: string } }, 'ExerciseDetailScreen'>>();
+  const { params } = useRoute<RouteProp<{ ExerciseDetailScreen: { exerciseId: string; knownAs?: string; addToWorkoutId?: string; addToSession?: boolean; swapForSessionExerciseId?: string; replaceEntryId?: string } }, 'ExerciseDetailScreen'>>();
   const navigation = useNavigation<NativeStackNavigationProp<Record<string, object | undefined>>>();
   const { colors, spacing, radius } = useTheme();
   const ex = getCatalogExercise(params.exerciseId);
@@ -52,12 +52,20 @@ export const ExerciseDetailScreen = () => {
   const [section, setSection] = useState<Section>('howto');
   const targetWorkout = params.addToWorkoutId ? editor.draft?.workouts.find(w => w.id === params.addToWorkoutId) : undefined;
   const alreadyAdded = !!targetWorkout && !!ex && targetWorkout.exercises.some(e => e.exerciseId === ex.id);
+  // From the plan editor's swap: this exercise takes that entry's place.
+  const replacing = params.replaceEntryId ? targetWorkout?.exercises.find(e => e.id === params.replaceEntryId) : undefined;
 
   const addToWorkout = () => {
     if (!ex || !targetWorkout) return;
     editor.update(p => ({
       ...p,
-      workouts: p.workouts.map(w => (w.id === targetWorkout.id ? { ...w, exercises: [...w.exercises, newEntry(ex, w.exercises.length, p.goal, profile?.weightUnit ?? 'lb')] } : w)),
+      workouts: p.workouts.map(w =>
+        w.id !== targetWorkout.id
+          ? w
+          : replacing
+            ? { ...w, exercises: w.exercises.map(e => (e.id === replacing.id ? swapEntry(e, ex, p.goal, profile?.weightUnit ?? 'lb') : e)) }
+            : { ...w, exercises: [...w.exercises, newEntry(ex, w.exercises.length, p.goal, profile?.weightUnit ?? 'lb')] },
+      ),
     }));
     // Pop the detail screen and the picker beneath it, back to the workout editor.
     navigation.pop(2);
@@ -176,7 +184,7 @@ export const ExerciseDetailScreen = () => {
       <PhotoViewer images={ex.images.slice(0, 2)} captions={['Start', 'Finish']} index={viewing} onClose={() => setViewing(null)} />
       {targetWorkout && (
         <View style={{ padding: spacing.lg, borderTopWidth: 1, borderTopColor: colors.line }}>
-          <PrimaryButton label={alreadyAdded ? `Already in ${targetWorkout.name}` : `Add to ${targetWorkout.name}`} icon={generalIcons.plus} disabled={alreadyAdded} onPress={addToWorkout} />
+          <PrimaryButton label={alreadyAdded ? `Already in ${targetWorkout.name}` : replacing ? 'Swap' : `Add to ${targetWorkout.name}`} icon={replacing ? generalIcons.swap : generalIcons.plus} disabled={alreadyAdded} onPress={addToWorkout} />
         </View>
       )}
       {sessionAction && (

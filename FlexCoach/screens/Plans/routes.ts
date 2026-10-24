@@ -9,11 +9,12 @@ export type PlansStackParams = {
   PlanBasicsScreen: { mode: EditorMode };
   PlanWorkoutsScreen: { mode: EditorMode };
   WorkoutEditorScreen: { workoutId: string; /** An exercise to open with it: a rotation closed its sheet. */ entryId?: string };
-  ExercisePickerScreen: { workoutId: string };
+  /** `replaceEntryId`: swap that entry of the workout for the pick (owner, 2026-10-24) instead of adding one. */
+  ExercisePickerScreen: { workoutId: string; replaceEntryId?: string };
   ExerciseEntryScreen: { workoutId: string; entryId: string };
   PlanScheduleScreen: { mode: EditorMode };
   PlanReviewScreen: { mode: EditorMode };
-  ExerciseDetailScreen: { exerciseId: string; knownAs?: string; addToWorkoutId?: string; addToSession?: boolean; swapForSessionExerciseId?: string };
+  ExerciseDetailScreen: { exerciseId: string; knownAs?: string; addToWorkoutId?: string; addToSession?: boolean; swapForSessionExerciseId?: string; replaceEntryId?: string };
 };
 
 import { StackActions } from '@react-navigation/native';

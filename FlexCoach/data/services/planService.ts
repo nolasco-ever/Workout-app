@@ -28,7 +28,7 @@ export const newPlan = (ownerId: Id): Plan => {
 
 export const newWorkout = (name: string, order: number): Workout => ({ id: newId(), name, order, exercises: [] });
 
-export { defaultProgression, newEntry } from '../engine/planDefaults';
+export { defaultProgression, newEntry, swapEntry } from '../engine/planDefaults';
 
 export interface PlanProblem {
   field: 'name' | 'workouts' | 'schedule';

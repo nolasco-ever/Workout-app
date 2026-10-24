@@ -108,8 +108,12 @@ export const WorkoutEditor = ({ workoutId, embedded = false, onOpenEntry, openEn
                         <CustomText variant="caption" color={colors.accent}>{describeEntry(e, unit, dist)}</CustomText>
                       </View>
                     </TouchableOpacity>
-                    <TouchableOpacity onPress={() => navigation.navigate('ExerciseDetailScreen', { exerciseId: e.exerciseId, knownAs: e.exerciseName })} hitSlop={8} style={{ padding: spacing.sm }}>
+                    <TouchableOpacity onPress={() => navigation.navigate('ExerciseDetailScreen', { exerciseId: e.exerciseId, knownAs: e.exerciseName })} hitSlop={8} accessibilityRole="button" accessibilityLabel={`How to do ${e.exerciseName}`} style={{ padding: spacing.sm }}>
                       <Icon icon={generalIcons.info} size={20} color={colors.inkMuted} />
+                    </TouchableOpacity>
+                    {/* Swap in place: no more removing it and searching (owner, 2026-10-24). */}
+                    <TouchableOpacity onPress={() => navigation.navigate('ExercisePickerScreen', { workoutId: workout.id, replaceEntryId: e.id })} hitSlop={6} accessibilityRole="button" accessibilityLabel={`Swap ${e.exerciseName}`} style={{ padding: spacing.sm }}>
+                      <Icon icon={generalIcons.swap} size={20} color={colors.inkMuted} />
                     </TouchableOpacity>
                     <TouchableOpacity onPress={() => removeEntry(e.id)} hitSlop={6} style={{ padding: spacing.sm }}>
                       <Icon icon={generalIcons.xMark} size={20} color={colors.inkMuted} />

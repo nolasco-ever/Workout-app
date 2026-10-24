@@ -7,7 +7,7 @@ import { Equipment, Exercise, ExerciseCategory, MuscleGroup, Session, Workout } 
 import { PastExercise, pastExercisesLike } from '../../../data/engine/sessionExtras';
 import { sessionRepository } from '../../../data/repositories/sessionRepository';
 import { CATEGORY_OPTIONS, comparableExercises, EQUIPMENT_OPTIONS, getCatalogExercise, MUSCLE_GROUPS, searchCatalog } from '../../../data/catalog/exerciseCatalog';
-import { newEntry } from '../../../data/services/planService';
+import { newEntry, swapEntry } from '../../../data/services/planService';
 import { pickAdd, pickSwap } from '../../Tabs/Workout/components/swapChannel';
 import { CustomText } from '../../../components/text/customText';
 import { TextField } from '../../../components/inputs/TextField';
@@ -109,27 +109,31 @@ type PickerParams = {
    * to the running workout. Swap: a stand-in for one of its exercises.
    */
   ExercisePickerScreen:
-    | { workoutId: string; mode?: undefined; excludeIds?: undefined; planWorkouts?: undefined; sessionExerciseId?: undefined; exerciseId?: undefined }
+    | { workoutId: string; mode?: undefined; excludeIds?: undefined; planWorkouts?: undefined; sessionExerciseId?: undefined; exerciseId?: undefined; replaceEntryId?: string }
     /** `planWorkouts`: an empty quick workout can be filled with one of them from a link at the top. */
-    | { mode: 'session'; excludeIds: string[]; planWorkouts?: Workout[]; workoutId?: undefined; sessionExerciseId?: undefined; exerciseId?: undefined }
-    | { mode: 'swap'; sessionExerciseId: string; exerciseId: string; excludeIds: string[]; planWorkouts?: undefined; workoutId?: undefined };
+    | { mode: 'session'; excludeIds: string[]; planWorkouts?: Workout[]; workoutId?: undefined; sessionExerciseId?: undefined; exerciseId?: undefined; replaceEntryId?: undefined }
+    | { mode: 'swap'; sessionExerciseId: string; exerciseId: string; excludeIds: string[]; planWorkouts?: undefined; workoutId?: undefined; replaceEntryId?: undefined };
 };
 
 /**
  * The one exercise picker: the catalog with search and filters. In the
- * plan editor a pick joins the draft's workout; from a running session it
- * goes back through swapChannel, either added on the end (mode 'session')
- * or standing in for one exercise (mode 'swap', comparable ones first).
+ * plan editor a pick joins the draft's workout, or with `replaceEntryId`
+ * takes that entry's place (comparable ones first, as in a workout); from a
+ * running session it goes back through swapChannel, either added on the end
+ * (mode 'session') or standing in for one exercise (mode 'swap').
  */
 export const ExercisePickerScreen = () => {
   useSessionOrientation();
   const navigation = useNavigation<NativeStackNavigationProp<PlansStackParams>>();
   const { params } = useRoute<RouteProp<PickerParams, 'ExercisePickerScreen'>>();
   const sessionMode = params.mode === 'session' || params.mode === 'swap';
-  const swapMode = params.mode === 'swap';
-  const swapping = swapMode && params.exerciseId ? getCatalogExercise(params.exerciseId) : null;
   const { colors, spacing, radius } = useTheme();
   const { draft, update } = usePlanEditor();
+  const replaceEntryId = params.replaceEntryId;
+  const replacing = replaceEntryId ? draft?.workouts.find(w => w.id === params.workoutId)?.exercises.find(e => e.id === replaceEntryId) : undefined;
+  // Swapping, in a running workout or in the plan editor: comparable exercises lead and the pick takes a place.
+  const swapMode = params.mode === 'swap' || !!replacing;
+  const swapping = params.mode === 'swap' && params.exerciseId ? getCatalogExercise(params.exerciseId) : replacing ? getCatalogExercise(replacing.exerciseId) : null;
   const { uid, profile } = useAuth();
   const unit = profile?.weightUnit ?? 'lb';
   // Held like a book, the keyboard would claim a half and push this sheet onto the other, over the content it came from: the search waits for a tap.
@@ -179,8 +183,13 @@ export const ExercisePickerScreen = () => {
   const workoutId = params.workoutId;
   const add = useCallback(
     (ex: Exercise) => {
-      if (swapMode && params.sessionExerciseId) pickSwap(params.sessionExerciseId, ex);
+      if (params.mode === 'swap' && params.sessionExerciseId) pickSwap(params.sessionExerciseId, ex);
       else if (sessionMode) pickAdd(ex);
+      else if (replaceEntryId)
+        update(p => ({
+          ...p,
+          workouts: p.workouts.map(w => (w.id === workoutId ? { ...w, exercises: w.exercises.map(e => (e.id === replaceEntryId ? swapEntry(e, ex, p.goal, unit) : e)) } : w)),
+        }));
       else
         update(p => ({
           ...p,
@@ -188,13 +197,13 @@ export const ExercisePickerScreen = () => {
         }));
       navigation.goBack();
     },
-    [swapMode, params.sessionExerciseId, sessionMode, update, navigation, workoutId, unit],
+    [params.mode, params.sessionExerciseId, sessionMode, replaceEntryId, update, navigation, workoutId, unit],
   );
   // The how-to carries the same action as the row, so a pick can be made from there without coming back to the list.
   const sessionExerciseId = params.sessionExerciseId;
   const open = useCallback(
-    (ex: Exercise) => navigation.navigate('ExerciseDetailScreen', swapMode && sessionExerciseId ? { exerciseId: ex.id, swapForSessionExerciseId: sessionExerciseId } : sessionMode ? { exerciseId: ex.id, addToSession: true } : { exerciseId: ex.id, addToWorkoutId: workoutId }),
-    [navigation, swapMode, sessionExerciseId, sessionMode, workoutId],
+    (ex: Exercise) => navigation.navigate('ExerciseDetailScreen', swapMode && sessionExerciseId ? { exerciseId: ex.id, swapForSessionExerciseId: sessionExerciseId } : sessionMode ? { exerciseId: ex.id, addToSession: true } : { exerciseId: ex.id, addToWorkoutId: workoutId, replaceEntryId }),
+    [navigation, swapMode, sessionExerciseId, sessionMode, workoutId, replaceEntryId],
   );
 
   if (!sessionMode && (!draft || !workout)) return null;
