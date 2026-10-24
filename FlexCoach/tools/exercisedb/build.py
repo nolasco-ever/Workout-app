@@ -167,6 +167,10 @@ VARIANT_WORDS = {'alternating', 'single', 'close', 'wide', 'neutral', 'reverse',
 # Hand-picked twins, by the old name, for the lifts people actually have in their plans, where the automatic match
 # would land on a variant (the new library has no plain "barbell squat": its standard one is the high-bar back squat).
 OVERRIDES_BY_NAME = {
+    # Build 19 feedback: all three went to 1385, a leg press with a calf press tacked on.
+    'Calf Press On The Leg Press Machine': '1391',  # calf press on 45-degree leg press
+    'Calf Press': '2289',  # seated machine calf press
+    'Seated Calf Raise': '0594',  # plate-loaded seated calf raise
     'Barbell Squat': '1436',  # barbell high-bar back squat
     'Barbell Full Squat': '1436',
     'Front Barbell Squat': 'barbell clean-grip front squat',
