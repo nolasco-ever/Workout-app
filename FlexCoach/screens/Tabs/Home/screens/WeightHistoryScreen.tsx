@@ -69,7 +69,7 @@ export const WeightHistoryScreen = () => {
             <CustomText variant="caption" color={colors.inkMuted} style={{ marginTop: spacing.xs }}>Drag across the chart to read a day. The grey line is the smoothed trend.</CustomText>
           </SurfaceCard>
         )}
-        <PrimaryButton label="Log weight" icon={generalIcons.scale} onPress={() => navigation.navigate('LogWeightScreen')} />
+        <PrimaryButton label="Log weight" icon={generalIcons.plus} onPress={() => navigation.navigate('LogWeightScreen')} />
         <SurfaceCard style={{ padding: 0 }}>
           {entries.map((e, i) => (
             <View key={e.id} style={{ flexDirection: 'row', alignItems: 'center', padding: spacing.lg, gap: spacing.md, borderTopWidth: i ? 1 : 0, borderTopColor: colors.line }}>
