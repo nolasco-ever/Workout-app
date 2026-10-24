@@ -1,4 +1,4 @@
-import React, { useLayoutEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { Image, Platform, ScrollView, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from '../../../../components/layout/SafeAreaView';
 import { RouteProp, useNavigation, useRoute } from '@react-navigation/native';
@@ -32,7 +32,8 @@ const Chip = ({ label }: { label: string }) => {
 type Section = 'howto' | 'muscles' | 'instructions';
 
 /**
- * A catalog exercise, as a sheet titled with its name: the description and
+ * A catalog exercise, as a "How to" sheet: its name (on the screen, where a
+ * long one wraps; the header cut it short, build 19), the description and
  * the facts at a glance fixed at the top, then three swipeable sections,
  * the exercise in motion, the muscles worked, and the instructions, each
  * scrolling on its own.
@@ -49,10 +50,6 @@ export const ExerciseDetailScreen = () => {
   const { profile } = useAuth();
   const [viewing, setViewing] = useState<number | null>(null);
   const [section, setSection] = useState<Section>('howto');
-  // The sheet carries the exercise's name, not a generic "How to".
-  useLayoutEffect(() => {
-    if (ex) navigation.setOptions({ title: ex.name });
-  }, [navigation, ex]);
   const targetWorkout = params.addToWorkoutId ? editor.draft?.workouts.find(w => w.id === params.addToWorkoutId) : undefined;
   const alreadyAdded = !!targetWorkout && !!ex && targetWorkout.exercises.some(e => e.exerciseId === ex.id);
 
@@ -143,6 +140,7 @@ export const ExerciseDetailScreen = () => {
     <SafeAreaView edges={['bottom', 'left', 'right']} style={{ flex: 1, backgroundColor: colors.ground }}>
       {/* Fixed above the sections: what the exercise is, and its facts at a glance. */}
       <View style={{ paddingHorizontal: spacing.lg, paddingTop: spacing.md, gap: spacing.md }}>
+        <CustomText variant="title" accessibilityRole="header">{ex.name}</CustomText>
         {(ex.description || knownAs) && (
           <View style={{ gap: spacing.xs }}>
             <CustomText variant="overline" color={colors.inkMuted}>Description</CustomText>
