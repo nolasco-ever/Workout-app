@@ -77,4 +77,13 @@ export interface Session extends BaseDocument {
   finishedAt: Timestamp | null;
   status: SessionStatus;
   exercises: SessionExercise[];
+  /** What the Apple Watch measured over the workout, when one tracked it (v1 #6); absent otherwise. */
+  watch?: WatchMetrics | null;
+}
+
+/** The Watch's Health workout, summed up: active calories, and heart rate over the workout. */
+export interface WatchMetrics {
+  kcal: number;
+  avgBpm: number | null;
+  maxBpm: number | null;
 }

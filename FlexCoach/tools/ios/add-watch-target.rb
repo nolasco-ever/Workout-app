@@ -25,10 +25,11 @@ app.source_build_phase.add_file_reference(bridge)
 # The Watch app.
 watch = project.new_target(:application, 'FlexCoachWatch', :watchos, '10.0', nil, :swift)
 watch_group = project.main_group.new_group('FlexCoachWatch', 'FlexCoachWatch')
-%w[FlexCoachWatchApp.swift WatchSession.swift WatchViews.swift].each do |name|
+%w[FlexCoachWatchApp.swift WatchSession.swift WatchViews.swift WatchHome.swift WorkoutManager.swift].each do |name|
   watch.source_build_phase.add_file_reference(watch_group.new_reference(name))
 end
 watch_group.new_reference('Info.plist')
+watch_group.new_reference('FlexCoachWatch.entitlements')
 watch.resources_build_phase.add_file_reference(watch_group.new_reference('Assets.xcassets'))
 
 # The workout's state, shared with the Live Activity and the iPhone app.
@@ -59,7 +60,11 @@ watch.build_configurations.each do |config|
   s['SKIP_INSTALL'] = 'YES'
   s['LD_RUNPATH_SEARCH_PATHS'] = ['$(inherited)', '@executable_path/Frameworks']
   s['ENABLE_PREVIEWS'] = 'YES'
+  # Health workouts: heart rate and calories (step 2).
+  s['CODE_SIGN_ENTITLEMENTS'] = 'FlexCoachWatch/FlexCoachWatch.entitlements'
 end
+attrs = project.root_object.attributes['TargetAttributes'] ||= {}
+(attrs[watch.uuid] ||= {})['SystemCapabilities'] = { 'com.apple.HealthKit' => { 'enabled' => '1' } }
 
 # Built with the iPhone app and carried inside it, where the Watch installs it from.
 app.add_dependency(watch)

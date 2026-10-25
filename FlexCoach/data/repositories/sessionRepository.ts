@@ -1,11 +1,14 @@
 import { sameExercise } from '../catalog/exerciseIds';
 import { paths } from '../firebase/paths';
-import { Id, LoggedSet, Session } from '../models';
+import { Id, LoggedSet, Session, WatchMetrics } from '../models';
 import { listDocs, orderBy, patchDoc, readDoc, touch, watchDocs, where, writeDoc, Unsubscribe } from './base';
 
 export const sessionRepository = {
   get: (uid: Id, sessionId: Id) => readDoc<Session>(paths.session(uid, sessionId)),
 
+  /** The Watch's numbers for a finished workout; they arrive a moment after Finish. */
+  saveWatchMetrics: (uid: Id, sessionId: Id, watch: WatchMetrics): Promise<void> =>
+    patchDoc<Session>(paths.session(uid, sessionId), { watch, updatedAt: Date.now() }),
   listAll: (uid: Id) => listDocs<Session>(paths.sessions(uid), orderBy('startedAt', 'asc')),
 
   /**

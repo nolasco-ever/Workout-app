@@ -44,6 +44,8 @@ import { devFlags } from '../dev/flags';
 import { useStackOptions } from '../navigation/stackOptions';
 import { useAuth } from '../data/auth/AuthProvider';
 import { ensurePhotoCacheable } from '../data/services/profileService';
+import { startWatchMetricsSync } from '../data/liveActivity/watchMetrics';
+import { useWatchHome } from '../data/hooks/useWatchHome';
 import { useTheme } from '../theme';
 
 export type AppStackParams = BuddyRoutes & SessionRoutes & ReactionsParams & Omit<PlansStackParams, 'ExercisePickerScreen' | 'ExerciseDetailScreen'> & {
@@ -82,6 +84,10 @@ export const AppStack = () => {
 
     // The profile photo is shown on several screens; make sure it caches and is already fetched.
     const photoUrl = profile?.photoUrl ?? null;
+    // The Apple Watch's calories and heart rate for each finished workout, saved onto it (v1 #6).
+    useEffect(() => (uid ? startWatchMetricsSync(uid) : undefined), [uid]);
+    // The Watch's home with no workout running: today's workout, the cycle, and starting one from the wrist.
+    useWatchHome();
     useEffect(() => {
         if (uid && photoUrl) ensurePhotoCacheable(uid, photoUrl).catch(() => undefined);
     }, [uid, photoUrl]);

@@ -13,6 +13,14 @@ export type LiveActivityCommand = {
   at: number;
 };
 
+/** What the Apple Watch measured over one workout (v1 #6), sent when it finishes; `avgBpm`/`maxBpm` are 0 with no heart rate. */
+export type WatchMetricsEvent = {
+  sessionId: string;
+  kcal: number;
+  avgBpm: number;
+  maxBpm: number;
+};
+
 /** The workout's Live Activity on iOS (lock screen card + Dynamic Island), driven by the running session. Absent on Android. */
 export interface Spec extends TurboModule {
   /** iOS 16.2 or later with Live Activities allowed in Settings. */
@@ -31,6 +39,16 @@ export interface Spec extends TurboModule {
   /** The running activity's push token (hex), or '' until Apple issues it; also sent as `onPushToken` when it arrives or rotates. */
   pushToken(): string;
   readonly onPushToken: CodegenTypes.EventEmitter<{ token: string }>;
+  /** The Watch's numbers for workouts that finished while JavaScript was not listening; cleared once taken. */
+  takeWatchMetrics(): Array<WatchMetricsEvent>;
+  readonly onWatchMetrics: CodegenTypes.EventEmitter<WatchMetricsEvent>;
+  /** What the Watch shows with no workout running (data/liveActivity/watchHome.ts), as JSON; sent whenever it changes. */
+  setWatchHome(homeJson: string): void;
+  /** Exercises found for the Watch's search, as JSON `{query, results}`. */
+  setWatchSearch(resultsJson: string): void;
+  /** Requests from the Watch (start a workout, a quick workout, resume, search) JavaScript has not taken yet; cleared once taken. */
+  takeWatchRequests(): Array<LiveActivityCommand>;
+  readonly onWatchRequest: CodegenTypes.EventEmitter<LiveActivityCommand>;
 }
 
 export default TurboModuleRegistry.get<Spec>('NativeLiveActivity');

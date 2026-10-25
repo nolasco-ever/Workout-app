@@ -1,5 +1,5 @@
 import { Platform } from 'react-native';
-import NativeLiveActivity, { LiveActivityCommand } from '../../specs/NativeLiveActivity';
+import NativeLiveActivity, { LiveActivityCommand, WatchMetricsEvent } from '../../specs/NativeLiveActivity';
 
 /**
  * What the workout's Live Activity shows (iOS 16.2+, lock screen card and
@@ -30,10 +30,22 @@ export type LiveActivityState = {
   timed?: boolean;
   /** A timed set's seconds so far, when it is paused. */
   elapsedSec?: number;
+  /** The workout's exercises, in order, for swiping between them on the Watch; the Live Activity ignores them. */
+  exercises?: LiveActivityExercise[];
+  /** The exercise the set shown belongs to; a swipe on the Watch moves the phone to another one. */
+  exerciseIndex?: number;
+  /** The finished workout's numbers, for the Watch's done screen. */
+  done?: LiveActivityDone;
 };
 
-export type { LiveActivityCommand };
-export type LiveActivityCommandKind = 'completeSet' | 'skipRest' | 'stopCardio' | 'resumeCardio';
+export type LiveActivityDone = { durationSec: number; sets: number; volume?: string; records: number };
+
+export type LiveActivityExercise = { id: string; name: string; done: boolean };
+
+export type { LiveActivityCommand, WatchMetricsEvent };
+/** What the Watch asks of the phone with no workout running (v1 #6, step 4): the id is the occurrence, the exercise ids joined by commas, or the search. */
+export type WatchRequestKind = 'startWorkout' | 'startQuick' | 'resumeWorkout' | 'search';
+export type LiveActivityCommandKind = 'completeSet' | 'skipRest' | 'stopCardio' | 'resumeCardio' | 'showExercise' | 'finishWorkout' | 'closeSummary';
 
 const native = Platform.OS === 'ios' ? NativeLiveActivity : null;
 
@@ -72,6 +84,26 @@ export const liveActivity = {
   onPushToken: (listener: (token: string) => void): (() => void) => {
     if (!native) return () => undefined;
     const subscription = native.onPushToken(({ token }) => listener(token));
+    return () => subscription.remove();
+  },
+  /** The Watch's numbers for finished workouts, waiting since the app last listened. */
+  takeWatchMetrics: (): WatchMetricsEvent[] => (native ? native.takeWatchMetrics() : []),
+  /** The Watch's numbers for a workout, as they arrive. */
+  onWatchMetrics: (listener: (event: WatchMetricsEvent) => void): (() => void) => {
+    if (!native) return () => undefined;
+    const subscription = native.onWatchMetrics(listener);
+    return () => subscription.remove();
+  },
+  /** What the Watch shows with no workout running. */
+  setWatchHome: (home: object): void => native?.setWatchHome(JSON.stringify(home)),
+  /** Answers the Watch's search. */
+  setWatchSearch: (query: string, results: { id: string; name: string; detail?: string }[]): void => native?.setWatchSearch(JSON.stringify({ query, results })),
+  /** Requests from the Watch waiting since the app last listened. */
+  takeWatchRequests: (): LiveActivityCommand[] => (native ? native.takeWatchRequests() : []),
+  /** Requests from the Watch as they arrive. */
+  onWatchRequest: (listener: (request: LiveActivityCommand) => void): (() => void) => {
+    if (!native) return () => undefined;
+    const subscription = native.onWatchRequest(listener);
     return () => subscription.remove();
   },
   /** Commands tapped while the app is running. */

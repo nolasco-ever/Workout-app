@@ -24,7 +24,7 @@ import { warmupRestSec } from '../../../../data/engine/progression';
 import { DONE_LINGER_SECONDS, liveActivity } from '../../../../data/liveActivity/liveActivity';
 import { liveActivityRepository } from '../../../../data/repositories/liveActivityRepository';
 import { currentDeviceToken } from '../../../../data/notifications/pushService';
-import { buildLiveActivityState, describeFinish } from '../components/liveActivityState';
+import { buildLiveActivityState, describeDone, describeFinish } from '../components/liveActivityState';
 import { planRestOverNotification, planTimerDoneNotification, withPrefDefaults } from '../../../../data/engine/notifications';
 import { cancelRestOver, cancelTimerDone, exactAlarmsAllowed, openExactAlarmSettings, scheduleRestOver, scheduleTimerDone } from '../../../../data/notifications/notificationService';
 import { userRepository } from '../../../../data/repositories/userRepository';
@@ -220,10 +220,13 @@ export const SessionScreen = () => {
   };
 
   const toggleDone = (set: LoggedSet, draft: SetDraft = drafts[set.id]) => {
-    if (!exercise) return;
-    const merged = fromDraft(exercise, set, draft, units);
+    // The set's own exercise, not the one on screen: a set logged on the Watch can belong to the next exercise while
+    // the phone still shows the last one, and was saved against the wrong one (so it never showed as done).
+    const owner = session.exercises.find(ex => ex.sets.some(st => st.id === set.id)) ?? exercise;
+    if (!owner) return;
+    const merged = fromDraft(owner, set, draft, units);
     const done = !set.completed;
-    persist(exercise, { ...merged, completed: done, completedAt: done ? Date.now() : null });
+    persist(owner, { ...merged, completed: done, completedAt: done ? Date.now() : null });
     // The rest runs after the workout's final set too: lifters asked for it (build 18), and the finish is their call.
     setRestFor(set.warmup ? warmupRestSec(restSec) : restSec);
     setRestStartedAt(done ? Date.now() : null);
@@ -476,7 +479,15 @@ export const SessionScreen = () => {
       const result = await finishSession(uid, profile, session, cycle);
       // The activity's last word: the summary lingers on the lock screen while the screen goes.
       activityEndedRef.current = true;
-      liveActivity.end({ ...activityStateRef.current, phase: 'done', summary: describeFinish(result.setsCompleted, result.volumeKg, result.personalRecords.length, units) }, DONE_LINGER_SECONDS);
+      liveActivity.end(
+        {
+          ...activityStateRef.current,
+          phase: 'done',
+          summary: describeFinish(result.setsCompleted, result.volumeKg, result.personalRecords.length, units),
+          done: describeDone(result.durationSec, result.setsCompleted, result.volumeKg, result.personalRecords.length, units),
+        },
+        DONE_LINGER_SECONDS,
+      );
       navigation.replace('SessionCompleteScreen', { result });
     } catch (err) {
       console.warn(err);
@@ -592,7 +603,7 @@ export const SessionScreen = () => {
         restId: resting ? String(restStartedAt) : null,
         restEndsAt: resting ? restStartedAt + restFor * 1000 : null,
         // What the push shows: the next set, announced as rest over.
-        state: resting ? { ...activityStateRef.current, phase: 'restOver', restEndsAt: undefined } : null,
+        state: resting ? { ...activityStateRef.current, phase: 'restOver', restEndsAt: undefined, exercises: undefined, exerciseIndex: undefined } : null,
         updatedAt: Date.now(),
       })
       .catch(err => console.warn('live activity schedule failed', err));
@@ -612,8 +623,15 @@ export const SessionScreen = () => {
           const set = ex.sets.find(st => st.id === command.id);
           if (!set) continue;
           if (set.completed) return;
-          const at = sessionRef.current.exercises.indexOf(ex);
-          if (at !== index) goTo(at);
+          // The Watch moves on to the next exercise once this one's last set is in; the phone goes with it, so both
+          // show the same exercise.
+          const exercises = sessionRef.current.exercises;
+          const at = exercises.indexOf(ex);
+          const lastOfExercise = ex.sets.every(st => st.completed || st.id === set.id);
+          const order = [...exercises.slice(at + 1), ...exercises.slice(0, at)];
+          const following = lastOfExercise ? order.find(e => e.sets.some(st => !st.completed)) : undefined;
+          const shown = following ? exercises.indexOf(following) : at;
+          if (shown !== index) goTo(shown);
           // A timed set still running (End on the Watch) logs the time on its clock.
           if (cardioTimer?.setId === set.id) toggleCardioDone(set);
           else toggleDone(set);
@@ -633,6 +651,16 @@ export const SessionScreen = () => {
         }
         return;
       }
+      case 'showExercise': {
+        // A swipe on the Watch: the phone moves to that exercise, and its next set is what the Watch logs.
+        const at = sessionRef.current.exercises.findIndex(ex => ex.id === command.id);
+        if (at !== -1 && at !== index) goTo(at);
+        return;
+      }
+      case 'finishWorkout':
+        // Finish on the Watch, confirmed there: the same finish as the phone's button.
+        if (completedSets > 0) doFinish().catch(err => console.warn(err));
+        return;
       case 'skipRest':
         dismissRest();
         return;

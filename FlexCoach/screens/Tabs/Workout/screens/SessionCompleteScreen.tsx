@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { ScrollView, View } from 'react-native';
 import { SafeAreaView } from '../../../../components/layout/SafeAreaView';
 import { RouteProp, useNavigation, useRoute } from '@react-navigation/native';
@@ -15,6 +15,9 @@ import { useTabBarInset } from '../../../../navigation/useTabBarInset';
 import { SurfaceCard as Card } from '../../../../components/cards/SurfaceCard';
 import { PrimaryButton } from '../../../../components/buttons/PrimaryButton';
 import { useSessionOrientation } from '../../../../navigation/useSessionOrientation';
+import { onWatchMetrics, watchMetricsFor, watchStats } from '../../../../data/liveActivity/watchMetrics';
+import { liveActivity } from '../../../../data/liveActivity/liveActivity';
+import { WatchMetrics } from '../../../../data/models';
 
 const Stat = ({ label, value }: { label: string; value: string }) => {
   const { colors } = useTheme();
@@ -39,6 +42,12 @@ export const SessionCompleteScreen = () => {
   const unit = profile?.weightUnit ?? 'lb';
   const dist = profile?.distanceUnit ?? 'mi';
   const volume = toDisplayWeight(result.volumeKg, unit) ?? 0;
+  // The Watch's calories and heart rate land a moment after Finish (v1 #6); they show as soon as they do.
+  const sessionId = result.session.id;
+  const [watch, setWatch] = useState<WatchMetrics | null>(() => result.session.watch ?? watchMetricsFor(sessionId));
+  useEffect(() => onWatchMetrics((id, metrics) => { if (id === sessionId) setWatch(metrics); }), [sessionId]);
+  // Done on the Watch's summary closes this one too.
+  useEffect(() => liveActivity.onCommand(command => { if (command.kind === 'closeSummary') navigation.popToTop(); }), [navigation]);
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: colors.ground }}>
@@ -55,6 +64,11 @@ export const SessionCompleteScreen = () => {
           <Stat label="Sets" value={String(result.setsCompleted)} />
           <Stat label={`Volume ${unit}`} value={Math.round(volume).toLocaleString()} />
         </View>
+        {watchStats(watch).length > 0 && (
+          <View style={{ flexDirection: 'row', gap: spacing.lg }}>
+            {watchStats(watch).map(s => <Stat key={s.label} label={s.label} value={s.value} />)}
+          </View>
+        )}
 
         {result.personalRecords.length > 0 && (
           <Card tone="accent">

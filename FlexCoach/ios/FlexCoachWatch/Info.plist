@@ -20,6 +20,12 @@
 	<string>$(MARKETING_VERSION)</string>
 	<key>CFBundleVersion</key>
 	<string>$(CURRENT_PROJECT_VERSION)</string>
+	<key>NSHealthShareUsageDescription</key>
+	<string>FlexCoach reads your heart rate and active calories during a workout to show them on your Watch and in your workout summary.</string>
+	<key>NSHealthUpdateUsageDescription</key>
+	<string>FlexCoach saves your workouts to Health with the heart rate and calories your Watch measured.</string>
+	<key>RCTNewArchEnabled</key>
+	<true/>
 	<key>UIAppFonts</key>
 	<array>
 		<string>Sora-Bold.ttf</string>
@@ -28,6 +34,10 @@
 	</array>
 	<key>WKApplication</key>
 	<true/>
+	<key>WKBackgroundModes</key>
+	<array>
+		<string>workout-processing</string>
+	</array>
 	<key>WKCompanionAppBundleIdentifier</key>
 	<string>com.flexcoach</string>
 </dict>

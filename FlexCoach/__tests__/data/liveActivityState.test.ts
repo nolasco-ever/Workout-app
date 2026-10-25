@@ -57,6 +57,13 @@ describe('describeTarget', () => {
 describe('buildLiveActivityState', () => {
   const s = session([exercise('a', 'Bench', [set('a1', 1, true), set('a2', 2)])]);
   const base = { session: s, index: 0, drafts: {}, units, restStartedAt: null, restFor: 90, restSec: 120, clock: null };
+  it('lists the exercises for the Watch, pointing at the one the next set belongs to', () => {
+    const three = session([exercise('a', 'Bench', [set('a1', 1, true)]), exercise('b', 'Row', [set('b1', 1)]), exercise('c', 'Curl', [set('c1', 1)])]);
+    const state = buildLiveActivityState({ ...base, session: three, index: 0 });
+    expect(state.exercises).toEqual([{ id: 'a', name: 'Bench', done: true }, { id: 'b', name: 'Row', done: false }, { id: 'c', name: 'Curl', done: false }]);
+    expect(state.exerciseIndex).toBe(1);
+    expect(buildLiveActivityState({ ...base, session: three, index: 2 }).exerciseIndex).toBe(2);
+  });
   it('between sets: the next target with its check', () => {
     const state = buildLiveActivityState(base);
     expect(state).toMatchObject({ phase: 'working', exerciseName: 'Bench', setLabel: 'Set 2 of 2', nextTarget: '100 kg × 8', nextSetId: 'a2', restSeconds: 120, startedAt: 1000 });

@@ -7,6 +7,8 @@
 @implementation NativeLiveActivity {
   id _commandObserver;
   id _tokenObserver;
+  id _metricsObserver;
+  id _requestObserver;
 }
 
 + (NSString *)moduleName
@@ -41,6 +43,26 @@
                                                                      if (!strong || !strong->_eventEmitterCallback) return;
                                                                      [strong emitOnPushToken:@{ @"token": note.userInfo[@"token"] ?: @"" }];
                                                                    }];
+    // The Watch's calories and heart rate for a finished workout (v1 #6).
+    _metricsObserver = [[NSNotificationCenter defaultCenter] addObserverForName:WatchBridge.metricsNotification
+                                                                         object:nil
+                                                                          queue:[NSOperationQueue mainQueue]
+                                                                     usingBlock:^(NSNotification *note) {
+                                                                       NativeLiveActivity *strong = weakSelf;
+                                                                       // Also kept for takeWatchMetrics, which JavaScript drains; saving twice is harmless.
+                                                                       if (!strong || !strong->_eventEmitterCallback) return;
+                                                                       [strong emitOnWatchMetrics:note.userInfo ?: @{}];
+                                                                     }];
+    // The Watch's requests with no workout running: start, quick workout, resume, search (v1 #6, step 4).
+    _requestObserver = [[NSNotificationCenter defaultCenter] addObserverForName:WatchBridge.requestNotification
+                                                                         object:nil
+                                                                          queue:[NSOperationQueue mainQueue]
+                                                                     usingBlock:^(NSNotification *note) {
+                                                                       NativeLiveActivity *strong = weakSelf;
+                                                                       // Also kept for takeWatchRequests; JavaScript takes each once.
+                                                                       if (!strong || !strong->_eventEmitterCallback) return;
+                                                                       [strong emitOnWatchRequest:note.userInfo ?: @{}];
+                                                                     }];
   }
   return self;
 }
@@ -49,6 +71,28 @@
 {
   if (_commandObserver) [[NSNotificationCenter defaultCenter] removeObserver:_commandObserver];
   if (_tokenObserver) [[NSNotificationCenter defaultCenter] removeObserver:_tokenObserver];
+  if (_metricsObserver) [[NSNotificationCenter defaultCenter] removeObserver:_metricsObserver];
+  if (_requestObserver) [[NSNotificationCenter defaultCenter] removeObserver:_requestObserver];
+}
+
+- (NSArray<NSDictionary *> *)takeWatchMetrics
+{
+  return [WatchBridge.shared takeMetrics];
+}
+
+- (void)setWatchHome:(NSString *)homeJson
+{
+  [WatchBridge.shared setHomeJSON:homeJson];
+}
+
+- (void)setWatchSearch:(NSString *)resultsJson
+{
+  [WatchBridge.shared setSearchJSON:resultsJson];
+}
+
+- (NSArray<NSDictionary *> *)takeWatchRequests
+{
+  return [WatchBridge.shared takeRequests];
 }
 
 - (NSString *)pushToken
@@ -81,7 +125,8 @@ static NSDictionary *_Nullable stateFromJSON(NSString *json)
   NSDictionary *state = stateFromJSON(stateJson);
   if (!state) return @NO;
   // The Watch mirrors the workout whether or not Live Activities are allowed.
-  [WatchBridge.shared sendWithWorkoutName:workoutName state:state];
+  [WatchBridge.shared sendWithWorkoutName:workoutName sessionId:sessionId state:state];
+  [WatchBridge.shared startWatchWorkout];
   __block BOOL started = NO;
   dispatch_sync(dispatch_get_main_queue(), ^{
     started = [WorkoutActivityController.shared startWithWorkoutName:workoutName sessionId:sessionId state:state];
@@ -93,7 +138,7 @@ static NSDictionary *_Nullable stateFromJSON(NSString *json)
 {
   NSDictionary *state = stateFromJSON(stateJson);
   if (!state) return;
-  [WatchBridge.shared sendWithWorkoutName:nil state:state];
+  [WatchBridge.shared sendWithWorkoutName:nil sessionId:nil state:state];
   dispatch_async(dispatch_get_main_queue(), ^{
     [WorkoutActivityController.shared updateWithState:state alert:alert];
   });
@@ -103,7 +148,7 @@ static NSDictionary *_Nullable stateFromJSON(NSString *json)
 {
   NSDictionary *state = stateFromJSON(stateJson);
   // The done summary for the Watch, or nothing: the workout was left.
-  [WatchBridge.shared sendWithWorkoutName:nil state:state];
+  [WatchBridge.shared sendWithWorkoutName:nil sessionId:nil state:state];
   dispatch_async(dispatch_get_main_queue(), ^{
     [WorkoutActivityController.shared endWithState:state lingerSeconds:lingerSeconds];
   });
@@ -111,7 +156,7 @@ static NSDictionary *_Nullable stateFromJSON(NSString *json)
 
 - (void)endAll
 {
-  [WatchBridge.shared sendWithWorkoutName:nil state:nil];
+  [WatchBridge.shared sendWithWorkoutName:nil sessionId:nil state:nil];
   dispatch_async(dispatch_get_main_queue(), ^{
     [WorkoutActivityController.shared endAllNow];
   });

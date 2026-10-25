@@ -26,6 +26,7 @@ import { useTheme } from '../../../../theme';
 import { useTabScrollInset } from '../../../../navigation/useTabBarInset';
 import { SetDraft, SetRow, setLabel } from '../components/SetRow';
 import { fromDraft, toDraft, Units, unitLabels } from '../components/setDrafts';
+import { watchStats } from '../../../../data/liveActivity/watchMetrics';
 
 type Params = { SessionDetailScreen: { sessionId: string; workoutName?: string } };
 
@@ -246,6 +247,12 @@ export const SessionDetail = ({ sessionId, workoutName, embedded = false }: { se
               <Stat label="Sets" value={String(stats.setsDone)} />
               <Stat label={`Volume ${units.weight}`} value={Math.round(stats.volume).toLocaleString()} />
             </View>
+            {/* Tracked on an Apple Watch: its calories and heart rate (v1 #6). */}
+            {watchStats(shown.watch).length > 0 && (
+              <View style={{ flexDirection: 'row', gap: spacing.lg, marginTop: spacing.md }}>
+                {watchStats(shown.watch).map(s => <Stat key={s.label} label={s.label} value={s.value} />)}
+              </View>
+            )}
           </View>
 
           <OwnReactions items={activity} />

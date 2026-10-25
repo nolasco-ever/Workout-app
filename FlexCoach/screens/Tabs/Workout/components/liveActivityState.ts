@@ -1,7 +1,7 @@
 import { LoggedSet, Session, SessionExercise } from '../../../../data/models/session';
 import { warmupRestSec } from '../../../../data/engine/progression';
 import { formatWeight, kgToLb } from '../../../../data/engine/units';
-import { LiveActivityState } from '../../../../data/liveActivity/liveActivity';
+import { LiveActivityDone, LiveActivityState } from '../../../../data/liveActivity/liveActivity';
 import { Units } from './setDrafts';
 import { SetDraft } from './SetRow';
 
@@ -89,6 +89,9 @@ export const buildLiveActivityState = (args: {
     nextSetId: next?.set.id,
     restSeconds: next?.set.warmup ? warmupRestSec(restSec) : restSec,
     startedAt: session.startedAt,
+    exercises: session.exercises.map(ex => ({ id: ex.id, name: ex.exerciseName, done: ex.sets.length > 0 && ex.sets.every(s => s.completed) })),
+    // The exercise this state's set belongs to: the one on the phone's screen, or the next with an open set.
+    exerciseIndex: next ? session.exercises.indexOf(next.exercise) : index,
   };
   // A timed set (a hold, cardio) waiting or paused: the Watch shows its time so far with Play and End.
   if (next && (next.exercise.measurement === 'time' || next.exercise.measurement === 'distance_time')) {
@@ -103,6 +106,12 @@ export const buildLiveActivityState = (args: {
   }
   if (restJustEnded) return { ...base, phase: 'restOver' };
   return base;
+};
+
+/** The Watch's done screen: the workout's time, sets, volume ("12,400 lb", none without weights) and records. */
+export const describeDone = (durationSec: number, setsCompleted: number, volumeKg: number, records: number, units: Units): LiveActivityDone => {
+  const volume = Math.round(units.weight === 'lb' ? kgToLb(volumeKg) : volumeKg);
+  return { durationSec, sets: setsCompleted, ...(volume > 0 ? { volume: `${volume.toLocaleString()} ${units.weight}` } : {}), records };
 };
 
 /** The done card's line: "18 sets · 12,400 lb · 1 record". */
