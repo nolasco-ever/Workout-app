@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { ActivityIndicator, FlatList, ScrollView, TouchableOpacity, View } from 'react-native';
+import { ActivityIndicator, FlatList, LayoutAnimation, ScrollView, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from '../../../../components/layout/SafeAreaView';
 import { useNavigation } from '@react-navigation/native';
 import { useAuth } from '../../../../data/auth/AuthProvider';
@@ -13,17 +13,19 @@ import { CustomText } from '../../../../components/text/customText';
 import { SurfaceCard } from '../../../../components/cards/SurfaceCard';
 import { BottomSheet } from '../../../../components/overlays/BottomSheet';
 import { Icon } from '../../../../components/icons/Icon';
-import { directionIcons, generalIcons } from '../../../../components/icons/icon-library';
+import { directionIcons } from '../../../../components/icons/icon-library';
 import { useComfortableColumn } from '../../../../components/layout/useComfortableColumn';
 import { useTabScrollInset } from '../../../../navigation/useTabBarInset';
 import { useTheme } from '../../../../theme';
 
 const WEEKDAYS = ['S', 'M', 'T', 'W', 'T', 'F', 'S'];
-const ROW_HEIGHT = 56;
-const CHECK = 30;
+const ROW_HEIGHT = 44;
+/** Today's circle. */
+const DOT = 34;
+/** The weekday letters' row, with its rule underneath. */
+const HEADER_HEIGHT = 30;
 
 const monthName = (m: CalendarMonth) => new Date(m.year, m.month, 1).toLocaleDateString(undefined, { month: 'long', year: 'numeric' });
-const shortDate = (d: LocalDate) => fromLocalDate(d).toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
 const longDate = (d: LocalDate) => fromLocalDate(d).toLocaleDateString(undefined, { weekday: 'long', month: 'long', day: 'numeric' });
 const inRun = (run: StreakRun | null, d: LocalDate) => !!run && d >= run.start && d <= run.end;
 
@@ -40,11 +42,12 @@ const describeSession = (s: Session, unit: 'lb' | 'kg'): string => {
 
 /**
  * Streaks (build 19 feedback; designed on the canvas, owner 2026-10-24), from
- * the Streak tile on Home: the current and best streak, then a calendar that
+ * the Streak tile on Home: a calendar that
  * pages by month, this month first and earlier ones a swipe to the right
- * (owner: horizontal, not one long scroll). A check marks every day with a
- * finished workout and a band joins the current streak's days; a tapped
- * check opens that day's workouts, each one opening its detail.
+ * (owner: horizontal, not one long scroll). A day with a finished workout
+ * is a green number, and today a circle, green once it has one and orange
+ * until then; a tapped green day opens its workouts, each opening its detail.
+ * The current and best streak sit under it, then what counts toward one.
  */
 export const StreaksScreen = () => {
   const navigation = useNavigation();
@@ -72,30 +75,25 @@ export const StreaksScreen = () => {
   const months = useMemo(() => calendarMonths([...days.keys()].sort()[0] ?? null, todayDate), [days, todayDate]);
   // Oldest first, opening on this month: a swipe to the right goes back in time, as a paper calendar does.
   useEffect(() => setPage(months.length - 1), [months.length]);
+  // The card is as tall as the month on it (four to six weeks), easing to the next one's height.
+  const showPage = (next: number) => {
+    if (next === page) return;
+    LayoutAnimation.configureNext(LayoutAnimation.create(200, 'easeInEaseOut', 'scaleY'));
+    setPage(next);
+  };
   const goTo = (to: number) => {
     const next = Math.max(0, Math.min(months.length - 1, to));
-    setPage(next);
+    showPage(next);
     list.current?.scrollToIndex({ index: next, animated: true });
   };
 
-  const tile = (label: string, value: string, unitWord: string | null, line: string, lineColor: string) => (
-    <View style={{ flex: 1 }}>
-      <SurfaceCard style={{ gap: spacing.xs }}>
-        <CustomText variant="overline" color={colors.inkMuted}>{label}</CustomText>
-        <View style={{ flexDirection: 'row', alignItems: 'baseline', gap: 6 }}>
-          <CustomText variant="display">{value}</CustomText>
-          {unitWord && <CustomText variant="bodyStrong" color={colors.inkMuted}>{unitWord}</CustomText>}
-        </View>
-        <CustomText variant="caption" color={lineColor}>{line}</CustomText>
-      </SurfaceCard>
-    </View>
-  );
+  const daysWord = (n: number) => `${n} day${n === 1 ? '' : 's'}`;
 
   const monthGrid = (m: CalendarMonth) => (
     <View style={{ width: pageWidth, paddingHorizontal: spacing.sm }}>
-      <View style={{ flexDirection: 'row' }}>
+      <View style={{ flexDirection: 'row', height: HEADER_HEIGHT - 6, alignItems: 'center', borderBottomWidth: 1, borderBottomColor: colors.line, marginBottom: 6 }}>
         {WEEKDAYS.map((w, i) => (
-          <CustomText key={i} variant="overline" color={colors.inactive} centered style={{ flex: 1, paddingBottom: 6 }}>{w}</CustomText>
+          <CustomText key={i} variant="sectionLabel" color={colors.ink} centered style={{ flex: 1 }}>{w}</CustomText>
         ))}
       </View>
       {m.weeks.map((week, wi) => (
@@ -104,23 +102,23 @@ export const StreaksScreen = () => {
             if (!d) return <View key={di} style={{ flex: 1 }} />;
             const trained = days.has(d);
             const isToday = d === todayDate;
-            const band = inRun(current, d);
-            const bandLeft = band && d !== current!.start;
-            const bandRight = band && d !== current!.end;
-            return (
-              <View key={di} style={{ flex: 1, alignItems: 'center', paddingTop: 2, gap: 3 }}>
-                {band && (
-                  <View pointerEvents="none" style={{ position: 'absolute', top: 19, height: CHECK + 4, left: bandLeft ? 0 : '50%', right: bandRight ? 0 : '50%', backgroundColor: colors.successTint }} />
-                )}
-                <CustomText variant="caption" color={isToday ? colors.accent : trained ? colors.ink : d > todayDate ? colors.inactive : colors.inkMuted} style={{ fontSize: 11, lineHeight: 14 }}>
+            // A day with a workout is a green number; today is a circle, green once it has one, orange until then.
+            const number = (
+              <View style={[{ width: DOT, height: DOT, borderRadius: DOT / 2, alignItems: 'center', justifyContent: 'center' }, isToday && { backgroundColor: trained ? colors.success : colors.accent }]}>
+                <CustomText variant="bodyStrong" color={isToday ? colors.ground : trained ? colors.success : d > todayDate ? colors.inactive : colors.inkMuted}>
                   {Number(d.slice(8))}
                 </CustomText>
+              </View>
+            );
+            return (
+              <View key={di} style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
                 {trained ? (
-                  <TouchableOpacity onPress={() => setOpenDay(d)} hitSlop={6} accessibilityRole="button" accessibilityLabel={`${longDate(d)}, workout done`} style={{ width: CHECK, height: CHECK, borderRadius: CHECK / 2, backgroundColor: colors.success, alignItems: 'center', justifyContent: 'center' }}>
-                    <Icon icon={generalIcons.check} size={18} color={colors.ground} strokeWidth={2.5} />
+                  <TouchableOpacity onPress={() => setOpenDay(d)} hitSlop={4} accessibilityRole="button" accessibilityLabel={`${longDate(d)}, workout done`}>
+                    {number}
                   </TouchableOpacity>
-                ) : null}
-                {isToday && <View pointerEvents="none" style={{ position: 'absolute', top: 15, width: CHECK + 8, height: CHECK + 8, borderRadius: (CHECK + 8) / 2, borderWidth: 2, borderColor: colors.accent }} />}
+                ) : (
+                  <View accessible accessibilityLabel={isToday ? `Today, ${longDate(d)}, no workout yet` : longDate(d)}>{number}</View>
+                )}
               </View>
             );
           })}
@@ -140,22 +138,18 @@ export const StreaksScreen = () => {
           <ActivityIndicator color={colors.inkMuted} style={{ paddingVertical: spacing.xxl }} />
         ) : (
           <>
-            <View style={{ flexDirection: 'row', gap: spacing.md }}>
-              {tile('Current streak', String(current?.length ?? 0), 'days', current ? 'Keep it going' : 'Train today to start one', current ? colors.success : colors.inkMuted)}
-              {best ? tile('Best', String(best.length), best.length === 1 ? 'day' : 'days', best.length === 1 ? shortDate(best.start) : `${shortDate(best.start)} to ${shortDate(best.end)}`, colors.inkMuted) : tile('Best', '—', null, 'No streak yet', colors.inkMuted)}
-            </View>
 
             <View style={{ gap: spacing.sm }}>
               <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
                 <TouchableOpacity onPress={() => goTo(page - 1)} disabled={page === 0} hitSlop={8} accessibilityRole="button" accessibilityLabel="Previous month" style={{ width: 44, height: 44, alignItems: 'center', justifyContent: 'center', opacity: page === 0 ? 0.3 : 1 }}>
                   <Icon icon={directionIcons.angleLeft} size={20} color={colors.ink} />
                 </TouchableOpacity>
-                <CustomText variant="sectionLabel" color={colors.inkMuted} accessibilityRole="header">{shown ? monthName(shown) : ''}</CustomText>
+                <CustomText variant="heading" accessibilityRole="header">{shown ? monthName(shown) : ''}</CustomText>
                 <TouchableOpacity onPress={() => goTo(page + 1)} disabled={page >= months.length - 1} hitSlop={8} accessibilityRole="button" accessibilityLabel="Next month" style={{ width: 44, height: 44, alignItems: 'center', justifyContent: 'center', opacity: page >= months.length - 1 ? 0.3 : 1 }}>
                   <Icon icon={directionIcons.angleRight} size={20} color={colors.ink} />
                 </TouchableOpacity>
               </View>
-              <View onLayout={e => setPageWidth(Math.floor(e.nativeEvent.layout.width))} style={{ borderRadius: radius.lg, backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.line, paddingVertical: spacing.md, overflow: 'hidden' }}>
+              <View onLayout={e => setPageWidth(Math.floor(e.nativeEvent.layout.width))} style={{ borderRadius: radius.lg, backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.line, paddingTop: spacing.md, paddingBottom: spacing.xs, overflow: 'hidden' }}>
                 {pageWidth > 0 && (
                   <FlatList
                     ref={list}
@@ -166,18 +160,24 @@ export const StreaksScreen = () => {
                     showsHorizontalScrollIndicator={false}
                     initialScrollIndex={months.length - 1}
                     getItemLayout={(_, index) => ({ length: pageWidth, offset: pageWidth * index, index })}
-                    onMomentumScrollEnd={e => setPage(Math.round(e.nativeEvent.contentOffset.x / pageWidth))}
-                    // Every month has room for six weeks, so the card does not jump between pages.
-                    style={{ height: 20 + 6 * ROW_HEIGHT }}
+                    onMomentumScrollEnd={e => showPage(Math.round(e.nativeEvent.contentOffset.x / pageWidth))}
+                    style={{ height: HEADER_HEIGHT + (shown?.weeks.length ?? 5) * ROW_HEIGHT }}
                     renderItem={({ item }) => monthGrid(item)}
                   />
                 )}
               </View>
             </View>
 
-            <CustomText variant="caption" color={colors.inkMuted}>
-              {days.size > 0 ? 'A streak counts the days in a row you finished a workout. Tap a check to see what you did that day.' : 'Finish a workout and today gets its check. Keep going day after day to build a streak.'}
-            </CustomText>
+            <View style={{ flexDirection: 'row', gap: spacing.lg }}>
+              <CustomText variant="caption" color={colors.success}>{`Current streak: ${daysWord(current?.length ?? 0)}`}</CustomText>
+              <CustomText variant="caption" color={colors.accent}>{`Best: ${daysWord(best?.length ?? 0)}`}</CustomText>
+            </View>
+
+            <SurfaceCard style={{ gap: spacing.sm }}>
+              <CustomText variant="bodyStrong">Your streak</CustomText>
+              <CustomText variant="body">A streak tracks the days in a row with a finished workout.</CustomText>
+              <CustomText variant="body" color={colors.inkMuted}>A day with nothing logged, including a rest day, ends it, so a walk in the park or a run on the treadmill will keep your streak going.</CustomText>
+            </SurfaceCard>
           </>
         )}
       </ScrollView>
