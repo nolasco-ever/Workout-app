@@ -25,6 +25,9 @@ import { DONE_LINGER_SECONDS, liveActivity } from '../../../../data/liveActivity
 import { liveActivityRepository } from '../../../../data/repositories/liveActivityRepository';
 import { currentDeviceToken } from '../../../../data/notifications/pushService';
 import { buildLiveActivityState, describeDone, describeFinish } from '../components/liveActivityState';
+import { droppedLine, finishPrompt } from '../components/finishPrompt';
+import { onWatchDistance, takeWatchDistance } from '../../../../data/liveActivity/watchDistance';
+import { cardioDone, cardioStats } from '../../../../data/engine/stats';
 import { planRestOverNotification, planTimerDoneNotification, withPrefDefaults } from '../../../../data/engine/notifications';
 import { cancelRestOver, cancelTimerDone, exactAlarmsAllowed, openExactAlarmSettings, scheduleRestOver, scheduleTimerDone } from '../../../../data/notifications/notificationService';
 import { userRepository } from '../../../../data/repositories/userRepository';
@@ -44,6 +47,7 @@ import { CardioSetCard, CardioTimer, timerElapsed } from '../components/CardioSe
 import { SwipeToDelete } from '../../../../components/list-items/SwipeToDelete';
 import Animated, { Easing, useAnimatedStyle, useSharedValue, withTiming } from 'react-native-reanimated';
 import { fromDraft, toDraft, Units, unitLabels } from '../components/setDrafts';
+import { parseNumber, toDisplayDistance } from '../../../../data/engine/units';
 
 /** The exercise list's pane beside the current exercise on a wide window. */
 const LIST_PANE_WIDTH = 320;
@@ -161,7 +165,6 @@ export const SessionScreen = () => {
   const total = session.exercises.length;
   const completedSets = useMemo(() => session.exercises.reduce((n, ex) => n + ex.sets.filter(s => s.completed).length, 0), [session]);
   const allComplete = total > 0 && session.exercises.every(ex => ex.sets.length > 0 && ex.sets.every(st => st.completed));
-  const totalSets = useMemo(() => session.exercises.reduce((n, ex) => n + ex.sets.length, 0), [session]);
 
   // Leaving the screen keeps the session in progress; Home offers Resume.
   // The header's back button is our own rather than the native one, so the
@@ -297,7 +300,7 @@ export const SessionScreen = () => {
         };
         const logged = ex.sets.filter(s => s.completed).length;
         if (logged > 0) {
-          Alert.alert(`Swap to ${replacement.name}?`, `The ${logged} set${logged === 1 ? '' : 's'} you logged for ${ex.exerciseName} will be dropped.`, [
+          Alert.alert(`Swap to ${replacement.name}?`, droppedLine(ex, true), [
             { text: 'Keep', style: 'cancel' },
             { text: 'Swap', style: 'destructive', onPress: () => { apply().catch(err => console.warn(err)); } },
           ]);
@@ -419,7 +422,7 @@ export const SessionScreen = () => {
       removeExercise(ex);
       return;
     }
-    Alert.alert(`Remove ${ex.exerciseName}?`, `The ${logged} set${logged === 1 ? '' : 's'} you logged for it will be dropped.`, [
+    Alert.alert(`Remove ${ex.exerciseName}?`, droppedLine(ex, false), [
       { text: 'Keep', style: 'cancel' },
       { text: 'Remove', style: 'destructive', onPress: () => removeExercise(ex) },
     ]);
@@ -456,15 +459,15 @@ export const SessionScreen = () => {
   const finishingRef = useRef(false);
   const finish = () => {
     if (!uid || finishingRef.current) return;
-    if (completedSets === 0) {
-      Alert.alert('Nothing logged yet', 'Mark at least one set done before finishing.');
+    const prompt = finishPrompt(session);
+    if ('nothing' in prompt) {
+      Alert.alert('Nothing logged yet', prompt.nothing);
       return;
     }
     // A stray tap on Finish would end the workout for good, so ask first.
-    const open = totalSets - completedSets;
     Alert.alert(
-      open > 0 ? 'Finish early?' : 'Finish workout?',
-      open > 0 ? `${completedSets} of ${totalSets} sets logged. The other ${open === 1 ? 'one stays' : `${open} stay`} unlogged.` : `All ${totalSets} sets logged. Nice work.`,
+      prompt.title,
+      prompt.message,
       [
         { text: 'Keep going', style: 'cancel' },
         { text: 'Finish', onPress: () => { doFinish().catch(err => console.warn(err)); } },
@@ -483,8 +486,8 @@ export const SessionScreen = () => {
         {
           ...activityStateRef.current,
           phase: 'done',
-          summary: describeFinish(result.setsCompleted, result.volumeKg, result.personalRecords.length, units),
-          done: describeDone(result.durationSec, result.setsCompleted, result.volumeKg, result.personalRecords.length, units),
+          summary: describeFinish(result.setsCompleted, result.volumeKg, result.personalRecords.length, units, cardioDone([result.session]).map(c => c.name)),
+          done: describeDone(result.durationSec, result.setsCompleted, result.volumeKg, result.personalRecords.length, units, cardioStats(result.session, units.distance)),
         },
         DONE_LINGER_SECONDS,
       );
@@ -615,6 +618,28 @@ export const SessionScreen = () => {
       liveActivityRepository.remove(uid, sessionId).catch(() => undefined);
     };
   }, [uid, islandPush]);
+  // A cardio entry's distance from the Watch (v1 #6, step 3): it fills the entry, over anything typed (the Watch is
+  // trusted, owner 2026-10-25), and is saved at once, logged or not: End on the Watch logs the entry before it comes.
+  useEffect(
+    () =>
+      onWatchDistance((setId, meters) => {
+        const current = sessionRef.current;
+        const owner = current.exercises.find(ex => ex.measurement === 'distance_time' && ex.sets.some(st => st.id === setId));
+        const set = owner?.sets.find(st => st.id === setId);
+        if (!owner || !set) return;
+        takeWatchDistance(setId);
+        const measured: LoggedSet = { ...set, distanceM: meters, distanceSource: 'watch' };
+        setDrafts(d => ({ ...d, [setId]: { ...(d[setId] ?? toDraft(owner, set, units)), a: String(toDisplayDistance(meters, units.distance) ?? '') } }));
+        const next: Session = { ...current, exercises: current.exercises.map(e => (e.id === owner.id ? { ...e, sets: e.sets.map(st => (st.id === setId ? measured : st)) } : e)) };
+        sessionRef.current = next;
+        setSession(next);
+        if (uid) logSet(uid, next, owner.id, measured).catch(err => console.warn('watch distance save failed', err));
+      }),
+    // units don't change during a session.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [uid],
+  );
+
   const applyCommandRef = useRef((command: { kind: string; id: string }) => {});
   applyCommandRef.current = command => {
     switch (command.kind) {
@@ -810,6 +835,7 @@ export const SessionScreen = () => {
             onStop={stopCardioTimer}
             onToggleDone={() => toggleCardioDone(exercise.sets[0])}
             fill={tent}
+            fromWatch={exercise.sets[0].distanceSource === 'watch' && parseNumber(drafts[exercise.sets[0].id]?.a ?? '') === toDisplayDistance(exercise.sets[0].distanceM, units.distance)}
           />
           ) : (
           <View style={{ backgroundColor: colors.surface, borderRadius: radius.lg, borderWidth: 1, borderColor: colors.line, paddingVertical: spacing.md, overflow: 'hidden' }}>

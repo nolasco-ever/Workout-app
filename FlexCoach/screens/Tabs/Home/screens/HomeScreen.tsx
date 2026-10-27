@@ -10,7 +10,7 @@ import { useSteps } from '../../../../data/hooks/useSteps';
 import { BarChart } from '../../../../components/charts/BarChart';
 import { formatRecordValue, formatWeight, kgToLb, toDisplayWeight } from '../../../../data/engine/units';
 import { findWorkout } from '../../../../data/engine/schedule';
-import { countWorkingSets, totalVolumeKg } from '../../../../data/engine/stats';
+import { describeLogged, totalVolumeKg } from '../../../../data/engine/stats';
 import { CustomText } from '../../../../components/text/customText';
 import { SurfaceCard } from '../../../../components/cards/SurfaceCard';
 import { PrimaryButton } from '../../../../components/buttons/PrimaryButton';
@@ -189,7 +189,7 @@ export const HomeScreen = () => {
       : home.cycle && home.todayDate < home.cycle.startDate
         ? { tone: colors.inkMuted, kicker: home.cycle.number > 1 ? `Cycle ${home.cycle.number} starts` : 'Plan starts', headline: dateLabel(home.cycle.startDate), detail: home.upcoming[0] ? `First up: ${home.upcoming[0].workoutName}` : 'The cycle begins then.', action: 'Open' }
       : ins.todaySession
-        ? { tone: colors.success, kicker: 'Done today', headline: ins.todaySession.workoutName, detail: `${countWorkingSets([ins.todaySession])} sets · ${fmtVolume(totalVolumeKg([ins.todaySession]))} ${unit} moved`, action: 'See workout' }
+        ? { tone: colors.success, kicker: 'Done today', headline: ins.todaySession.workoutName, detail: [...describeLogged([ins.todaySession]), ...(totalVolumeKg([ins.todaySession]) > 0 ? [`${fmtVolume(totalVolumeKg([ins.todaySession]))} ${unit} moved`] : [])].join(' · '), action: 'See workout' }
         : todayOcc && todayWorkout && todayOcc.status === 'scheduled'
           ? { tone: colors.accent, kicker: 'Today', headline: todayWorkout.name, detail: `${todayWorkout.exercises.length} exercises · not started`, action: 'Start' }
           : todayOcc && todayOcc.status === 'skipped'

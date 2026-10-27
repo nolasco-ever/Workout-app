@@ -1,6 +1,6 @@
 import { sameExercise } from '../catalog/exerciseIds';
 import { Id, LocalDate, RecordKind, Session, SessionExercise, SharedExercise, SharedSet, SharingPrefs, WeightUnit } from '../models';
-import { countWorkingSets, totalVolumeKg } from './stats';
+import { describeLogged, totalVolumeKg } from './stats';
 import { formatWeight } from './units';
 
 /**
@@ -22,12 +22,13 @@ export const defaultSharingPrefs: SharingPrefs = {
 
 export const withSharingDefaults = (prefs: Partial<SharingPrefs> | null | undefined): SharingPrefs => ({ ...defaultSharingPrefs, ...(prefs ?? {}) });
 
-/** The "15 sets · 4,260 lb moved" under a finished-workout line, or null when totals are private. */
+/** The "15 sets · Running · 4,260 lb moved" under a finished-workout line, or null when totals are private. */
 export const sharedDetail = (session: Session, prefs: SharingPrefs, unit: WeightUnit): string | null => {
   if (!prefs.totals) return null;
-  const sets = countWorkingSets([session]);
   const volume = totalVolumeKg([session]);
-  return `${sets} set${sets === 1 ? '' : 's'}${volume > 0 ? ` · ${formatWeight(volume, unit).replace(/\.0+ /, ' ')} moved` : ''}`;
+  const parts = describeLogged([session]);
+  if (volume > 0) parts.push(`${formatWeight(volume, unit).replace(/\.0+ /, ' ')} moved`);
+  return parts.length ? parts.join(' · ') : '0 sets';
 };
 
 const pickSet = (set: { warmup?: boolean; weightKg: number | null; reps: number | null; durationSec: number | null; distanceM: number | null }, prefs: SharingPrefs): SharedSet => {

@@ -18,6 +18,7 @@ import { useSessionOrientation } from '../../../../navigation/useSessionOrientat
 import { onWatchMetrics, watchMetricsFor, watchStats } from '../../../../data/liveActivity/watchMetrics';
 import { liveActivity } from '../../../../data/liveActivity/liveActivity';
 import { WatchMetrics } from '../../../../data/models';
+import { cardioStats } from '../../../../data/engine/stats';
 
 const Stat = ({ label, value }: { label: string; value: string }) => {
   const { colors } = useTheme();
@@ -41,6 +42,7 @@ export const SessionCompleteScreen = () => {
   const { profile } = useAuth();
   const unit = profile?.weightUnit ?? 'lb';
   const dist = profile?.distanceUnit ?? 'mi';
+  const cardio = cardioStats(result.session, dist);
   const volume = toDisplayWeight(result.volumeKg, unit) ?? 0;
   // The Watch's calories and heart rate land a moment after Finish (v1 #6); they show as soon as they do.
   const sessionId = result.session.id;
@@ -61,9 +63,15 @@ export const SessionCompleteScreen = () => {
 
         <View style={{ flexDirection: 'row', gap: spacing.lg }}>
           <Stat label="Time" value={formatDuration(result.durationSec)} />
-          <Stat label="Sets" value={String(result.setsCompleted)} />
-          <Stat label={`Volume ${unit}`} value={Math.round(volume).toLocaleString()} />
+          {(result.setsCompleted > 0 || cardio.length === 0) && <Stat label="Sets" value={String(result.setsCompleted)} />}
+          {(volume > 0 || cardio.length === 0) && <Stat label={`Volume ${unit}`} value={Math.round(volume).toLocaleString()} />}
         </View>
+        {/* Cardio is not a set: each exercise by its name, with its distance and time. */}
+        {cardio.length > 0 && (
+          <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: spacing.lg }}>
+            {cardio.map((s, i) => <Stat key={`${s.label}-${i}`} label={s.label} value={s.value} />)}
+          </View>
+        )}
         {watchStats(watch).length > 0 && (
           <View style={{ flexDirection: 'row', gap: spacing.lg }}>
             {watchStats(watch).map(s => <Stat key={s.label} label={s.label} value={s.value} />)}

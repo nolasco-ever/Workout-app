@@ -6,7 +6,7 @@ import { useAuth } from '../../../../data/auth/AuthProvider';
 import { sessionRepository } from '../../../../data/repositories/sessionRepository';
 import { LocalDate, Session } from '../../../../data/models';
 import { fromLocalDate, today } from '../../../../data/engine/dates';
-import { countWorkingSets, totalVolumeKg } from '../../../../data/engine/stats';
+import { describeLogged, totalVolumeKg } from '../../../../data/engine/stats';
 import { formatWeight } from '../../../../data/engine/units';
 import { CalendarMonth, StreakRun, calendarMonths, summarizeStreaks, trainingDays } from '../../../../data/engine/streaks';
 import { CustomText } from '../../../../components/text/customText';
@@ -29,12 +29,11 @@ const monthName = (m: CalendarMonth) => new Date(m.year, m.month, 1).toLocaleDat
 const longDate = (d: LocalDate) => fromLocalDate(d).toLocaleDateString(undefined, { weekday: 'long', month: 'long', day: 'numeric' });
 const inRun = (run: StreakRun | null, d: LocalDate) => !!run && d >= run.start && d <= run.end;
 
-/** "52 min · 21 sets · 12,140 lb": one workout of the day, in a line. */
+/** "52 min · 21 sets · Running · 12,140 lb": one workout of the day, in a line. */
 const describeSession = (s: Session, unit: 'lb' | 'kg'): string => {
   const parts: string[] = [];
   if (s.finishedAt) parts.push(`${Math.max(1, Math.round((s.finishedAt - s.startedAt) / 60000))} min`);
-  const sets = countWorkingSets([s]);
-  if (sets > 0) parts.push(`${sets} set${sets === 1 ? '' : 's'}`);
+  parts.push(...describeLogged([s]));
   const volume = totalVolumeKg([s]);
   if (volume > 0) parts.push(formatWeight(volume, unit));
   return parts.join(' · ');

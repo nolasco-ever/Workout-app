@@ -2,6 +2,7 @@ import { canonicalExerciseId, sameExercise } from '../catalog/exerciseIds';
 import { BodyWeightEntry, Id, LocalDate, Session } from '../models';
 import { addDays, daysBetween, weekdayOf } from './dates';
 import { isWorkingSet, workingSets } from './sets';
+import { isCardio } from './stats';
 
 /** Epley estimate of a one-rep max. Returns the weight itself for a single. */
 export const estimateOneRepMax = (weightKg: number, reps: number): number => (reps <= 1 ? weightKg : weightKg * (1 + reps / 30));
@@ -176,6 +177,8 @@ export const muscleBreakdown = (sessions: Session[], primaryMusclesOf: (exercise
   for (const s of sessions) {
     if (s.status !== 'completed') continue;
     for (const ex of s.exercises) {
+      // Cardio is not a set: it stays out of the muscle counts.
+      if (isCardio(ex)) continue;
       const done = workingSets(ex.sets);
       if (done.length === 0) continue;
       const reps = done.reduce((n, set) => n + (set.reps ?? 0), 0);

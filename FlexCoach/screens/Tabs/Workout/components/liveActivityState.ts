@@ -1,6 +1,8 @@
 import { LoggedSet, Session, SessionExercise } from '../../../../data/models/session';
 import { warmupRestSec } from '../../../../data/engine/progression';
-import { formatWeight, kgToLb } from '../../../../data/engine/units';
+import { formatDistance, formatWeight, kgToLb } from '../../../../data/engine/units';
+import { isCardio } from '../../../../data/engine/stats';
+import { cardioKind } from '../../../../data/liveActivity/cardioKind';
 import { LiveActivityDone, LiveActivityState } from '../../../../data/liveActivity/liveActivity';
 import { Units } from './setDrafts';
 import { SetDraft } from './SetRow';
@@ -27,6 +29,13 @@ export const nextOpenSet = (session: Session, index: number): { exercise: Sessio
 };
 
 const mmss = (seconds: number): string => `${Math.floor(seconds / 60)}:${String(seconds % 60).padStart(2, '0')}`;
+
+/** A cardio entry's target, "2 mi · 20:00", or "Cardio" with none. */
+const cardioLabel = (exercise: SessionExercise, units: Units): string => {
+  const parts = [exercise.target.distanceM ? formatDistance(exercise.target.distanceM, units.distance) : null, exercise.target.durationSec ? mmss(exercise.target.durationSec) : null].filter(Boolean);
+  return parts.length ? parts.join(' · ') : 'Cardio';
+};
+
 
 /** "185 lb × 8": what the lifter typed if anything, else the plan's target for that set. */
 export const describeTarget = (exercise: SessionExercise, set: LoggedSet, draft: SetDraft | undefined, units: Units): string | undefined => {
@@ -80,7 +89,19 @@ export const buildLiveActivityState = (args: {
   const next = nextOpenSet(session, index);
   const current = session.exercises[index];
   const shown = next?.exercise ?? current;
-  const setLabel = next ? (next.set.warmup ? 'Warm-up set' : `Set ${next.set.setNumber} of ${next.exercise.sets.length}`) : shown ? 'All sets logged' : '';
+  // Cardio is one entry, not a set: its label is its target ("2 mi · 20:00"), or just "Cardio" (owner, 2026-10-25).
+  const cardioNext = !!next && isCardio(next.exercise);
+  const setLabel = next
+    ? cardioNext
+      ? cardioLabel(next.exercise, units)
+      : next.set.warmup
+        ? 'Warm-up set'
+        : `Set ${next.set.setNumber} of ${next.exercise.sets.length}`
+    : shown
+      ? session.exercises.some(isCardio)
+        ? 'All logged'
+        : 'All sets logged'
+      : '';
   const base: LiveActivityState = {
     phase: 'working',
     exerciseName: shown?.exerciseName ?? 'Add an exercise',
@@ -89,10 +110,17 @@ export const buildLiveActivityState = (args: {
     nextSetId: next?.set.id,
     restSeconds: next?.set.warmup ? warmupRestSec(restSec) : restSec,
     startedAt: session.startedAt,
-    exercises: session.exercises.map(ex => ({ id: ex.id, name: ex.exerciseName, done: ex.sets.length > 0 && ex.sets.every(s => s.completed) })),
+    exercises: session.exercises.map(ex => ({ id: ex.id, name: ex.exerciseName, done: ex.sets.length > 0 && ex.sets.every(s => s.completed), ...(isCardio(ex) ? { cardio: true } : {}) })),
     // The exercise this state's set belongs to: the one on the phone's screen, or the next with an open set.
     exerciseIndex: next ? session.exercises.indexOf(next.exercise) : index,
+    distanceUnit: units.distance,
   };
+  if (next && cardioNext) {
+    const kind = cardioKind(next.exercise.exerciseId);
+    base.cardioActivity = kind.activity;
+    base.cardioOutdoor = kind.outdoor;
+    base.cardioDistance = kind.distance;
+  }
   // A timed set (a hold, cardio) waiting or paused: the Watch shows its time so far with Play and End.
   if (next && (next.exercise.measurement === 'time' || next.exercise.measurement === 'distance_time')) {
     base.timed = true;
@@ -108,16 +136,24 @@ export const buildLiveActivityState = (args: {
   return base;
 };
 
-/** The Watch's done screen: the workout's time, sets, volume ("12,400 lb", none without weights) and records. */
-export const describeDone = (durationSec: number, setsCompleted: number, volumeKg: number, records: number, units: Units): LiveActivityDone => {
+/** The Watch's done screen: the workout's time, sets, volume ("12,400 lb", none without weights), records, and each cardio exercise by name. */
+export const describeDone = (durationSec: number, setsCompleted: number, volumeKg: number, records: number, units: Units, cardio: { label: string; value: string }[] = []): LiveActivityDone => {
   const volume = Math.round(units.weight === 'lb' ? kgToLb(volumeKg) : volumeKg);
-  return { durationSec, sets: setsCompleted, ...(volume > 0 ? { volume: `${volume.toLocaleString()} ${units.weight}` } : {}), records };
+  return {
+    durationSec,
+    sets: setsCompleted,
+    ...(volume > 0 ? { volume: `${volume.toLocaleString()} ${units.weight}` } : {}),
+    records,
+    ...(cardio.length ? { cardio: cardio.map(c => ({ name: c.label, value: c.value })) } : {}),
+  };
 };
 
-/** The done card's line: "18 sets · 12,400 lb · 1 record". */
-export const describeFinish = (setsCompleted: number, volumeKg: number, records: number, units: Units): string => {
+/** The done card's line: "18 sets · Running · 12,400 lb · 1 record". Cardio is named, not counted as sets. */
+export const describeFinish = (setsCompleted: number, volumeKg: number, records: number, units: Units, cardio: string[] = []): string => {
   const volume = Math.round(units.weight === 'lb' ? kgToLb(volumeKg) : volumeKg);
-  const parts = [`${setsCompleted} set${setsCompleted === 1 ? '' : 's'}`];
+  const parts: string[] = [];
+  if (setsCompleted > 0 || cardio.length === 0) parts.push(`${setsCompleted} set${setsCompleted === 1 ? '' : 's'}`);
+  if (cardio.length) parts.push([...new Set(cardio)].join(', '));
   if (volume > 0) parts.push(`${volume.toLocaleString()} ${units.weight}`);
   if (records > 0) parts.push(`${records} record${records === 1 ? '' : 's'}`);
   return parts.join(' · ');

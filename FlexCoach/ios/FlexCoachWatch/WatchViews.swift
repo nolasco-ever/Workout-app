@@ -207,7 +207,7 @@ struct ExercisePager: View {
         }
         ExerciseTitle(name: exercise.name, position: position)
         if exercise.done {
-          Label("All sets logged", systemImage: "checkmark.circle.fill").font(Iron.body(15, .bold)).foregroundStyle(Iron.success)
+          Label(exercise.cardio ? "Logged" : "All sets logged", systemImage: "checkmark.circle.fill").font(Iron.body(15, .bold)).foregroundStyle(Iron.success)
         } else {
           // Waiting for the phone to send this exercise's next set.
           ProgressView().frame(maxWidth: .infinity).padding(.top, 8)
@@ -352,6 +352,32 @@ struct RestView: View {
   }
 }
 
+/// The cardio entry's distance as the Watch measures it, and its pace ("1.24 mi · 9:42 /mi"), or its speed on a bike
+/// ("14.2 mph"), in the lifter's unit (v1 #6, step 3).
+struct CardioDistance: View {
+  let meters: Double
+  let since: Date
+  let unit: String
+  let cycling: Bool
+
+  var body: some View {
+    let perUnit = unit == "km" ? 1000.0 : 1609.344
+    let distance = meters / perUnit
+    let seconds = max(1, Date().timeIntervalSince(since))
+    var parts = [String(format: "%.2f %@", distance, unit)]
+    // Pace is noise over the first few steps.
+    if distance >= 0.05 {
+      if cycling {
+        parts.append(String(format: "%.1f %@", distance / (seconds / 3600), unit == "km" ? "km/h" : "mph"))
+      } else {
+        let pace = Int((seconds / distance).rounded())
+        parts.append(pace >= 3600 ? "—" : String(format: "%d:%02d /%@", pace / 60, pace % 60, unit))
+      }
+    }
+    return Text(parts.joined(separator: " · ")).font(Iron.body(14, .bold)).monospacedDigit().lineLimit(1).minimumScaleFactor(0.7)
+  }
+}
+
 /// A timed exercise running: its clock large, then Pause (owner, 2026-10-24: pause, then play or end). Distance,
 /// pace, heart rate and calories join it with the Watch's own workout tracking (a later step of v1 #6).
 struct CardioView: View {
@@ -366,6 +392,9 @@ struct CardioView: View {
       }
       if let started = state.cardioStartedAt {
         ElapsedClock(since: started, width: 150).font(Iron.display(38)).foregroundStyle(Iron.accent)
+      }
+      if let meters = workout.cardioMeters, let started = state.cardioStartedAt {
+        CardioDistance(meters: meters, since: started, unit: state.distanceUnit ?? "mi", cycling: state.cardioActivity == "cycling")
       }
       if let target = state.cardioTargetSeconds {
         Text("Target \(target / 60):\(String(format: "%02d", target % 60))").font(Iron.body(12)).foregroundStyle(Iron.muted)
@@ -416,7 +445,9 @@ struct DoneView: View {
     if let done {
       let s = done.durationSec
       rows.append(("Time", s >= 3600 ? String(format: "%d:%02d:%02d", s / 3600, s / 60 % 60, s % 60) : String(format: "%d:%02d", s / 60, s % 60)))
-      rows.append(("Sets", "\(done.sets)"))
+      // Cardio is not a set: each cardio exercise is its own row, by name.
+      if done.sets > 0 || done.cardio.isEmpty { rows.append(("Sets", "\(done.sets)")) }
+      for c in done.cardio { rows.append((c.name, c.value)) }
       if let volume = done.volume { rows.append(("Volume", volume)) }
       if done.records > 0 { rows.append(("Records", "\(done.records)")) }
     }
@@ -436,7 +467,8 @@ struct DoneView: View {
         if rows.isEmpty {
           Text(state.summary ?? "Workout logged").font(Iron.body(13)).foregroundStyle(Iron.muted)
         }
-        ForEach(rows, id: \.0) { label, value in
+        ForEach(Array(rows.enumerated()), id: \.offset) { _, row in
+          let (label, value) = row
           VStack(alignment: .leading, spacing: 0) {
             Text(label).font(Iron.body(12)).foregroundStyle(Iron.muted)
             Text(value).font(Iron.display(20)).monospacedDigit().lineLimit(1).minimumScaleFactor(0.6)

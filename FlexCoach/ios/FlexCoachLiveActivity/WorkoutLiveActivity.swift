@@ -151,7 +151,8 @@ private struct Actions: View {
       case .working:
         if let setId = state.nextSetId {
           Button(intent: CompleteSetIntent(setId: setId)) {
-            Label("Log set", systemImage: "checkmark")
+            // Cardio is one entry, not a set.
+            Label(state.cardioActivity == nil ? "Log set" : "Log", systemImage: "checkmark")
               .font(.subheadline.weight(.semibold))
           }
           .buttonStyle(.bordered)

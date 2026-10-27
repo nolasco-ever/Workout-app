@@ -33,8 +33,12 @@ export const fromDraft = (ex: SessionExercise, s: LoggedSet, d: SetDraft, u: Uni
       return { ...s, weightKg: fromDisplayWeight(a, u.weight), reps: b === null ? null : Math.round(b) };
     case 'time':
       return { ...s, weightKg: fromDisplayWeight(a, u.weight), durationSec: b === null ? null : Math.round(b) };
-    case 'distance_time':
-      return { ...s, distanceM: fromDisplayDistance(a, u.distance), durationSec: b === null ? null : Math.round(b) };
+    case 'distance_time': {
+      // The Watch's distance stays the Watch's until a different one is typed over it.
+      const { distanceSource, ...rest } = s;
+      const watch = distanceSource === 'watch' && a === toDisplayDistance(s.distanceM, u.distance);
+      return { ...rest, distanceM: watch ? s.distanceM : fromDisplayDistance(a, u.distance), durationSec: b === null ? null : Math.round(b), ...(watch ? { distanceSource } : {}) };
+    }
   }
 };
 

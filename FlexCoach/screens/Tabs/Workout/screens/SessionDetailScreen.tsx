@@ -11,7 +11,7 @@ import { buddyRepository } from '../../../../data/repositories/buddyRepository';
 import { Activity } from '../../../../data/models';
 import { OwnReactions } from '../../../../components/buddies/OwnReactions';
 import { targetRepsLabel, targetWeightRange } from '../../../../data/engine/progression';
-import { countWorkingSets, totalVolumeKg } from '../../../../data/engine/stats';
+import { cardioStats, countWorkingSets, isCardio, totalVolumeKg } from '../../../../data/engine/stats';
 import { formatDistance, formatDuration, formatWeight, toDisplayDistance, toDisplayWeight } from '../../../../data/engine/units';
 import { fromLocalDate } from '../../../../data/engine/dates';
 import { getCatalogExercise } from '../../../../data/catalog/exerciseCatalog';
@@ -218,8 +218,8 @@ export const SessionDetail = ({ sessionId, workoutName, embedded = false }: { se
     if (!shown) return null;
     const setsDone = countWorkingSets([shown]);
     const duration = shown.finishedAt ? Math.round((shown.finishedAt - shown.startedAt) / 1000) : null;
-    return { setsDone, duration, volume: toDisplayWeight(totalVolumeKg([shown]), units.weight) ?? 0 };
-  }, [shown, units.weight]);
+    return { setsDone, duration, volume: toDisplayWeight(totalVolumeKg([shown]), units.weight) ?? 0, cardio: cardioStats(shown, units.distance) };
+  }, [shown, units.weight, units.distance]);
 
   if (!loaded || !shown || !stats) {
     return (
@@ -244,9 +244,15 @@ export const SessionDetail = ({ sessionId, workoutName, embedded = false }: { se
             <CustomText variant="overline" color={colors.inkMuted}>{longDate(shown.date)}</CustomText>
             <View style={{ flexDirection: 'row', gap: spacing.lg, marginTop: spacing.sm }}>
               <Stat label="Time" value={stats.duration === null ? '—' : formatDuration(stats.duration)} />
-              <Stat label="Sets" value={String(stats.setsDone)} />
-              <Stat label={`Volume ${units.weight}`} value={Math.round(stats.volume).toLocaleString()} />
+              {(stats.setsDone > 0 || stats.cardio.length === 0) && <Stat label="Sets" value={String(stats.setsDone)} />}
+              {(stats.volume > 0 || stats.cardio.length === 0) && <Stat label={`Volume ${units.weight}`} value={Math.round(stats.volume).toLocaleString()} />}
             </View>
+            {/* Cardio is not a set: each exercise by its name, with its distance and time. */}
+            {stats.cardio.length > 0 && (
+              <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: spacing.lg, marginTop: spacing.md }}>
+                {stats.cardio.map((s, i) => <Stat key={`${s.label}-${i}`} label={s.label} value={s.value} />)}
+              </View>
+            )}
             {/* Tracked on an Apple Watch: its calories and heart rate (v1 #6). */}
             {watchStats(shown.watch).length > 0 && (
               <View style={{ flexDirection: 'row', gap: spacing.lg, marginTop: spacing.md }}>
@@ -299,7 +305,8 @@ export const SessionDetail = ({ sessionId, workoutName, embedded = false }: { se
                         return (
                           <View key={set.id} style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.md, paddingVertical: spacing.sm, borderTopWidth: 1, borderTopColor: colors.line, opacity: set.completed ? 1 : 0.5 }}>
                             <View style={{ width: 28 }}>
-                              <CustomText variant="label" color={set.warmup ? colors.accent : colors.inkMuted}>{setLabel(set)}</CustomText>
+                              {/* Cardio is one entry, not a numbered set. */}
+                              {!isCardio(ex) && <CustomText variant="label" color={set.warmup ? colors.accent : colors.inkMuted}>{setLabel(set)}</CustomText>}
                             </View>
                             <CustomText variant="bodyStrong" style={{ flex: 1, textAlign: 'center' }}>{a}</CustomText>
                             <CustomText variant="bodyStrong" style={{ flex: 1, textAlign: 'center' }}>{b}</CustomText>

@@ -36,6 +36,8 @@ interface Props {
   onToggleDone: () => void;
   /** Fill the space given (a landscape pane): the card grows to it and the clock with it. */
   fill?: boolean;
+  /** The distance shown is the Apple Watch's. */
+  fromWatch?: boolean;
 }
 
 /**
@@ -45,7 +47,7 @@ interface Props {
  * Start; Pause while it runs; Start and End once paused, End logging it.
  * The exercise's single set holds the numbers.
  */
-export const CardioSetCard = ({ set, draft, unitLabel, timer, targetSec, onChange, onStart, onStop, onToggleDone, fill = false }: Props) => {
+export const CardioSetCard = ({ set, draft, unitLabel, timer, targetSec, onChange, onStart, onStop, onToggleDone, fill = false, fromWatch = false }: Props) => {
   const { colors, radius, spacing, fonts } = useTheme();
   const running = timer !== null;
   useTick(running ? 1000 : 0);
@@ -97,7 +99,7 @@ export const CardioSetCard = ({ set, draft, unitLabel, timer, targetSec, onChang
           }}
         />
         <CustomText variant="caption" color={colors.inkMuted} centered style={{ marginTop: spacing.xs }}>
-          {unitLabel}
+          {fromWatch ? `${unitLabel} · from your Watch` : unitLabel}
         </CustomText>
       </View>
       {done ? (

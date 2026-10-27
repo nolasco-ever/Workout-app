@@ -8,6 +8,7 @@ import { addExerciseTo, saveExercises, startQuickSession, startWorkoutNow } from
 import { EQUIPMENT_OPTIONS, getCatalogExercise, searchCatalog } from '../catalog/exerciseCatalog';
 import { newId } from '../engine/ids';
 import { buildWatchHome } from '../liveActivity/watchHome';
+import { parseWatchDistance, receiveWatchDistance } from '../liveActivity/watchDistance';
 import { LiveActivityCommand, liveActivity, takeCommand } from '../liveActivity/liveActivity';
 import { navigationRef } from '../../navigation/navigationRef';
 import type { AppStackParams } from '../../appNavigators/AppStack';
@@ -70,6 +71,12 @@ export const useWatchHome = (): void => {
       if (navigationRef.isReady()) navigationRef.navigate('SessionScreen', params);
     };
     const handle = async (request: LiveActivityCommand) => {
+      // A cardio entry's measured distance is never stale: it fills the entry whenever it comes.
+      if (request.kind === 'cardioDistance') {
+        const parsed = parseWatchDistance(request.id);
+        if (parsed) receiveWatchDistance(parsed.setId, parsed.meters);
+        return;
+      }
       if (Date.now() - request.at > REQUEST_FRESH_MS) return;
       const { uid: me, home: now, unit: weight } = latest.current;
       if (!me) return;

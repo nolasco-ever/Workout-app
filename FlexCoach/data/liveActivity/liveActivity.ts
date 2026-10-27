@@ -1,4 +1,5 @@
 import { Platform } from 'react-native';
+import type { CardioActivity } from './cardioKind';
 import NativeLiveActivity, { LiveActivityCommand, WatchMetricsEvent } from '../../specs/NativeLiveActivity';
 
 /**
@@ -34,17 +35,25 @@ export type LiveActivityState = {
   exercises?: LiveActivityExercise[];
   /** The exercise the set shown belongs to; a swipe on the Watch moves the phone to another one. */
   exerciseIndex?: number;
+  /** The next entry is cardio (not a set): what the Watch records it as, and whether it measures the distance (step 3). */
+  cardioActivity?: CardioActivity;
+  cardioOutdoor?: boolean;
+  cardioDistance?: boolean;
+  /** The lifter's distance unit, for the Watch's distance and pace. */
+  distanceUnit?: 'mi' | 'km';
   /** The finished workout's numbers, for the Watch's done screen. */
   done?: LiveActivityDone;
 };
 
-export type LiveActivityDone = { durationSec: number; sets: number; volume?: string; records: number };
+/** `cardio`: each cardio exercise by name, with "2.1 mi · 20:00"; cardio is not counted in `sets`. */
+export type LiveActivityDone = { durationSec: number; sets: number; volume?: string; records: number; cardio?: { name: string; value: string }[] };
 
-export type LiveActivityExercise = { id: string; name: string; done: boolean };
+/** `cardio`: one entry rather than sets, so a finished one reads "Logged". */
+export type LiveActivityExercise = { id: string; name: string; done: boolean; cardio?: boolean };
 
 export type { LiveActivityCommand, WatchMetricsEvent };
 /** What the Watch asks of the phone with no workout running (v1 #6, step 4): the id is the occurrence, the exercise ids joined by commas, or the search. */
-export type WatchRequestKind = 'startWorkout' | 'startQuick' | 'resumeWorkout' | 'search';
+export type WatchRequestKind = 'startWorkout' | 'startQuick' | 'resumeWorkout' | 'search' | 'cardioDistance';
 export type LiveActivityCommandKind = 'completeSet' | 'skipRest' | 'stopCardio' | 'resumeCardio' | 'showExercise' | 'finishWorkout' | 'closeSummary';
 
 const native = Platform.OS === 'ios' ? NativeLiveActivity : null;

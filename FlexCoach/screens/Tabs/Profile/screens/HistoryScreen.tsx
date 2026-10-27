@@ -8,7 +8,7 @@ import { Cycle, CycleSummary, Plan, Session } from '../../../../data/models';
 import { sessionRepository } from '../../../../data/repositories/sessionRepository';
 import { cycleRepository } from '../../../../data/repositories/cycleRepository';
 import { planRepository } from '../../../../data/repositories/planRepository';
-import { countWorkingSets, summarizeCycle, totalVolumeKg } from '../../../../data/engine/stats';
+import { describeLogged, summarizeCycle, totalVolumeKg } from '../../../../data/engine/stats';
 import { formatDuration, toDisplayWeight } from '../../../../data/engine/units';
 import { fromLocalDate } from '../../../../data/engine/dates';
 import { dateLabel } from '../../../../components/charts/scale';
@@ -160,7 +160,7 @@ export const HistoryScreen = () => {
             <CustomText variant="overline" color={colors.inkMuted}>{group.month}</CustomText>
             <SurfaceCard style={{ padding: 0 }}>
               {group.sessions.map((s, i) => {
-                const sets = countWorkingSets([s]);
+                const logged = describeLogged([s]);
                 const volume = Math.round(toDisplayWeight(totalVolumeKg([s]), unit) ?? 0);
                 const duration = s.finishedAt ? formatDuration(Math.round((s.finishedAt - s.startedAt) / 1000)) : null;
                 return (
@@ -172,7 +172,7 @@ export const HistoryScreen = () => {
                     <View style={{ flex: 1 }}>
                       <CustomText variant="bodyStrong">{s.workoutName}</CustomText>
                       <CustomText variant="caption" color={colors.inkMuted}>
-                        {dateLabel(s.date)} · {sets} set{sets === 1 ? '' : 's'}{volume ? ` · ${volume.toLocaleString()} ${unit}` : ''}{duration ? ` · ${duration}` : ''}
+                        {[dateLabel(s.date), ...logged].join(' · ')}{volume ? ` · ${volume.toLocaleString()} ${unit}` : ''}{duration ? ` · ${duration}` : ''}
                       </CustomText>
                     </View>
                     <Icon icon={directionIcons.angleRight} size={18} color={colors.inactive} />

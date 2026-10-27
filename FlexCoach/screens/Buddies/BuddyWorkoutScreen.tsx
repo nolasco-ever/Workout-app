@@ -148,7 +148,7 @@ const SharedExerciseCard = ({ ex, units }: { ex: SharedExercise; units: Units })
         <View style={{ flex: 1 }}>
           <CustomText variant="bodyStrong">{ex.name}</CustomText>
           {catalog?.primaryMuscles.length ? <CustomText variant="caption" color={colors.inkMuted}>{catalog.primaryMuscles.join(', ')}</CustomText> : null}
-          {best ? <CustomText variant="caption" color={colors.inkMuted}>Best set · {best}</CustomText> : null}
+          {best ? <CustomText variant="caption" color={colors.inkMuted}>{ex.measurement === 'distance_time' ? 'Best' : 'Best set'} · {best}</CustomText> : null}
         </View>
       </View>
       {ex.sets && ex.sets.length > 0 && (
@@ -164,7 +164,8 @@ const SharedExerciseCard = ({ ex, units }: { ex: SharedExercise; units: Units })
             return (
               <View key={i} style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.md, paddingVertical: spacing.sm, borderTopWidth: 1, borderTopColor: colors.line }}>
                 <View style={{ width: 28 }}>
-                  <CustomText variant="label" color={set.warmup ? colors.accent : colors.inkMuted}>{label}</CustomText>
+                  {/* Cardio is one entry, not a numbered set. */}
+                  {ex.measurement !== 'distance_time' && <CustomText variant="label" color={set.warmup ? colors.accent : colors.inkMuted}>{label}</CustomText>}
                 </View>
                 {cols.a && <CustomText variant="bodyStrong" style={{ flex: 1, textAlign: 'center' }}>{a ?? '—'}</CustomText>}
                 {cols.b && <CustomText variant="bodyStrong" style={{ flex: 1, textAlign: 'center' }}>{b ?? '—'}</CustomText>}

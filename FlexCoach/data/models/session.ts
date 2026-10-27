@@ -42,6 +42,8 @@ export interface LoggedSet {
    * records or progression. Missing on sets logged before warm-ups existed.
    */
   warmup?: boolean;
+  /** Cardio: the distance was measured by the Apple Watch (v1 #6, step 3), until it is typed over. */
+  distanceSource?: 'watch';
 }
 
 export interface SessionExercise {

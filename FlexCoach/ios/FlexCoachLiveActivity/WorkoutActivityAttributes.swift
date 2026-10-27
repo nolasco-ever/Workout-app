@@ -56,6 +56,13 @@ public struct WorkoutActivityState: Codable, Hashable {
   public var timed: Bool?
   /// A timed set's seconds so far, while it is paused.
   public var elapsedSec: Int?
+  /// The next entry is cardio, not a set (owner, 2026-10-25): what the Watch records it as ("running", "elliptical"),
+  /// outdoors or not, and whether the Watch measures its distance (v1 #6, step 3). Absent for lifting.
+  public var cardioActivity: String?
+  public var cardioOutdoor: Bool?
+  public var cardioDistance: Bool?
+  /// "mi" or "km", for the Watch's distance and pace.
+  public var distanceUnit: String?
   public init(phase: Phase, exerciseName: String, setLabel: String, nextTarget: String?, nextSetId: String?, restEndsAt: Date?, restSeconds: Int, cardioStartedAt: Date?, cardioTargetSeconds: Int?, startedAt: Date, summary: String?, restEndedAt: Date? = nil) {
     self.phase = phase
     self.exerciseName = exerciseName
@@ -122,6 +129,10 @@ public struct WorkoutActivityState: Codable, Hashable {
     )
     timed = d["timed"] as? Bool
     elapsedSec = (d["elapsedSec"] as? Double).map { Int($0) }
+    cardioActivity = d["cardioActivity"] as? String
+    cardioOutdoor = d["cardioOutdoor"] as? Bool
+    cardioDistance = d["cardioDistance"] as? Bool
+    distanceUnit = d["distanceUnit"] as? String
   }
 }
 

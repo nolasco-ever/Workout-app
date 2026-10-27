@@ -1,6 +1,41 @@
 import { canonicalExerciseId } from '../catalog/exerciseIds';
-import { Cycle, CycleSummary, Id, LoggedSet, PersonalRecord, Session, SessionExercise } from '../models';
+import { Cycle, CycleSummary, DistanceUnit, Id, LoggedSet, PersonalRecord, Session, SessionExercise } from '../models';
 import { isWorkingSet, workingSets } from './sets';
+import { formatDistance, formatDuration } from './units';
+
+/**
+ * Cardio (a run, a row, the bike) is logged as one entry, not as sets (owner, 2026-10-25): it never counts as a set,
+ * and summaries name the exercise instead. Timed holds (a plank) are still sets.
+ */
+export const isCardio = (ex: Pick<SessionExercise, 'measurement'>): boolean => ex.measurement === 'distance_time';
+
+/** The cardio a workout logged, one per exercise: its name, time and distance. */
+export const cardioDone = (sessions: Session[]): { name: string; durationSec: number | null; distanceM: number | null }[] =>
+  sessions.flatMap(s =>
+    s.exercises.filter(isCardio).flatMap(ex => {
+      const done = workingSets(ex.sets);
+      if (done.length === 0) return [];
+      const sum = (pick: (set: LoggedSet) => number | null) => (done.some(set => pick(set) !== null) ? done.reduce((n, set) => n + (pick(set) ?? 0), 0) : null);
+      return [{ name: ex.exerciseName, durationSec: sum(set => set.durationSec), distanceM: sum(set => set.distanceM) }];
+    }),
+  );
+
+/** "12 sets · Running": what a workout logged, the lifting as sets and each cardio exercise by its name. */
+export const describeLogged = (sessions: Session[]): string[] => {
+  const parts: string[] = [];
+  const sets = countWorkingSets(sessions);
+  if (sets > 0) parts.push(`${sets} set${sets === 1 ? '' : 's'}`);
+  const names = [...new Set(cardioDone(sessions).map(c => c.name))];
+  if (names.length) parts.push(names.join(', '));
+  return parts;
+};
+
+/** The done screen's cardio tiles: the exercise's name over "2.1 mi · 20:00". */
+export const cardioStats = (session: Session, unit: DistanceUnit): { label: string; value: string }[] =>
+  cardioDone([session]).map(c => ({
+    label: c.name,
+    value: [c.distanceM ? formatDistance(c.distanceM, unit) : null, c.durationSec ? formatDuration(c.durationSec) : null].filter(Boolean).join(' · ') || 'Logged',
+  }));
 
 /**
  * The single best value for an exercise across a set of sessions, by the
@@ -123,9 +158,9 @@ export const totalVolumeKg = (sessions: Session[]): number =>
     0,
   );
 
-/** Completed working sets across sessions, the number shown as "Sets" in summaries. */
+/** Completed working sets across sessions, the number shown as "Sets" in summaries. Cardio is not a set. */
 export const countWorkingSets = (sessions: Session[]): number =>
-  sessions.reduce((n, s) => n + s.exercises.reduce((m, ex) => m + workingSets(ex.sets).length, 0), 0);
+  sessions.reduce((n, s) => n + s.exercises.reduce((m, ex) => m + (isCardio(ex) ? 0 : workingSets(ex.sets).length), 0), 0);
 
 /** Volume per primary muscle group, for the Home insights. */
 export const volumeByMuscle = (
@@ -135,6 +170,7 @@ export const volumeByMuscle = (
   const out: Record<string, { volumeKg: number; sets: number; reps: number }> = {};
   for (const s of sessions) {
     for (const ex of s.exercises) {
+      if (isCardio(ex)) continue;
       const muscles = primaryMusclesOf(ex.exerciseId);
       for (const set of ex.sets) {
         if (!isWorkingSet(set)) continue;

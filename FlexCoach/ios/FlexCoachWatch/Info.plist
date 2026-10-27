@@ -20,10 +20,12 @@
 	<string>$(MARKETING_VERSION)</string>
 	<key>CFBundleVersion</key>
 	<string>$(CURRENT_PROJECT_VERSION)</string>
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>FlexCoach uses your location during outdoor runs, walks and rides to measure their distance and pace.</string>
 	<key>NSHealthShareUsageDescription</key>
-	<string>FlexCoach reads your heart rate and active calories during a workout to show them on your Watch and in your workout summary.</string>
+	<string>FlexCoach reads your heart rate, active calories and distance during a workout to show them on your Watch and in your workout summary.</string>
 	<key>NSHealthUpdateUsageDescription</key>
-	<string>FlexCoach saves your workouts to Health with the heart rate and calories your Watch measured.</string>
+	<string>FlexCoach saves your workouts to Health with the heart rate, calories and distance your Watch measured.</string>
 	<key>RCTNewArchEnabled</key>
 	<true/>
 	<key>UIAppFonts</key>

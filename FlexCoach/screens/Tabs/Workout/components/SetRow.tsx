@@ -66,9 +66,12 @@ export const SetRow = ({ set, measurement, draft, unitLabels, onChange, onToggle
       }}
     >
       <View style={{ width: 28, marginBottom: captionHeight }}>
-        <CustomText variant="label" color={set.warmup ? colors.accent : colors.inkMuted}>
-          {setLabel(set)}
-        </CustomText>
+        {/* Cardio is one entry, not a numbered set. */}
+        {measurement !== 'distance_time' && (
+          <CustomText variant="label" color={set.warmup ? colors.accent : colors.inkMuted}>
+            {setLabel(set)}
+          </CustomText>
+        )}
       </View>
       {showA && (
         <View style={{ flex: 1 }}>

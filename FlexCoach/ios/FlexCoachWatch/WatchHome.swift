@@ -359,13 +359,15 @@ struct PreviewView: View {
     ScrollView {
       VStack(alignment: .leading, spacing: 4) {
         Text(workout?.name ?? day.name).font(Iron.display(22)).lineLimit(2)
-        Text("\(exercises.count) exercise\(exercises.count == 1 ? "" : "s") · \(exercises.reduce(0) { $0 + $1.sets }) sets").font(Iron.body(12)).foregroundStyle(Iron.muted)
+        // Cardio is one entry, not sets: it counts as an exercise only.
+        let sets = exercises.reduce(0) { $0 + $1.sets }
+        Text("\(exercises.count) exercise\(exercises.count == 1 ? "" : "s")\(sets > 0 ? " · \(sets) set\(sets == 1 ? "" : "s")" : "")").font(Iron.body(12)).foregroundStyle(Iron.muted)
         Iron.line.frame(height: 1).padding(.vertical, 4)
         ForEach(Array(exercises.enumerated()), id: \.offset) { _, exercise in
           HStack(alignment: .firstTextBaseline) {
             Text(exercise.name).font(Iron.body(13)).lineLimit(2)
             Spacer(minLength: 4)
-            Text("\(exercise.sets)×").font(Iron.body(13)).foregroundStyle(Iron.muted)
+            if exercise.sets > 0 { Text("\(exercise.sets)×").font(Iron.body(13)).foregroundStyle(Iron.muted) }
           }
         }
         if let label = day.startLabel, let occurrenceId = day.occurrenceId, session.home?.inProgress == nil {

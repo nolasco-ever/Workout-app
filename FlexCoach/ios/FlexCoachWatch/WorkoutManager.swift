@@ -1,3 +1,4 @@
+import CoreLocation
 import Foundation
 import HealthKit
 
@@ -14,6 +15,8 @@ final class WorkoutManager: NSObject, ObservableObject {
   @Published private(set) var running = false
   /// The finished workout's totals, for the done screen; nil until it is saved, or with no workout measured.
   @Published private(set) var totals: Totals?
+  /// The cardio entry running now: its distance so far in meters, when the Watch measures one (step 3).
+  @Published private(set) var cardioMeters: Double?
 
   struct Totals {
     let kcal: Double
@@ -32,12 +35,26 @@ final class WorkoutManager: NSObject, ObservableObject {
 
   private let heartRateType = HKQuantityType(.heartRate)
   private let energyType = HKQuantityType(.activeEnergyBurned)
+  private let walkRunType = HKQuantityType(.distanceWalkingRunning)
+  private let cyclingType = HKQuantityType(.distanceCycling)
+
+  /// A cardio entry's clock running (v1 #6, step 3): the workout is that activity meanwhile (running, the elliptical),
+  /// and its distance is the workout's total less the total when the clock started.
+  private struct Segment {
+    let setId: String
+    let distanceType: HKQuantityType?
+    let startMeters: Double
+  }
+  private var segment: Segment?
+  /// Distance from the entry's earlier stretches (before a Pause), by set id.
+  private var carried: [String: Double] = [:]
+  private let location = CLLocationManager()
 
   /// Asked once: read heart rate and energy, save workouts.
   func requestAuthorization() async -> Bool {
     guard HKHealthStore.isHealthDataAvailable() else { return false }
     do {
-      try await health.requestAuthorization(toShare: [HKObjectType.workoutType(), energyType], read: [heartRateType, energyType])
+      try await health.requestAuthorization(toShare: [HKObjectType.workoutType(), energyType, walkRunType, cyclingType], read: [heartRateType, energyType, walkRunType, cyclingType])
       return true
     } catch {
       return false
@@ -67,6 +84,9 @@ final class WorkoutManager: NSObject, ObservableObject {
       kcal = 0
       totals = nil
       beats = (0, 0, 0)
+      segment = nil
+      carried = [:]
+      cardioMeters = nil
       let start = Date()
       session.startActivity(with: start)
       try await builder.beginCollection(at: start)
@@ -80,6 +100,7 @@ final class WorkoutManager: NSObject, ObservableObject {
   /// The workout was finished on the phone: saved to Health, and its totals sent back.
   func finish() async {
     guard let session, let builder else { return }
+    endSegment()
     // Taken at once: the done state can arrive twice (the context and the message), and the second must find nothing.
     let sessionId = self.sessionId
     reset()
@@ -116,6 +137,69 @@ final class WorkoutManager: NSObject, ObservableObject {
     builder = nil
     sessionId = nil
     running = false
+    segment = nil
+    carried = [:]
+    cardioMeters = nil
+  }
+
+  // MARK: Cardio (step 3)
+
+  /// Follows the workout's state: a cardio clock starting begins its activity, and stopping it (Pause, End, or
+  /// moving on) ends it and sends the entry's distance to the phone, which fills the entry with it.
+  func follow(_ state: WorkoutActivityState?) {
+    guard session != nil else { return }
+    if let state, state.phase == .cardio, let activity = state.cardioActivity, let setId = state.nextSetId {
+      if segment?.setId == setId { return }
+      endSegment()
+      beginSegment(setId: setId, activity: activity, outdoor: state.cardioOutdoor == true, measures: state.cardioDistance == true)
+    } else {
+      endSegment()
+    }
+  }
+
+  private func meters(_ type: HKQuantityType?) -> Double {
+    guard let type else { return 0 }
+    return builder?.statistics(for: type)?.sumQuantity()?.doubleValue(for: .meter()) ?? 0
+  }
+
+  private func beginSegment(setId: String, activity: String, outdoor: Bool, measures: Bool) {
+    guard let session, let builder else { return }
+    let config = HKWorkoutConfiguration()
+    config.activityType = Self.activityType(activity)
+    config.locationType = outdoor ? .outdoor : .indoor
+    // Outdoors the distance comes from GPS, which needs the location; asked once, the first time.
+    if outdoor, location.authorizationStatus == .notDetermined { location.requestWhenInUseAuthorization() }
+    let type: HKQuantityType? = measures ? (config.activityType == .cycling ? cyclingType : walkRunType) : nil
+    if let type { builder.dataSource?.enableCollection(for: type, predicate: nil) }
+    session.beginNewActivity(configuration: config, date: Date(), metadata: nil)
+    segment = Segment(setId: setId, distanceType: type, startMeters: meters(type))
+    cardioMeters = type == nil ? nil : carried[setId] ?? 0
+  }
+
+  private func endSegment() {
+    guard let segment else { return }
+    self.segment = nil
+    session?.endCurrentActivity(on: Date())
+    cardioMeters = nil
+    guard segment.distanceType != nil else { return }
+    let total = (carried[segment.setId] ?? 0) + max(0, meters(segment.distanceType) - segment.startMeters)
+    carried[segment.setId] = total
+    if total > 0 { WatchSession.shared.sendToPhone(["command": "cardioDistance", "id": "\(segment.setId):\(total)"]) }
+  }
+
+  private static func activityType(_ name: String) -> HKWorkoutActivityType {
+    switch name {
+    case "running": return .running
+    case "walking": return .walking
+    case "cycling": return .cycling
+    case "elliptical": return .elliptical
+    case "stairClimbing": return .stairClimbing
+    case "rowing": return .rowing
+    case "crossCountrySkiing": return .crossCountrySkiing
+    case "handCycling": return .handCycling
+    case "jumpRope": return .jumpRope
+    default: return .mixedCardio
+    }
   }
 }
 
@@ -134,7 +218,13 @@ extension WorkoutManager: HKLiveWorkoutBuilderDelegate {
     let bpm = HKUnit.count().unitDivided(by: .minute())
     let heart = workoutBuilder.statistics(for: HKQuantityType(.heartRate))?.mostRecentQuantity()?.doubleValue(for: bpm)
     let energy = workoutBuilder.statistics(for: HKQuantityType(.activeEnergyBurned))?.sumQuantity()?.doubleValue(for: .kilocalorie())
+    let walkRun = workoutBuilder.statistics(for: HKQuantityType(.distanceWalkingRunning))?.sumQuantity()?.doubleValue(for: .meter())
+    let cycling = workoutBuilder.statistics(for: HKQuantityType(.distanceCycling))?.sumQuantity()?.doubleValue(for: .meter())
     Task { @MainActor in
+      if let segment = self.segment, let type = segment.distanceType {
+        let now = (type == self.cyclingType ? cycling : walkRun) ?? segment.startMeters
+        self.cardioMeters = (self.carried[segment.setId] ?? 0) + max(0, now - segment.startMeters)
+      }
       if let heart {
         self.heartRate = heart
         self.beats = (self.beats.sum + heart, self.beats.count + 1, max(self.beats.max, heart))

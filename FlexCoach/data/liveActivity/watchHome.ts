@@ -27,6 +27,7 @@ export type WatchHomeDay = {
   startLabel?: string;
 };
 
+/** `sets` is 0 for cardio, which is one entry rather than sets. */
 export type WatchHomeWorkout = { name: string; exercises: { name: string; sets: number }[] };
 
 export type WatchHomeToday =
@@ -123,7 +124,7 @@ export const buildWatchHome = (args: {
   };
 
   for (const w of plan.workouts) {
-    home.workouts[w.id] = { name: w.name, exercises: [...w.exercises].sort((a, b) => a.order - b.order).map(e => ({ name: catalogName(e.exerciseId, e.exerciseName), sets: e.sets })) };
+    home.workouts[w.id] = { name: w.name, exercises: [...w.exercises].sort((a, b) => a.order - b.order).map(e => ({ name: catalogName(e.exerciseId, e.exerciseName), sets: e.measurement === 'distance_time' ? 0 : e.sets })) };
   }
 
   // Every date of the cycle, as the Workout tab lists them: a day with no workout on it is a rest day.

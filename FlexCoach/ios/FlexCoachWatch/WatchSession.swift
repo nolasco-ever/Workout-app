@@ -12,6 +12,13 @@ struct WatchDone: Equatable {
   let sets: Int
   let volume: String?
   let records: Int
+  /// Each cardio exercise by name, with "2.1 mi · 20:00"; cardio is not counted in `sets`.
+  let cardio: [(name: String, value: String)]
+
+  static func == (a: WatchDone, b: WatchDone) -> Bool {
+    a.durationSec == b.durationSec && a.sets == b.sets && a.volume == b.volume && a.records == b.records
+      && a.cardio.map(\.name) == b.cardio.map(\.name) && a.cardio.map(\.value) == b.cardio.map(\.value)
+  }
 }
 
 /// One of the workout's exercises, as a page to swipe to.
@@ -19,6 +26,8 @@ struct WatchExercise: Identifiable, Equatable {
   let id: String
   let name: String
   let done: Bool
+  /// One entry rather than sets: a finished one reads "Logged".
+  let cardio: Bool
 }
 
 @MainActor
@@ -217,11 +226,15 @@ final class WatchSession: NSObject, ObservableObject {
     workoutName = payload["workoutName"] as? String ?? workoutName
     exercises = (raw["exercises"] as? [[String: Any]] ?? []).compactMap { e in
       guard let id = e["id"] as? String, let name = e["name"] as? String else { return nil }
-      return WatchExercise(id: id, name: name, done: e["done"] as? Bool ?? false)
+      return WatchExercise(id: id, name: name, done: e["done"] as? Bool ?? false, cardio: e["cardio"] as? Bool ?? false)
     }
     exerciseIndex = raw["exerciseIndex"] as? Int
     if let d = raw["done"] as? [String: Any] {
-      done = WatchDone(durationSec: d["durationSec"] as? Int ?? 0, sets: d["sets"] as? Int ?? 0, volume: d["volume"] as? String, records: d["records"] as? Int ?? 0)
+      let cardio = (d["cardio"] as? [[String: Any]] ?? []).compactMap { c -> (name: String, value: String)? in
+        guard let name = c["name"] as? String else { return nil }
+        return (name, c["value"] as? String ?? "Logged")
+      }
+      done = WatchDone(durationSec: d["durationSec"] as? Int ?? 0, sets: d["sets"] as? Int ?? 0, volume: d["volume"] as? String, records: d["records"] as? Int ?? 0, cardio: cardio)
     } else if next.phase != .done {
       done = nil
     }
@@ -243,6 +256,8 @@ final class WatchSession: NSObject, ObservableObject {
   /// Shows a state, and arms the rest's end: a tap on the wrist and "Rest over" on the next set.
   private func show(_ next: WorkoutActivityState?) {
     state = next
+    // A cardio clock starting or stopping, here or on the phone: the Health workout follows (step 3).
+    WorkoutManager.shared.follow(next)
     restTimer?.invalidate()
     restTimer = nil
     guard let next, next.phase == .rest, let endsAt = next.restEndsAt else { return }

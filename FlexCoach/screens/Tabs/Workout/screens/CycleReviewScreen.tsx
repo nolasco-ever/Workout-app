@@ -7,7 +7,7 @@ import { useAuth } from '../../../../data/auth/AuthProvider';
 import { Cycle, Plan } from '../../../../data/models';
 import { formatDuration, formatRecordValue, toDisplayWeight } from '../../../../data/engine/units';
 import { CycleReview, getCycleReview, loadCycleForReview, markCycleReportReviewed, startNextCycle } from '../../../../data/services/workoutService';
-import { countWorkingSets } from '../../../../data/engine/stats';
+import { describeLogged } from '../../../../data/engine/stats';
 import { nextCycleNumberAfter } from '../../../../data/engine/schedule';
 import { describeProgression, verdictLabel } from '../../../../data/engine/progressionCopy';
 import { notificationRepository } from '../../../../data/repositories/notificationRepository';
@@ -254,7 +254,7 @@ export const CycleReviewView = ({ cycleId, plan: planProp, cycle: cycleProp, onO
             <CustomText variant="overline" color={colors.inkMuted}>Workouts</CustomText>
             <Card style={{ padding: 0 }}>
               {sessions.map((s, i) => {
-                const sets = countWorkingSets([s]);
+                const logged = describeLogged([s]);
                 const duration = s.finishedAt ? formatDuration(Math.round((s.finishedAt - s.startedAt) / 1000)) : null;
                 return (
                   <TouchableOpacity
@@ -265,7 +265,7 @@ export const CycleReviewView = ({ cycleId, plan: planProp, cycle: cycleProp, onO
                     <View style={{ flex: 1 }}>
                       <CustomText variant="bodyStrong">{s.workoutName}</CustomText>
                       <CustomText variant="caption" color={colors.inkMuted}>
-                        {dateLabel(s.date)} · {sets} set{sets === 1 ? '' : 's'}{duration ? ` · ${duration}` : ''}
+                        {[dateLabel(s.date), ...logged].join(' · ')}{duration ? ` · ${duration}` : ''}
                       </CustomText>
                     </View>
                     <Icon icon={directionIcons.angleRight} size={18} color={colors.inactive} />

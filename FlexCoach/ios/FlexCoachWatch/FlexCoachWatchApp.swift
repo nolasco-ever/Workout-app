@@ -13,7 +13,8 @@ final class WatchAppDelegate: NSObject, WKApplicationDelegate {
 /// set with Log set, the rest with Skip rest and a tap when it runs out, the cardio clock with Pause, then Start or
 /// End, and the summary. Step 2 runs a Health workout alongside, with live heart rate and calories on the Watch;
 /// step 4 is the home with no workout running: today's workout, the cycle, and starting a workout or a quick one
-/// from the wrist (WatchHome.swift). Cardio distance and pace follow.
+/// from the wrist (WatchHome.swift). Step 3 records cardio as its own activity (running, the elliptical) with the
+/// distance and pace the Watch measures, which fill the entry on the phone (WorkoutManager.follow).
 @main
 struct FlexCoachWatchApp: App {
   @WKApplicationDelegateAdaptor(WatchAppDelegate.self) private var appDelegate

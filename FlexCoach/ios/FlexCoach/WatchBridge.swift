@@ -29,7 +29,7 @@ import WatchConnectivity
   }
 
   /// What the Watch asks with no workout running (v1 #6, step 4); the rest of its commands are the Island's.
-  private static let requestKinds: Set<String> = ["startWorkout", "startQuick", "resumeWorkout", "search"]
+  private static let requestKinds: Set<String> = ["startWorkout", "startQuick", "resumeWorkout", "search", "cardioDistance"]
   /// Posted with one request from the Watch; NativeLiveActivity passes it on to JavaScript.
   @objc public static let requestNotification = Notification.Name("FlexCoachWatchRequest")
   /// Requests JavaScript has not taken yet (a start can wake the app before JavaScript is listening).
