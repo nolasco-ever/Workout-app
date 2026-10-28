@@ -3,6 +3,26 @@
 Newest build first. **Store notes** is the tester-facing text, identical for
 TestFlight and Google Play (under 500 characters). **Details** is for us.
 
+## Build 20 (2026-10-27)
+
+### Store notes
+
+Build 20
+
+• Apple Watch app: follow your workout on your wrist, log sets, skip rest, start today's workout or a quick one. Heart rate and calories saved to Health
+• Cardio distance from your Watch fills the entry
+• Legacy Swap (Workout tab): fix an exercise the library update matched wrong. Its history moves with it, and you can undo
+• Both exercise libraries are back in search
+• Streaks screen, who reacted with photos, plan editor swap
+
+### Details
+
+- Commits 2643426..a49f153: Apple Watch app, all four steps (mirror the running workout; HealthKit workout with live heart rate and calories; cardio distance and pace from the Watch, one Health workout switching activity per cardio exercise; Watch home with today's workout, Preview, Quick workout, This cycle and Quick pick with search); "cardio is not a set" wording everywhere; Streaks screen; reactions modal; achievement family progress; cycle review rows; plan editor swap in place; plan edits no longer restart the cycle; progression near-miss hold; both exercise libraries merged in the picker (an old exercise with the same name as a new one stays hidden; How to shows the old start and finish photos); Legacy Swap (temporary, for testers: swap history to another exercise, optionally in the active plan, with Undo; swap log on the profile, `users/{uid}.legacySwaps`).
+- Native: new Watch target (FlexCoachWatch, watchOS 10) with HealthKit and location, WatchConnectivity bridge methods (setWatchHome, setWatchSearch, takeWatchRequests, onWatchRequest). No Firestore rules change in this build.
+- What to test: Legacy Swap end to end with real history (swap, the active-plan question, Undo); the Watch on a real Watch (outdoor cardio needs location permission); the Watch distance filling a cardio entry.
+- Not yet tried by testers on real hardware: everything on the Watch; Legacy Swap on their own history. Android has no Watch features (Wear OS is v2).
+- Next after testers' feedback: cardio screens (v1 #10, route map and photo entry) and the Watch design pass (v1 #23b).
+
 ## Build 19 (2026-10-17)
 
 ### Store notes
