@@ -9,9 +9,10 @@ import { WorkoutPreviewScreen } from './screens/WorkoutPreviewScreen';
 import { ExerciseDetailScreen } from './screens/ExerciseDetailScreen';
 import { SessionDetailScreen } from './screens/SessionDetailScreen';
 import type { SessionRoutes } from './sessionRoutes';
+import type { LegacySwapRoutes } from './screens/LegacySwap';
 
-/** The tab's own screens; the running workout's screens (SessionRoutes) sit in the root stack, over the tabs, and are reachable from here by name. */
-export type WorkoutStackParams = SessionRoutes & {
+/** The tab's own screens; the running workout's screens (SessionRoutes) and Legacy Swap's sit in the root stack, over the tabs, and are reachable from here by name. */
+export type WorkoutStackParams = SessionRoutes & LegacySwapRoutes & {
   WorkoutHomeScreen: undefined;
   WorkoutPreviewScreen: { plan: Plan; cycle: Cycle; occurrence: Occurrence };
   /** Either the live objects, or just an id (from a notification or the feed). */

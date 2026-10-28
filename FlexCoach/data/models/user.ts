@@ -37,6 +37,8 @@ export interface UserProfile extends BaseDocument {
   sharingPromptSeenAt?: Timestamp | null;
   /** When badges already earned were granted in one go, on the first launch with achievements. */
   achievementsBackfilledAt?: Timestamp | null;
+  /** Legacy Swap (v1 #6b): the swaps made, newest last, each with what it changed so it can be undone. Temporary. */
+  legacySwaps?: LegacySwap[];
 }
 
 /**
@@ -271,4 +273,19 @@ export interface PlanUse extends BaseDocument {
   buddyUid: Id;
   planIds: Id[];
   firstAt: Timestamp;
+}
+
+
+/**
+ * One Legacy Swap: an exercise matched wrong by the move to the new library, swapped for the one the lifter does,
+ * with its history. `sessions` and `plan` are what was there before, for Undo.
+ */
+export interface LegacySwap {
+  id: Id;
+  at: Timestamp;
+  from: { id: Id; name: string };
+  to: { id: Id; name: string };
+  sessions: { sessionId: Id; sessionExerciseId: Id; exerciseId: Id; exerciseName: string }[];
+  /** The active plan's entries it replaced, when the lifter chose to; null when the plan was left as it was. */
+  plan: { planId: Id; entries: { workoutId: Id; entryId: Id; exerciseId: Id; exerciseName: string }[] } | null;
 }

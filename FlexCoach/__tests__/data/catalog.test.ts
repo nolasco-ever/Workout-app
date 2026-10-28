@@ -1,4 +1,4 @@
-import { comparableExercises, getCatalogExercise, getCatalogExercises, searchCatalog, stem } from '../../data/catalog/exerciseCatalog';
+import { comparableExercises, getCatalogExercise, getCatalogExercises, LEGACY_PICK, originalOldExercise, searchCatalog, stem } from '../../data/catalog/exerciseCatalog';
 import { canonicalExerciseId, isLegacyExerciseId, sameExercise } from '../../data/catalog/exerciseIds';
 import legacyMap from '../../data/catalog/legacyExerciseMap.json';
 import exercisedb from '../../data/catalog/exercisedb.json';
@@ -46,11 +46,20 @@ describe('camera-angle copies', () => {
 });
 
 describe('the two libraries', () => {
-  it('offers only the licensed library, every entry animated', () => {
+  it('offers both libraries, an old exercise only when no new one has its name', () => {
     const all = getCatalogExercises();
-    expect(all.length).toBeGreaterThan(1300);
-    expect(all.every(e => e.animation?.gif && e.animation?.webp)).toBe(true);
+    expect(all.length).toBeGreaterThan(2000);
+    // An old id with a twin means the twin; the old exercise itself is offered under its own id.
     expect(all.some(e => isLegacyExerciseId(e.id))).toBe(false);
+    const names = all.map(e => e.name.toLowerCase());
+    expect(names.filter(n => n === 'barbell bench press')).toHaveLength(1);
+    const leg = all.find(e => e.name === 'Leg Press');
+    expect(leg?.id).toBe(`${LEGACY_PICK}Leg_Press`);
+    expect(leg?.animation).toBeUndefined();
+    expect(getCatalogExercise(`${LEGACY_PICK}Leg_Press`)?.name).toBe('Leg Press');
+    expect(canonicalExerciseId(`${LEGACY_PICK}Leg_Press`)).toBe(`${LEGACY_PICK}Leg_Press`);
+    expect(getCatalogExercise('Leg_Press')?.name).toBe('45-Degree Sled Leg Press');
+    expect(originalOldExercise('Leg_Press')?.name).toBe('Leg Press');
   });
 
   it('resolves an old id with a twin to the new exercise, under its new name', () => {
@@ -69,9 +78,10 @@ describe('the two libraries', () => {
   });
 
   it('maps only old ids, and only onto the licensed library', () => {
+    const offered = new Set(getCatalogExercises().map(e => e.id));
     for (const [from, to] of Object.entries(legacyMap)) {
-      expect(getCatalogExercises().some(e => e.id === from)).toBe(false);
-      expect(getCatalogExercises().some(e => e.id === to)).toBe(true);
+      expect(offered.has(from)).toBe(false);
+      expect(offered.has(to)).toBe(true);
     }
   });
 });

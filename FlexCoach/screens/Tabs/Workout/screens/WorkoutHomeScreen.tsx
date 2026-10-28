@@ -28,6 +28,9 @@ import { askNotToday } from '../components/notToday';
 import { AppStackParams } from '../../../../appNavigators/AppStack';
 import { devFlags } from '../../../../dev/flags';
 import { describeCycle } from '../../../../screens/Plans/components/planSummary';
+import { LegacySwapButton } from '../components/LegacySwapButton';
+import { isLegacyExerciseId } from '../../../../data/catalog/exerciseIds';
+import { sessionRepository } from '../../../../data/repositories/sessionRepository';
 
 const longDate = (d: string) => fromLocalDate(d).toLocaleDateString(undefined, { weekday: 'long', month: 'short', day: 'numeric' });
 const shortDate = (d: string) => fromLocalDate(d).toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric' });
@@ -112,6 +115,23 @@ export const WorkoutHomeScreen = () => {
 
   const todayWorkout = plan && state.todayOccurrence ? findWorkout(plan, state.todayOccurrence.workoutId) : undefined;
   const resume = state.inProgressSession;
+
+  // Legacy Swap (v1 #6b) is for those who trained before the library changed: an old id matched to a new twin in
+  // their history or plan says so. It stays once they've swapped, for Undo.
+  const [loggedOldIds, setLoggedOldIds] = useState(false);
+  useEffect(() => {
+    if (!uid) return;
+    let cancelled = false;
+    sessionRepository
+      .listCompleted(uid)
+      .then(h => !cancelled && setLoggedOldIds(h.some(s => s.exercises.some(e => isLegacyExerciseId(e.exerciseId)))))
+      .catch(() => undefined);
+    return () => {
+      cancelled = true;
+    };
+  }, [uid, resume?.id]);
+  const showLegacySwap = loggedOldIds || (profile?.legacySwaps?.length ?? 0) > 0 || !!plan?.workouts.some(w => w.exercises.some(e => isLegacyExerciseId(e.exerciseId)));
+  const legacySwap = showLegacySwap ? <LegacySwapButton onPress={() => navigation.navigate('LegacySwapScreen')} /> : null;
 
   /** Nothing planned, or not in the mood for what is: an empty workout to fill as it goes. */
   const startQuick = () =>
@@ -337,6 +357,9 @@ export const WorkoutHomeScreen = () => {
         {loading && <ActivityIndicator color={colors.accent} style={{ marginTop: spacing.xxl }} />}
 
         {/* Resume, whatever else is going on: a quick workout has no plan behind it. */}
+        {/* Legacy Swap first, glowing, whatever else is going on. */}
+        {!loading && legacySwap && <View style={narrow}>{legacySwap}</View>}
+
         {!loading && resume && family === 'phone' && (
           <Card tone="accent">
             <CustomText variant="overline" color={colors.accent}>In progress</CustomText>

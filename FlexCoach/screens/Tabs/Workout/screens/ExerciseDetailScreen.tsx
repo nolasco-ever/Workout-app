@@ -49,7 +49,9 @@ export const ExerciseDetailScreen = () => {
   const editor = usePlanEditor();
   const { profile } = useAuth();
   const [viewing, setViewing] = useState<number | null>(null);
-  const [section, setSection] = useState<Section>('howto');
+  // How to shows the animation, or the old library's two photos; an exercise with neither has no How to (owner, 2026-10-26).
+  const hasDemo = !!ex && (!!ex.animation || ex.images.length > 0);
+  const [section, setSection] = useState<Section>(hasDemo ? 'howto' : 'muscles');
   const targetWorkout = params.addToWorkoutId ? editor.draft?.workouts.find(w => w.id === params.addToWorkoutId) : undefined;
   const alreadyAdded = !!targetWorkout && !!ex && targetWorkout.exercises.some(e => e.exerciseId === ex.id);
   // From the plan editor's swap: this exercise takes that entry's place.
@@ -102,7 +104,6 @@ export const ExerciseDetailScreen = () => {
           ))}
         </View>
       )}
-      {!ex.animation && ex.images.length === 0 && <CustomText variant="body" color={colors.inkMuted}>No demonstration for this one yet.</CustomText>}
     </ScrollView>
   );
 
@@ -175,7 +176,7 @@ export const ExerciseDetailScreen = () => {
           value={section}
           onChange={setSection}
           pages={[
-            { value: 'howto', label: 'How to', render: () => howTo },
+            ...(hasDemo ? [{ value: 'howto' as const, label: 'How to', render: () => howTo }] : []),
             { value: 'muscles', label: 'Muscles worked', render: () => muscles },
             { value: 'instructions', label: 'Instructions', render: () => instructions },
           ]}

@@ -26,6 +26,8 @@ import { CycleReviewScreen } from '../screens/Tabs/Workout/screens/CycleReviewSc
 import { ActivePlanWorkoutsScreen } from '../screens/Tabs/Workout/screens/ActivePlanWorkoutsScreen';
 import { ExercisePickerScreen } from '../screens/Plans/screens/ExercisePickerScreen';
 import type { SessionRoutes } from '../screens/Tabs/Workout/sessionRoutes';
+import { LegacySwapConfirmScreen, LegacySwapDoneScreen, LegacySwapPickScreen, LegacySwapScreen } from '../screens/Tabs/Workout/screens/LegacySwap';
+import type { LegacySwapRoutes } from '../screens/Tabs/Workout/screens/LegacySwap';
 import { BuddiesScreen } from '../screens/Buddies/BuddiesScreen';
 import { CardStack } from '../screens/Buddies/CardStack';
 import { BuddyCardScreen } from '../screens/Buddies/BuddyCardScreen';
@@ -48,7 +50,7 @@ import { startWatchMetricsSync } from '../data/liveActivity/watchMetrics';
 import { useWatchHome } from '../data/hooks/useWatchHome';
 import { useTheme } from '../theme';
 
-export type AppStackParams = BuddyRoutes & SessionRoutes & ReactionsParams & Omit<PlansStackParams, 'ExercisePickerScreen' | 'ExerciseDetailScreen'> & {
+export type AppStackParams = BuddyRoutes & SessionRoutes & LegacySwapRoutes & ReactionsParams & Omit<PlansStackParams, 'ExercisePickerScreen' | 'ExerciseDetailScreen'> & {
     AuthStack: undefined;
     OnboardingStack: undefined;
     TabNavigator: undefined;
@@ -139,6 +141,11 @@ export const AppStack = () => {
                     <Stack.Screen name="BuddyPlansScreen" component={BuddyPlansScreen} options={opts.screen('Plans from buddies')} />
                     <Stack.Screen name="BuddyPlanScreen" component={BuddyPlanScreen} options={opts.screen('Plan')} />
                     <Stack.Screen name="BuddyWorkoutScreen" component={BuddyWorkoutScreen} options={({ route }) => opts.screen(route.params.displayName?.split(' ')[0] ?? 'Workout')} />
+                    {/* Legacy Swap (v1 #6b): temporary, for testers whose exercises the library move matched wrong. Over the tabs, so the tab bar never covers its buttons. */}
+                    <Stack.Screen name="LegacySwapScreen" component={LegacySwapScreen} options={opts.screen('Legacy Swap')} />
+                    <Stack.Screen name="LegacySwapPickScreen" component={LegacySwapPickScreen} options={opts.screen('Legacy Swap')} />
+                    <Stack.Screen name="LegacySwapConfirmScreen" component={LegacySwapConfirmScreen} options={opts.screen('Legacy Swap')} />
+                    <Stack.Screen name="LegacySwapDoneScreen" component={LegacySwapDoneScreen} options={({ route }) => (route.params?.swappedTo ? { ...opts.screen('Legacy Swap'), headerBackVisible: false, gestureEnabled: false } : opts.screen('Legacy Swap'))} />
                     <Stack.Screen name="ExerciseDetailScreen" component={ExerciseDetailScreen} options={({ navigation }) => opts.modal('How to', () => <HeaderButton icon={generalIcons.xMark} accessibilityLabel="Close" onPress={() => navigation.goBack()} />)} />
                     {/* The running workout, over the tabs: a focus mode with no tab bar. Draws its own header row (see SessionScreen) so the title stays centred beside the rest pill. */}
                     <Stack.Screen name="SessionScreen" component={SessionScreen} options={({ route }) => ({ ...opts.screen(route.params.session.workoutName), headerShown: false, gestureEnabled: false })} />

@@ -2,16 +2,16 @@ import { Equipment, Exercise, ExerciseCategory, Id, MuscleGroup, MeasurementType
 import catalogJson from './exercisedb.json';
 import legacyJson from './exercises.json';
 import legacyExtraJson from './extraExercises.json';
-import { canonicalExerciseId } from './exerciseIds';
+import { canonicalExerciseId, isLegacyExerciseId } from './exerciseIds';
 
 /**
  * Bundled, read-only exercise catalog: the licensed ExerciseDB Pro library
  * (1,394 exercises, built by tools/exercisedb/build.py; animations hosted on
- * Firebase Hosting), alphabetical. Behind it, hidden from the picker and the
- * search, the two lists the app shipped before (free-exercise-db and the
- * hand-written extras): an old id in a plan or a session resolves to its
- * twin in the new library (see exerciseIds.ts), or, with no twin, to its old
- * entry, so nothing a lifter logged ever stops answering by name.
+ * Firebase Hosting) and, beside it, the two lists the app shipped before
+ * (free-exercise-db and the hand-written extras), alphabetical. An old id in
+ * a plan or a session resolves to its twin in the new library (see
+ * exerciseIds.ts), or, with no twin, to its old entry, so nothing a lifter
+ * logged ever stops answering by name.
  * Custom exercises live in Firestore and are merged in by the repository layer.
  */
 const library = (catalogJson as Exercise[]).slice().sort((a, b) => a.name.localeCompare(b.name));
@@ -22,17 +22,48 @@ const library = (catalogJson as Exercise[]).slice().sort((a, b) => a.name.locale
  * copies still answer by id for anyone who already added one.
  */
 const CAMERA_ANGLE = /,\s*(side|rear|front)\s+view$/i;
-const catalog = library.filter(e => !CAMERA_ANGLE.test(e.name));
+const oldEntries = [...(legacyJson as Exercise[]), ...(legacyExtraJson as Exercise[])] as Exercise[];
+const legacy = new Map<string, Exercise>(oldEntries.map(e => [e.id, e]));
 
-const legacy = new Map<string, Exercise>(([...(legacyJson as Exercise[]), ...(legacyExtraJson as Exercise[])] as Exercise[]).map(e => [e.id, e]));
+/**
+ * An old-library exercise picked on purpose (v1 #6b, owner 2026-10-26): its own id, so it stays itself rather than
+ * turning into the twin its old id was matched to (the old "Leg Press" is not the "45-Degree Sled Leg Press").
+ */
+export const LEGACY_PICK = 'legacy:';
 
-const byId = new Map<string, Exercise>(library.map(e => [e.id, e]));
+/**
+ * Both libraries are on offer again (owner, 2026-10-26: the migration matched some exercises wrong, and some had no
+ * match at all), the old ones with no label. An old exercise with exactly the name of a new one is left out, as the
+ * same thing twice. One without a twin keeps its old id, which still means it; one with a twin is offered under
+ * LEGACY_PICK.
+ */
+const newNames = new Set(library.map(e => e.name.trim().toLowerCase()));
+const oldOnOffer = oldEntries
+  .filter(e => !newNames.has(e.name.trim().toLowerCase()))
+  .map(e => (isLegacyExerciseId(e.id) ? { ...e, id: `${LEGACY_PICK}${e.id}` } : e));
+
+const catalog = [...library.filter(e => !CAMERA_ANGLE.test(e.name)), ...oldOnOffer].sort((a, b) => a.name.localeCompare(b.name));
+
+const byId = new Map<string, Exercise>([...library, ...oldOnOffer].map(e => [e.id, e]));
 
 /** The library on offer: what the picker and the search show. */
 export const getCatalogExercises = (): readonly Exercise[] => catalog;
 
-/** Any id the app has ever stored: the new library's, an old id's twin in it, or the old entry itself. */
-export const getCatalogExercise = (id: string): Exercise | undefined => byId.get(id) ?? byId.get(canonicalExerciseId(id)) ?? legacy.get(id);
+/** An old exercise picked on purpose, even one no longer on offer. */
+const legacyPick = (id: string): Exercise | undefined => {
+  if (!id.startsWith(LEGACY_PICK)) return undefined;
+  const old = legacy.get(id.slice(LEGACY_PICK.length));
+  return old && { ...old, id };
+};
+
+/** Any id the app has ever stored: the new library's, an old one picked on purpose, an old id's twin in the new library, or the old entry itself. */
+export const getCatalogExercise = (id: string): Exercise | undefined => byId.get(id) ?? legacyPick(id) ?? byId.get(canonicalExerciseId(id)) ?? legacy.get(id);
+
+/** An id from the old library, as stored before the new one (with or without a twin), or picked from it since. */
+export const isOldLibraryId = (id: string): boolean => legacy.has(id) || id.startsWith(LEGACY_PICK);
+
+/** The old exercise an old id was, before it was matched to its twin: offered back when it is on offer. */
+export const originalOldExercise = (id: string): Exercise | undefined => (isLegacyExerciseId(id) ? byId.get(`${LEGACY_PICK}${id}`) : undefined);
 
 /** The name the catalog has for an id now, else the name that was stored with it. */
 export const catalogName = (id: string, stored: string): string => getCatalogExercise(id)?.name ?? stored;
