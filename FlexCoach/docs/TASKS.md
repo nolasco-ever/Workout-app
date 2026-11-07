@@ -21,24 +21,24 @@ Bugs
       workout-done screen and in Records (fb-10, fb-11).
 - [x] B20-2 Cycle review says "Beat" when the weight was lower than asked
       (Barbell Hip Thrust, asked 3×8 @ 120, did 3×8 @ 95) (fb-15).
-- [ ] B20-3 Calf press working weight came up at 145 lb for a tester whose max
+- [x] B20-3 ~~ignored (owner: one-off, tester fixes it)~~ Calf press working weight came up at 145 lb for a tester whose max
       was 85 lb (fb-14). Investigate where 145 came from.
 - [x] B20-4 ~~"Weird number"~~: fb-11 points at the same float-noise distance as
       B20-1, not at a weight. Nothing more to do.
 
 Small changes
 - [x] B20-5 How to: start and finish photos larger, stacked in one column (fb-3).
-- [ ] B20-6 Cycle review: reword "A rep or two short in 1 of 2 sessions: same
+- [x] B20-6 Cycle review: reword "A rep or two short in 1 of 2 sessions: same
       target again" (fb-5). New wording needs owner OK.
 - [x] B20-7 Home muscles card: remove the "+6 more in All" line (fb-7).
 - [x] B20-8 Buddy's finished workout: an "i" beside each exercise name opening
       How to (fb-13).
 
 Cardio session (with v1 #10, **discuss first**)
-- [ ] B20-9 Cardio screen has Pause but no way to end the cardio piece (fb-2).
-- [ ] B20-10 Distance typed before Start: no way to log it without running the
+- [x] B20-9 ~~folded into v1 #10 (owner)~~ Cardio screen has Pause but no way to end the cardio piece (fb-2).
+- [x] B20-10 ~~folded into v1 #10 (owner)~~ Distance typed before Start: no way to log it without running the
       timer down (fb-8).
-- [ ] B20-11 Import a session tracked in Apple Fitness (Matrix machines only pair
+- [x] B20-11 ~~folded into v1 #10 (owner)~~ Import a session tracked in Apple Fitness (Matrix machines only pair
       with Apple Fitness) from Health (fb-12).
 
 Design (canvas first)
