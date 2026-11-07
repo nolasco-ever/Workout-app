@@ -32,4 +32,15 @@ commit messages, `docs/RELEASES.md` and Claude's session notes.
 
 ## Open questions
 
-- None yet.
+- **B20-2 follow-up (functional), 2026-11-07:** when a set is done at a lighter
+  weight than asked with the asked reps (hip thrust: asked 3×8 @ 120 lb, did 3×8
+  @ 95 lb), it now reads "Hit" instead of "Beat", and next cycle climbs to
+  3×9 @ 95 lb. Should a lighter weight count as Missed (or get its own label), and
+  should the next target go back to the asked weight?
+- **B20-3 (bug, needs data), 2026-11-07:** a tester's calf press target came up
+  at 145 lb against an 85 lb max. Before build 19 their old calf press shared an
+  id with Seated Leg Press with Calf Press (their 145 lb best lift), so its
+  history was mixed with the leg press and the stored target likely still carries
+  that. Confirming needs a look at their sessions and Legacy Swap log.
+- **B20-6 (copy), 2026-11-07:** new wording for the near-miss reason in cycle
+  review.
