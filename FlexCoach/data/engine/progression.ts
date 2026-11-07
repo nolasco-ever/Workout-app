@@ -9,7 +9,9 @@ import { KG_PER_LB } from './units';
  * Targets are fixed for a whole cycle. When the cycle ends, every session
  * of an exercise in it is looked at together and the next cycle's target
  * comes out of that. The reps target is one number for the whole exercise,
- * judged across every set of every session:
+ * judged across every set of every session. A set hits only when it reaches
+ * both its reps and its weight; a lighter set is a miss (owner, 2026-11-07),
+ * and a hold puts it back at the weight it was asked for:
  *
  * - Every set of every session hit the target reps, and the target was
  *   already the top of the range: weight goes up by the increment on every
@@ -63,6 +65,8 @@ export interface ExerciseProgression {
    * the last distance and time. Null when nothing was done.
    */
   did: SetTarget | null;
+  /** For a missed lift, which part of the target fell short: the reps, the weight, or both. Null otherwise. */
+  missed: { reps: boolean; weight: boolean } | null;
 }
 
 const minOf = (values: (number | null | undefined)[]): number | null => {
@@ -79,6 +83,9 @@ const roundTo = (value: number, step: number): number => Math.round(value / step
 
 /** How many reps short of its ask a set may fall and still count as a near miss, which holds the target. */
 export const NEAR_MISS_REPS = 2;
+
+/** Slack when comparing a logged weight to its target, for unit round trips (kg stored, lb shown). */
+const WEIGHT_TOLERANCE_KG = 0.01;
 
 /**
  * Snap a stored weight to something that can actually be loaded in the
@@ -123,7 +130,7 @@ const carry = (target: SetTarget, sets: number): SetTarget => {
   return { ...withPerSet(sets, goals), durationSec: target.durationSec, distanceM: target.distanceM };
 };
 
-const summary = (entry: WorkoutExercise, from: SetTarget | null, target: SetTarget, change: ProgressionChange, sessions: number, hits: number, verdict: ProgressionVerdict | null = null, did: SetTarget | null = null): ExerciseProgression => ({
+const summary = (entry: WorkoutExercise, from: SetTarget | null, target: SetTarget, change: ProgressionChange, sessions: number, hits: number, verdict: ProgressionVerdict | null = null, did: SetTarget | null = null, missed: ExerciseProgression['missed'] = null): ExerciseProgression => ({
   workoutExerciseId: entry.id,
   exerciseId: entry.exerciseId,
   exerciseName: entry.exerciseName,
@@ -135,6 +142,7 @@ const summary = (entry: WorkoutExercise, from: SetTarget | null, target: SetTarg
   hits,
   verdict,
   did,
+  missed,
 });
 
 /**
@@ -169,8 +177,12 @@ export const progressExercise = (prescribed: WorkoutExercise, logs: SessionExerc
       // Each set is judged against what it was asked for (older targets may differ per set);
       // the exercise's own target is the lowest ask, so a legacy 15/13/13 climbs from 13.
       const asked = indices.map(i => goalFor(from, i).reps ?? rangeMax);
+      const askedWeight = indices.map(i => goalFor(from, i).weightKg ?? 0);
       const targetReps = Math.min(...asked);
-      const sessionHit = (sets: LoggedSet[]) => indices.every(i => sets[i] !== undefined && (sets[i].reps ?? 0) >= asked[i]);
+      // The target is the whole thing (owner, 2026-11-07): every set at its reps AND its weight. A lighter set is a miss.
+      const repsOk = (s: LoggedSet | undefined, i: number) => s !== undefined && (s.reps ?? 0) >= asked[i];
+      const weightOk = (s: LoggedSet | undefined, i: number) => s !== undefined && (s.weightKg ?? 0) >= askedWeight[i] - WEIGHT_TOLERANCE_KG;
+      const sessionHit = (sets: LoggedSet[]) => indices.every(i => repsOk(sets[i], i) && weightOk(sets[i], i));
       const hits = done.filter(sessionHit).length;
       const hitAll = hits === done.length;
       // A set never done counts as zero reps: the exercise missed.
@@ -184,23 +196,22 @@ export const progressExercise = (prescribed: WorkoutExercise, logs: SessionExerc
       const did = withPerSet(entry.sets, indices.map(i => ({ weightKg: lastWeights[i], reps: Math.min(...done.map(sets => sets[i]?.reps ?? 0)) })));
       // Beaten: every set of every session did at least what it was asked in both reps and weight, and more of one.
       // More reps at a lighter weight is not a beat (build 20: 3 x 8 @ 95 lb against 3 x 8 @ 120 lb read "Beat").
-      const beatSet = (s: LoggedSet, i: number) => {
-        const reps = s.reps ?? 0;
-        const weight = s.weightKg ?? 0;
-        const askedWeight = goalFor(from, i).weightKg ?? 0;
-        return reps >= asked[i] && weight >= askedWeight && (reps > asked[i] || weight > askedWeight);
-      };
-      const beatAll = hitAll && done.every(sets => indices.every(i => beatSet(sets[i], i)));
+      const beatAll = hitAll && done.every(sets => indices.every(i => (sets[i].reps ?? 0) > asked[i] || (sets[i].weightKg ?? 0) > askedWeight[i] + WEIGHT_TOLERANCE_KG));
       const verdict: ProgressionVerdict = beatAll ? 'beat' : hitAll ? 'hit' : 'missed';
+      const missed = hitAll
+        ? null
+        : { reps: done.some(sets => indices.some(i => !repsOk(sets[i], i))), weight: done.some(sets => indices.some(i => sets[i] !== undefined && !weightOk(sets[i], i))) };
 
       const changeFor = (reps: number): ProgressionChange => (reps > targetReps ? 'climb' : reps < targetReps ? 'drop' : 'hold');
       const nearMiss = done.every(sets => indices.every(i => (sets[i]?.reps ?? 0) >= asked[i] - NEAR_MISS_REPS));
       if (!hitAll && nearMiss) {
-        return summary(entry, from, withPerSet(entry.sets, lastWeights.map((weightKg, i) => ({ weightKg, reps: asked[i] }))), 'hold', judged.length, hits, verdict, did);
+        // Same target again: a set done lighter goes back to the weight it was asked for.
+        const holdWeights = lastWeights.map((w, i) => (askedWeight[i] > 0 && (w ?? 0) < askedWeight[i] ? goalFor(from, i).weightKg : w));
+        return summary(entry, from, withPerSet(entry.sets, holdWeights.map((weightKg, i) => ({ weightKg, reps: asked[i] }))), 'hold', judged.length, hits, verdict, did, missed);
       }
       if (!hitAll) {
         const reps = Math.max(rangeMin, Math.min(minReps, rangeMax));
-        return summary(entry, from, withPerSet(entry.sets, lastWeights.map(weightKg => ({ weightKg, reps }))), changeFor(reps), judged.length, hits, verdict, did);
+        return summary(entry, from, withPerSet(entry.sets, lastWeights.map(weightKg => ({ weightKg, reps }))), changeFor(reps), judged.length, hits, verdict, did, missed);
       }
       if (targetReps < rangeMax) {
         const reps = Math.max(rangeMin, Math.min(rangeMax, Math.max(targetReps + p.repStep, minReps)));

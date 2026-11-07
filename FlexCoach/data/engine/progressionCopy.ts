@@ -47,6 +47,11 @@ export const describeProgression = (p: ExerciseProgression, unit: WeightUnit): {
     }
     if (p.measurement === 'distance_time') return p.change === 'increase' ? 'A step further after a completed cycle' : 'Repeats what you last did';
     const reps = p.from ? targetRepsLabel(p.from) : targetRepsLabel(p.target);
+    // Say just what was missed (owner, 2026-11-07): the reps, the weight, or both.
+    if (p.verdict === 'missed' && (p.change === 'hold' || p.change === 'drop')) {
+      const what = p.missed?.weight && p.missed.reps ? 'rep and weight' : p.missed?.weight ? 'weight' : 'rep';
+      return `Missed your ${what} target in ${missed}`;
+    }
     switch (p.change) {
       case 'increase':
         return `You hit ${reps} reps on every set in ${hit}`;

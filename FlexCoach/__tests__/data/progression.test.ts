@@ -29,7 +29,7 @@ describe('progressExercise: weighted lifts, judged per cycle', () => {
     expect(p.verdict).toBe('missed');
     expect(p.target).toEqual({ sets: 3, reps: 10, weightKg: 30, durationSec: null, distanceM: null });
     expect(p.hits).toBe(1);
-    expect(describeProgression(p, 'kg').reason).toBe('A rep or two short in 1 of 2 sessions: same target again');
+    expect(describeProgression(p, 'kg').reason).toBe('Missed your rep target in 1 of 2 sessions');
   });
 
   it('holds 12 after the last set fell one rep short every session (build 19)', () => {
@@ -146,6 +146,21 @@ describe('progressExercise: the verdict and what was done', () => {
     expect(progressExercise(entry(), moreReps, null, 'kg').verdict).toBe('beat');
     const moreWeight = [lastSession({ reps: 10, weightKg: 30 }, three(32.5, 10))];
     expect(progressExercise(entry(), moreWeight, null, 'kg').verdict).toBe('beat');
+  });
+
+  it('calls a lighter set a miss and holds the asked weight (owner, 2026-11-07)', () => {
+    const logs = [lastSession({ reps: 8, weightKg: 30 }, three(30, 8)), lastSession({ reps: 8, weightKg: 30 }, three(25, 8))];
+    const p = progressExercise(entry(), logs, null, 'kg');
+    expect(p.verdict).toBe('missed');
+    expect(p.hits).toBe(1);
+    expect(p.change).toBe('hold');
+    expect(p.target).toMatchObject({ reps: 8, weightKg: 30 });
+    expect(describeProgression(p, 'kg').reason).toBe('Missed your weight target in 1 of 2 sessions');
+  });
+
+  it('names both parts when the reps and the weight fell short', () => {
+    const logs = [lastSession({ reps: 8, weightKg: 30 }, [set({ weightKg: 25, reps: 8 }), set({ weightKg: 30, reps: 7 }), set({ weightKg: 30, reps: 8 })])];
+    expect(describeProgression(progressExercise(entry(), logs, null, 'kg'), 'kg').reason).toBe('Missed your rep and weight target in 1 of 1 session');
   });
 
   it('never calls it beat when a set was lighter than asked (build 20)', () => {
