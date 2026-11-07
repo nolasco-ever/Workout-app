@@ -4,6 +4,24 @@ Every decision the owner makes, newest first, with why. Open questions sit at th
 bottom until they're answered. Decisions before 2026-11-07 were recorded only in
 commit messages, `docs/RELEASES.md` and Claude's session notes.
 
+## 2026-11-07 18:20 · Cardio redesign: four functional changes (v1 #10)
+
+- **Project:** FlexCoach
+- **Type:** functional and architectural
+- **Decision:** (1) Cardio is its own thing, apart from strength training. A
+  workout created in a plan says what kind it is (cardio, stretching or
+  strength), and its exercise picker only offers that kind. (2) A plan day can
+  hold more than one item, e.g. a stretching workout then Lower Body on the same
+  day. (3) A cardio exercise is added to the plan on its own (e.g. Treadmill
+  Running) and put on a day, rather than living inside a workout. (4) Cardio
+  keeps the shared timer screen, with small differences per kind (an outdoor
+  run or walk tracks the route on a map, an indoor one doesn't); the cardio
+  exercises are to be listed and sorted into kinds.
+- **Why:** The owner's direction for the cardio redesign, so cardio is a first
+  class part of a plan rather than an exercise tucked into a lifting workout.
+- **Source:** v1 #10 (cardio redesign), after build 20.
+- **Decided by:** owner. Details still open below.
+
 ## 2026-11-07 18:00 · Badge celebration glow
 
 - **Project:** FlexCoach
@@ -146,4 +164,8 @@ commit messages, `docs/RELEASES.md` and Claude's session notes.
 
 ## Open questions
 
-- None.
+- **v1 #10 details (2026-11-07):** see the proposal in that session: what the
+  workout-kind question offers, which catalog types count as strength, where
+  timed conditioning drills go, how a day with several items runs and is
+  missed or pushed, cardio targets, existing plans, quick workouts, and the
+  cardio kinds that get their own screen.
