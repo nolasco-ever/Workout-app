@@ -1,6 +1,7 @@
-import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useId, useMemo, useRef, useState } from 'react';
 import { Animated, Modal, NativeScrollEvent, NativeSyntheticEvent, Platform, ScrollView, StatusBar, View, useWindowDimensions } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import Svg, { Circle, Defs, RadialGradient, Stop } from 'react-native-svg';
 import { useAuth } from '../../data/auth/AuthProvider';
 import { AchievementUnlock } from '../../data/models';
 import { ACHIEVEMENT_FAMILIES, tierLabel } from '../../data/engine/achievements';
@@ -18,6 +19,8 @@ import { preloadBadges } from './preloadBadges';
 const HOLD_ON = new Set(['BadgeScreen', 'SessionScreen', 'SessionCompleteScreen', 'SessionExercisesScreen', 'CycleReviewScreen', 'ScanCardScreen', 'AuthStack', 'OnboardingStack']);
 
 const BADGE = 280;
+/** The halo behind the badge, as wide as this many badges (build 20, canvas option A). */
+const HALO = 1.6;
 const GROUND = '#000000';
 /** How far a badge turns, in radians, as its page travels one screen width. */
 const SWIPE_TURN = 2.4;
@@ -44,7 +47,8 @@ const Page = ({ unlock, unit, width, progress, live, spun, pageIndex, markSpun, 
   const yawOffset = Math.abs(progress) < 0.004 ? 0 : progress * SWIPE_TURN;
   return (
     <View style={{ width, alignItems: 'center', gap: spacing.xl, paddingHorizontal: spacing.xl }}>
-      <View style={{ width: BADGE, height: BADGE }}>
+      <View style={{ width: BADGE, height: BADGE, overflow: 'visible' }}>
+        <Halo color={art.glow} />
         {live && <BadgeView family={unlock.family} tier={unlock.tier} restYaw={HERO_REST_YAW} spinIn={spinIn} yawOffset={yawOffset} unlockedAt={unlock.unlockedAt} onReady={() => { setReady(true); onReady?.(); }} style={{ width: BADGE, height: BADGE }} />}
       </View>
       <View style={{ alignItems: 'center', gap: spacing.sm }}>
@@ -52,6 +56,27 @@ const Page = ({ unlock, unit, width, progress, live, spun, pageIndex, markSpun, 
         <CustomText variant="display" color="#FFFFFF" centered>{tierLabel(unlock.family, unlock.threshold, unit)}</CustomText>
       </View>
     </View>
+  );
+};
+
+/**
+ * A soft, still halo behind the badge in its material's own glow colour, so
+ * the screen is not flat black (build 20, owner's pick on the canvas).
+ */
+const Halo = ({ color }: { color: string }) => {
+  const id = `halo${useId().replace(/[^A-Za-z0-9]/g, '')}`;
+  const size = BADGE * HALO;
+  return (
+    <Svg width={size} height={size} pointerEvents="none" style={{ position: 'absolute', left: (BADGE - size) / 2, top: (BADGE - size) / 2 }}>
+      <Defs>
+        <RadialGradient id={id} cx="50%" cy="50%" r="50%">
+          <Stop offset="0" stopColor={color} stopOpacity={0.38} />
+          <Stop offset="0.32" stopColor={color} stopOpacity={0.17} />
+          <Stop offset="0.68" stopColor={color} stopOpacity={0} />
+        </RadialGradient>
+      </Defs>
+      <Circle cx={size / 2} cy={size / 2} r={size / 2} fill={`url(#${id})`} />
+    </Svg>
   );
 };
 

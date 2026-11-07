@@ -45,7 +45,7 @@ Design (canvas first)
 - [x] B20-12 Streaks calendar: a line through the current streak, maybe fire
       after a number of days (fb-1).
 - [x] B20-13 ~~no change: the card already shows one badge per family (owner)~~ Buddy card badges: a layout that holds 20 to 40+ badges (fb-4).
-- [ ] B20-14 Badge celebration screen: a glow behind the badge instead of flat
+- [x] B20-14 Badge celebration screen: a glow behind the badge instead of flat
       black (fb-6).
 - [x] B20-15 Exercise filters: pick several at once, e.g. Dumbbell and Machine
       (fb-9).

@@ -4,6 +4,20 @@ Every decision the owner makes, newest first, with why. Open questions sit at th
 bottom until they're answered. Decisions before 2026-11-07 were recorded only in
 commit messages, `docs/RELEASES.md` and Claude's session notes.
 
+## 2026-11-07 18:00 · Badge celebration glow
+
+- **Project:** FlexCoach
+- **Type:** design
+- **Decision:** The badge celebration gets a soft, still halo behind the badge
+  (canvas option A, over rotating rays or a floor glow), in the badge
+  material's own glow colour from badgeArt.ts (bronze warm, sapphire blue,
+  diamond icy), as drawn on the canvas.
+- **Why:** The screen read as flat black. A still halo lifts it without
+  competing with the badge's spin.
+- **Source:** build 20 fb-6 (B20-14).
+- **Decided by:** owner (option A). The material colour, rather than the app's
+  orange, is what the chosen board showed; flagged to the owner.
+
 ## 2026-11-07 17:40 · Buddy card badges stay as they are
 
 - **Project:** FlexCoach
