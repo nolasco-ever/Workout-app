@@ -95,9 +95,10 @@ export const ExerciseDetailScreen = () => {
         <Image source={{ uri: Platform.OS === 'android' ? ex.animation.webp : ex.animation.gif }} resizeMode="cover" accessibilityLabel={`${ex.name}, in motion`} style={{ width: '100%', aspectRatio: 1, borderRadius: radius.md, backgroundColor: '#FFFFFF' }} />
       )}
       {!ex.animation && ex.images.length > 0 && (
-        <View style={{ flexDirection: 'row', gap: spacing.sm }}>
+        // One above the other, full width, so each photo is big enough to read (build 20).
+        <View style={{ gap: spacing.lg }}>
           {ex.images.slice(0, 2).map((uri, i) => (
-            <TouchableOpacity key={uri} activeOpacity={0.8} onPress={() => setViewing(i)} accessibilityRole="imagebutton" accessibilityLabel={`Expand ${i === 0 ? 'start' : 'finish'} photo`} style={{ flex: 1, gap: spacing.xs }}>
+            <TouchableOpacity key={uri} activeOpacity={0.8} onPress={() => setViewing(i)} accessibilityRole="imagebutton" accessibilityLabel={`Expand ${i === 0 ? 'start' : 'finish'} photo`} style={{ gap: spacing.xs }}>
               <Image source={{ uri }} resizeMode="cover" style={{ width: '100%', aspectRatio: 4 / 3, borderRadius: radius.md, backgroundColor: colors.surfaceRaised }} />
               <CustomText variant="caption" color={colors.inkMuted} centered>{i === 0 ? 'Start' : 'Finish'} · tap to expand</CustomText>
             </TouchableOpacity>

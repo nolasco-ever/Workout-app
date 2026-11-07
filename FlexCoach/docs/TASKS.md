@@ -23,11 +23,11 @@ Bugs
       (Barbell Hip Thrust, asked 3×8 @ 120, did 3×8 @ 95) (fb-15).
 - [ ] B20-3 Calf press working weight came up at 145 lb for a tester whose max
       was 85 lb (fb-14). Investigate where 145 came from.
-- [ ] B20-4 "Weird number" on a buddy's workout: 88 and 77 lb on Standing Cable
-      Torso Rotation (fb-11 screenshot). Investigate; may be what was typed.
+- [x] B20-4 ~~"Weird number"~~: fb-11 points at the same float-noise distance as
+      B20-1, not at a weight. Nothing more to do.
 
 Small changes
-- [ ] B20-5 How to: start and finish photos larger, stacked in one column (fb-3).
+- [x] B20-5 How to: start and finish photos larger, stacked in one column (fb-3).
 - [ ] B20-6 Cycle review: reword "A rep or two short in 1 of 2 sessions: same
       target again" (fb-5). New wording needs owner OK.
 - [ ] B20-7 Home muscles card: remove the "+6 more in All" line (fb-7).
