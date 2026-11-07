@@ -4,6 +4,18 @@ Every decision the owner makes, newest first, with why. Open questions sit at th
 bottom until they're answered. Decisions before 2026-11-07 were recorded only in
 commit messages, `docs/RELEASES.md` and Claude's session notes.
 
+## 2026-11-07 16:40 · Streak fire stages
+
+- **Project:** FlexCoach
+- **Type:** design
+- **Decision:** A streak shows fire from 2 days, in stages that grow more intense
+  at 2, 10, 25, 50 and 100 days. The streak calendar also gets a line through the
+  current streak. Designed on the canvas before building.
+- **Why:** Tester feedback asked for a line through the current streak and fire
+  after a number of days; the owner wants the fire to reward longer streaks.
+- **Source:** build 20 fb-1 (B20-12).
+- **Decided by:** owner.
+
 ## 2026-11-07 16:10 · Multi-select exercise filters
 
 - **Project:** FlexCoach
