@@ -47,7 +47,7 @@ Design (canvas first)
 - [ ] B20-13 Buddy card badges: a layout that holds 20 to 40+ badges (fb-4).
 - [ ] B20-14 Badge celebration screen: a glow behind the badge instead of flat
       black (fb-6).
-- [ ] B20-15 Exercise filters: pick several at once, e.g. Dumbbell and Machine
+- [x] B20-15 Exercise filters: pick several at once, e.g. Dumbbell and Machine
       (fb-9).
 
 ## v1: before the App Store release

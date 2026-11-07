@@ -70,14 +70,16 @@ export const catalogName = (id: string, stored: string): string => getCatalogExe
 
 export interface CatalogFilter {
   query?: string;
-  muscle?: MuscleGroup;
+  /** Any of these muscles, primary or secondary. Empty or unset: every muscle. */
+  muscles?: MuscleGroup[];
   measurement?: MeasurementType;
-  equipment?: Equipment;
+  /** Any of these (build 20: dumbbell and machine together). Empty or unset: any equipment. */
+  equipment?: Equipment[];
   /**
-   * Exercise type. When unset, stretches are left out so they don't mix with
-   * training movements; pick 'stretching' to see them.
+   * Any of these exercise types. When empty or unset, stretches are left out so
+   * they don't mix with training movements; pick 'stretching' to see them.
    */
-  category?: ExerciseCategory;
+  categories?: ExerciseCategory[];
 }
 
 /**
@@ -181,23 +183,24 @@ const searchRank = (item: Indexed, terms: string[]): number | null => {
  *
  * Search matches every typed word in any order, against the name first and
  * then muscles, equipment and category, so "db press" finds dumbbell presses
- * and "hamstring curl" finds curls tagged with hamstrings. Better name
+ * and "hamstring curl" finds curls tagged with hamstrings. Within a filter
+ * section an exercise matches any picked chip. Better name
  * matches sort first. With a muscle selected, exercises that target it as a
  * primary muscle come before the ones that only hit it as a secondary
  * muscle. The catalog's alphabetical order holds within each group.
  */
-export const searchCatalog = ({ query, muscle, measurement, equipment, category }: CatalogFilter): Exercise[] => {
+export const searchCatalog = ({ query, muscles = [], measurement, equipment = [], categories = [] }: CatalogFilter): Exercise[] => {
   const terms = queryWords(query ?? '');
   const ranked: { exercise: Exercise; rank: number }[] = [];
   for (const item of index) {
     const e = item.exercise;
-    if (muscle && !e.primaryMuscles.includes(muscle) && !e.secondaryMuscles.includes(muscle)) continue;
+    if (muscles.length && !muscles.some(m => e.primaryMuscles.includes(m) || e.secondaryMuscles.includes(m))) continue;
     if (measurement && e.measurement !== measurement) continue;
-    if (equipment && e.equipment !== equipment) continue;
-    if (category ? e.category !== category : e.category === 'stretching') continue;
+    if (equipment.length && !(e.equipment && equipment.includes(e.equipment))) continue;
+    if (categories.length ? !categories.includes(e.category) : e.category === 'stretching') continue;
     const rank = terms.length ? searchRank(item, terms) : 0;
     if (rank === null) continue;
-    ranked.push({ exercise: e, rank: rank * 2 + (muscle && !e.primaryMuscles.includes(muscle) ? 1 : 0) });
+    ranked.push({ exercise: e, rank: rank * 2 + (muscles.length && !muscles.some(m => e.primaryMuscles.includes(m)) ? 1 : 0) });
   }
   return ranked.sort((a, b) => a.rank - b.rank).map(r => r.exercise);
 };

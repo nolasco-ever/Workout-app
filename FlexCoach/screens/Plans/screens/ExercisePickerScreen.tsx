@@ -31,11 +31,15 @@ const ROW_HEIGHT = 84;
 /** What the search covers by default: the catalog without stretches, which hide behind the Stretching type. */
 const DEFAULT_COUNT = searchCatalog({}).length;
 
+/** A filter chip tapped: All/Any clears the section, any other chip toggles on or off. */
+const toggleChip = <T extends string>(picked: T[], v: T | 'all' | 'any'): T[] =>
+  v === 'all' || v === 'any' ? [] : picked.includes(v as T) ? picked.filter(x => x !== v) : [...picked, v as T];
+
 interface RowProps {
   item: Exercise;
   inWorkout: boolean;
-  /** The muscle filter in effect, so a row can say when it only hits it as a secondary muscle. */
-  muscle: MuscleGroup | 'all';
+  /** The muscle filter in effect, so a row can say when it only hits them as secondary muscles. */
+  muscles: MuscleGroup[];
   onOpen: (ex: Exercise) => void;
   onAdd: (ex: Exercise) => void;
   /** Swap mode: the action swaps rather than adds, and says so. */
@@ -43,9 +47,9 @@ interface RowProps {
 }
 
 /** Memoised so the long list only re-renders rows whose data changed. */
-const ExerciseRow = React.memo(({ item, inWorkout, muscle, onOpen, onAdd, swap = false }: RowProps) => {
+const ExerciseRow = React.memo(({ item, inWorkout, muscles, onOpen, onAdd, swap = false }: RowProps) => {
   const { colors, spacing, radius } = useTheme();
-  const alsoHits = muscle !== 'all' && !item.primaryMuscles.includes(muscle);
+  const alsoHits = muscles.length > 0 && !muscles.some(m => item.primaryMuscles.includes(m)) ? muscles.filter(m => item.secondaryMuscles.includes(m)) : [];
   return (
     <View style={{ height: ROW_HEIGHT, flexDirection: 'row', alignItems: 'center', gap: spacing.md }}>
       <TouchableOpacity onPress={() => onOpen(item)} style={{ flex: 1, flexDirection: 'row', alignItems: 'center', gap: spacing.md }}>
@@ -53,7 +57,7 @@ const ExerciseRow = React.memo(({ item, inWorkout, muscle, onOpen, onAdd, swap =
         <View style={{ flex: 1 }}>
           <CustomText variant="bodyStrong" numberOfLines={1}>{item.name}</CustomText>
           <CustomText variant="caption" color={colors.inkMuted} numberOfLines={2}>
-            {item.primaryMuscles.map(title).join(', ')}{alsoHits ? ` · also ${muscle}` : ''}{item.equipment ? ` · ${title(item.equipment)}` : ''}{inWorkout ? ' · added' : ''}
+            {item.primaryMuscles.map(title).join(', ')}{alsoHits.length ? ` · also ${alsoHits.join(', ')}` : ''}{item.equipment ? ` · ${title(item.equipment)}` : ''}{inWorkout ? ' · added' : ''}
           </CustomText>
         </View>
         {/* The whole row opens the how-to; the icon is there so people know it does. */}
@@ -139,34 +143,30 @@ export const ExercisePickerScreen = () => {
   // Held like a book, the keyboard would claim a half and push this sheet onto the other, over the content it came from: the search waits for a tap.
   const book = useFold().posture === 'book';
   const [query, setQuery] = useState('');
-  const [muscle, setMuscle] = useState<MuscleGroup | 'all'>('all');
-  const [equipment, setEquipment] = useState<Equipment | 'any'>('any');
-  const [category, setCategory] = useState<ExerciseCategory | 'any'>('any');
+  // Several chips per section can be on at once (build 20); empty means all.
+  const [muscles, setMuscles] = useState<MuscleGroup[]>([]);
+  const [equipment, setEquipment] = useState<Equipment[]>([]);
+  const [categories, setCategories] = useState<ExerciseCategory[]>([]);
   const [filtersOpen, setFiltersOpen] = useState(false);
   const planWorkouts = params.mode === 'session' ? params.planWorkouts ?? [] : [];
-  const activeFilters = (muscle === 'all' ? 0 : 1) + (equipment === 'any' ? 0 : 1) + (category === 'any' ? 0 : 1);
+  const activeFilters = muscles.length + equipment.length + categories.length;
 
   const workout = params.workoutId ? draft?.workouts.find(w => w.id === params.workoutId) : undefined;
   const already = useMemo(() => new Set(sessionMode ? params.excludeIds ?? [] : workout?.exercises.map(e => e.exerciseId) ?? []), [sessionMode, params.excludeIds, workout]);
 
   // The catalog search is deferred so a tapped chip or a typed letter paints at once and the list follows.
-  const filters = useDeferredValue({ query, muscle, equipment, category });
+  const filters = useDeferredValue({ query, muscles, equipment, categories });
+  const noFilters = !filters.query && filters.muscles.length === 0 && filters.equipment.length === 0 && filters.categories.length === 0;
   const results = useMemo(() => {
-    const { query: q, muscle: m, equipment: eq, category: c } = filters;
-    const found = searchCatalog({
-      query: q,
-      muscle: m === 'all' ? undefined : m,
-      equipment: eq === 'any' ? undefined : eq,
-      category: c === 'any' ? undefined : c,
-    }).filter(e => !swapping || e.id !== swapping.id);
+    const found = searchCatalog(filters).filter(e => !swapping || e.id !== swapping.id);
     // Swapping: the closest stand-ins lead the list until a search or filter says otherwise.
-    if (swapping && !q && m === 'all' && eq === 'any' && c === 'any') {
+    if (swapping && noFilters) {
       const lead = comparableExercises(swapping, already);
       const leadIds = new Set(lead.map(e => e.id));
       return [...lead, ...found.filter(e => !leadIds.has(e.id))].slice(0, 120);
     }
     return found.slice(0, 120);
-  }, [filters, swapping, already]);
+  }, [filters, noFilters, swapping, already]);
 
   // Swapping: what the lifter has done before for the same muscle, with their last log of each, from their history.
   const [history, setHistory] = useState<Session[] | null>(null);
@@ -177,7 +177,7 @@ export const ExercisePickerScreen = () => {
     return () => { on = false; };
   }, [swapping, uid]);
   const past = useMemo(() => (swapping && history ? pastExercisesLike(swapping, history, already) : []), [swapping, history, already]);
-  const browsing = !filters.query && filters.muscle === 'all' && filters.equipment === 'any' && filters.category === 'any';
+  const browsing = noFilters;
   const stripShown = swapMode && browsing && past.length > 0;
 
   const workoutId = params.workoutId;
@@ -265,7 +265,7 @@ export const ExercisePickerScreen = () => {
         maxToRenderPerBatch={8}
         windowSize={7}
         removeClippedSubviews
-        renderItem={({ item }) => <ExerciseRow item={item} inWorkout={already.has(item.id)} muscle={muscle} onOpen={open} onAdd={add} swap={swapMode} />}
+        renderItem={({ item }) => <ExerciseRow item={item} inWorkout={already.has(item.id)} muscles={muscles} onOpen={open} onAdd={add} swap={swapMode} />}
       />
 
       <BottomSheet
@@ -275,7 +275,7 @@ export const ExercisePickerScreen = () => {
         footer={
           <View style={{ flexDirection: 'row', gap: spacing.sm }}>
             <View style={{ flex: 1 }}>
-              <PrimaryButton label="Clear" variant="quiet" disabled={activeFilters === 0} onPress={() => { setMuscle('all'); setEquipment('any'); setCategory('any'); }} />
+              <PrimaryButton label="Clear" variant="quiet" disabled={activeFilters === 0} onPress={() => { setMuscles([]); setEquipment([]); setCategories([]); }} />
             </View>
             <View style={{ flex: 2 }}>
               <PrimaryButton label={`Show ${results.length === 120 ? '120+' : results.length} exercise${results.length === 1 ? '' : 's'}`} onPress={() => setFiltersOpen(false)} />
@@ -285,15 +285,15 @@ export const ExercisePickerScreen = () => {
       >
         <View style={{ gap: spacing.sm }}>
           <CustomText variant="overline" color={colors.inkMuted}>Muscle</CustomText>
-          <ChoiceChips<MuscleGroup | 'all'> options={[{ value: 'all', label: 'All' }, ...MUSCLE_GROUPS.map(m => ({ value: m, label: title(m) }))]} value={muscle} onChange={setMuscle} />
+          <ChoiceChips<MuscleGroup | 'all'> options={[{ value: 'all', label: 'All' }, ...MUSCLE_GROUPS.map(m => ({ value: m, label: title(m) }))]} value={muscles.length ? muscles : 'all'} onChange={v => setMuscles(toggleChip(muscles, v))} />
         </View>
         <View style={{ gap: spacing.sm }}>
           <CustomText variant="overline" color={colors.inkMuted}>Equipment</CustomText>
-          <ChoiceChips<Equipment | 'any'> options={[{ value: 'any', label: 'Any' }, ...EQUIPMENT_OPTIONS]} value={equipment} onChange={setEquipment} />
+          <ChoiceChips<Equipment | 'any'> options={[{ value: 'any', label: 'Any' }, ...EQUIPMENT_OPTIONS]} value={equipment.length ? equipment : 'any'} onChange={v => setEquipment(toggleChip(equipment, v))} />
         </View>
         <View style={{ gap: spacing.sm }}>
           <CustomText variant="overline" color={colors.inkMuted}>Type</CustomText>
-          <ChoiceChips<ExerciseCategory | 'any'> options={[{ value: 'any', label: 'Any' }, ...CATEGORY_OPTIONS]} value={category} onChange={setCategory} />
+          <ChoiceChips<ExerciseCategory | 'any'> options={[{ value: 'any', label: 'Any' }, ...CATEGORY_OPTIONS]} value={categories.length ? categories : 'any'} onChange={v => setCategories(toggleChip(categories, v))} />
           <CustomText variant="caption" color={colors.inkMuted}>Stretches only show when you pick Stretching.</CustomText>
         </View>
       </BottomSheet>

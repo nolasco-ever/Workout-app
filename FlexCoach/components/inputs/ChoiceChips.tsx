@@ -5,16 +5,17 @@ import { useTheme } from '../../theme';
 
 interface Props<T extends string> {
   options: { value: T; label: string }[];
-  value: T | null;
+  /** One value, or several when more than one chip can be on. */
+  value: T | T[] | null;
   onChange: (value: T) => void;
   scroll?: boolean;
 }
 
-/** Single-select chips. Scrolls horizontally when there are many options. */
+/** Chips: one on, or several when `value` is a list. Scrolls horizontally when there are many options. */
 export function ChoiceChips<T extends string>({ options, value, onChange, scroll = false }: Props<T>) {
   const { colors, radius, spacing } = useTheme();
   const chips = options.map(o => {
-    const on = o.value === value;
+    const on = Array.isArray(value) ? value.includes(o.value) : o.value === value;
     return (
       // Pressable, not TouchableOpacity: the opacity dip read as a dim, laggy chip while the list behind recomputed.
       <Pressable

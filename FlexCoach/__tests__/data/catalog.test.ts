@@ -102,3 +102,24 @@ describe('comparableExercises', () => {
     expect(comparableExercises(bench, new Set([first.id])).some(e => e.id === first.id)).toBe(false);
   });
 });
+
+describe('searchCatalog: several chips in a section (build 20)', () => {
+  it('shows exercises matching any picked equipment', () => {
+    const both = searchCatalog({ equipment: ['dumbbell', 'machine'] });
+    const db = searchCatalog({ equipment: ['dumbbell'] });
+    const machine = searchCatalog({ equipment: ['machine'] });
+    expect(both.length).toBe(db.length + machine.length);
+    expect(both.every(e => e.equipment === 'dumbbell' || e.equipment === 'machine')).toBe(true);
+  });
+
+  it('treats an empty list as every option, stretches still hidden', () => {
+    expect(searchCatalog({ equipment: [], muscles: [], categories: [] }).length).toBe(searchCatalog({}).length);
+    expect(searchCatalog({}).some(e => e.category === 'stretching')).toBe(false);
+  });
+
+  it('matches any picked muscle and any picked type', () => {
+    const found = searchCatalog({ muscles: ['biceps', 'triceps'], categories: ['strength', 'stretching'] });
+    expect(found.every(e => ['biceps', 'triceps'].some(m => e.primaryMuscles.includes(m as never) || e.secondaryMuscles.includes(m as never)))).toBe(true);
+    expect(found.some(e => e.category === 'stretching')).toBe(true);
+  });
+});
