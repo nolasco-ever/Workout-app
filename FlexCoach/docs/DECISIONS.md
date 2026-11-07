@@ -4,6 +4,25 @@ Every decision the owner makes, newest first, with why. Open questions sit at th
 bottom until they're answered. Decisions before 2026-11-07 were recorded only in
 commit messages, `docs/RELEASES.md` and Claude's session notes.
 
+## 2026-11-07 19:00 · Splitting existing plans (v1 #10)
+
+- **Project:** FlexCoach
+- **Type:** functional and architectural
+- **Decision:** Existing plans are split automatically, once per plan: cardio
+  exercises leave their workout and become cardio items on the same days
+  (before the workout if they were first in it, after otherwise), keeping their
+  target; a cardio-only workout becomes its cardio items; stretches in a
+  strength workout become their own stretching workout on the same days, by the
+  same before/after rule; timed drills stay. History is untouched. The current
+  cycle keeps every past and settled day and lays out the rest again (the same
+  path as a plan edit). The original plan is backed up first, a one-time notice
+  explains the change with Undo, nothing runs mid-workout, buddy-synced plans
+  follow their source, and the whole thing sits behind a switch in
+  config/features.ts, tried on the owner's account first.
+- **Why:** The owner wants plans clean without breaking anyone's.
+- **Source:** v1 #10.
+- **Decided by:** owner.
+
 ## 2026-11-07 18:45 · Cardio redesign: the details (v1 #10)
 
 - **Project:** FlexCoach
@@ -197,6 +216,4 @@ commit messages, `docs/RELEASES.md` and Claude's session notes.
 
 ## Open questions
 
-- **v1 #10, existing plans (2026-11-07):** how to split cardio (and stray
-  stretches) out of existing workouts without breaking anyone's plan. Proposal
-  given; awaiting the owner.
+- None.
