@@ -4,6 +4,19 @@ Every decision the owner makes, newest first, with why. Open questions sit at th
 bottom until they're answered. Decisions before 2026-11-07 were recorded only in
 commit messages, `docs/RELEASES.md` and Claude's session notes.
 
+## 2026-11-07 17:05 · Streak line and where the fire shows
+
+- **Project:** FlexCoach
+- **Type:** design
+- **Decision:** The current streak is marked on the Streaks calendar with a soft
+  green band behind its days (canvas option A, over a thin line through them).
+  The fire shows on the Streaks screen, the Home streak tile and the buddy card /
+  Buddies list streak pill. Stages have no names anywhere. The first flame
+  drawings were rejected; new flame designs are being drawn.
+- **Why:** Owner's pick on the canvas boards StreakLineA/B and StreakFirePlaces.
+- **Source:** build 20 fb-1 (B20-12).
+- **Decided by:** owner.
+
 ## 2026-11-07 16:40 · Streak fire stages
 
 - **Project:** FlexCoach
