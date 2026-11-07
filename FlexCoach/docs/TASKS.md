@@ -19,7 +19,7 @@ behaviour change.
 Bugs
 - [x] B20-1 Cardio distance shows float noise, "2.2800000000000002 mi", on the
       workout-done screen and in Records (fb-10, fb-11).
-- [ ] B20-2 Cycle review says "Beat" when the weight was lower than asked
+- [x] B20-2 Cycle review says "Beat" when the weight was lower than asked
       (Barbell Hip Thrust, asked 3×8 @ 120, did 3×8 @ 95) (fb-15).
 - [ ] B20-3 Calf press working weight came up at 145 lb for a tester whose max
       was 85 lb (fb-14). Investigate where 145 came from.

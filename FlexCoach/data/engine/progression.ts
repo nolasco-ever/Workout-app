@@ -182,8 +182,15 @@ export const progressExercise = (prescribed: WorkoutExercise, logs: SessionExerc
       });
       // What was done, set by set: the fewest reps the set reached in any session, at its last weight.
       const did = withPerSet(entry.sets, indices.map(i => ({ weightKg: lastWeights[i], reps: Math.min(...done.map(sets => sets[i]?.reps ?? 0)) })));
-      // Beaten: every set of every session did more than it was asked, in reps or in weight at the asked reps.
-      const beatAll = hitAll && done.every(sets => indices.every(i => (sets[i].reps ?? 0) > asked[i] || (sets[i].weightKg ?? 0) > (goalFor(from, i).weightKg ?? 0)));
+      // Beaten: every set of every session did at least what it was asked in both reps and weight, and more of one.
+      // More reps at a lighter weight is not a beat (build 20: 3 x 8 @ 95 lb against 3 x 8 @ 120 lb read "Beat").
+      const beatSet = (s: LoggedSet, i: number) => {
+        const reps = s.reps ?? 0;
+        const weight = s.weightKg ?? 0;
+        const askedWeight = goalFor(from, i).weightKg ?? 0;
+        return reps >= asked[i] && weight >= askedWeight && (reps > asked[i] || weight > askedWeight);
+      };
+      const beatAll = hitAll && done.every(sets => indices.every(i => beatSet(sets[i], i)));
       const verdict: ProgressionVerdict = beatAll ? 'beat' : hitAll ? 'hit' : 'missed';
 
       const changeFor = (reps: number): ProgressionChange => (reps > targetReps ? 'climb' : reps < targetReps ? 'drop' : 'hold');

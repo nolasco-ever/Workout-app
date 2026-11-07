@@ -148,6 +148,13 @@ describe('progressExercise: the verdict and what was done', () => {
     expect(progressExercise(entry(), moreWeight, null, 'kg').verdict).toBe('beat');
   });
 
+  it('never calls it beat when a set was lighter than asked (build 20)', () => {
+    // Asked 3 x 8 @ 54.4 kg (120 lb); the first session went heavier, the last went lighter with more reps.
+    const asked = { reps: 8, weightKg: 54.4 };
+    const logs = [lastSession(asked, three(56.7, 8)), lastSession(asked, three(43.1, 9))];
+    expect(progressExercise({ ...entry(), repRangeMin: 8, repRangeMax: 12 }, logs, null, 'lb').verdict).not.toBe('beat');
+  });
+
   it('calls it missed when any session fell short, and shows the lowest the sets got', () => {
     const logs = [lastSession({ reps: 10, weightKg: 30 }, three(30, 10)), lastSession({ reps: 10, weightKg: 30 }, [set({ weightKg: 30, reps: 10 }), set({ weightKg: 30, reps: 9 }), set({ weightKg: 30, reps: 8 })])];
     const p = progressExercise(entry(), logs, null, 'kg');
