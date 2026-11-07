@@ -31,7 +31,7 @@ Small changes
 - [ ] B20-6 Cycle review: reword "A rep or two short in 1 of 2 sessions: same
       target again" (fb-5). New wording needs owner OK.
 - [x] B20-7 Home muscles card: remove the "+6 more in All" line (fb-7).
-- [ ] B20-8 Buddy's finished workout: an "i" beside each exercise name opening
+- [x] B20-8 Buddy's finished workout: an "i" beside each exercise name opening
       How to (fb-13).
 
 Cardio session (with v1 #10, **discuss first**)

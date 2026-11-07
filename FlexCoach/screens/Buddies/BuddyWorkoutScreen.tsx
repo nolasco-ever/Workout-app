@@ -1,7 +1,8 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { ActivityIndicator, ScrollView, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from '../../components/layout/SafeAreaView';
-import { RouteProp, useRoute } from '@react-navigation/native';
+import { NavigationProp, RouteProp, useNavigation, useRoute } from '@react-navigation/native';
+import { AppStackParams } from '../../appNavigators/AppStack';
 import { useAuth } from '../../data/auth/AuthProvider';
 import { Activity, RecordKind, SharedExercise, SharedSet } from '../../data/models';
 import { buddyRepository } from '../../data/repositories/buddyRepository';
@@ -138,6 +139,7 @@ const RecordRow = ({ name, value, line, units, open, onToggle, divider }: { name
 /** One exercise of a buddy's workout, read-only, showing only what they shared. */
 const SharedExerciseCard = ({ ex, units }: { ex: SharedExercise; units: Units }) => {
   const { colors, spacing } = useTheme();
+  const navigation = useNavigation<NavigationProp<AppStackParams>>();
   const catalog = ex.exerciseId ? getCatalogExercise(ex.exerciseId) : null;
   const cols = columnsOf(ex, units);
   const best = topLine(ex, units);
@@ -150,6 +152,12 @@ const SharedExerciseCard = ({ ex, units }: { ex: SharedExercise; units: Units })
           {catalog?.primaryMuscles.length ? <CustomText variant="caption" color={colors.inkMuted}>{catalog.primaryMuscles.join(', ')}</CustomText> : null}
           {best ? <CustomText variant="caption" color={colors.inkMuted}>{ex.measurement === 'distance_time' ? 'Best' : 'Best set'} · {best}</CustomText> : null}
         </View>
+        {/* The how-to for an exercise a buddy did, read-only (build 20). */}
+        {catalog && ex.exerciseId && (
+          <TouchableOpacity onPress={() => navigation.navigate('ExerciseDetailScreen', { exerciseId: ex.exerciseId!, knownAs: ex.name })} hitSlop={8} accessibilityRole="button" accessibilityLabel={`How to do ${ex.name}`}>
+            <Icon icon={generalIcons.info} size={20} color={colors.inkMuted} />
+          </TouchableOpacity>
+        )}
       </View>
       {ex.sets && ex.sets.length > 0 && (
         <View>
