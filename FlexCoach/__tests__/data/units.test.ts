@@ -38,4 +38,9 @@ describe('formatRecordValue', () => {
     expect(formatRecordValue('distance', 1480.59648, 'lb', 'mi')).toBe('0.92 mi');
     expect(formatRecordValue('distance', 1480.59648, 'kg', 'km')).toBe('1.48 km');
   });
+
+  it('shows a distance without float noise', () => {
+    expect(formatRecordValue('distance', 2.28 * 1609.344, 'lb', 'mi')).toBe('2.28 mi');
+    expect(formatRecordValue('distance', 2280, 'kg', 'km')).toBe('2.28 km');
+  });
 });

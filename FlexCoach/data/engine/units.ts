@@ -3,7 +3,8 @@ import { DistanceUnit, WeightUnit } from '../models';
 export const KG_PER_LB = 0.45359237;
 export const M_PER_MI = 1609.344;
 
-const roundTo = (value: number, step: number): number => Math.round(value / step) * step;
+// toPrecision drops float noise from the multiply back (228 * 0.01 is 2.2800000000000002).
+const roundTo = (value: number, step: number): number => Number((Math.round(value / step) * step).toPrecision(12));
 
 export const kgToLb = (kg: number): number => kg / KG_PER_LB;
 export const lbToKg = (lb: number): number => lb * KG_PER_LB;

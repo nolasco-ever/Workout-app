@@ -17,7 +17,7 @@ push each item on its own, asking first only when it needs a design or
 behaviour change.
 
 Bugs
-- [ ] B20-1 Cardio distance shows float noise, "2.2800000000000002 mi", on the
+- [x] B20-1 Cardio distance shows float noise, "2.2800000000000002 mi", on the
       workout-done screen and in Records (fb-10, fb-11).
 - [ ] B20-2 Cycle review says "Beat" when the weight was lower than asked
       (Barbell Hip Thrust, asked 3×8 @ 120, did 3×8 @ 95) (fb-15).
