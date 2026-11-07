@@ -78,6 +78,10 @@ Design (canvas first)
     per-mode session UI (treadmill, outdoor run/walk, cycling, bike, elliptical,
     stairs), treadmills over Bluetooth FTMS (GymKit is Apple-only), maybe Health
     import. Build 20 items B20-9 to B20-11 belong here.
+    Owner 2026-11-07, functional changes in scope: cardio separate from
+    strength (a workout has a kind, the picker filters by it); several items
+    on one plan day; cardio added to a plan on its own, not inside a workout;
+    cardio kinds listed and given their own screen differences (map outdoors).
 11. Weight unit as an app-wide setting changeable after onboarding (only the
     Profile/Account control is missing).
 12. Pre-made beginner plans with a questionnaire that picks one (build 10).
