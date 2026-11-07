@@ -4,6 +4,35 @@ Every decision the owner makes, newest first, with why. Open questions sit at th
 bottom until they're answered. Decisions before 2026-11-07 were recorded only in
 commit messages, `docs/RELEASES.md` and Claude's session notes.
 
+## 2026-11-07 19:40 · Cardio redesign: first canvas notes (v1 #10)
+
+- **Project:** FlexCoach
+- **Type:** design and functional
+- **Decision:**
+  - No "What are you adding?" sheet in the plan editor. In Workouts (2 of 4),
+    the add-workout card asks the name and the kind; a second button, "Add
+    cardio exercise", adds cardio on its own.
+  - Quick workout opens a full screen "What kind of workout are you doing?":
+    Strength workout (Lifts, plyometrics and timed drills), Stretching workout
+    (Mobility and stretches), Cardio.
+  - Schedule, fixed weekdays: the weekdays sit in a row at the top (the
+    SegmentedPager used on History and How to); the chosen day shows pills to
+    select its items. Rotation keeps its rows, showing numbered pills.
+  - The Review step stays as it is.
+  - Workout tab: a day's items are rows with a chevron, no Start or Preview
+    buttons; a row opens the preview screen, which has Start. Items can be done
+    in any order. "This cycle" keeps its current design.
+  - The split notice drops "Same target." and the Undo button (the backup is
+    still kept).
+  - Cardio screen: the exercise name is the header title; no How to or Swap;
+    no stat source labels (GPS, Watch); heart rate on every kind; Start, Pause
+    and End are round icon buttons at the bottom; no "of 30:00", no hint
+    captions, no "Log it without the timer"; outdoor kinds put the map behind
+    the whole screen; End opens a full done screen like a finished workout.
+- **Why:** Owner's review of the first boards.
+- **Source:** v1 #10.
+- **Decided by:** owner.
+
 ## 2026-11-07 19:00 · Splitting existing plans (v1 #10)
 
 - **Project:** FlexCoach
