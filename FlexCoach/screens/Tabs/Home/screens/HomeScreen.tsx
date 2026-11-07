@@ -267,9 +267,6 @@ export const HomeScreen = () => {
                       <MuscleRow muscle={m.muscle} sets={m.sets} max={maxSets} onPress={() => navigation.navigate('MuscleDetailScreen', { muscle: m.muscle })} />
                     </View>
                   ))}
-                  {ins.muscles30d.length > 4 && (
-                    <CustomText variant="caption" color={colors.inkMuted} style={{ marginTop: spacing.xs }}>+{ins.muscles30d.length - 4} more in All</CustomText>
-                  )}
                   </View>
                 </View>
               ) : (
