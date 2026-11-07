@@ -1,4 +1,4 @@
-import { calendarMonth, calendarMonths, streakRuns, summarizeStreaks, trainingDays } from '../../data/engine/streaks';
+import { calendarMonth, calendarMonths, streakFireStage, streakRuns, summarizeStreaks, trainingDays } from '../../data/engine/streaks';
 import { Session } from '../../data/models';
 
 const session = (date: string, startedAt: number, status: Session['status'] = 'completed'): Session =>
@@ -39,5 +39,11 @@ describe('streaks', () => {
   it('pages from the first training month to this one, across a year end', () => {
     expect(calendarMonths('2025-11-12', '2026-01-05').map(m => [m.year, m.month])).toEqual([[2025, 10], [2025, 11], [2026, 0]]);
     expect(calendarMonths(null, '2026-10-24').map(m => [m.year, m.month])).toEqual([[2026, 9]]);
+  });
+});
+
+describe('streakFireStage (build 20)', () => {
+  it('has no fire below two days, then steps up at 2, 10, 25, 50 and 100', () => {
+    expect([0, 1, 2, 9, 10, 24, 25, 49, 50, 99, 100, 365].map(d => streakFireStage(d))).toEqual([0, 0, 1, 1, 2, 2, 3, 3, 4, 4, 5, 5]);
   });
 });

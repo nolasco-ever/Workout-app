@@ -42,7 +42,7 @@ Cardio session (with v1 #10, **discuss first**)
       with Apple Fitness) from Health (fb-12).
 
 Design (canvas first)
-- [ ] B20-12 Streaks calendar: a line through the current streak, maybe fire
+- [x] B20-12 Streaks calendar: a line through the current streak, maybe fire
       after a number of days (fb-1).
 - [ ] B20-13 Buddy card badges: a layout that holds 20 to 40+ badges (fb-4).
 - [ ] B20-14 Badge celebration screen: a glow behind the badge instead of flat

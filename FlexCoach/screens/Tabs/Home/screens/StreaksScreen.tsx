@@ -5,12 +5,13 @@ import { useNavigation } from '@react-navigation/native';
 import { useAuth } from '../../../../data/auth/AuthProvider';
 import { sessionRepository } from '../../../../data/repositories/sessionRepository';
 import { LocalDate, Session } from '../../../../data/models';
-import { fromLocalDate, today } from '../../../../data/engine/dates';
+import { addDays, fromLocalDate, today } from '../../../../data/engine/dates';
 import { describeLogged, totalVolumeKg } from '../../../../data/engine/stats';
 import { formatWeight } from '../../../../data/engine/units';
 import { CalendarMonth, StreakRun, calendarMonths, summarizeStreaks, trainingDays } from '../../../../data/engine/streaks';
 import { CustomText } from '../../../../components/text/customText';
 import { SurfaceCard } from '../../../../components/cards/SurfaceCard';
+import { StreakFire } from '../../../../components/streaks/StreakFire';
 import { BottomSheet } from '../../../../components/overlays/BottomSheet';
 import { Icon } from '../../../../components/icons/Icon';
 import { directionIcons } from '../../../../components/icons/icon-library';
@@ -45,7 +46,8 @@ const describeSession = (s: Session, unit: 'lb' | 'kg'): string => {
  * pages by month, this month first and earlier ones a swipe to the right
  * (owner: horizontal, not one long scroll). A day with a finished workout
  * is a green number, and today a circle, green once it has one and orange
- * until then; a tapped green day opens its workouts, each opening its detail.
+ * until then; the current streak sits on a green band, with its fire under the
+ * calendar (build 20); a tapped green day opens its workouts, each opening its detail.
  * The current and best streak sit under it, then what counts toward one.
  */
 export const StreaksScreen = () => {
@@ -109,8 +111,31 @@ export const StreaksScreen = () => {
                 </CustomText>
               </View>
             );
+            // The current streak sits on a green band (build 20, canvas option A), one per week row,
+            // rounded where the streak starts or ends and where the row does.
+            const banded = inRun(current, d);
+            const startsBand = banded && (di === 0 || !inRun(current, addDays(d, -1)));
+            const endsBand = banded && (di === 6 || !inRun(current, addDays(d, 1)));
             return (
               <View key={di} style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
+                {banded && (
+                  <View
+                    style={{
+                      position: 'absolute',
+                      top: (ROW_HEIGHT - DOT) / 2,
+                      bottom: (ROW_HEIGHT - DOT) / 2,
+                      left: startsBand ? '50%' : 0,
+                      right: endsBand ? '50%' : 0,
+                      marginLeft: startsBand ? -DOT / 2 : 0,
+                      marginRight: endsBand ? -DOT / 2 : 0,
+                      backgroundColor: colors.successTint,
+                      borderTopLeftRadius: startsBand ? DOT / 2 : 0,
+                      borderBottomLeftRadius: startsBand ? DOT / 2 : 0,
+                      borderTopRightRadius: endsBand ? DOT / 2 : 0,
+                      borderBottomRightRadius: endsBand ? DOT / 2 : 0,
+                    }}
+                  />
+                )}
                 {trained ? (
                   <TouchableOpacity onPress={() => setOpenDay(d)} hitSlop={4} accessibilityRole="button" accessibilityLabel={`${longDate(d)}, workout done`}>
                     {number}
@@ -167,8 +192,11 @@ export const StreaksScreen = () => {
               </View>
             </View>
 
-            <View style={{ flexDirection: 'row', gap: spacing.lg }}>
-              <CustomText variant="caption" color={colors.success}>{`Current streak: ${daysWord(current?.length ?? 0)}`}</CustomText>
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.lg }}>
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.xs }}>
+                <StreakFire days={current?.length ?? 0} size={18} />
+                <CustomText variant="caption" color={colors.success}>{`Current streak: ${daysWord(current?.length ?? 0)}`}</CustomText>
+              </View>
               <CustomText variant="caption" color={colors.accent}>{`Best: ${daysWord(best?.length ?? 0)}`}</CustomText>
             </View>
 

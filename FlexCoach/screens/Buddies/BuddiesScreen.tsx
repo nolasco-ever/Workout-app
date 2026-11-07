@@ -10,6 +10,7 @@ import { CustomText } from '../../components/text/customText';
 import { SurfaceCard } from '../../components/cards/SurfaceCard';
 import { PrimaryButton } from '../../components/buttons/PrimaryButton';
 import { Icon } from '../../components/icons/Icon';
+import { StreakFire } from '../../components/streaks/StreakFire';
 import { directionIcons, generalIcons } from '../../components/icons/icon-library';
 import { Avatar } from '../../components/buddies/Avatar';
 import { useNoHeaderGlass } from '../../navigation/useNoHeaderGlass';
@@ -92,7 +93,7 @@ export const BuddiesScreen = () => {
                     <CustomText variant="bodyStrong">{b.card?.displayName ?? b.displayName ?? 'Buddy'}</CustomText>
                     <CustomText variant="caption" color={colors.inkMuted}>{buddySummary(b)}</CustomText>
                   </View>
-                  {b.card?.currentStreakDays ? <Icon icon={generalIcons.flame} size={18} color={colors.accent} /> : null}
+                  {b.card?.currentStreakDays ? <StreakFire days={b.card.currentStreakDays} size={18} /> : null}
                   <Icon icon={directionIcons.angleRight} size={20} color={colors.inactive} />
                 </TouchableOpacity>
               ))}

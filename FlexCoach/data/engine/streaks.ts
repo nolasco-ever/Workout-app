@@ -1,5 +1,6 @@
 import { LocalDate, Session } from '../models';
 import { addDays } from './dates';
+import { STREAK_FIRE_DAYS } from '../../config/streaks';
 
 /**
  * The Streaks screen's numbers and calendar (build 19 feedback, owner
@@ -55,6 +56,13 @@ export const summarizeStreaks = (days: Iterable<LocalDate>, todayDate: LocalDate
   const best = runs.reduce<StreakRun | null>((b, r) => (!b || r.length >= b.length ? r : b), null);
   return { current, best };
 };
+
+/**
+ * How much fire a streak of `days` shows: 0 for none, then 1 to 5, one step
+ * at each milestone in config (2, 10, 25, 50, 100 days).
+ */
+export const streakFireStage = (days: number, milestones: readonly number[] = STREAK_FIRE_DAYS): number =>
+  milestones.filter(m => days >= m).length;
 
 export interface CalendarMonth {
   year: number;

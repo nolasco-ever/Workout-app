@@ -17,6 +17,7 @@ import { PrimaryButton } from '../../../../components/buttons/PrimaryButton';
 import { Icon } from '../../../../components/icons/Icon';
 import { directionIcons, generalIcons } from '../../../../components/icons/icon-library';
 import { StatTile } from '../../../../components/charts/StatTile';
+import { StreakFire } from '../../../../components/streaks/StreakFire';
 import { compactNumber, dateLabel, shortDate } from '../../../../components/charts/scale';
 import { MuscleMap } from '../../../../components/anatomy/MuscleMap';
 import { MuscleRow } from '../components/MuscleRow';
@@ -244,7 +245,7 @@ export const HomeScreen = () => {
   // Beside the today card (medium) the pair fills its height; a tile already fills its width.
   const tiles = (
             <View style={{ flexDirection: 'row', gap: spacing.sm, flex: medium ? 1 : undefined }}>
-              <StatTile label="Streak" value={`${ins.streakDays}d`} delta={ins.streakDays > 0 ? 'Keep it going' : 'Train to start one'} onPress={() => navigation.navigate('StreaksScreen')} accessibilityLabel={`Streak ${ins.streakDays} days, open the streak calendar`} />
+              <StatTile label="Streak" value={`${ins.streakDays}d`} accessory={<StreakFire days={ins.streakDays} size={24} />} delta={ins.streakDays > 0 ? 'Keep it going' : 'Train to start one'} onPress={() => navigation.navigate('StreaksScreen')} accessibilityLabel={`Streak ${ins.streakDays} days, open the streak calendar`} />
               <StatTile
                 label="This week"
                 value={String(ins.week.sessionsDone)}

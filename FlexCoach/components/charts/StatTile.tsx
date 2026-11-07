@@ -12,15 +12,24 @@ interface Props {
   /** With a handler the tile is a button, e.g. to explain what the number means. */
   onPress?: () => void;
   accessibilityLabel?: string;
+  /** Drawn beside the value, e.g. the streak's fire. */
+  accessory?: React.ReactNode;
 }
 
-export const StatTile = ({ label, value, delta, tone = 'neutral', onPress, accessibilityLabel }: Props) => {
+export const StatTile = ({ label, value, delta, tone = 'neutral', onPress, accessibilityLabel, accessory }: Props) => {
   const { colors, spacing, radius } = useTheme();
   const deltaColor = tone === 'up' ? colors.success : tone === 'down' ? colors.error : colors.inkMuted;
   const body = (
     <>
       <CustomText variant="overline" color={colors.inkMuted}>{label}</CustomText>
-      <CustomText variant="title" style={{ fontVariant: ['tabular-nums'] }}>{value}</CustomText>
+      {accessory ? (
+        <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.sm }}>
+          <CustomText variant="title" style={{ fontVariant: ['tabular-nums'] }}>{value}</CustomText>
+          {accessory}
+        </View>
+      ) : (
+        <CustomText variant="title" style={{ fontVariant: ['tabular-nums'] }}>{value}</CustomText>
+      )}
       {delta ? <CustomText variant="caption" color={deltaColor}>{delta}</CustomText> : null}
     </>
   );

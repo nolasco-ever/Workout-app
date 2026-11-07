@@ -5,8 +5,7 @@ import { formatRecordValue, kgToLb } from '../../data/engine/units';
 import { dateLabel } from '../charts/scale';
 import { toLocalDate } from '../../data/engine/dates';
 import { CustomText } from '../text/customText';
-import { Icon } from '../icons/Icon';
-import { generalIcons } from '../icons/icon-library';
+import { StreakFire } from '../streaks/StreakFire';
 import { useTheme } from '../../theme';
 import { Avatar } from './Avatar';
 import { BadgeSvg } from '../achievements/BadgeSvg';
@@ -63,7 +62,7 @@ export const IronCard = ({ card, unit, distanceUnit = 'mi', footer }: { card: Pu
         </View>
         {card.currentStreakDays > 0 && (
           <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4, backgroundColor: colors.accentTint, borderRadius: radius.pill, paddingHorizontal: spacing.sm, paddingVertical: 4 }}>
-            <Icon icon={generalIcons.flame} size={14} color={colors.accent} />
+            <StreakFire days={card.currentStreakDays} size={14} />
             <CustomText variant="label" color={colors.accent}>{card.currentStreakDays}d</CustomText>
           </View>
         )}
