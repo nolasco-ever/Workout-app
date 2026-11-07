@@ -4,6 +4,20 @@ Every decision the owner makes, newest first, with why. Open questions sit at th
 bottom until they're answered. Decisions before 2026-11-07 were recorded only in
 commit messages, `docs/RELEASES.md` and Claude's session notes.
 
+## 2026-11-07 17:40 · Buddy card badges stay as they are
+
+- **Project:** FlexCoach
+- **Type:** design
+- **Decision:** The Iron Card keeps showing one badge per family, its highest
+  tier, so it never shows more badges than there are families (10 today). No
+  new layout. The canvas row "Buddy card badges" (options A to C and an All
+  badges screen) is kept for reference, not built.
+- **Why:** The worry was badges piling up to 20 to 40. The card already
+  collapses each family to its top tier, so it only grows when a family is
+  added.
+- **Source:** build 20 fb-4 (B20-13).
+- **Decided by:** owner.
+
 ## 2026-11-07 17:05 · Streak line and where the fire shows
 
 - **Project:** FlexCoach
