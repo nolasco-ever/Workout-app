@@ -4,6 +4,34 @@ Every decision the owner makes, newest first, with why. Open questions sit at th
 bottom until they're answered. Decisions before 2026-11-07 were recorded only in
 commit messages, `docs/RELEASES.md` and Claude's session notes.
 
+## 2026-11-07 20:10 · Cardio redesign: second canvas notes (v1 #10)
+
+- **Project:** FlexCoach
+- **Type:** design and functional
+- **Decision:**
+  - Workouts step: the add card is the existing one with "Workout type"
+    (Strength / Stretching) added above the name; nothing else changes.
+  - Rotation: a closed day shows its items as names, comma separated; pills only
+    when open.
+  - Workout tab: "Done" (not "Done · see workout"); no "any order" line.
+  - The split message becomes a reusable **Notice** sheet (info icon, title
+    "Notice") for future notices to testers. Copy: "Cardio and stretching
+    exercises now sit apart from strength exercises."
+  - Cardio shows only what a Watch measures, plus calories: no incline, floors,
+    level or rower pace. Heart rate and calories on every kind; distance and pace
+    or speed only where the Watch measures them (outdoor, treadmill, swimming).
+  - Every cardio kind uses the same bottom timer panel, Liquid Glass on iOS so
+    the map shows through, solid on Android. Indoor kinds fill the space above
+    with a graphic (the kind's icon in rings that pulse with the heart rate).
+  - "Scan the console" only on machine cardio, hidden once there is scanned
+    data, back when all of it is removed. Scanned numbers can be edited or
+    removed.
+  - Done screen: the time alone on top, centred; everything else in a table, the
+    numbers without a grey box.
+- **Why:** Owner's second review of the boards.
+- **Source:** v1 #10.
+- **Decided by:** owner.
+
 ## 2026-11-07 19:40 · Cardio redesign: first canvas notes (v1 #10)
 
 - **Project:** FlexCoach
