@@ -4,6 +4,39 @@ Every decision the owner makes, newest first, with why. Open questions sit at th
 bottom until they're answered. Decisions before 2026-11-07 were recorded only in
 commit messages, `docs/RELEASES.md` and Claude's session notes.
 
+## 2026-11-07 18:45 · Cardio redesign: the details (v1 #10)
+
+- **Project:** FlexCoach
+- **Type:** functional and architectural
+- **Decision:**
+  1. Adding to a plan asks the kind first: a strength workout, a stretching
+     workout, or a cardio exercise (added on its own). For the user that is the
+     only change: they pick the kind, and the picker never mixes kinds.
+  2. Strength workouts take the Strength, Plyometrics, Powerlifting and
+     Strongman types.
+  3. Timed conditioning drills (burpees, jump rope, battle ropes, mountain
+     climbers, shadowboxing, HIIT and the like) belong with strength.
+  4. Several items on a day run as separate sessions, in the order set;
+     workouts behave exactly as now. The Workout tab shows the day's items
+     (to be designed on the canvas). A missed day is handled as a whole. One
+     finished item keeps the streak.
+  5. A cardio item has a target, but it never progresses on its own: it stays
+     where it was set.
+  6. Existing plans that mix cardio into workouts: the owner likes splitting
+     them out automatically but must not break anyone's plan; the safe way to
+     do it is proposed separately (open below).
+  7. Quick workout asks the kind too, reusing the same first step and the same
+     filtered picker.
+  8. Cardio kinds as proposed (outdoor run/walk and ride with a map; treadmill;
+     indoor bike; elliptical; stairs; rower and ski erg; swimming; drills done
+     in place become timed drills; Skating rides outdoors, Prowler Sprint is a
+     drill), drawn by ONE cardio component that shows the stats each exercise
+     needs.
+  - No PRD for this; TASKS.md and this file are the record.
+- **Why:** Owner's answers to the v1 #10 proposal.
+- **Source:** v1 #10.
+- **Decided by:** owner.
+
 ## 2026-11-07 18:20 · Cardio redesign: four functional changes (v1 #10)
 
 - **Project:** FlexCoach
@@ -164,8 +197,6 @@ commit messages, `docs/RELEASES.md` and Claude's session notes.
 
 ## Open questions
 
-- **v1 #10 details (2026-11-07):** see the proposal in that session: what the
-  workout-kind question offers, which catalog types count as strength, where
-  timed conditioning drills go, how a day with several items runs and is
-  missed or pushed, cardio targets, existing plans, quick workouts, and the
-  cardio kinds that get their own screen.
+- **v1 #10, existing plans (2026-11-07):** how to split cardio (and stray
+  stretches) out of existing workouts without breaking anyone's plan. Proposal
+  given; awaiting the owner.
