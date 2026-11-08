@@ -4,6 +4,49 @@ Every decision the owner makes, newest first, with why. Open questions sit at th
 bottom until they're answered. Decisions before 2026-11-07 were recorded only in
 commit messages, `docs/RELEASES.md` and Claude's session notes.
 
+## 2026-11-08 12:10 · Cardio done screen and console scan, as built (10.7)
+
+- **Project:** FlexCoach
+- **Type:** design and architectural
+- **Decision:** A session that is one cardio entry finishes on its own done
+  screen, as drawn: the check (left off outdoors), the time alone and centred,
+  a table of what was measured (rows with nothing to show are left out), and
+  "Scan the console" on machines until something scanned is in. After a photo,
+  the "From the console" sheet lists what was found with a switch each; a
+  scanned row is tappable to edit and has an X to remove. A photo with no
+  readable numbers gets an alert with Retake. The Watch's final distance, if it
+  lands after End, is picked up on this screen too. Text recognition is a new
+  local native module on both platforms (Vision on iOS, linked explicitly; ML
+  Kit 16.0.1 with the bundled model on Android); the camera is the system one
+  through the image picker already in the app, never saved to Photos. The
+  camera permission text now also mentions reading a cardio machine's console.
+- **Why:** Built from the boards the owner signed off.
+- **Source:** feature work, v1 #10.7.
+- **Decided by:** owner (gaps proposed by Claude: hiding empty rows, the
+  no-reading alert).
+
+## 2026-11-08 11:20 · Console scan: what it fills (10.7)
+
+- **Project:** FlexCoach
+- **Type:** functional and design
+- **Decision:** A console scan fills distance, calories and average speed;
+  incline is skipped even though the scanned board shows it; time always comes
+  from the app's clock. A scanned number replaces the Watch's, and removing it
+  brings the Watch's back. Scanned distance becomes the set's distance
+  (History, records and buddies use it). Text is read on the device (Apple
+  Vision on iOS, ML Kit with its model bundled on Android); the photo is never
+  uploaded or kept. The confirm step and editing a scanned number are drawn
+  as two new boards before building ("Cardio · after a scan, keep the numbers
+  you want" and "Cardio · a scanned number tapped, to edit it").
+  Signed off with two copy changes: the confirm sheet reads "The numbers you
+  choose to keep will replace the existing numbers. Time stays as the app
+  timed it."; the edit sheet has no caption.
+- **Why:** Owner: "yes draw it, skip incline, go with the rest". Incline
+  follows the earlier note that cardio shows only what a Watch measures, plus
+  calories.
+- **Source:** feature work, v1 #10.7.
+- **Decided by:** owner.
+
 ## 2026-11-08 10:50 · The cardio screen and the Watch's live numbers (10.6)
 
 - **Project:** FlexCoach

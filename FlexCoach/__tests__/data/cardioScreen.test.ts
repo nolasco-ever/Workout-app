@@ -1,4 +1,4 @@
-import { cardioScreenKind, paceSecPer, speedPerHour } from '../../data/engine/cardioScreen';
+import { cardioDoneRows, cardioScreenKind, paceSecPer, speedPerHour } from '../../data/engine/cardioScreen';
 import { WATCH_LIVE_STALE_MS, freshWatchLive, parseWatchLive } from '../../data/liveActivity/watchLive';
 
 describe('cardio screen kinds (v1 #10.6)', () => {
@@ -65,5 +65,37 @@ describe('live numbers from the Watch', () => {
     const live = { meters: null, bpm: 120, kcal: 10, at: 0 };
     expect(freshWatchLive(live, WATCH_LIVE_STALE_MS)).toBe(live);
     expect(freshWatchLive(live, WATCH_LIVE_STALE_MS + 1)).toBeNull();
+  });
+});
+
+describe('the cardio done table (v1 #10.7)', () => {
+  const MI = 1609.344;
+  const treadmill = cardioScreenKind('0684');
+  const watch = { kcal: 312, avgBpm: 148, maxBpm: 170 };
+
+  it('shows the treadmill board before a scan', () => {
+    const rows = cardioDoneRows(treadmill, { distanceM: 2.58 * MI, durationSec: 1512 }, watch, 'mi');
+    expect(rows.map(r => [r.label, r.value])).toEqual([
+      ['Distance', '2.58 mi'],
+      ['Pace', '9:46 per mi'],
+      ['Avg heart rate', '148 bpm'],
+      ['Calories', '312 kcal'],
+    ]);
+    expect(rows.some(r => r.scanned)).toBe(false);
+  });
+
+  it('puts scanned numbers in, with a scanned avg speed after the rest', () => {
+    const rows = cardioDoneRows(treadmill, { distanceM: 2.61 * MI, durationSec: 1512, scan: { distanceM: 2.61 * MI, kcal: 330, speedMps: (6.2 * MI) / 3600 } }, watch, 'mi');
+    expect(rows.map(r => [r.label, r.value, r.scanned])).toEqual([
+      ['Distance', '2.61 mi', 'distance'],
+      ['Pace', '9:39 per mi', undefined],
+      ['Avg heart rate', '148 bpm', undefined],
+      ['Calories', '330 kcal', 'calories'],
+      ['Avg speed', '6.2 mph', 'speed'],
+    ]);
+  });
+
+  it('leaves out what was not measured', () => {
+    expect(cardioDoneRows(cardioScreenKind('2141'), { distanceM: null, durationSec: 600 }, null, 'km')).toEqual([]);
   });
 });

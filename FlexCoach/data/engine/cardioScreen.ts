@@ -1,6 +1,6 @@
-import { DistanceUnit } from '../models';
+import { DistanceUnit, LoggedSet, WatchMetrics } from '../models';
 import { CardioActivity, CardioKind, cardioKind } from '../liveActivity/cardioKind';
-import { M_PER_MI } from './units';
+import { formatDistance, formatDuration, M_PER_MI } from './units';
 
 /**
  * What the cardio screen shows for an exercise (v1 #10.6, the "Cardio kinds"
@@ -62,3 +62,55 @@ export const paceSecPer = (distanceM: number | null, elapsedSec: number, unit: D
 /** Miles or km an hour; null without distance. */
 export const speedPerHour = (distanceM: number | null, elapsedSec: number, unit: DistanceUnit): number | null =>
   distanceM && distanceM >= 10 && elapsedSec > 0 ? distanceM / perUnit(unit) / (elapsedSec / 3600) : null;
+
+export interface DoneRow {
+  key: CardioStat;
+  label: string;
+  value: string;
+  /** Set when the number came from a console scan: it can be edited or removed. */
+  scanned?: 'distance' | 'calories' | 'speed';
+}
+
+/**
+ * The table on the cardio done screen (v1 #10.7, the "Cardio · done" boards):
+ * the kind's stats with what was measured, scanned numbers in place of the
+ * Watch's, and a scanned average speed even where the kind shows pace. A row
+ * with nothing to show is left out.
+ */
+export const cardioDoneRows = (kind: CardioScreenKind, set: Pick<LoggedSet, 'distanceM' | 'durationSec' | 'scan'>, watch: WatchMetrics | null | undefined, unit: DistanceUnit): DoneRow[] => {
+  const rows: DoneRow[] = [];
+  const sec = set.durationSec ?? 0;
+  const scan = set.scan;
+  const speedLabel = unit === 'mi' ? 'mph' : 'km/h';
+  const speedRow = (): DoneRow | null => {
+    if (scan?.speedMps !== undefined) return { key: 'speed', label: 'Avg speed', value: `${(scan.speedMps * 3600 / (unit === 'mi' ? M_PER_MI : 1000)).toFixed(1)} ${speedLabel}`, scanned: 'speed' };
+    const v = speedPerHour(set.distanceM, sec, unit);
+    return v === null ? null : { key: 'speed', label: 'Avg speed', value: `${v.toFixed(1)} ${speedLabel}` };
+  };
+  const stats = kind.stats.includes('speed') || scan?.speedMps === undefined ? kind.stats : [...kind.stats, 'speed' as const];
+  for (const stat of stats) {
+    switch (stat) {
+      case 'distance':
+        if (set.distanceM) rows.push({ key: stat, label: 'Distance', value: formatDistance(set.distanceM, unit), ...(scan?.distanceM !== undefined ? { scanned: 'distance' as const } : {}) });
+        break;
+      case 'pace': {
+        const p = paceSecPer(set.distanceM, sec, unit);
+        if (p !== null) rows.push({ key: stat, label: 'Pace', value: `${formatDuration(p)} per ${unit}` });
+        break;
+      }
+      case 'speed': {
+        const r = speedRow();
+        if (r) rows.push(r);
+        break;
+      }
+      case 'heartRate':
+        if (watch?.avgBpm) rows.push({ key: stat, label: 'Avg heart rate', value: `${watch.avgBpm} bpm` });
+        break;
+      case 'calories':
+        if (scan?.kcal !== undefined) rows.push({ key: stat, label: 'Calories', value: `${scan.kcal} kcal`, scanned: 'calories' });
+        else if (watch?.kcal) rows.push({ key: stat, label: 'Calories', value: `${watch.kcal} kcal` });
+        break;
+    }
+  }
+  return rows;
+};

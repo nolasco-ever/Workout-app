@@ -44,6 +44,23 @@ export interface LoggedSet {
   warmup?: boolean;
   /** Cardio: the distance was measured by the Apple Watch (v1 #6, step 3), until it is typed over. */
   distanceSource?: 'watch';
+  /** Cardio: numbers read off the machine's console (v1 #10.7). Absent with no scan. */
+  scan?: ConsoleScan;
+}
+
+/**
+ * What a console scan put on a cardio entry (v1 #10.7). A scanned distance is
+ * also the entry's `distanceM`, so History and records use it; the distance it
+ * replaced is kept to be put back when the scanned one is removed. Scanned
+ * calories show in place of the Watch's. Each field is absent when not scanned.
+ */
+export interface ConsoleScan {
+  distanceM?: number;
+  kcal?: number;
+  /** Meters a second. */
+  speedMps?: number;
+  /** The entry's distance and its source before the scan. */
+  prior?: { distanceM: number | null; watch: boolean };
 }
 
 export interface SessionExercise {

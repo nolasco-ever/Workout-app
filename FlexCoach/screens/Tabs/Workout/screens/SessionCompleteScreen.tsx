@@ -19,6 +19,7 @@ import { onWatchMetrics, watchMetricsFor, watchStats } from '../../../../data/li
 import { liveActivity } from '../../../../data/liveActivity/liveActivity';
 import { WatchMetrics } from '../../../../data/models';
 import { cardioStats } from '../../../../data/engine/stats';
+import { CardioDone, soleCardioSet } from '../components/CardioDone';
 
 const Stat = ({ label, value }: { label: string; value: string }) => {
   const { colors } = useTheme();
@@ -50,6 +51,9 @@ export const SessionCompleteScreen = () => {
   useEffect(() => onWatchMetrics((id, metrics) => { if (id === sessionId) setWatch(metrics); }), [sessionId]);
   // Done on the Watch's summary closes this one too.
   useEffect(() => liveActivity.onCommand(command => { if (command.kind === 'closeSummary') navigation.popToTop(); }), [navigation]);
+
+  // A session that is one cardio entry has its own done screen (v1 #10.7).
+  if (soleCardioSet(result.session)) return <CardioDone result={result} onDone={() => navigation.popToTop()} />;
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: colors.ground }}>

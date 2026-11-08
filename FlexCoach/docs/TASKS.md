@@ -97,7 +97,7 @@ Design (canvas first)
           order.
     - [x] 10.6 The cardio screen: one component, glass bottom panel, stats per
           kind (heart rate and calories on all), indoor graphic, Start/Pause/End.
-    - [ ] 10.7 Cardio done screen and console scan (machines only; edit and
+    - [x] 10.7 Cardio done screen and console scan (machines only; edit and
           remove scanned numbers).
     - [ ] 10.8 Outdoor GPS: live map, saved route, route on done and History.
     - [ ] 10.9 Route maps sharing switch (off by default, ends hidden from
