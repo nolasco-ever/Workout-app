@@ -1,4 +1,4 @@
-import { Cycle, Id, LocalDate, Plan, Schedule, Workout } from '../models';
+import { Cycle, Id, LocalDate, Plan, Schedule, Workout, WorkoutType } from '../models';
 import { newId } from '../engine/ids';
 import { today } from '../engine/dates';
 import { closeCycle, generateCycle, nextCycleNumber, rebuildCycle } from '../engine/schedule';
@@ -26,7 +26,7 @@ export const newPlan = (ownerId: Id): Plan => {
   };
 };
 
-export const newWorkout = (name: string, order: number): Workout => ({ id: newId(), name, order, exercises: [] });
+export const newWorkout = (name: string, order: number, type: WorkoutType): Workout => ({ id: newId(), name, order, exercises: [], type });
 
 export { defaultProgression, newEntry, swapEntry } from '../engine/planDefaults';
 

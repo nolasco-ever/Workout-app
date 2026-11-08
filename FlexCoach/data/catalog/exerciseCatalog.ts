@@ -3,6 +3,7 @@ import catalogJson from './exercisedb.json';
 import legacyJson from './exercises.json';
 import legacyExtraJson from './extraExercises.json';
 import { canonicalExerciseId, isLegacyExerciseId } from './exerciseIds';
+import { ExerciseKind, exerciseKind } from './exerciseKinds';
 
 /**
  * Bundled, read-only exercise catalog: the licensed ExerciseDB Pro library
@@ -80,6 +81,8 @@ export interface CatalogFilter {
    * they don't mix with training movements; pick 'stretching' to see them.
    */
   categories?: ExerciseCategory[];
+  /** Only this kind (v1 #10): a strength or stretching workout's picker, or a cardio pick. Stretches show by default when it is 'stretching'. */
+  kind?: ExerciseKind;
 }
 
 /**
@@ -189,7 +192,7 @@ const searchRank = (item: Indexed, terms: string[]): number | null => {
  * primary muscle come before the ones that only hit it as a secondary
  * muscle. The catalog's alphabetical order holds within each group.
  */
-export const searchCatalog = ({ query, muscles = [], measurement, equipment = [], categories = [] }: CatalogFilter): Exercise[] => {
+export const searchCatalog = ({ query, muscles = [], measurement, equipment = [], categories = [], kind }: CatalogFilter): Exercise[] => {
   const terms = queryWords(query ?? '');
   const ranked: { exercise: Exercise; rank: number }[] = [];
   for (const item of index) {
@@ -197,7 +200,8 @@ export const searchCatalog = ({ query, muscles = [], measurement, equipment = []
     if (muscles.length && !muscles.some(m => e.primaryMuscles.includes(m) || e.secondaryMuscles.includes(m))) continue;
     if (measurement && e.measurement !== measurement) continue;
     if (equipment.length && !(e.equipment && equipment.includes(e.equipment))) continue;
-    if (categories.length ? !categories.includes(e.category) : e.category === 'stretching') continue;
+    if (kind && exerciseKind(e) !== kind) continue;
+    if (categories.length ? !categories.includes(e.category) : e.category === 'stretching' && kind !== 'stretching') continue;
     const rank = terms.length ? searchRank(item, terms) : 0;
     if (rank === null) continue;
     ranked.push({ exercise: e, rank: rank * 2 + (muscles.length && !muscles.some(m => e.primaryMuscles.includes(m)) ? 1 : 0) });

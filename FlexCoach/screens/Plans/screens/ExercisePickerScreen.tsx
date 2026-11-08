@@ -7,6 +7,7 @@ import { Equipment, Exercise, ExerciseCategory, MuscleGroup, Session, Workout } 
 import { PastExercise, pastExercisesLike } from '../../../data/engine/sessionExtras';
 import { sessionRepository } from '../../../data/repositories/sessionRepository';
 import { CATEGORY_OPTIONS, comparableExercises, EQUIPMENT_OPTIONS, getCatalogExercise, MUSCLE_GROUPS, searchCatalog } from '../../../data/catalog/exerciseCatalog';
+import { ExerciseKind, exerciseKind } from '../../../data/catalog/exerciseKinds';
 import { newEntry, swapEntry } from '../../../data/services/planService';
 import { pickAdd, pickSwap } from '../../Tabs/Workout/components/swapChannel';
 import { CustomText } from '../../../components/text/customText';
@@ -30,6 +31,20 @@ const ROW_HEIGHT = 84;
 
 /** What the search covers by default: the catalog without stretches, which hide behind the Stretching type. */
 const DEFAULT_COUNT = searchCatalog({}).length;
+const COUNT_BY_KIND: Record<ExerciseKind, number> = {
+  strength: searchCatalog({ kind: 'strength' }).length,
+  stretching: searchCatalog({ kind: 'stretching' }).length,
+  cardio: searchCatalog({ kind: 'cardio' }).length,
+};
+
+/**
+ * The Type chips a picker offers for its kind (v1 #10). A strength picker leaves out
+ * stretching, and its Cardio type holds only the timed drills, so it says so.
+ */
+const categoryOptions = (kind: ExerciseKind | undefined): { value: ExerciseCategory; label: string }[] =>
+  kind === 'strength'
+    ? CATEGORY_OPTIONS.filter(c => c.value !== 'stretching').map(c => (c.value === 'cardio' ? { ...c, label: 'Timed drills' } : c))
+    : CATEGORY_OPTIONS;
 
 /** A filter chip tapped: All/Any clears the section, any other chip toggles on or off. */
 const toggleChip = <T extends string>(picked: T[], v: T | 'all' | 'any'): T[] =>
@@ -113,10 +128,10 @@ type PickerParams = {
    * to the running workout. Swap: a stand-in for one of its exercises.
    */
   ExercisePickerScreen:
-    | { workoutId: string; mode?: undefined; excludeIds?: undefined; planWorkouts?: undefined; sessionExerciseId?: undefined; exerciseId?: undefined; replaceEntryId?: string }
+    | { workoutId: string; mode?: undefined; excludeIds?: undefined; planWorkouts?: undefined; sessionExerciseId?: undefined; exerciseId?: undefined; replaceEntryId?: string; kind?: undefined }
     /** `planWorkouts`: an empty quick workout can be filled with one of them from a link at the top. */
-    | { mode: 'session'; excludeIds: string[]; planWorkouts?: Workout[]; workoutId?: undefined; sessionExerciseId?: undefined; exerciseId?: undefined; replaceEntryId?: undefined }
-    | { mode: 'swap'; sessionExerciseId: string; exerciseId: string; excludeIds: string[]; planWorkouts?: undefined; workoutId?: undefined; replaceEntryId?: undefined };
+    | { mode: 'session'; excludeIds: string[]; planWorkouts?: Workout[]; workoutId?: undefined; sessionExerciseId?: undefined; exerciseId?: undefined; replaceEntryId?: undefined; kind?: ExerciseKind }
+    | { mode: 'swap'; sessionExerciseId: string; exerciseId: string; excludeIds: string[]; planWorkouts?: undefined; workoutId?: undefined; replaceEntryId?: undefined; kind?: ExerciseKind };
 };
 
 /**
@@ -152,16 +167,19 @@ export const ExercisePickerScreen = () => {
   const activeFilters = muscles.length + equipment.length + categories.length;
 
   const workout = params.workoutId ? draft?.workouts.find(w => w.id === params.workoutId) : undefined;
+  // Only the workout's kind (v1 #10): its type in the plan editor, else what the running workout passed in.
+  // A workout made before types, and Legacy Swap, see everything.
+  const kind: ExerciseKind | undefined = params.workoutId ? workout?.type : params.kind;
   const already = useMemo(() => new Set(sessionMode ? params.excludeIds ?? [] : workout?.exercises.map(e => e.exerciseId) ?? []), [sessionMode, params.excludeIds, workout]);
 
   // The catalog search is deferred so a tapped chip or a typed letter paints at once and the list follows.
-  const filters = useDeferredValue({ query, muscles, equipment, categories });
+  const filters = useDeferredValue({ query, muscles, equipment, categories, kind });
   const noFilters = !filters.query && filters.muscles.length === 0 && filters.equipment.length === 0 && filters.categories.length === 0;
   const results = useMemo(() => {
     const found = searchCatalog(filters).filter(e => !swapping || e.id !== swapping.id);
     // Swapping: the closest stand-ins lead the list until a search or filter says otherwise.
     if (swapping && noFilters) {
-      const lead = comparableExercises(swapping, already);
+      const lead = comparableExercises(swapping, already).filter(e => !kind || exerciseKind(e) === kind);
       const leadIds = new Set(lead.map(e => e.id));
       return [...lead, ...found.filter(e => !leadIds.has(e.id))].slice(0, 120);
     }
@@ -176,7 +194,7 @@ export const ExercisePickerScreen = () => {
     sessionRepository.listCompleted(uid).then(s => { if (on) setHistory(s); }).catch(() => { if (on) setHistory([]); });
     return () => { on = false; };
   }, [swapping, uid]);
-  const past = useMemo(() => (swapping && history ? pastExercisesLike(swapping, history, already) : []), [swapping, history, already]);
+  const past = useMemo(() => (swapping && history ? pastExercisesLike(swapping, history, already).filter(p => !kind || exerciseKind(p.exercise) === kind) : []), [swapping, history, already, kind]);
   const browsing = noFilters;
   const stripShown = swapMode && browsing && past.length > 0;
 
@@ -213,7 +231,7 @@ export const ExercisePickerScreen = () => {
       <View style={{ padding: spacing.lg, gap: spacing.md }}>
         <View style={{ flexDirection: 'row', gap: spacing.sm, alignItems: 'center' }}>
           <View style={{ flex: 1 }}>
-            <TextField id="exercise-search" placeholder={`Search ${DEFAULT_COUNT} exercises`} value={query} onChangeText={setQuery} autoFocus={!book} autoCorrect={false} returnKeyType="search" />
+            <TextField id="exercise-search" placeholder={`Search ${kind ? COUNT_BY_KIND[kind] : DEFAULT_COUNT} exercises`} value={query} onChangeText={setQuery} autoFocus={!book} autoCorrect={false} returnKeyType="search" />
           </View>
           <TouchableOpacity
             onPress={() => setFiltersOpen(true)}
@@ -291,11 +309,14 @@ export const ExercisePickerScreen = () => {
           <CustomText variant="overline" color={colors.inkMuted}>Equipment</CustomText>
           <ChoiceChips<Equipment | 'any'> options={[{ value: 'any', label: 'Any' }, ...EQUIPMENT_OPTIONS]} value={equipment.length ? equipment : 'any'} onChange={v => setEquipment(toggleChip(equipment, v))} />
         </View>
+        {/* One type only in a stretching or cardio picker, so no Type chips. */}
+        {kind !== 'stretching' && kind !== 'cardio' && (
         <View style={{ gap: spacing.sm }}>
           <CustomText variant="overline" color={colors.inkMuted}>Type</CustomText>
-          <ChoiceChips<ExerciseCategory | 'any'> options={[{ value: 'any', label: 'Any' }, ...CATEGORY_OPTIONS]} value={categories.length ? categories : 'any'} onChange={v => setCategories(toggleChip(categories, v))} />
-          <CustomText variant="caption" color={colors.inkMuted}>Stretches only show when you pick Stretching.</CustomText>
+          <ChoiceChips<ExerciseCategory | 'any'> options={[{ value: 'any', label: 'Any' }, ...categoryOptions(kind)]} value={categories.length ? categories : 'any'} onChange={v => setCategories(toggleChip(categories, v))} />
+          {!kind && <CustomText variant="caption" color={colors.inkMuted}>Stretches only show when you pick Stretching.</CustomText>}
         </View>
+        )}
       </BottomSheet>
     </SafeAreaView>
   );

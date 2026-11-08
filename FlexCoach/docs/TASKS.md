@@ -84,7 +84,7 @@ Design (canvas first)
     cardio kinds listed and given their own screen differences (map outdoors).
     Designed on the canvas (rows "Cardio redesign", 2026-11-07). Build order,
     each its own commit, each proposed before code:
-    - [ ] 10.1 Workout types: workouts carry a type (strength/stretching); the
+    - [x] 10.1 Workout types: workouts carry a type (strength/stretching); the
           add card asks it; the picker shows only that type (strength =
           strength, plyometrics, powerlifting, strongman and timed drills).
     - [ ] 10.2 Quick workout asks the type on its own screen, then the same

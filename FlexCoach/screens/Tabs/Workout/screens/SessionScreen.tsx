@@ -16,6 +16,7 @@ import { LoggedSet, Session, SessionExercise } from '../../../../data/models';
 import { findWorkout } from '../../../../data/engine/schedule';
 import { newId } from '../../../../data/engine/ids';
 import { getCatalogExercise } from '../../../../data/catalog/exerciseCatalog';
+import { ExerciseKind, exerciseKind } from '../../../../data/catalog/exerciseKinds';
 import { abandonSession, addExerciseTo, addSetTo, addWarmupSetTo, copyWorkoutIntoQuickSession, finishSession, isQuickSession, logSet, removeExerciseFrom, removeSetFrom, saveExercises, saveSets, substituteExercise } from '../../../../data/services/workoutService';
 import { sessionRepository } from '../../../../data/repositories/sessionRepository';
 import { subscribeAdd, subscribeCopyWorkout, subscribeSwap } from '../components/swapChannel';
@@ -56,6 +57,13 @@ export const SessionScreen = () => {
   const navigation = useNavigation<NativeStackNavigationProp<AppStackParams>>();
   const { params } = useRoute<RouteProp<AppStackParams, 'SessionScreen'>>();
   const { plan, cycle, activePlan } = params;
+  // What Add exercise offers during a planned workout: that workout's type (v1 #10). A quick workout, or a workout made before types, offers everything.
+  const workoutKind: ExerciseKind | undefined = plan?.workouts.find(w => w.id === params.session.workoutId)?.type;
+  /** A swap offers the same kind as the exercise it replaces (owner, 2026-11-07). */
+  const kindOf = (exerciseId: string): ExerciseKind | undefined => {
+    const ex = getCatalogExercise(exerciseId);
+    return ex ? exerciseKind(ex) : undefined;
+  };
   const { colors, spacing, radius } = useTheme();
   const insets = useSafeAreaInsets();
   const { top: headerTop } = useSideRail();
@@ -336,7 +344,7 @@ export const SessionScreen = () => {
   // The exercise list is a modal screen over this one; it reads the live
   // session from the channel and sends back jumps and removals.
   useEffect(() => publishSession(session), [session]);
-  const openList = () => navigation.navigate('SessionExercisesScreen', { workoutName: session.workoutName, currentIndex: index });
+  const openList = () => navigation.navigate('SessionExercisesScreen', { workoutName: session.workoutName, currentIndex: index, kind: workoutKind });
   // An empty quick workout can also start as a copy of one of the plan's
   // workouts, from a link at the top of the picker: same exercises and
   // targets, but outside the plan. The link only shows while it is empty.
@@ -352,6 +360,7 @@ export const SessionScreen = () => {
     navigation.navigate('ExercisePickerScreen', {
       mode: 'session',
       excludeIds: sessionRef.current.exercises.map(e => e.exerciseId),
+      kind: workoutKind,
       planWorkouts: sessionRef.current.exercises.length === 0 && planWorkouts.length > 0 ? planWorkouts : undefined,
     });
   const copyingRef = useRef(false);
@@ -804,7 +813,7 @@ export const SessionScreen = () => {
                   </TouchableOpacity>
                 )}
                 <TouchableOpacity
-                  onPress={() => navigation.navigate('ExercisePickerScreen', { mode: 'swap', sessionExerciseId: exercise.id, exerciseId: exercise.exerciseId, excludeIds: session.exercises.map(e => e.exerciseId) })}
+                  onPress={() => navigation.navigate('ExercisePickerScreen', { mode: 'swap', sessionExerciseId: exercise.id, exerciseId: exercise.exerciseId, excludeIds: session.exercises.map(e => e.exerciseId), kind: kindOf(exercise.exerciseId) })}
                   hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
                   accessibilityRole="link"
                   style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.xs }}
@@ -990,7 +999,7 @@ export const SessionScreen = () => {
                     </TouchableOpacity>
                   )}
                   <TouchableOpacity
-                    onPress={() => navigation.navigate('ExercisePickerScreen', { mode: 'swap', sessionExerciseId: exercise.id, exerciseId: exercise.exerciseId, excludeIds: session.exercises.map(e => e.exerciseId) })}
+                    onPress={() => navigation.navigate('ExercisePickerScreen', { mode: 'swap', sessionExerciseId: exercise.id, exerciseId: exercise.exerciseId, excludeIds: session.exercises.map(e => e.exerciseId), kind: kindOf(exercise.exerciseId) })}
                     hitSlop={8}
                     accessibilityRole="link"
                     style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.xs }}

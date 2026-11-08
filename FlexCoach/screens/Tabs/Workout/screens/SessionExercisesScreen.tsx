@@ -35,7 +35,7 @@ export const SessionExercisesScreen = () => {
         <HeaderButton
           icon={generalIcons.plus}
           accessibilityLabel="Add exercise"
-          onPress={() => navigation.navigate('ExercisePickerScreen', { mode: 'session', excludeIds: (currentSession()?.exercises ?? []).map(e => e.exerciseId) })}
+          onPress={() => navigation.navigate('ExercisePickerScreen', { mode: 'session', excludeIds: (currentSession()?.exercises ?? []).map(e => e.exerciseId), kind: params.kind })}
         />
       ),
     });

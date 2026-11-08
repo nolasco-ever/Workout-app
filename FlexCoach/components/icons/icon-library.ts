@@ -3,6 +3,8 @@ import {
   ArrowCircleRightIcon,
   ArrowsLeftRightIcon,
   BarbellIcon,
+  PersonSimpleRunIcon,
+  PersonSimpleTaiChiIcon,
   BellIcon,
   BellSlashIcon,
   BookIcon,
@@ -136,6 +138,9 @@ export const generalIcons = {
   comment: ChatCircleIcon,
   dollar: CurrencyDollarIcon,
   dumbbell: BarbellIcon,
+  /** Workout and exercise kinds (v1 #10). */
+  stretching: PersonSimpleTaiChiIcon,
+  cardio: PersonSimpleRunIcon,
   ellipsis: DotsThreeIcon,
   ellipsisVertical: DotsThreeVerticalIcon,
   envelope: EnvelopeIcon,
