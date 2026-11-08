@@ -21,6 +21,11 @@ class NativeRouteTrackerModule(reactContext: ReactApplicationContext) : NativeRo
   private fun granted(): Boolean =
     ContextCompat.checkSelfPermission(reactApplicationContext, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED
 
+  /** JavaScript has already asked (PermissionsAndroid); this only says how it went. */
+  override fun authorize(promise: Promise) {
+    promise.resolve(if (granted()) "granted" else "denied")
+  }
+
   override fun start(promise: Promise) {
     if (!granted()) {
       promise.resolve("denied")

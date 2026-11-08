@@ -41,6 +41,20 @@ export const useRouteRecorder = ({ setId, outdoor, running, saved }: { setId: st
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [setId]);
 
+  // Location is asked for as soon as an outdoor entry opens, before Start (owner, 2026-11-08).
+  useEffect(() => {
+    if (!setId || !outdoor || !NativeRouteTracker) return;
+    const tracker = NativeRouteTracker;
+    let cancelled = false;
+    (async () => {
+      const ok = (await askAndroid()) && (await tracker.authorize()) === 'granted';
+      if (!cancelled) setDenied(!ok);
+    })().catch(err => console.warn('location permission failed', err));
+    return () => {
+      cancelled = true;
+    };
+  }, [setId, outdoor]);
+
   // The Watch's readings take over from the phone's.
   useEffect(() => {
     if (!setId || !outdoor) return;

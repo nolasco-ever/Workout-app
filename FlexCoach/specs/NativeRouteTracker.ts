@@ -16,6 +16,8 @@ export type NativeRoutePoint = {
  * on the native side until JavaScript takes them.
  */
 export interface Spec extends TurboModule {
+  /** Asks for location if it hasn't been asked, without recording. Resolves 'granted' or 'denied'. */
+  authorize(): Promise<string>;
   /** Asks for location if it hasn't been asked, then starts recording. Resolves 'granted' or 'denied'. */
   start(): Promise<string>;
   stop(): void;

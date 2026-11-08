@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
-import { Alert, AppState, Keyboard, KeyboardEvent, Platform, ScrollView, TextInput, TouchableOpacity, useWindowDimensions, Vibration, View } from 'react-native';
+import { Alert, AppState, Keyboard, Linking, KeyboardEvent, Platform, ScrollView, TextInput, TouchableOpacity, useWindowDimensions, Vibration, View } from 'react-native';
 import { KeyboardAvoiding } from '../../../../components/layout/KeyboardAvoiding';
 import { SafeAreaView } from '../../../../components/layout/SafeAreaView';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -808,6 +808,7 @@ export const SessionScreen = () => {
     if (route.source === 'phone' && set.distanceSource !== 'watch' && set.scan?.distanceM === undefined) extra.distanceM = routeMeters(route.points);
     return extra;
   };
+  const toldNoLocation = useRef(false);
   const phoneMeters = outdoorCardio && route.source === 'phone' && route.points.length > 1 ? routeMeters(route.points) : null;
   const endCardio = () => {
     if (!uid || !cardioExercise || !cardioSet || finishingRef.current) return;
@@ -1004,7 +1005,17 @@ export const SessionScreen = () => {
         unit={units.distance}
         busy={finishing}
         onBack={() => confirmLeaveRef.current(() => navigation.goBack())}
-        onStart={() => startCardioTimer(cardioSet, cardioExercise)}
+        onStart={() => {
+          startCardioTimer(cardioSet, cardioExercise);
+          // Location off: the run still times, but say why there will be no route (once a workout).
+          if (outdoorCardio && route.denied && !toldNoLocation.current) {
+            toldNoLocation.current = true;
+            Alert.alert('Location is off for FlexCoach', 'Turn it on in Settings to draw your route and measure distance and pace. The time is recorded either way.', [
+              { text: 'Not now', style: 'cancel' },
+              { text: 'Open Settings', onPress: () => { Linking.openSettings().catch(() => undefined); } },
+            ]);
+          }
+        }}
         onPause={() => stopCardioTimer(routeExtra(cardioSet))}
         route={outdoorCardio ? route.points : null}
         onEnd={endCardio}

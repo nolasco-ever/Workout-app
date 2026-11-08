@@ -57,5 +57,12 @@ const KINDS: Record<string, CardioKind> = {
   Skating: outdoorRide,
 };
 
-/** The exercise's own id first (an old id can mean something its new twin doesn't), then its twin's. */
-export const cardioKind = (exerciseId: string): CardioKind => KINDS[exerciseId] ?? KINDS[canonicalExerciseId(exerciseId)] ?? indoor('mixedCardio');
+/**
+ * The exercise's own id first (an old id can mean something its new twin doesn't), then its twin's. An old-library
+ * exercise picked from the merged list carries a `legacy:` prefix on its id; it is read without it ("Running,
+ * Outdoor" was reading as indoor cardio, so no GPS, build 21).
+ */
+export const cardioKind = (exerciseId: string): CardioKind => {
+  const id = exerciseId.replace(/^legacy:/, '');
+  return KINDS[id] ?? KINDS[canonicalExerciseId(id)] ?? indoor('mixedCardio');
+};

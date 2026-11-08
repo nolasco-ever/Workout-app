@@ -99,3 +99,11 @@ describe('the cardio done table (v1 #10.7)', () => {
     expect(cardioDoneRows(cardioScreenKind('2141'), { distanceM: null, durationSec: 600 }, null, 'km')).toEqual([]);
   });
 });
+
+describe('old-library cardio picked from the merged list (build 21)', () => {
+  it('reads an id with the legacy prefix as its own kind', () => {
+    expect(cardioScreenKind('legacy:x_Running_Outdoor')).toEqual(cardioScreenKind('x_Running_Outdoor'));
+    expect(cardioScreenKind('legacy:x_Running_Outdoor').behind).toBe('map');
+    expect(cardioScreenKind('legacy:Running_Treadmill').stats).toEqual(['distance', 'pace', 'heartRate', 'calories']);
+  });
+});

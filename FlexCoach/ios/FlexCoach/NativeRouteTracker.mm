@@ -68,6 +68,19 @@
   });
 }
 
+- (void)authorize:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject
+{
+  dispatch_async(dispatch_get_main_queue(), ^{
+    if (self->_manager.authorizationStatus == kCLAuthorizationStatusNotDetermined) {
+      // Answered in locationManagerDidChangeAuthorization; nothing records unless start was asked for too.
+      self->_pendingStart = resolve;
+      [self->_manager requestWhenInUseAuthorization];
+    } else {
+      resolve([self authorized] ? @"granted" : @"denied");
+    }
+  });
+}
+
 - (void)locationManagerDidChangeAuthorization:(CLLocationManager *)manager
 {
   if (manager.authorizationStatus == kCLAuthorizationStatusNotDetermined) return;
