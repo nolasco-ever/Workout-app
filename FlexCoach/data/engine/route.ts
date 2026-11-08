@@ -152,3 +152,27 @@ export const parseWatchPoints = (text: string): RoutePoint[] =>
     .map(chunk => chunk.split(',').map(Number))
     .filter(v => v.length >= 2 && Number.isFinite(v[0]) && Number.isFinite(v[1]))
     .map(([lat, lon, t = 0, acc = 0]) => ({ lat, lon, t: Number.isFinite(t) ? t : 0, acc: Number.isFinite(acc) ? acc : 0 }));
+
+/** How much of each end of a route buddies never see (owner, 2026-11-07): about where a run starts and ends, often home. */
+export const HIDDEN_END_M = 200;
+
+/** The route less its first and last `meters` along the path; empty when nothing is left between them. */
+export const trimRouteEnds = (points: RoutePoint[], meters = HIDDEN_END_M): RoutePoint[] => {
+  const from = (list: RoutePoint[]): number => {
+    let walked = 0;
+    for (let i = 1; i < list.length; i++) {
+      walked += metersBetween(list[i - 1], list[i]);
+      if (walked >= meters) return i;
+    }
+    return list.length;
+  };
+  const start = from(points);
+  const end = points.length - from([...points].reverse());
+  return start < end - 1 ? points.slice(start, end) : [];
+};
+
+/** The saved line as buddies may see it: its ends cut off; null when too short to show anything. */
+export const sharedRouteLine = (line: string): string | null => {
+  const middle = trimRouteEnds(decodeRoute(line));
+  return middle.length >= 2 ? encodeRoute(middle) : null;
+};

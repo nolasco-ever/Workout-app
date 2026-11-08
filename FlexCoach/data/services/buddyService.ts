@@ -259,7 +259,9 @@ export const applySharingPrefs = async (uid: Id, profile: UserProfile | null, pr
         } else {
           // The session is gone; keep what is allowed and strip the rest.
           if (!prefs.totals) patch.detail = null;
-          if (!prefs.sets && !prefs.reps && !prefs.weight) patch.exercises = (line.exercises ?? []).map(e => ({ name: e.name, measurement: e.measurement }));
+          if (!prefs.sets && !prefs.reps && !prefs.weight) patch.exercises = (line.exercises ?? []).map(e => ({ name: e.name, measurement: e.measurement, ...(e.route ? { route: e.route } : {}) }));
+          // Route maps off: no map stays on an old line.
+          if (!prefs.routes) patch.exercises = ((patch.exercises as typeof line.exercises) ?? line.exercises ?? []).map(({ route: _route, ...e }) => e);
         }
         await buddyRepository.patchActivity(uid, line.id, patch);
       } else if (line.kind === 'record') {

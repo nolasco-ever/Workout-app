@@ -1,4 +1,4 @@
-import { appendPoints, decodeRoute, encodeRoute, metersBetween, parseWatchPoints, routeMeters, routeToSave, RoutePoint, simplifyRoute } from '../../data/engine/route';
+import { appendPoints, decodeRoute, encodeRoute, metersBetween, parseWatchPoints, routeMeters, routeToSave, RoutePoint, sharedRouteLine, simplifyRoute, trimRouteEnds } from '../../data/engine/route';
 import { parseWatchRoute } from '../../data/liveActivity/watchRoute';
 
 const p = (lat: number, lon: number, t = 0, acc = 5): RoutePoint => ({ lat, lon, t, acc });
@@ -48,5 +48,23 @@ describe('the Watch route message', () => {
     expect(parseWatchRoute('set-1|40.1,-74.2,1000,6;40.2,-74.3,2000,5')).toEqual({ setId: 'set-1', points: [p(40.1, -74.2, 1000, 6), p(40.2, -74.3, 2000, 5)] });
     expect(parseWatchRoute('|40,1')).toBeNull();
     expect(parseWatchRoute('set|')).toBeNull();
+  });
+});
+
+describe('what buddies see of a route (v1 #10.9)', () => {
+  // Due north, a point every ~11 m, about 1.1 km in all.
+  const run = Array.from({ length: 101 }, (_, i) => p(40 + i * 0.0001, -74, i + 1));
+
+  it('cuts about 200 m off each end', () => {
+    const middle = trimRouteEnds(run);
+    expect(metersBetween(run[0], middle[0])).toBeGreaterThanOrEqual(200);
+    expect(metersBetween(middle[middle.length - 1], run[run.length - 1])).toBeGreaterThanOrEqual(200);
+    expect(routeMeters(middle)).toBeGreaterThan(600);
+  });
+
+  it('shares nothing of a route too short to have a middle', () => {
+    expect(trimRouteEnds(run.slice(0, 30))).toEqual([]);
+    expect(sharedRouteLine(encodeRoute(run.slice(0, 30)))).toBeNull();
+    expect(typeof sharedRouteLine(encodeRoute(run))).toBe('string');
   });
 });

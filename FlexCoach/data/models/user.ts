@@ -58,6 +58,8 @@ export interface SharingPrefs {
   totals: boolean;
   /** Skipped and moved workouts as feed lines. */
   skips: boolean;
+  /** The map of outdoor cardio (v1 #10.9), its first and last 200 m always hidden. Off unless turned on. */
+  routes: boolean;
 }
 
 /** The single best lift on record, for the card. */
@@ -194,6 +196,8 @@ export interface SharedExercise {
   sets?: SharedSet[];
   /** The exercise's best completed working set, when sets are hidden but reps or weight are shared. */
   top?: SharedSet;
+  /** Outdoor cardio's route with its ends cut off (an encoded polyline), when Route maps is on (v1 #10.9). */
+  route?: string;
 }
 
 export interface SharedSet {

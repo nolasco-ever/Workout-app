@@ -1,4 +1,6 @@
 import React, { useCallback, useEffect, useState } from 'react';
+import { RouteMap } from '../../components/maps/RouteMap';
+import { decodeRoute } from '../../data/engine/route';
 import { ActivityIndicator, ScrollView, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from '../../components/layout/SafeAreaView';
 import { NavigationProp, RouteProp, useNavigation, useRoute } from '@react-navigation/native';
@@ -138,7 +140,7 @@ const RecordRow = ({ name, value, line, units, open, onToggle, divider }: { name
 
 /** One exercise of a buddy's workout, read-only, showing only what they shared. */
 const SharedExerciseCard = ({ ex, units }: { ex: SharedExercise; units: Units }) => {
-  const { colors, spacing } = useTheme();
+  const { colors, spacing, radius } = useTheme();
   const navigation = useNavigation<NavigationProp<AppStackParams>>();
   const catalog = ex.exerciseId ? getCatalogExercise(ex.exerciseId) : null;
   const cols = columnsOf(ex, units);
@@ -185,6 +187,12 @@ const SharedExerciseCard = ({ ex, units }: { ex: SharedExercise; units: Units })
               </View>
             );
           })}
+        </View>
+      )}
+      {/* Outdoor cardio, when they share Route maps (v1 #10.9): the route without its first and last 200 m. */}
+      {ex.route && (
+        <View style={{ height: 220, borderRadius: radius.lg, overflow: 'hidden', borderWidth: 1, borderColor: colors.line, marginTop: spacing.xs }}>
+          <RouteMap points={decodeRoute(ex.route)} style={{ flex: 1 }} />
         </View>
       )}
     </SurfaceCard>

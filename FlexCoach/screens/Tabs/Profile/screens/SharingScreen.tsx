@@ -61,6 +61,16 @@ export const SharingScreen = () => {
         </View>
 
         <View style={{ gap: spacing.sm }}>
+          <CustomText variant="overline" color={colors.inkMuted}>Location</CustomText>
+          <SurfaceCard style={{ padding: 0 }}>
+            <SwitchRow icon={generalIcons.routeMap} title="Route maps" description="Allow buddies to see the map of your outdoor cardio exercises." value={prefs.routes} onChange={routes => set({ routes })} disabled={detailsOff} />
+          </SurfaceCard>
+          <CustomText variant="caption" color={colors.inkMuted}>
+            Off unless you turn it on. Your maps are always saved for you in History.
+          </CustomText>
+        </View>
+
+        <View style={{ gap: spacing.sm }}>
           <CustomText variant="overline" color={colors.inkMuted}>Records</CustomText>
           <SurfaceCard style={{ padding: 0 }}>
             <SwitchRow icon={generalIcons.trophy} title="New records" description="Allow buddies to see when you set a record." value={prefs.records} onChange={records => set({ records })} />

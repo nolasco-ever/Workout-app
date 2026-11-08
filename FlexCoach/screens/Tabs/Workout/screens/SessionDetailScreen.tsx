@@ -29,6 +29,7 @@ import { fromDraft, toDraft, Units, unitLabels } from '../components/setDrafts';
 import { watchStats } from '../../../../data/liveActivity/watchMetrics';
 import { RouteMap } from '../../../../components/maps/RouteMap';
 import { decodeRoute } from '../../../../data/engine/route';
+import { withSharingDefaults } from '../../../../data/engine/sharing';
 
 type Params = { SessionDetailScreen: { sessionId: string; workoutName?: string } };
 
@@ -100,6 +101,8 @@ export const SessionDetail = ({ sessionId, workoutName, embedded = false }: { se
   const bottomInset = useTabScrollInset();
   const { uid, profile } = useAuth();
   const units: Units = { weight: profile?.weightUnit ?? 'lb', distance: profile?.distanceUnit ?? 'mi' };
+  const sharing = withSharingDefaults(profile?.sharing);
+  const routesShared = sharing.workouts && sharing.routes;
 
   const [session, setSession] = useState<Session | null>(null);
   const [loaded, setLoaded] = useState(false);
@@ -325,6 +328,10 @@ export const SessionDetail = ({ sessionId, workoutName, embedded = false }: { se
                     <View style={{ height: 240, borderRadius: radius.lg, overflow: 'hidden', borderWidth: 1, borderColor: colors.line, marginTop: spacing.xs }}>
                       <RouteMap points={decodeRoute(ex.sets[0].route.line)} style={{ flex: 1 }} />
                     </View>
+                  )}
+                  {/* Only while Route maps is on (v1 #10.9). */}
+                  {isCardio(ex) && ex.sets[0]?.route && routesShared && (
+                    <CustomText variant="caption" color={colors.inkMuted}>Buddies see this map too</CustomText>
                   )}
                 </Card>
               );

@@ -1,5 +1,6 @@
 import { Session } from '../../data/models';
 import { defaultSharingPrefs, finishedWorkoutNotice, recordSeries, sharedDetail, sharedExercisesOf, withSharingDefaults } from '../../data/engine/sharing';
+import { decodeRoute, encodeRoute } from '../../data/engine/route';
 
 const set = (n: number, weightKg: number | null, reps: number | null, completed = true, warmup = false) => ({
   id: `s${n}`, setNumber: n, weightKg, reps, durationSec: null, distanceM: null, completed, completedAt: completed ? 1 : null, warmup,
@@ -88,5 +89,24 @@ describe('finishedWorkoutNotice', () => {
 
   it('keeps the plan name for a quick workout copied from the plan', () => {
     expect(finishedWorkoutNotice('Eli', { ...session, workoutName: 'Upper' }, defaultSharingPrefs, 0).title).toBe('Eli finished Upper');
+  });
+});
+
+describe('route maps (v1 #10.9)', () => {
+  const line = encodeRoute(Array.from({ length: 101 }, (_, i) => ({ lat: 40 + i * 0.0001, lon: -74 })));
+  const run: Session = {
+    ...session,
+    exercises: [{ ...session.exercises[0], measurement: 'distance_time', sets: [{ id: 'r', setNumber: 1, weightKg: null, reps: null, durationSec: 600, distanceM: 1100, completed: true, completedAt: 1, route: { line, source: 'phone' } }] }],
+  };
+
+  it('is off by default, so no map goes out', () => {
+    expect(defaultSharingPrefs.routes).toBe(false);
+    expect(sharedExercisesOf(run, defaultSharingPrefs)![0].route).toBeUndefined();
+  });
+
+  it('shares the route without its ends when on', () => {
+    const shared = sharedExercisesOf(run, { ...defaultSharingPrefs, routes: true })![0].route!;
+    expect(shared).not.toBe(line);
+    expect(decodeRoute(shared)[0].lat).toBeGreaterThan(40.0017);
   });
 });

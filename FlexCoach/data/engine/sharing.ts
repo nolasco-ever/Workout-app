@@ -1,4 +1,5 @@
 import { sameExercise } from '../catalog/exerciseIds';
+import { sharedRouteLine } from './route';
 import { Id, LocalDate, RecordKind, Session, SessionExercise, SharedExercise, SharedSet, SharingPrefs, WeightUnit } from '../models';
 import { describeLogged, totalVolumeKg } from './stats';
 import { formatWeight } from './units';
@@ -18,6 +19,8 @@ export const defaultSharingPrefs: SharingPrefs = {
   records: true,
   totals: true,
   skips: true,
+  // Off unless turned on (owner, 2026-11-07): a route can show where someone lives.
+  routes: false,
 };
 
 export const withSharingDefaults = (prefs: Partial<SharingPrefs> | null | undefined): SharingPrefs => ({ ...defaultSharingPrefs, ...(prefs ?? {}) });
@@ -80,6 +83,9 @@ export const sharedExercisesOf = (session: Session, prefs: SharingPrefs): Shared
         const top = topSet(ex, prefs);
         if (top) out.top = top;
       }
+      const route = prefs.routes ? ex.sets.find(s => s.completed && s.route)?.route : undefined;
+      const shared = route ? sharedRouteLine(route.line) : null;
+      if (shared) out.route = shared;
       return out;
     });
 };

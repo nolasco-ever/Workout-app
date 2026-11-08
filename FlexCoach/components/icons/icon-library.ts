@@ -1,5 +1,6 @@
 import {
   AnchorIcon,
+  NavigationArrowIcon,
   BicycleIcon,
   HeartbeatIcon,
   PersonSimpleSkiIcon,
@@ -162,6 +163,8 @@ export const generalIcons = {
   heart: HeartIcon,
   images: ImagesIcon,
   info: InfoIcon,
+  /** Route maps in What buddies see (v1 #10.9). */
+  routeMap: NavigationArrowIcon,
   help: QuestionIcon,
   key: KeyIcon,
   lightbulb: LightbulbIcon,

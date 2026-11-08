@@ -100,7 +100,7 @@ Design (canvas first)
     - [x] 10.7 Cardio done screen and console scan (machines only; edit and
           remove scanned numbers).
     - [x] 10.8 Outdoor GPS: live map, saved route, route on done and History.
-    - [ ] 10.9 Route maps sharing switch (off by default, ends hidden from
+    - [x] 10.9 Route maps sharing switch (off by default, ends hidden from
           buddies) and its Notice.
     - [x] 10.10 Reusable Notice sheet.
     - [ ] 10.11 Split existing plans, with its Notice; ships in the next build

@@ -4,6 +4,27 @@ Every decision the owner makes, newest first, with why. Open questions sit at th
 bottom until they're answered. Decisions before 2026-11-07 were recorded only in
 commit messages, `docs/RELEASES.md` and Claude's session notes.
 
+## 2026-11-08 14:10 · Route maps sharing switch and its Notice, as built (10.9)
+
+- **Project:** FlexCoach
+- **Type:** design and functional
+- **Decision:** What buddies see gets a Location section with "Route maps"
+  ("Allow buddies to see the map of your outdoor cardio exercises."), off by
+  default, with the caption "Off unless you turn it on. Your maps are always
+  saved for you in History." Like Sets, Reps and Weight it is greyed while
+  Finished workouts is off, since maps ride on those feed lines. A shared
+  route never includes its first and last 200 m along the path; a route too
+  short to have a middle isn't shared at all. Turning it off strips maps from
+  old feed lines on the way out of the screen, as the other switches do.
+  Buddies see the map in that exercise's card; your own History shows "Buddies
+  see this map too" under the map only while Route maps is on. The Route maps
+  Notice (both lines as drawn, "Got it" and "Open What buddies see") goes to
+  accounts made before 2026-11-08.
+- **Why:** Built from the signed-off boards and the 2026-11-07 decisions.
+- **Source:** feature work, v1 #10.9.
+- **Decided by:** owner (greyed with Finished workouts off, and nothing shared
+  for very short routes, proposed by Claude).
+
 ## 2026-11-08 13:40 · The reusable Notice sheet (10.10)
 
 - **Project:** FlexCoach
