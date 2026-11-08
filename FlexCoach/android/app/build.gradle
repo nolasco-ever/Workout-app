@@ -129,6 +129,8 @@ dependencies {
     // Folding phones (com.flexcoach.fold): where the fold is, from Jetpack WindowManager; the Java adapter for its listener.
     implementation("androidx.window:window:1.5.1")
     implementation("androidx.window:window-java:1.5.1")
+    // The console scan (com.flexcoach.textscan, v1 #10.7): ML Kit text recognition with its model in the app, so it works offline.
+    implementation("com.google.mlkit:text-recognition:16.0.1")
     // The exercise animations: animated WebP (the catalog's how-to visuals) through Fresco, which React Native's Image uses.
     implementation("com.facebook.fresco:animated-webp:3.7.0")
     implementation("com.facebook.fresco:webpsupport:3.7.0")

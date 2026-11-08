@@ -85,6 +85,7 @@
       "modulesProvider": {
         "NativeBadgeModels": "NativeBadgeModels",
         "NativeFold": "NativeFold",
+        "NativeTextScan": "NativeTextScan",
         "NativeLiveActivity": "NativeLiveActivity"
       }
     }

@@ -42,12 +42,14 @@
 		A80DD3512BF3182D0BAD3BF6 /* ActivityKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 812B1A54E800F770207AA714 /* ActivityKit.framework */; };
 		C7940B2065A8F8D7B3EFE0B1 /* WatchHome.swift in Sources */ = {isa = PBXBuildFile; fileRef = ACD06F2D5569BF37BAB6756F /* WatchHome.swift */; };
 		C969F60DCDDD4566B22A119E /* Sora-SemiBold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 1F2D31DB537D4659AA67E8BF /* Sora-SemiBold.ttf */; };
+		4B568BC5D6ACBDA3B1A25875 /* Vision.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 8B2F2F12ACF1C1BF51AEAADB /* Vision.framework */; };
 		CB99C4E13959419483CC03A9 /* Pods_FlexCoach.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F205662FF7054D1711856F3B /* Pods_FlexCoach.framework */; };
 		D1CEC3CC9F647C36F0344487 /* WorkoutActivityAttributes.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB3FD5209E43AF20BE2852D2 /* WorkoutActivityAttributes.swift */; };
 		D2C507A959D14769AA9F8C58 /* Manrope-Bold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = EBF138ACCC1E4D54B3059A15 /* Manrope-Bold.ttf */; };
 		D408186AC8EC86FBD1089177 /* NativeLiveActivity.mm in Sources */ = {isa = PBXBuildFile; fileRef = 2C145C761A94F953CD568A51 /* NativeLiveActivity.mm */; };
 		DB8824D0912BA44FF6CA4D5B /* Manrope-SemiBold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 2FCD7E429DFA487BA9AC2945 /* Manrope-SemiBold.ttf */; };
 		DC37C8AD27D71F75E7BB78CA /* NativeFold.mm in Sources */ = {isa = PBXBuildFile; fileRef = 8BA049AD2F521D826E6F2DF9 /* NativeFold.mm */; };
+		BF90BA1549BE5FA6E2AF3469 /* NativeTextScan.mm in Sources */ = {isa = PBXBuildFile; fileRef = CED185FAF91A17954A1A233F /* NativeTextScan.mm */; };
 		DE148586F8DF4F91DFF166BE /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = 13B07FB81A68108700A75B9A /* PrivacyInfo.xcprivacy */; };
 		E0CD4B6FE54672C9EC2EDEE8 /* WorkoutActivityController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0D079C4B77283C7A258AFC4C /* WorkoutActivityController.swift */; };
 		E5D0749E8B9340A58677A21E /* Sora-Bold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = AAD32DE9E2CE44C6A2525831 /* Sora-Bold.ttf */; };
@@ -136,6 +138,8 @@
 		8A55CD3216D9EBBCB5FFA5B9 /* WorkoutManager.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = WorkoutManager.swift; sourceTree = "<group>"; };
 		8A6099CA797449FC43A571AE /* BadgeModels */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = folder; name = BadgeModels; path = FlexCoach/BadgeModels; sourceTree = SOURCE_ROOT; };
 		8BA049AD2F521D826E6F2DF9 /* NativeFold.mm */ = {isa = PBXFileReference; includeInIndex = 1; name = NativeFold.mm; path = FlexCoach/NativeFold.mm; sourceTree = SOURCE_ROOT; };
+		CED185FAF91A17954A1A233F /* NativeTextScan.mm */ = {isa = PBXFileReference; includeInIndex = 1; name = NativeTextScan.mm; path = FlexCoach/NativeTextScan.mm; sourceTree = SOURCE_ROOT; };
+		110EB1BEBBACC384D8413626 /* NativeTextScan.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; name = NativeTextScan.h; path = FlexCoach/NativeTextScan.h; sourceTree = SOURCE_ROOT; };
 		98D3DAA94E2C0245A832BA54 /* Info.plist */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		9E468FA679E0496B8351BC9A /* Sora-Medium.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 517466845161; includeInIndex = 0; lastKnownFileType = unknown; name = "Sora-Medium.ttf"; path = "../assets/fonts/Sora-Medium.ttf"; sourceTree = "<group>"; };
 		A0AC0ACCAFD1D724B2D7E34B /* Assets.xcassets */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
@@ -152,6 +156,7 @@
 		E3B4EAC8B6739CABAB6A36B2 /* FlexCoachWatch.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = FlexCoachWatch.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		E4BE92A20EAAE39297C3B53F /* FlexCoachLiveActivityBundle.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = FlexCoachLiveActivityBundle.swift; sourceTree = "<group>"; };
 		EBF138ACCC1E4D54B3059A15 /* Manrope-Bold.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 517466845161; includeInIndex = 0; lastKnownFileType = unknown; name = "Manrope-Bold.ttf"; path = "../assets/fonts/Manrope-Bold.ttf"; sourceTree = "<group>"; };
+		8B2F2F12ACF1C1BF51AEAADB /* Vision.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Vision.framework; path = System/Library/Frameworks/Vision.framework; sourceTree = SDKROOT; };
 		ED297162215061F000B7C4FE /* JavaScriptCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = JavaScriptCore.framework; path = System/Library/Frameworks/JavaScriptCore.framework; sourceTree = SDKROOT; };
 		F05DCC9ACAB7AE1618879FA1 /* NativeFold.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; name = NativeFold.h; path = FlexCoach/NativeFold.h; sourceTree = SOURCE_ROOT; };
 		F205662FF7054D1711856F3B /* Pods_FlexCoach.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_FlexCoach.framework; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -163,6 +168,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				CB99C4E13959419483CC03A9 /* Pods_FlexCoach.framework in Frameworks */,
+				4B568BC5D6ACBDA3B1A25875 /* Vision.framework in Frameworks */,
 				8B967B7F25F9E67C031F968D /* FirebaseCore in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -222,6 +228,8 @@
 				C871AF154FB5F0E764FEF1F9 /* NativeBadgeModels.mm */,
 				F05DCC9ACAB7AE1618879FA1 /* NativeFold.h */,
 				8BA049AD2F521D826E6F2DF9 /* NativeFold.mm */,
+				110EB1BEBBACC384D8413626 /* NativeTextScan.h */,
+				CED185FAF91A17954A1A233F /* NativeTextScan.mm */,
 				2C145C761A94F953CD568A51 /* NativeLiveActivity.mm */,
 				7CABB883B40A90D7ABEB54E4 /* NativeLiveActivity.h */,
 				26A51768D64790DD563EEAEF /* WatchBridge.swift */,
@@ -233,6 +241,7 @@
 			isa = PBXGroup;
 			children = (
 				ED297162215061F000B7C4FE /* JavaScriptCore.framework */,
+				8B2F2F12ACF1C1BF51AEAADB /* Vision.framework */,
 				F205662FF7054D1711856F3B /* Pods_FlexCoach.framework */,
 				EB24B64F9DA8D6AF8988EA0D /* iOS */,
 				FEE2B2529AC910929CC33D91 /* watchOS */,
@@ -643,6 +652,7 @@
 				9C0F66BE04AE97F79C273E34 /* BadgeView.mm in Sources */,
 				F72B19AC33D111C4AA29EFF3 /* NativeBadgeModels.mm in Sources */,
 				DC37C8AD27D71F75E7BB78CA /* NativeFold.mm in Sources */,
+				BF90BA1549BE5FA6E2AF3469 /* NativeTextScan.mm in Sources */,
 				2FCE7899BD2363B99243A24E /* WorkoutActivityAttributes.swift in Sources */,
 				9C4B287E1FE0855EE9BBBC81 /* WorkoutActivityController.swift in Sources */,
 				30C0B82C7453F5A7B1D9EA30 /* WorkoutActivityIntents.swift in Sources */,
