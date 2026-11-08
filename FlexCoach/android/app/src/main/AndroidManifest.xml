@@ -10,6 +10,11 @@
     <uses-permission android:name="android.permission.health.READ_STEPS" />
     <uses-permission android:name="android.permission.health.READ_WEIGHT" />
     <uses-permission android:name="android.permission.health.WRITE_WEIGHT" />
+    <!-- Outdoor routes (v1 #10.8): GPS while the clock runs, kept going with the screen off by a location foreground service. -->
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_LOCATION" />
 
     <application
       android:name=".MainApplication"
@@ -46,6 +51,8 @@
             <data android:scheme="flexcoach" android:host="b" />
         </intent-filter>
       </activity>
+      <meta-data android:name="com.google.android.geo.API_KEY" android:value="${googleMapsApiKey}" />
+      <service android:name=".route.RouteTrackerService" android:exported="false" android:foregroundServiceType="location" />
       <!-- Health Connect permission rationale, Android 13 and below -->
       <activity
         android:name=".PermissionsRationaleActivity"

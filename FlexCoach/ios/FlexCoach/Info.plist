@@ -56,6 +56,8 @@
 		<key>NSAllowsLocalNetworking</key>
 		<true/>
 	</dict>
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>FlexCoach uses your location during outdoor runs, walks and rides to draw your route and measure distance and pace, including with the screen off.</string>
 	<key>NSCameraUsageDescription</key>
 	<string>FlexCoach uses the camera to take a profile photo, to scan a buddy's Iron Card, and to read a cardio machine's console.</string>
 	<key>NSHealthShareUsageDescription</key>
@@ -119,6 +121,7 @@
 	<key>UIBackgroundModes</key>
 	<array>
 		<string>remote-notification</string>
+		<string>location</string>
 	</array>
 </dict>
 </plist>
