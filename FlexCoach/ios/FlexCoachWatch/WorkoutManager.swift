@@ -52,12 +52,17 @@ final class WorkoutManager: NSObject, ObservableObject {
   private var liveSentAt = Date.distantPast
   private static let liveEvery: TimeInterval = 3
   private let location = CLLocationManager()
+  /// The outdoor route (v1 #10.8): saved with the workout in Health, and sent to the phone, which uses it over its
+  /// own GPS. Readings by set id, across Pauses; the ones the phone hasn't had live yet wait in `routeUnsent`.
+  private var routeBuilder: HKWorkoutRouteBuilder?
+  private var route: [String: [CLLocation]] = [:]
+  private var routeUnsent: [CLLocation] = []
 
   /// Asked once: read heart rate and energy, save workouts.
   func requestAuthorization() async -> Bool {
     guard HKHealthStore.isHealthDataAvailable() else { return false }
     do {
-      try await health.requestAuthorization(toShare: [HKObjectType.workoutType(), energyType, walkRunType, cyclingType], read: [heartRateType, energyType, walkRunType, cyclingType])
+      try await health.requestAuthorization(toShare: [HKObjectType.workoutType(), HKSeriesType.workoutRoute(), energyType, walkRunType, cyclingType], read: [heartRateType, energyType, walkRunType, cyclingType])
       return true
     } catch {
       return false
@@ -90,6 +95,9 @@ final class WorkoutManager: NSObject, ObservableObject {
       segment = nil
       carried = [:]
       cardioMeters = nil
+      route = [:]
+      routeUnsent = []
+      routeBuilder = nil
       let start = Date()
       session.startActivity(with: start)
       try await builder.beginCollection(at: start)
@@ -113,6 +121,9 @@ final class WorkoutManager: NSObject, ObservableObject {
       try await builder.endCollection(at: end)
     } catch {}
     let saved = try? await builder.finishWorkout()
+    // The route goes with the workout into Health.
+    if let routeBuilder, let saved { _ = try? await routeBuilder.finishRoute(with: saved, metadata: nil) }
+    routeBuilder = nil
     // The saved workout's statistics first, then the builder's, then the heart rates seen along the way: the live
     // builder can hold a heart rate without its average or maximum, which left the phone with none.
     let stats = saved?.statistics(for: heartRateType) ?? builder.statistics(for: heartRateType)
@@ -132,6 +143,8 @@ final class WorkoutManager: NSObject, ObservableObject {
     guard let session, let builder else { return }
     session.end()
     builder.discardWorkout()
+    routeBuilder?.discard()
+    routeBuilder = nil
     reset()
   }
 
@@ -172,6 +185,13 @@ final class WorkoutManager: NSObject, ObservableObject {
     config.locationType = outdoor ? .outdoor : .indoor
     // Outdoors the distance comes from GPS, which needs the location; asked once, the first time.
     if outdoor, location.authorizationStatus == .notDetermined { location.requestWhenInUseAuthorization() }
+    if outdoor {
+      location.delegate = self
+      location.desiredAccuracy = kCLLocationAccuracyBest
+      location.activityType = .fitness
+      location.distanceFilter = 5
+      location.startUpdatingLocation()
+    }
     let type: HKQuantityType? = measures ? (config.activityType == .cycling ? cyclingType : walkRunType) : nil
     if let type { builder.dataSource?.enableCollection(for: type, predicate: nil) }
     session.beginNewActivity(configuration: config, date: Date(), metadata: nil)
@@ -183,6 +203,12 @@ final class WorkoutManager: NSObject, ObservableObject {
     guard let segment else { return }
     self.segment = nil
     session?.endCurrentActivity(on: Date())
+    location.stopUpdatingLocation()
+    // The entry's whole route so far, queued so the phone gets it even if it isn't listening now.
+    if let points = route[segment.setId], points.count >= 2 {
+      WatchSession.shared.sendToPhone(["command": "cardioRoute", "id": "\(segment.setId)|\(Self.encode(points))"])
+    }
+    routeUnsent = []
     cardioMeters = nil
     guard segment.distanceType != nil else { return }
     let total = (carried[segment.setId] ?? 0) + max(0, meters(segment.distanceType) - segment.startMeters)
@@ -197,6 +223,25 @@ final class WorkoutManager: NSObject, ObservableObject {
     liveSentAt = Date()
     let meters = segment.distanceType == nil ? -1 : (cardioMeters ?? 0)
     WatchSession.shared.sendLiveToPhone(["command": "cardioLive", "id": "\(segment.setId):\(meters):\(heartRate ?? 0):\(kcal)"])
+    if !routeUnsent.isEmpty {
+      WatchSession.shared.sendLiveToPhone(["command": "cardioRoutePoints", "id": "\(segment.setId)|\(Self.encode(routeUnsent))"])
+      routeUnsent = []
+    }
+  }
+
+  /// "lat,lon,t,acc;…", what the phone reads (data/engine/route.ts, parseWatchPoints).
+  private static func encode(_ points: [CLLocation]) -> String {
+    points.map { String(format: "%.6f,%.6f,%.0f,%.0f", $0.coordinate.latitude, $0.coordinate.longitude, $0.timestamp.timeIntervalSince1970 * 1000, $0.horizontalAccuracy) }.joined(separator: ";")
+  }
+
+  fileprivate func received(_ locations: [CLLocation]) {
+    guard let segment else { return }
+    let good = locations.filter { $0.horizontalAccuracy >= 0 && $0.horizontalAccuracy <= 30 }
+    guard !good.isEmpty else { return }
+    if routeBuilder == nil { routeBuilder = HKWorkoutRouteBuilder(healthStore: health, device: nil) }
+    routeBuilder?.insertRouteData(good) { _, _ in }
+    route[segment.setId, default: []].append(contentsOf: good)
+    routeUnsent.append(contentsOf: good)
   }
 
   private static func activityType(_ name: String) -> HKWorkoutActivityType {
@@ -245,4 +290,12 @@ extension WorkoutManager: HKLiveWorkoutBuilderDelegate {
       self.sendLive()
     }
   }
+}
+
+extension WorkoutManager: CLLocationManagerDelegate {
+  nonisolated func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
+    Task { @MainActor in self.received(locations) }
+  }
+
+  nonisolated func locationManager(_ manager: CLLocationManager, didFailWithError error: Error) {}
 }

@@ -29,7 +29,7 @@ import WatchConnectivity
   }
 
   /// What the Watch asks with no workout running (v1 #6, step 4); the rest of its commands are the Island's.
-  private static let requestKinds: Set<String> = ["startWorkout", "startQuick", "resumeWorkout", "search", "cardioDistance"]
+  private static let requestKinds: Set<String> = ["startWorkout", "startQuick", "resumeWorkout", "search", "cardioDistance", "cardioRoute"]
   /// Posted with one request from the Watch; NativeLiveActivity passes it on to JavaScript.
   @objc public static let requestNotification = Notification.Name("FlexCoachWatchRequest")
   /// Requests JavaScript has not taken yet (a start can wake the app before JavaScript is listening).
@@ -194,7 +194,7 @@ import WatchConnectivity
     }
     let id = message[Key.id] as? String
     // Live numbers from a cardio entry (v1 #10.6): only worth anything now, so passed on and never queued.
-    if kind == "cardioLive" {
+    if kind == "cardioLive" || kind == "cardioRoutePoints" {
       let record: [String: Any] = ["kind": kind, "id": id ?? "", "at": Date().timeIntervalSince1970 * 1000]
       DispatchQueue.main.async { NotificationCenter.default.post(name: Self.requestNotification, object: nil, userInfo: record) }
       return

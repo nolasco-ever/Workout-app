@@ -10,6 +10,7 @@ import { newId } from '../engine/ids';
 import { buildWatchHome } from '../liveActivity/watchHome';
 import { parseWatchDistance, receiveWatchDistance } from '../liveActivity/watchDistance';
 import { parseWatchLive, receiveWatchLive } from '../liveActivity/watchLive';
+import { parseWatchRoute, receiveWatchRoute } from '../liveActivity/watchRoute';
 import { LiveActivityCommand, liveActivity, takeCommand } from '../liveActivity/liveActivity';
 import { navigationRef } from '../../navigation/navigationRef';
 import type { AppStackParams } from '../../appNavigators/AppStack';
@@ -76,6 +77,12 @@ export const useWatchHome = (): void => {
       if (request.kind === 'cardioDistance') {
         const parsed = parseWatchDistance(request.id);
         if (parsed) receiveWatchDistance(parsed.setId, parsed.meters);
+        return;
+      }
+      // The Watch's GPS route (v1 #10.8): live readings, then the whole route when the clock stops.
+      if (request.kind === 'cardioRoutePoints' || request.kind === 'cardioRoute') {
+        const parsed = parseWatchRoute(request.id);
+        if (parsed) receiveWatchRoute(parsed.setId, parsed.points, request.kind === 'cardioRoute');
         return;
       }
       // Live numbers for the cardio screen (v1 #10.6).
