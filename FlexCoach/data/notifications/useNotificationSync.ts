@@ -4,6 +4,7 @@ import { useAuth } from '../auth/AuthProvider';
 import { Cycle } from '../models';
 import { today } from '../engine/dates';
 import { getOverdueOccurrences } from '../engine/schedule';
+import { joinNames } from '../engine/planItems';
 import { cycleReportReadyAt } from '../engine/cycleReport';
 import { planLocalNotifications, withPrefDefaults } from '../engine/notifications';
 import { cycleRepository } from '../repositories/cycleRepository';
@@ -114,7 +115,7 @@ export const useNotificationSync = (): { permission: PermissionState } => {
   const feed = useNotificationFeed();
   useEffect(() => {
     if (!uid || !cycle) return;
-    const overdue = new Set(getOverdueOccurrences(cycle, today()).map(o => `missed:${o.id}`));
+    const overdue = new Set(getOverdueOccurrences(cycle, today()).map(o => `missed:${o.date}`));
     for (const item of feed.items) {
       if (item.kind === 'missed_workout' && item.readAt === null && !overdue.has(item.id)) {
         notificationRepository.markRead(uid, item.id).catch(() => undefined);
@@ -132,12 +133,16 @@ export const useNotificationSync = (): { permission: PermissionState } => {
       ensured.current.add(item.id);
       notificationRepository.ensure(uid, item).catch(() => ensured.current.delete(item.id));
     };
-    for (const o of getOverdueOccurrences(cycle, todayDate)) {
+    // One item per missed day, naming everything on it (v1 #10).
+    const overdueNow = getOverdueOccurrences(cycle, todayDate);
+    for (const date of new Set(overdueNow.map(o => o.date))) {
+      const day = overdueNow.filter(o => o.date === date);
+      const one = day.length === 1;
       ensure({
-        id: `missed:${o.id}`,
+        id: `missed:${date}`,
         kind: 'missed_workout',
-        title: `${o.workoutName ?? 'A workout'} didn't happen`,
-        body: `It was scheduled for ${dateLabel(o.date)}. Skip it or move it to keep the cycle on track.`,
+        title: `${joinNames(day.map(o => o.workoutName ?? 'A workout'))} didn't happen`,
+        body: `${one ? 'It was' : 'They were'} scheduled for ${dateLabel(date)}. Skip ${one ? 'it' : 'them'} or move ${one ? 'it' : 'them'} to keep the cycle on track.`,
         target: { screen: 'workout' },
       });
     }

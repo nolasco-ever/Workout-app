@@ -1,4 +1,4 @@
-import { closeCycle, generateCycle, rebuildCycle, nextCycleStart, getOverdueOccurrences, moveDayToDate, moveOccurrenceToDate, resolveMissed, nextCycleNumber, nextCycleNumberAfter, pushDay, getOccurrencesForDate, focusOccurrence, renumberCycles, skipOccurrence, markOccurrence } from '../../data/engine/schedule';
+import { closeCycle, generateCycle, rebuildCycle, nextCycleStart, getOverdueOccurrences, moveDayToDate, moveOccurrenceToDate, resolveMissed, nextCycleNumber, nextCycleNumberAfter, pushDay, getOccurrencesForDate, focusOccurrence, cycleDayPosition, renumberCycles, skipOccurrence, markOccurrence } from '../../data/engine/schedule';
 import { summarizeCycle } from '../../data/engine/stats';
 import { addDays } from '../../data/engine/dates';
 import { Plan } from '../../data/models';
@@ -420,5 +420,21 @@ describe('rebuildCycle: a plan edited mid-cycle', () => {
     const cycle = generateCycle(weeklyPlan(), 'user-1', 1, '2026-09-21');
     const done = { ...cycle, occurrences: cycle.occurrences.map(o => (o.status === 'scheduled' ? { ...o, status: 'completed' as const } : o)) };
     expect(rebuildCycle(done, edited(), '2026-09-30')).toBe(done);
+  });
+});
+
+describe('cycleDayPosition', () => {
+  it('counts dates, not items', () => {
+    const plan: Plan = {
+      ...weeklyPlan(),
+      workouts: [...weeklyPlan().workouts, { id: 'run', name: 'Run', order: 3, exercises: [], type: 'cardio' }],
+      schedule: { mode: 'weekly', weekdays: [[], ['push', 'run'], [], ['pull'], [], ['legs', 'run'], []], startWeekday: 1, weeksPerCycle: 1 },
+    };
+    const cycle = generateCycle(plan, 'user-1', 1, '2026-09-21');
+    expect(cycle.occurrences.length).toBe(9);
+    expect(cycleDayPosition(cycle, '2026-09-21')).toEqual({ day: 1, of: 7 });
+    expect(cycleDayPosition(cycle, '2026-09-25')).toEqual({ day: 5, of: 7 });
+    expect(cycleDayPosition(cycle, '2026-09-20')).toEqual({ day: null, of: 7 });
+    expect(cycleDayPosition(cycle, '2026-09-28')).toEqual({ day: null, of: 7 });
   });
 });

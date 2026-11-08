@@ -4,6 +4,22 @@ Every decision the owner makes, newest first, with why. Open questions sit at th
 bottom until they're answered. Decisions before 2026-11-07 were recorded only in
 commit messages, `docs/RELEASES.md` and Claude's session notes.
 
+## 2026-11-08 09:40 · Reminders read in the plural for a day with several items (10.4c)
+
+- **Project:** FlexCoach
+- **Type:** design
+- **Decision:** Reminders name everything still to do that day ("Legs and
+  Run"). When there is more than one item, the lines that refer back to them
+  switch to the plural: "are still open", "haven't happened yet", "Skip them
+  or move them", "They slipped by yesterday", "hyped about these". Each kind
+  keeps the same set of variants, so the variant picked for a date is
+  unchanged.
+- **Why:** The copy was written for one workout, so joined names read as
+  "Legs and Run is still open". Claude asked whether to write plural forms or
+  leave it; the owner said to write them.
+- **Source:** feature work, v1 #10.4c.
+- **Decided by:** owner (wording drafted by Claude).
+
 ## 2026-11-08 09:10 · Schedule editors keep the old rotation row (10.4b)
 
 - **Project:** FlexCoach

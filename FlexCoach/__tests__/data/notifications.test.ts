@@ -1,5 +1,6 @@
 import { defaultNotificationPrefs, planLocalNotifications, planRestOverNotification, withPrefDefaults } from '../../data/engine/notifications';
 import { Cycle, Occurrence, Session } from '../../data/models';
+import { missedWorkoutCopy, streakRiskCopy, workoutNudgeCopy, workoutTodayCopy } from '../../data/engine/notificationCopy';
 
 const TODAY = '2026-09-25'; // a Friday
 const MORNING = new Date(2026, 8, 25, 7, 0).getTime();
@@ -201,6 +202,42 @@ describe('notification copy variants', () => {
     for (let t = 0; t < 8; t++) {
       const n = planRestOverNotification(t * 1000, 90, 's1', 'Bench Press');
       expect(`${n.title} ${n.body}`).toContain('Bench Press');
+    }
+  });
+});
+
+describe('a day with several items (v1 #10)', () => {
+  const two = (date: string, a: string, b: string, statusA: Occurrence['status'] = 'scheduled'): Occurrence[] => [
+    { ...occ(date, a, statusA), id: `o-${date}-a` },
+    { ...occ(date, b), id: `o-${date}-b` },
+  ];
+
+  it('sends one morning reminder naming everything still to do', () => {
+    const planned = plan({ cycle: cycle([...two(TODAY, 'Legs', 'Run')]) }).filter(n => n.kind === 'workout_today');
+    expect(planned).toHaveLength(1);
+    expect(`${planned[0].title} ${planned[0].body}`).toContain('Legs and Run');
+  });
+
+  it('leaves out what is already done', () => {
+    const planned = plan({ cycle: cycle([...two(TODAY, 'Legs', 'Run', 'completed')]), now: MORNING - 1 }).filter(n => n.kind === 'workout_today');
+    const text = `${planned[0].title} ${planned[0].body}`;
+    expect(text).toContain('Run');
+    expect(text).not.toContain('Legs');
+  });
+
+  it('words reminders for several items in the plural', () => {
+    for (let d = 1; d <= 12; d++) {
+      const date = `2026-10-${String(d).padStart(2, '0')}`;
+      const texts = [
+        workoutTodayCopy(['Legs', 'Run'], date),
+        workoutNudgeCopy(['Legs', 'Run'], date),
+        streakRiskCopy(['Legs', 'Run'], 4, date),
+        missedWorkoutCopy(['Legs', 'Run'], ['Push'], date),
+      ].map(c => `${c.title} ${c.body}`);
+      for (const t of texts) {
+        expect(t).not.toMatch(/Run (is|hasn't)\b|Skip it|this one|\bIt slipped/);
+      }
+      expect(`${missedWorkoutCopy(['Legs'], null, date).body}`).toContain('Skip it');
     }
   });
 });

@@ -2,10 +2,11 @@ import { Alert } from 'react-native';
 import { Cycle, Id, Plan, UserProfile } from '../../../../data/models';
 import { addDays, fromLocalDate } from '../../../../data/engine/dates';
 import { pushDayTo, skipDay } from '../../../../data/services/workoutService';
+import { joinNames } from '../../../../data/engine/planItems';
 
 const weekdayName = (d: string) => fromLocalDate(d).toLocaleDateString(undefined, { weekday: 'long' });
 
-export const listNames = (names: string[]): string => (names.length <= 1 ? names.join('') : `${names.slice(0, -1).join(', ')} and ${names[names.length - 1]}`);
+export const listNames = joinNames;
 
 /**
  * Ask what to do with today when the user isn't training. It acts on the

@@ -13,3 +13,6 @@ export const planItemsLabel = (plan: Pick<Plan, 'workouts'>): string => {
   const parts = [workouts > 0 || cardio === 0 ? `${workouts} workout${workouts === 1 ? '' : 's'}` : null, cardio > 0 ? `${cardio} cardio` : null];
   return parts.filter(Boolean).join(' · ');
 };
+
+/** "Push", "Push and Run", "Push, Run and Yoga": a day's items in a line. */
+export const joinNames = (names: string[]): string => (names.length <= 1 ? names.join('') : `${names.slice(0, -1).join(', ')} and ${names[names.length - 1]}`);

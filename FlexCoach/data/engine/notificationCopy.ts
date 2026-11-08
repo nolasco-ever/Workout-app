@@ -1,4 +1,5 @@
 import { LocalDate } from '../models';
+import { joinNames } from './planItems';
 import { formatDuration } from './units';
 
 /**
@@ -32,24 +33,33 @@ const hash = (s: string): number => {
 export const pickVariant = <T>(variants: readonly T[], kind: string, date: LocalDate): T =>
   variants[hash(`${kind}:${date}`) % variants.length];
 
+/**
+ * The day's items as one name, and whether there are several. A day can
+ * hold more than one item (v1 #10), so the lines that refer back to the
+ * workout ("is still open", "skip it") have a plural form.
+ */
+const named = (workouts: string[]) => ({ w: joinNames(workouts), many: workouts.length > 1 });
+
 /** Morning of a workout day. */
-export const workoutTodayCopy = (workout: string, date: LocalDate): Copy =>
-  pickVariant<Copy>(
+export const workoutTodayCopy = (workouts: string[], date: LocalDate): Copy => {
+  const { w, many } = named(workouts);
+  return pickVariant<Copy>(
     [
-      { title: `${workout} day! 🔥`, body: "Big one today. Can't wait to see what you put up" },
-      { title: `Good morning! ${workout} is on today`, body: "Your plan's got your back. Just show up and enjoy it 💪" },
-      { title: `Today's ${workout}`, body: 'No pressure, just progress. See you at the gym 😄' },
-      { title: `It's ${workout} day 🎉`, body: "One of the good ones. Grab your bag whenever you're ready" },
-      { title: `${workout} today!`, body: 'Future you is already hyped about this one 🙌' },
-      { title: `${workout} on deck`, body: "Let's make today one to be proud of ✨" },
-      { title: `Rise and shine, it's ${workout} day`, body: 'Nothing fancy needed. Show up, move some weight, feel great' },
-      { title: `Morning! ${workout} is up today`, body: 'Whenever it fits, the gym is waiting for you 😎' },
-      { title: `${workout} day, let's have some fun`, body: "Every session is a win. Today's is yours 🏆" },
-      { title: `Heads up: ${workout} today`, body: "You've got this in the bag. Enjoy it 🙂" },
+      { title: `${w} day! 🔥`, body: "Big one today. Can't wait to see what you put up" },
+      { title: `Good morning! ${w} ${many ? 'are' : 'is'} on today`, body: "Your plan's got your back. Just show up and enjoy it 💪" },
+      { title: `Today's ${w}`, body: 'No pressure, just progress. See you at the gym 😄' },
+      { title: `It's ${w} day 🎉`, body: "One of the good ones. Grab your bag whenever you're ready" },
+      { title: `${w} today!`, body: `Future you is already hyped about ${many ? 'these' : 'this one'} 🙌` },
+      { title: `${w} on deck`, body: "Let's make today one to be proud of ✨" },
+      { title: `Rise and shine, it's ${w} day`, body: 'Nothing fancy needed. Show up, move some weight, feel great' },
+      { title: `Morning! ${w} ${many ? 'are' : 'is'} up today`, body: 'Whenever it fits, the gym is waiting for you 😎' },
+      { title: `${w} day, let's have some fun`, body: "Every session is a win. Today's is yours 🏆" },
+      { title: `Heads up: ${w} today`, body: "You've got this in the bag. Enjoy it 🙂" },
     ],
     'workout_today',
     date,
   );
+};
 
 /** Morning of a workout day, when the workout was finished before the reminder time. */
 export const earlyFinishCopy = (workout: string, date: LocalDate): Copy =>
@@ -68,48 +78,59 @@ export const earlyFinishCopy = (workout: string, date: LocalDate): Copy =>
   );
 
 /** Evening, when the day's workout is still waiting. */
-export const workoutNudgeCopy = (workout: string, date: LocalDate): Copy =>
-  pickVariant<Copy>(
+export const workoutNudgeCopy = (workouts: string[], date: LocalDate): Copy => {
+  const { w, many } = named(workouts);
+  const is = many ? 'are' : 'is';
+  return pickVariant<Copy>(
     [
-      { title: `Still time for ${workout} tonight`, body: "A short session totally counts. Whatever you've got 💪" },
-      { title: `${workout} is still open today`, body: "Tonight's the night. You'll feel amazing after 🙂" },
-      { title: 'Evening check-in 👋', body: `${workout} is waiting whenever you're ready. Even 20 minutes is a win` },
-      { title: `Hey, ${workout} hasn't happened yet`, body: 'The best part of a late session is how good you feel after 😌' },
-      { title: `${workout} tonight?`, body: 'The perfect way to close out the day ✨' },
-      { title: 'Got a little left in the tank?', body: `${workout} is ready when you are. Any amount counts 🔋` },
-      { title: `Quick reminder: ${workout}`, body: "Tonight's a good night for it. You'll be glad you went 😄" },
-      { title: `${workout} is still on the list`, body: "Get in, get a few sets done, feel awesome. That's the whole plan 🙌" },
-      { title: `One more thing today: ${workout}`, body: "Go grab the win! Big or small, it all counts 🏆" },
-      { title: `Evening! ${workout} is up for grabs`, body: "Lace up and go take it. You'll be walking out proud" },
+      { title: `Still time for ${w} tonight`, body: "A short session totally counts. Whatever you've got 💪" },
+      { title: `${w} ${is} still open today`, body: "Tonight's the night. You'll feel amazing after 🙂" },
+      { title: 'Evening check-in 👋', body: `${w} ${is} waiting whenever you're ready. Even 20 minutes is a win` },
+      { title: `Hey, ${w} ${many ? "haven't" : "hasn't"} happened yet`, body: 'The best part of a late session is how good you feel after 😌' },
+      { title: `${w} tonight?`, body: 'The perfect way to close out the day ✨' },
+      { title: 'Got a little left in the tank?', body: `${w} ${is} ready when you are. Any amount counts 🔋` },
+      { title: `Quick reminder: ${w}`, body: "Tonight's a good night for it. You'll be glad you went 😄" },
+      { title: `${w} ${is} still on the list`, body: "Get in, get a few sets done, feel awesome. That's the whole plan 🙌" },
+      { title: `One more thing today: ${w}`, body: "Go grab the win! Big or small, it all counts 🏆" },
+      { title: `Evening! ${w} ${is} up for grabs`, body: "Lace up and go take it. You'll be walking out proud" },
     ],
     'workout_nudge',
     date,
   );
+};
 
 /** Evening, when skipping would end a streak. */
-export const streakRiskCopy = (workout: string, streak: number, date: LocalDate): Copy =>
-  pickVariant<Copy>(
+export const streakRiskCopy = (workouts: string[], streak: number, date: LocalDate): Copy => {
+  const { w, many } = named(workouts);
+  return pickVariant<Copy>(
     [
-      { title: `${streak} days strong! 🔥`, body: `${workout} tonight makes it ${streak + 1}. Keep the run alive` },
-      { title: `Streak alert: ${streak} days`, body: `${workout} is all that's between you and day ${streak + 1} 👀` },
-      { title: `Your ${streak}-day streak is on the line`, body: `One session of ${workout} and it lives on. You've got this 💪` },
-      { title: `${streak} in a row! Make it ${streak + 1}?`, body: `${workout} tonight. This is how streaks are made ✨` },
-      { title: `Streak watch: ${streak} days`, body: `Get ${workout} in before midnight and keep it rolling 🏃` },
-      { title: `${streak} days of showing up 👏`, body: `${workout} tonight makes it ${streak + 1}. Let's go!` },
+      { title: `${streak} days strong! 🔥`, body: `${w} tonight makes it ${streak + 1}. Keep the run alive` },
+      { title: `Streak alert: ${streak} days`, body: `${w} ${many ? 'are' : 'is'} all that's between you and day ${streak + 1} 👀` },
+      { title: `Your ${streak}-day streak is on the line`, body: `${many ? `${w} tonight` : `One session of ${w}`} and it lives on. You've got this 💪` },
+      { title: `${streak} in a row! Make it ${streak + 1}?`, body: `${w} tonight. This is how streaks are made ✨` },
+      { title: `Streak watch: ${streak} days`, body: `Get ${w} in before midnight and keep it rolling 🏃` },
+      { title: `${streak} days of showing up 👏`, body: `${w} tonight makes it ${streak + 1}. Let's go!` },
     ],
     'streak_risk',
     date,
   );
+};
 
 /** Morning after a workout day that was never finished. */
-export const missedWorkoutCopy = (missed: string, todays: string | null, date: LocalDate): Copy => {
-  const next = todays ? `Skip it or move it, and ${todays} is up today` : "Skip it or move it to today and you're right back on track";
+export const missedWorkoutCopy = (missedList: string[], todaysList: string[] | null, date: LocalDate): Copy => {
+  const { w: missed, many } = named(missedList);
+  const todays = todaysList ? named(todaysList) : null;
+  const it = many ? 'them' : 'it';
+  const next = todays
+    ? `Skip ${it} or move ${it}, and ${todays.w} ${todays.many ? 'are' : 'is'} up today`
+    : `Skip ${it} or move ${it} to today and you're right back on track`;
+  const is = many ? 'are' : 'is';
   return pickVariant<Copy>(
     [
       { title: `${missed} didn't happen yesterday`, body: `No worries, it happens to everyone! ${next}` },
-      { title: `Yesterday's ${missed} is still open`, body: `One missed day changes nothing 🙂 ${next}` },
+      { title: `Yesterday's ${missed} ${is} still open`, body: `One missed day changes nothing 🙂 ${next}` },
       { title: `Missed ${missed}? All good`, body: `What matters is the next move. ${next}` },
-      { title: `Fresh start: ${missed} is still open ☀️`, body: `It slipped by yesterday, no big deal. ${next}` },
+      { title: `Fresh start: ${missed} ${is} still open ☀️`, body: `${many ? 'They' : 'It'} slipped by yesterday, no big deal. ${next}` },
       { title: `${missed} slipped by yesterday`, body: `Back on track starts now 💪 ${next}` },
     ],
     'missed_workout',

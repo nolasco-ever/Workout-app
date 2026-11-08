@@ -6,7 +6,7 @@ import { useWorkoutHome } from '../../../../data/hooks/useWorkoutHome';
 import { usePlans } from '../../../../data/hooks/usePlans';
 import { useAuth } from '../../../../data/auth/AuthProvider';
 import { Occurrence, Plan } from '../../../../data/models';
-import { findWorkout } from '../../../../data/engine/schedule';
+import { cycleDayPosition, findWorkout } from '../../../../data/engine/schedule';
 import { addDays, fromLocalDate } from '../../../../data/engine/dates';
 import { pushDayTo, seedSamplePlan, skipDay, startNextCycle, startSession } from '../../../../data/services/workoutService';
 import { activatePlan, startFreshCycle, validatePlan } from '../../../../data/services/planService';
@@ -86,8 +86,8 @@ export const WorkoutHomeScreen = () => {
   const workoutsTotal = occurrences.filter(o => o.status !== 'rest').length;
   const workoutsDone = occurrences.filter(o => o.status === 'completed').length;
   const notStarted = !!cycle && state.todayDate < cycle.startDate;
-  const dayIndex = occurrences.findIndex(o => o.date >= state.todayDate);
-  const dayLabel = notStarted ? `Starts ${shortDate(cycle!.startDate)}` : dayIndex === -1 ? `${occurrences.length} days` : `Day ${dayIndex + 1} of ${occurrences.length}`;
+  const position = cycle ? cycleDayPosition(cycle, state.todayDate) : { day: null, of: 0 };
+  const dayLabel = notStarted ? `Starts ${shortDate(cycle!.startDate)}` : position.day === null ? `${position.of} days` : `Day ${position.day} of ${position.of}`;
 
   const openPreview = (occurrence: Occurrence) => plan && cycle && navigation.navigate('WorkoutPreviewScreen', { plan, cycle, occurrence });
   /** A finished day opens what was logged; anything else opens the preview. */

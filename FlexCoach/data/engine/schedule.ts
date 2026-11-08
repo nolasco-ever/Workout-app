@@ -271,6 +271,17 @@ export const markOccurrence = (
   updatedAt: now,
 });
 
+/**
+ * Where today sits in the cycle, counting days (dates), not items: a day with
+ * three items is still one day (v1 #10). `day` is null before the cycle
+ * starts and after its last day.
+ */
+export const cycleDayPosition = (cycle: Cycle, todayDate: LocalDate): { day: number | null; of: number } => {
+  const dates = [...new Set(cycle.occurrences.map(o => o.date))].sort();
+  const index = dates.findIndex(d => d >= todayDate);
+  return { day: todayDate < cycle.startDate || index === -1 ? null : index + 1, of: dates.length };
+};
+
 /** Everything on a given day, in the day's order; rest days give none. */
 export const getOccurrencesForDate = (cycle: Cycle, date: LocalDate): Occurrence[] =>
   cycle.occurrences.filter(o => o.date === date && o.status !== 'rest');

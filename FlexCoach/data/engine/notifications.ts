@@ -82,8 +82,11 @@ const at = (date: LocalDate, time: ClockTime): number => {
 
 const idFor = (kind: NotificationKind, date: LocalDate) => `${NOTIFICATION_ID_PREFIX}${kind}:${date}`;
 
-const scheduledOn = (cycle: Cycle, date: LocalDate): Occurrence | undefined =>
-  cycle.occurrences.find(o => o.date === date && o.status === 'scheduled' && o.workoutId !== null);
+/** The names of what is still to do on a day (v1 #10: several items); null when nothing is. */
+const scheduledOn = (cycle: Cycle, date: LocalDate): string[] | null => {
+  const left = cycle.occurrences.filter(o => o.date === date && o.status === 'scheduled' && o.workoutId !== null);
+  return left.length ? left.map(o => o.workoutName ?? 'Workout') : null;
+};
 
 const inProgressOn = (cycle: Cycle, date: LocalDate): boolean =>
   cycle.occurrences.some(o => o.date === date && o.status === 'in_progress');
@@ -138,7 +141,7 @@ export const planLocalNotifications = (input: PlanInput): PlannedNotification[] 
           id: idFor('missed_workout', date),
           kind: 'missed_workout',
           fireAt: at(date, prefs.morningTime),
-          ...missedWorkoutCopy(missedYesterday.workoutName ?? 'a workout', todaysWorkout?.workoutName ?? null, date),
+          ...missedWorkoutCopy(missedYesterday, todaysWorkout, date),
           target: { screen: 'workout' },
         });
       } else if (todaysWorkout && prefs.workoutToday) {
@@ -146,7 +149,7 @@ export const planLocalNotifications = (input: PlanInput): PlannedNotification[] 
           id: idFor('workout_today', date),
           kind: 'workout_today',
           fireAt: at(date, prefs.morningTime),
-          ...workoutTodayCopy(todaysWorkout.workoutName ?? 'Workout', date),
+          ...workoutTodayCopy(todaysWorkout, date),
           target: { screen: 'workout' },
         });
       } else if (offset === 0 && todaysSession && prefs.workoutToday) {
@@ -171,7 +174,7 @@ export const planLocalNotifications = (input: PlanInput): PlannedNotification[] 
             id: idFor('streak_risk', date),
             kind: 'streak_risk',
             fireAt: at(date, prefs.eveningTime),
-            ...streakRiskCopy(todaysWorkout.workoutName ?? 'Your workout', streakAtRisk, date),
+            ...streakRiskCopy(todaysWorkout, streakAtRisk, date),
             target: { screen: 'workout' },
           });
         } else if (prefs.eveningNudge) {
@@ -179,7 +182,7 @@ export const planLocalNotifications = (input: PlanInput): PlannedNotification[] 
             id: idFor('workout_nudge', date),
             kind: 'workout_nudge',
             fireAt: at(date, prefs.eveningTime),
-            ...workoutNudgeCopy(todaysWorkout.workoutName ?? 'Your workout', date),
+            ...workoutNudgeCopy(todaysWorkout, date),
             target: { screen: 'workout' },
           });
         }

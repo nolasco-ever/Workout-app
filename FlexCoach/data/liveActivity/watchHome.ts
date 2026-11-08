@@ -1,6 +1,6 @@
 import { Cycle, LocalDate, Occurrence, OccurrenceStatus, Plan, Session, WeightUnit } from '../models';
 import { addDays, fromLocalDate } from '../engine/dates';
-import { findWorkout } from '../engine/schedule';
+import { cycleDayPosition, findWorkout } from '../engine/schedule';
 import { formatWeight } from '../engine/units';
 import { canonicalExerciseId } from '../catalog/exerciseIds';
 import { catalogName } from '../catalog/exerciseCatalog';
@@ -116,10 +116,10 @@ export const buildWatchHome = (args: {
   const total = occurrences.filter(o => o.status !== 'rest').length;
   const done = occurrences.filter(o => o.status === 'completed').length;
   const notStarted = todayDate < cycle.startDate;
-  const dayIndex = occurrences.findIndex(o => o.date >= todayDate);
+  const position = cycleDayPosition(cycle, todayDate);
   home.headline = {
     overline: `${plan.name} · Cycle ${cycle.number}`,
-    title: notStarted ? `Starts ${shortDate(cycle.startDate)}` : dayIndex === -1 ? `${occurrences.length} days` : `Day ${dayIndex + 1} of ${occurrences.length}`,
+    title: notStarted ? `Starts ${shortDate(cycle.startDate)}` : position.day === null ? `${position.of} days` : `Day ${position.day} of ${position.of}`,
     progress: `${done} of ${total} done`,
   };
 
