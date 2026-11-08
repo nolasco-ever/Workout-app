@@ -4,6 +4,18 @@ Every decision the owner makes, newest first, with why. Open questions sit at th
 bottom until they're answered. Decisions before 2026-11-07 were recorded only in
 commit messages, `docs/RELEASES.md` and Claude's session notes.
 
+## 2026-11-08 09:10 · Schedule days are stored as maps (10.4a fix)
+
+- **Project:** FlexCoach
+- **Type:** architectural
+- **Decision:** In Firestore each schedule day is written as `{ ids: [...] }`
+  rather than a bare list; the app still works with lists. The conversion
+  sits in `planRepository`, the only place plans are written.
+- **Why:** Firestore can't hold a list inside a list; the 10.4a shape made
+  every plan save abort the app on the owner's simulator.
+- **Source:** bug found testing 10.4b.
+- **Decided by:** Claude (a fix with no visible change).
+
 ## 2026-11-08 08:30 · Starting a workout early never moves today's away (10.4)
 
 - **Project:** FlexCoach

@@ -1,4 +1,4 @@
-import { mapScheduleDays, normalizePlan, normalizeSchedule, scheduledIds } from '../../data/engine/scheduleDays';
+import { mapScheduleDays, normalizePlan, normalizeSchedule, scheduledIds, toStoredPlan } from '../../data/engine/scheduleDays';
 import { Plan, Schedule } from '../../data/models';
 import { rotationPlan, weeklyPlan } from './support/fixtures';
 
@@ -33,5 +33,23 @@ describe('schedule day helpers', () => {
     expect(scheduledIds(plan.schedule)).toEqual(['push', 'pull', 'legs']);
     const dropped = mapScheduleDays(plan.schedule, day => day.filter(id => id !== 'pull'));
     expect(scheduledIds(dropped)).toEqual(['push', 'legs']);
+  });
+});
+
+describe('stored shape (Firestore holds no list inside a list)', () => {
+  it('writes each day as a map and reads it back', () => {
+    const plan: Plan = { ...weeklyPlan(), schedule: { mode: 'weekly', weekdays: [[], ['push', 'run'], [], [], [], [], []], startWeekday: 1, weeksPerCycle: 1 } };
+    const stored = toStoredPlan(plan);
+    const days = (stored.schedule as unknown as { weekdays: unknown[] }).weekdays;
+    expect(days.every(d => !Array.isArray(d))).toBe(true);
+    expect(days[1]).toEqual({ ids: ['push', 'run'] });
+    expect(normalizePlan(stored)).toEqual(plan);
+    const rotation = toStoredPlan(rotationPlan());
+    expect((rotation.schedule as unknown as { slots: unknown[] }).slots[3]).toEqual({ ids: [] });
+    expect(normalizePlan(rotation).schedule).toEqual(rotationPlan().schedule);
+  });
+
+  it('leaves a partial write without a schedule alone', () => {
+    expect(toStoredPlan({ name: 'x' })).toEqual({ name: 'x' });
   });
 });

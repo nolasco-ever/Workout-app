@@ -1,6 +1,6 @@
 import { paths } from '../firebase/paths';
 import { Id, Plan } from '../models';
-import { mapScheduleDays, normalizePlan } from '../engine/scheduleDays';
+import { mapScheduleDays, normalizePlan, toStoredPlan } from '../engine/scheduleDays';
 import { listDocs, mergeDoc, orderBy, patchDoc, readDoc, removeDoc, touch, watchDoc, watchDocOrError, watchDocs, where, writeDoc, Unsubscribe } from './base';
 import { userRepository } from './userRepository';
 
@@ -30,7 +30,8 @@ export const planRepository = {
   watchAll: (uid: Id, onChange: (plans: Plan[]) => void): Unsubscribe =>
     watchDocs<Plan>(paths.plans(uid), plans => onChange(plans.map(normalizePlan)), orderBy('updatedAt', 'desc')),
 
-  save: (uid: Id, plan: Plan) => writeDoc(paths.plan(uid, plan.id), touch(plan)),
+  // Every plan write goes through toStoredPlan: Firestore can't hold the schedule's list of lists as is.
+  save: (uid: Id, plan: Plan) => writeDoc(paths.plan(uid, plan.id), touch(toStoredPlan(plan))),
 
   /**
    * Background save of a plan still being built. The first write creates the
@@ -38,9 +39,9 @@ export const planRepository = {
    * a save that lands after the user activated the plan can't demote it.
    */
   autosave: (uid: Id, plan: Plan, exists: boolean): Promise<void> => {
-    if (!exists) return writeDoc(paths.plan(uid, plan.id), touch({ ...plan, status: 'draft' }));
+    if (!exists) return writeDoc(paths.plan(uid, plan.id), touch(toStoredPlan({ ...plan, status: 'draft' as const })));
     const { name, description, goal, workouts, schedule } = plan;
-    return mergeDoc<Plan>(paths.plan(uid, plan.id), { name, description, goal, workouts, schedule, updatedAt: Date.now() });
+    return mergeDoc<Plan>(paths.plan(uid, plan.id), toStoredPlan({ name, description, goal, workouts, schedule, updatedAt: Date.now() }));
   },
 
   /**
@@ -108,7 +109,7 @@ export const planRepository = {
       const idMap = new Map(source.workouts.map((w, i) => [w.id, copy.workouts[i].id]));
       copy.schedule = mapScheduleDays(source.schedule, day => day.map(id => idMap.get(id)).filter((id): id is Id => !!id));
     }
-    await writeDoc(paths.plan(recipientUid, copy.id), copy);
+    await writeDoc(paths.plan(recipientUid, copy.id), toStoredPlan(copy));
     return copy;
   },
 };
