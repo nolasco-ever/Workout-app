@@ -23,6 +23,8 @@ export const sessionRepository = {
   listCompleted: async (uid: Id) =>
     (await listDocs<Session>(paths.sessions(uid), orderBy('startedAt', 'asc'))).filter(s => s.status === 'completed'),
 
+  listInProgress: (uid: Id) => listDocs<Session>(paths.sessions(uid), where('status', '==', 'in_progress')),
+
   watchInProgress: (uid: Id, onChange: (sessions: Session[]) => void): Unsubscribe =>
     watchDocs<Session>(paths.sessions(uid), onChange, where('status', '==', 'in_progress')),
 

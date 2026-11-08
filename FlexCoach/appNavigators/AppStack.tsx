@@ -21,6 +21,7 @@ import { ExerciseDetailScreen } from '../screens/Tabs/Workout/screens/ExerciseDe
 import { SessionScreen } from '../screens/Tabs/Workout/screens/SessionScreen';
 import { SessionCompleteScreen } from '../screens/Tabs/Workout/screens/SessionCompleteScreen';
 import { SharingScreen } from '../screens/Tabs/Profile/screens/SharingScreen';
+import { runPlanSplits } from '../data/services/planSplitService';
 import { SessionExercisesScreen } from '../screens/Tabs/Workout/screens/SessionExercisesScreen';
 import { SessionDetailScreen } from '../screens/Tabs/Workout/screens/SessionDetailScreen';
 import { CycleReviewScreen } from '../screens/Tabs/Workout/screens/CycleReviewScreen';
@@ -90,6 +91,13 @@ export const AppStack = () => {
     const photoUrl = profile?.photoUrl ?? null;
     // The Apple Watch's calories and heart rate for each finished workout, saved onto it (v1 #6).
     useEffect(() => (uid ? startWatchMetricsSync(uid) : undefined), [uid]);
+    // Existing plans split once into strength, stretching and cardio (v1 #10.11); waits while a workout is going.
+    const profileReady = !!profile;
+    useEffect(() => {
+        if (uid && profile && profile.onboardingCompletedAt) runPlanSplits(uid, profile).catch(err => console.warn('plan split failed', err));
+        // Once the account is known; it checks each plan's own mark, so running again is harmless.
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [uid, profileReady]);
     // The Watch's home with no workout running: today's workout, the cycle, and starting one from the wrist.
     useWatchHome();
     useEffect(() => {

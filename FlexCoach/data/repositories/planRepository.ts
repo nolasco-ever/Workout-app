@@ -25,6 +25,8 @@ export const planRepository = {
   watchShared: (ownerUid: Id, planId: Id, onChange: (plan: Plan | null) => void, onError: (err: unknown) => void): Unsubscribe =>
     watchDocOrError<Plan>(paths.plan(ownerUid, planId), plan => onChange(normalizePlan(plan)), onError),
 
+  /** Marks a plan split with nothing changed (v1 #10.11), without touching updatedAt, so synced copies see no edit. */
+  markSplit: (uid: Id, planId: Id, split: NonNullable<Plan['split']>) => patchDoc<Plan>(paths.plan(uid, planId), { split }),
   setVisibleToBuddies: (uid: Id, planId: Id, visible: boolean) => patchDoc<Plan>(paths.plan(uid, planId), { visibleToBuddies: visible, updatedAt: Date.now() }),
 
   watchAll: (uid: Id, onChange: (plans: Plan[]) => void): Unsubscribe =>

@@ -1,4 +1,5 @@
 import { NoticeContent, NoticeEntry } from '../data/engine/notices';
+import { splitNotice } from '../data/engine/planSplit';
 import { Plan, UserProfile } from '../data/models';
 
 /** What a notice can read to fill itself in. */
@@ -29,5 +30,11 @@ export const notices: NoticeDef[] = [
       ],
       secondary: { label: 'Open What buddies see', target: 'sharing' },
     }),
+  },
+  {
+    // v1 #10.11: what the split moved in each plan. Skipped (not marked seen) until a plan has been split.
+    id: 'plan-split',
+    since: new Date(2026, 10, 8).getTime(),
+    content: ({ plans }) => splitNotice(plans),
   },
 ];

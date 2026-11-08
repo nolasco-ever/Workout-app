@@ -119,6 +119,20 @@ export const GOAL_DEFAULTS: Record<PlanGoal, { sets: number; repRangeMin: number
   endurance: { sets: 3, repRangeMin: 12, repRangeMax: 15, restSec: 60 },
 };
 
+/** One thing that moved, for the plan split Notice. */
+export interface SplitMove {
+  kind: 'cardio' | 'stretching';
+  /** The new item's name. */
+  name: string;
+  /** The workout it came out of. */
+  from: string;
+  /** Where it sits next to that workout; 'instead' when the workout was only cardio and is gone. */
+  place: 'before' | 'after' | 'instead';
+  /** The new item's id, and the days it is on ("Mon", "Day 2"). */
+  id: Id;
+  days: string[];
+}
+
 /** Stored at users/{uid}/plans/{planId}. Workouts are embedded. */
 export interface Plan extends BaseDocument {
   ownerId: Id;
@@ -140,6 +154,13 @@ export interface Plan extends BaseDocument {
   archivedAt: number | null;
   /** Buddies can see and copy this plan. Off by default; missing on older plans. */
   visibleToBuddies?: boolean;
+  /**
+   * Set once the plan has been split (v1 #10.11): when, what moved (for the
+   * Notice), and the plan as it was before, as JSON (kept as a backup; a string
+   * so its schedule's lists never sit inside a list in Firestore). Missing on
+   * plans not split yet, and on plans made since.
+   */
+  split?: { at: number; moves: SplitMove[]; backup?: string };
 }
 
 export const DEFAULT_PROGRESSION: ProgressionConfig = {

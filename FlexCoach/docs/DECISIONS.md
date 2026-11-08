@@ -4,6 +4,30 @@ Every decision the owner makes, newest first, with why. Open questions sit at th
 bottom until they're answered. Decisions before 2026-11-07 were recorded only in
 commit messages, `docs/RELEASES.md` and Claude's session notes.
 
+## 2026-11-08 14:50 · Splitting existing plans, as built (10.11)
+
+- **Project:** FlexCoach
+- **Type:** functional and architectural
+- **Decision:** Each plan is split once, automatically, the first time the
+  app opens with this build and no workout going. Cardio in a strength
+  workout becomes its own cardio item on the same days (before the workout
+  if it came before every strength exercise, after otherwise, target kept);
+  stretches in a strength workout become one stretching workout, "{Workout}
+  stretches", by the same rule; a cardio-only workout becomes its cardio
+  items in its place; timed drills stay; every workout is typed. One cardio
+  item per workout it came from. An active plan's cycle is laid out again
+  from today by the plan-edit path. Plans synced from a buddy are skipped and
+  follow their source. The plan as it was is kept on the plan document as a
+  JSON backup (no new Firestore collection, so no rules change). The Notice
+  lists what moved as drawn; rotation plans name "Day 2 and Day 4", a
+  cardio-only workout reads "in place of …", and with several plans split
+  each line ends with the plan's name. No Undo.
+- **Why:** Owner: "yes go ahead" to the proposal, on top of the 2026-11-07
+  decisions (19:00 and 22:00).
+- **Source:** feature work, v1 #10.11.
+- **Decided by:** owner (backup on the plan document chosen by Claude to avoid
+  a rules deploy).
+
 ## 2026-11-08 14:10 · Route maps sharing switch and its Notice, as built (10.9)
 
 - **Project:** FlexCoach
