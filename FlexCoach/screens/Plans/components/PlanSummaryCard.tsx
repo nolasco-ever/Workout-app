@@ -92,17 +92,23 @@ export const PlanSummaryCard = ({ plan, stacked = false }: { plan: Plan; /** One
       </SurfaceCard>
       <SurfaceCard style={pair ? { flex: 1 } : undefined}>
         <CustomText variant="overline" color={colors.inkMuted}>Schedule</CustomText>
-        {/* Two columns: the day, then the workout. Rest days stay in the list, muted, so the rhythm reads. */}
+        {/* Two columns: the day, then what is on it, one item a line and never cut off (owner, 2026-11-08). Rest days stay in the list, muted, so the rhythm reads. */}
         {schedule.length === 0 ? (
           <CustomText variant="body" color={colors.inkMuted} style={{ paddingTop: spacing.sm }}>No schedule yet</CustomText>
         ) : (
           <View style={{ paddingTop: spacing.sm }}>
             {schedule.map((row, i) => (
-              <View key={`${row.day}-${i}`} style={{ flexDirection: 'row', alignItems: 'center', paddingVertical: spacing.sm, borderTopWidth: i ? 1 : 0, borderTopColor: colors.line }}>
-                <CustomText variant="label" color={colors.inkMuted} style={{ width: 64 }}>{row.day}</CustomText>
-                <CustomText variant={row.workout ? 'bodyStrong' : 'body'} color={row.workout ? colors.ink : colors.inactive} style={{ flex: 1 }} numberOfLines={1}>
-                  {row.workout ?? 'Rest'}
-                </CustomText>
+              <View key={`${row.day}-${i}`} style={{ flexDirection: 'row', alignItems: 'flex-start', paddingVertical: spacing.md, borderTopWidth: i ? 1 : 0, borderTopColor: colors.line }}>
+                <CustomText variant="label" color={colors.inkMuted} style={{ width: 64, paddingTop: 2 }}>{row.day}</CustomText>
+                <View style={{ flex: 1, gap: spacing.xs }}>
+                  {row.items.length === 0 ? (
+                    <CustomText variant="body" color={colors.inactive}>Rest</CustomText>
+                  ) : (
+                    row.items.map((name, j) => (
+                      <CustomText key={`${name}-${j}`} variant="bodyStrong">{name}</CustomText>
+                    ))
+                  )}
+                </View>
               </View>
             ))}
           </View>

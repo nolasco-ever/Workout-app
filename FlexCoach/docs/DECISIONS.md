@@ -4,6 +4,26 @@ Every decision the owner makes, newest first, with why. Open questions sit at th
 bottom until they're answered. Decisions before 2026-11-07 were recorded only in
 commit messages, `docs/RELEASES.md` and Claude's session notes.
 
+## 2026-11-08 15:30 · Build feedback before the archive (v1 #10)
+
+- **Project:** FlexCoach
+- **Type:** design and bug fixes
+- **Decision:**
+  - Route maps caption is now only "Your maps are always saved for you in
+    History." (owner: "Off unless you turn it on" said nothing).
+  - Plan review schedule: more room per row, and each item on a day on its own
+    line, never cut off.
+  - Scan the console: a camera error no longer looks like a cancel. With no
+    camera (the simulator) the photo library opens instead; Android asks for
+    the camera first; a refusal or an error says so.
+  - Starting from the Watch: while "Starting on your phone" shows, the Watch
+    asks the phone for the workout every 2 seconds, over the Watch-to-phone
+    channel that carried the start, instead of only waiting for the phone's
+    push (which never came on the simulators). Unproven on real devices.
+- **Why:** Owner's notes from trying the build on the simulators.
+- **Source:** bug fixes and copy, v1 #10.
+- **Decided by:** owner (fixes chosen by Claude).
+
 ## 2026-11-08 14:50 · Splitting existing plans, as built (10.11)
 
 - **Project:** FlexCoach

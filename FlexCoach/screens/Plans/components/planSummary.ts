@@ -14,12 +14,13 @@ export const dayNames = (plan: Plan, day: ScheduleDay): string | null => (day.le
  * happens on it on the right. Weekly plans list the seven weekdays from
  * the cycle's start day; rotations list each slot as "Day n".
  */
-export const scheduleRows = (plan: Plan): { day: string; workout: string | null }[] => {
+export const scheduleRows = (plan: Plan): { day: string; items: string[] }[] => {
   const s = plan.schedule;
-  if (s.mode === 'rotation') return s.slots.map((day, i) => ({ day: `Day ${i + 1}`, workout: dayNames(plan, day) }));
+  const names = (day: ScheduleDay) => day.map(id => workoutName(plan, id));
+  if (s.mode === 'rotation') return s.slots.map((day, i) => ({ day: `Day ${i + 1}`, items: names(day) }));
   return Array.from({ length: 7 }, (_, i) => {
     const weekday = (s.startWeekday + i) % 7;
-    return { day: DAY[weekday], workout: dayNames(plan, s.weekdays[weekday]) };
+    return { day: DAY[weekday], items: names(s.weekdays[weekday]) };
   });
 };
 

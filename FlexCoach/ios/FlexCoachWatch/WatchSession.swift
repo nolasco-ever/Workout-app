@@ -151,8 +151,15 @@ final class WatchSession: NSObject, ObservableObject {
     session.sendMessage(["command": kind.rawValue, "id": id], replyHandler: nil) { _ in
       Task { @MainActor in if self.starting == request { self.starting?.failed = true } }
     }
+    // The phone's workout state normally arrives on its own. Its push to the Watch can lag or not come at all (seen
+    // on the simulators), so while waiting the Watch also asks for it every 2 seconds, over the Watch-to-phone
+    // channel that just carried the start. A reply with the workout clears this screen (see apply).
     startTimeout = Task { [weak self] in
-      try? await Task.sleep(for: .seconds(20))
+      for _ in 0..<10 {
+        try? await Task.sleep(for: .seconds(2))
+        guard !Task.isCancelled, let self, self.starting == request else { return }
+        self.sync()
+      }
       guard !Task.isCancelled, let self, self.starting == request else { return }
       self.starting?.failed = true
     }

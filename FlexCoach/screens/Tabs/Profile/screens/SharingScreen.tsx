@@ -66,7 +66,7 @@ export const SharingScreen = () => {
             <SwitchRow icon={generalIcons.routeMap} title="Route maps" description="Allow buddies to see the map of your outdoor cardio exercises." value={prefs.routes} onChange={routes => set({ routes })} disabled={detailsOff} />
           </SurfaceCard>
           <CustomText variant="caption" color={colors.inkMuted}>
-            Off unless you turn it on. Your maps are always saved for you in History.
+            Your maps are always saved for you in History.
           </CustomText>
         </View>
 

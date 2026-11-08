@@ -89,6 +89,8 @@ export const CardioDone = ({ result, onDone }: { result: SessionResult; onDone: 
           { text: 'Retake', onPress: () => { scan().catch(() => undefined); } },
         ]);
       else if (res.status === 'unavailable') Alert.alert("Can't scan here", 'Reading a console needs the latest version of the app.');
+      else if (res.status === 'denied') Alert.alert('Camera is off for FlexCoach', 'Turn on the camera for FlexCoach in Settings to scan the console.');
+      else if (res.status === 'error') Alert.alert("Couldn't open the camera", res.message);
     } finally {
       setScanning(false);
     }
