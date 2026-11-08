@@ -4,6 +4,16 @@ Every decision the owner makes, newest first, with why. Open questions sit at th
 bottom until they're answered. Decisions before 2026-11-07 were recorded only in
 commit messages, `docs/RELEASES.md` and Claude's session notes.
 
+## 2026-11-07 20:55 · Cardio redesign designs signed off (v1 #10)
+
+- **Project:** FlexCoach
+- **Type:** design
+- **Decision:** Every board in the two "Cardio redesign" canvas rows is signed
+  off and is the spec for the build (docs/TASKS.md, 10.1 to 10.11).
+- **Why:** Owner: "designs are signed off. looks good".
+- **Source:** v1 #10.
+- **Decided by:** owner.
+
 ## 2026-11-07 20:45 · Route maps: default, notice, hidden ends (v1 #10)
 
 - **Project:** FlexCoach
