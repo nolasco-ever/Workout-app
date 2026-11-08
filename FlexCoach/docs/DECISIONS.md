@@ -4,6 +4,31 @@ Every decision the owner makes, newest first, with why. Open questions sit at th
 bottom until they're answered. Decisions before 2026-11-07 were recorded only in
 commit messages, `docs/RELEASES.md` and Claude's session notes.
 
+## 2026-11-08 10:05 · Workout tab: today's items as rows (10.5)
+
+- **Project:** FlexCoach
+- **Type:** design
+- **Decision:** Built from the signed-off "Workout tab, a day with three"
+  board. Each of today's items is a row: its number in the day (a green check
+  once done), the name with its kind icon, a line under it ("6 exercises ·
+  about 55 min", "Target 2.5 mi in 25:00", or "Done"), and a chevron. A row
+  opens the preview (Start lives there) or, once done, the logged session.
+  One "Not today" under the rows while anything is left. For the cases the
+  board doesn't draw:
+  - A skipped item: grey number and "Skipped"; it opens the preview without
+    Start.
+  - Wide and tablet layouts use the same card; the old split with Start on
+    the right had no buttons left to hold.
+  - The future-item caption on the preview now reads "This moves to today.
+    Everything else stays where it is." (it still said "swaps places", wrong
+    since 10.4).
+  - Everything else stays as it is: the "X of Y workouts done" count, and the
+    Resume card standing in for the today card while an item is in progress.
+- **Why:** Owner: "anything that doesn't need changing, just leave it. you can
+  go ahead".
+- **Source:** feature work, v1 #10.5.
+- **Decided by:** owner (gaps proposed by Claude).
+
 ## 2026-11-08 09:40 · Reminders read in the plural for a day with several items (10.4c)
 
 - **Project:** FlexCoach

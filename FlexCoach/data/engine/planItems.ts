@@ -1,4 +1,5 @@
-import { Plan, Workout } from '../models';
+import { DistanceUnit, Plan, Workout } from '../models';
+import { formatDistance, formatDuration } from './units';
 
 /**
  * A plan's items (v1 #10): strength and stretching workouts, and cardio items,
@@ -16,3 +17,21 @@ export const planItemsLabel = (plan: Pick<Plan, 'workouts'>): string => {
 
 /** "Push", "Push and Run", "Push, Run and Yoga": a day's items in a line. */
 export const joinNames = (names: string[]): string => (names.length <= 1 ? names.join('') : `${names.slice(0, -1).join(', ')} and ${names[names.length - 1]}`);
+
+/** Rough length of a workout: each set plus its rest, at about 45 s a set. */
+export const estimateMinutes = (workout: Pick<Workout, 'exercises'>): number =>
+  Math.round(workout.exercises.reduce((s, e) => s + e.sets * (e.restSec + 45), 0) / 60);
+
+/**
+ * The line under an item on the Workout tab (v1 #10.5): "6 exercises · about
+ * 55 min" for a workout, "Target 2.5 mi in 25:00" for cardio, from what is
+ * set; a cardio item with no target reads "Cardio".
+ */
+export const itemSummary = (workout: Pick<Workout, 'type' | 'exercises'>, distanceUnit: DistanceUnit): string => {
+  if (!isCardioItem(workout)) return `${workout.exercises.length} exercise${workout.exercises.length === 1 ? '' : 's'} · about ${estimateMinutes(workout)} min`;
+  const e = workout.exercises[0];
+  const distance = e?.startingDistanceM ? formatDistance(e.startingDistanceM, distanceUnit) : null;
+  const time = e?.startingDurationSec ? formatDuration(e.startingDurationSec) : null;
+  if (distance && time) return `Target ${distance} in ${time}`;
+  return distance || time ? `Target ${distance ?? time}` : 'Cardio';
+};

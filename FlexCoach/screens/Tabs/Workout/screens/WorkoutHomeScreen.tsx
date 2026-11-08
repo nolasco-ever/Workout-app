@@ -8,7 +8,7 @@ import { useAuth } from '../../../../data/auth/AuthProvider';
 import { Occurrence, Plan } from '../../../../data/models';
 import { cycleDayPosition, findWorkout } from '../../../../data/engine/schedule';
 import { addDays, fromLocalDate } from '../../../../data/engine/dates';
-import { pushDayTo, seedSamplePlan, skipDay, startNextCycle, startSession } from '../../../../data/services/workoutService';
+import { pushDayTo, seedSamplePlan, skipDay, startNextCycle } from '../../../../data/services/workoutService';
 import { activatePlan, startFreshCycle, validatePlan } from '../../../../data/services/planService';
 import { CustomText } from '../../../../components/text/customText';
 import { Icon } from '../../../../components/icons/Icon';
@@ -24,11 +24,12 @@ import { SurfaceCard as Card } from '../../../../components/cards/SurfaceCard';
 import { PrimaryButton } from '../../../../components/buttons/PrimaryButton';
 import { NotificationPermissionCard } from '../../../../components/cards/NotificationPermissionCard';
 import { DayRow } from '../components/OccurrenceRow';
+import { TodayItemRow } from '../components/TodayItemRow';
 import { askNotToday, listNames } from '../components/notToday';
 import { AppStackParams } from '../../../../appNavigators/AppStack';
 import { devFlags } from '../../../../dev/flags';
 import { describeCycle } from '../../../../screens/Plans/components/planSummary';
-import { planItemsLabel } from '../../../../data/engine/planItems';
+import { itemSummary, planItemsLabel } from '../../../../data/engine/planItems';
 
 const longDate = (d: string) => fromLocalDate(d).toLocaleDateString(undefined, { weekday: 'long', month: 'short', day: 'numeric' });
 const shortDate = (d: string) => fromLocalDate(d).toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric' });
@@ -96,13 +97,6 @@ export const WorkoutHomeScreen = () => {
   if (cycle) for (let d = cycle.startDate; d <= cycle.endDate && cycleDays.length < 60; d = addDays(d, 1)) cycleDays.push(d);
   const openOccurrence = (o: Occurrence) => (o.status === 'completed' && o.sessionId ? navigation.navigate('SessionDetailScreen', { sessionId: o.sessionId, workoutName: o.workoutName ?? undefined }) : openPreview(o));
 
-  const start = (occurrence: Occurrence) =>
-    run(`start-${occurrence.id}`, async () => {
-      if (!uid || !plan || !cycle) return;
-      const { session, cycle: updated } = await startSession(uid, plan, cycle, occurrence, profile?.weightUnit ?? 'lb');
-      navigation.navigate('SessionScreen', { plan, cycle: updated, session });
-    });
-
   const openPlans = (planId?: string) =>
     (planId ? (navigation as unknown as NavigationProp<AppStackParams>).navigate('PlanOverviewScreen', { planId }) : (navigation as unknown as NavigationProp<AppStackParams>).navigate('PlansScreen'));
 
@@ -111,7 +105,13 @@ export const WorkoutHomeScreen = () => {
       if (uid) await activatePlan(uid, draft);
     });
 
-  const todayWorkout = plan && state.todayOccurrence ? findWorkout(plan, state.todayOccurrence.workoutId) : undefined;
+  // Today's items in the day's order, each with its plan entry; rest has no row.
+  const todayItems = plan
+    ? state.todayOccurrences.flatMap(occurrence => {
+        const workout = occurrence.status !== 'rest' ? findWorkout(plan, occurrence.workoutId) : undefined;
+        return workout ? [{ occurrence, workout }] : [];
+      })
+    : [];
   const resume = state.inProgressSession;
 
 
@@ -198,38 +198,30 @@ export const WorkoutHomeScreen = () => {
                       {state.upcoming[0] ? `First up: ${state.upcoming[0].workoutName} on ${longDate(state.upcoming[0].date)}.` : `The cycle begins ${longDate(cycle.startDate)}.`}
                     </CustomText>
                   </>
-                ) : state.todayOccurrence && todayWorkout ? (
+                ) : todayItems.length > 0 ? (
                   <>
-                    <CustomText variant="heading" style={{ marginTop: spacing.xs }}>{todayWorkout.name}</CustomText>
-                    <CustomText variant="caption" color={colors.inkMuted} style={{ marginBottom: spacing.md }}>
-                      {todayWorkout.exercises.length} exercises · about {Math.round(todayWorkout.exercises.reduce((s, e) => s + e.sets * (e.restSec + 45), 0) / 60)} min
-                    </CustomText>
-                    {state.todayOccurrence.status === 'completed' ? (
+                    {/* The day's items as rows (v1 #10.5): each opens its preview, which has Start, so they go in any order. */}
+                    <View style={{ marginTop: spacing.xs }}>
+                      {todayItems.map(({ occurrence, workout }, i) => (
+                        <TodayItemRow
+                          key={occurrence.id}
+                          occurrence={occurrence}
+                          workout={workout}
+                          index={i}
+                          count={todayItems.length}
+                          summary={itemSummary(workout, profile?.distanceUnit ?? 'mi')}
+                          first={i === 0}
+                          onOpen={() => openOccurrence(occurrence)}
+                        />
+                      ))}
+                    </View>
+                    {todayItems.some(t => t.occurrence.status === 'scheduled') && (
                       <PrimaryButton
-                        label="Completed · see workout"
+                        label="Not today"
                         variant="quiet"
-                        icon={generalIcons.check}
-                        onPress={() => state.todayOccurrence?.sessionId && navigation.navigate('SessionDetailScreen', { sessionId: state.todayOccurrence.sessionId, workoutName: todayWorkout.name })}
+                        busy={busy === 'not-today'}
+                        onPress={() => uid && askNotToday(uid, plan, cycle, state.todayDate, profile, fn => run('not-today', fn))}
                       />
-                    ) : state.todayOccurrence.status === 'skipped' ? (
-                      <PrimaryButton label="Skipped" variant="quiet" disabled onPress={() => {}} />
-                    ) : (
-                      <View style={{ gap: spacing.sm }}>
-                        <PrimaryButton label="Start workout" icon={generalIcons.play} busy={busy === `start-${state.todayOccurrence.id}`} onPress={() => start(state.todayOccurrence!)} />
-                        <View style={{ flexDirection: 'row' }}>
-                          <View style={{ flex: 1 }}>
-                            <PrimaryButton label="Preview exercises" variant="quiet" onPress={() => openPreview(state.todayOccurrence!)} />
-                          </View>
-                          <View style={{ flex: 1 }}>
-                            <PrimaryButton
-                              label="Not today"
-                              variant="quiet"
-                              busy={busy === `not-today-${state.todayOccurrence.id}`}
-                              onPress={() => uid && askNotToday(uid, plan, cycle, state.todayDate, profile, fn => run(`not-today-${state.todayOccurrence!.id}`, fn))}
-                            />
-                          </View>
-                        </View>
-                      </View>
                     )}
                   </>
                 ) : (
@@ -238,74 +230,6 @@ export const WorkoutHomeScreen = () => {
                     <CustomText variant="body" color={colors.inkMuted}>
                       {state.upcoming[0] ? `Next up: ${state.upcoming[0].workoutName} on ${longDate(state.upcoming[0].date)}` : 'Nothing else scheduled this cycle.'}
                     </CustomText>
-                  </>
-                )}
-              </Card>
-            ) : null,
-          /** The today card gone wide: the workout on the left, Start on the right behind a standing divider, Preview and Not today along the bottom. */
-          todayWide:
-            !state.cycleFinished && !resume ? (
-              <Card>
-                <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.lg }}>
-                  <View style={{ flex: 1 }}>
-                    <CustomText variant="overline" color={colors.inkMuted}>Today · {longDate(state.todayDate)}</CustomText>
-                    {notStarted ? (
-                      <>
-                        <CustomText variant="heading" style={{ marginTop: spacing.xs }}>Not started yet</CustomText>
-                        <CustomText variant="body" color={colors.inkMuted}>
-                          {state.upcoming[0] ? `First up: ${state.upcoming[0].workoutName} on ${longDate(state.upcoming[0].date)}.` : `The cycle begins ${longDate(cycle.startDate)}.`}
-                        </CustomText>
-                      </>
-                    ) : state.todayOccurrence && todayWorkout ? (
-                      <>
-                        <CustomText variant="heading" style={{ marginTop: spacing.xs }}>{todayWorkout.name}</CustomText>
-                        <CustomText variant="caption" color={colors.inkMuted}>
-                          {todayWorkout.exercises.length} exercises · about {Math.round(todayWorkout.exercises.reduce((s, e) => s + e.sets * (e.restSec + 45), 0) / 60)} min
-                        </CustomText>
-                      </>
-                    ) : (
-                      <>
-                        <CustomText variant="heading" style={{ marginTop: spacing.xs }}>Rest day</CustomText>
-                        <CustomText variant="body" color={colors.inkMuted}>
-                          {state.upcoming[0] ? `Next up: ${state.upcoming[0].workoutName} on ${longDate(state.upcoming[0].date)}` : 'Nothing else scheduled this cycle.'}
-                        </CustomText>
-                      </>
-                    )}
-                  </View>
-                  {/* Three siblings, so the divider stands exactly in the middle: left half, line, right half. */}
-                  {!notStarted && state.todayOccurrence && todayWorkout && <View style={{ width: 1, alignSelf: 'stretch', backgroundColor: colors.line }} />}
-                  {!notStarted && state.todayOccurrence && todayWorkout && (
-                    <View style={{ flex: 1 }}>
-                      {state.todayOccurrence.status === 'completed' ? (
-                        <PrimaryButton
-                          label="Completed · see workout"
-                          variant="quiet"
-                          icon={generalIcons.check}
-                          onPress={() => state.todayOccurrence?.sessionId && navigation.navigate('SessionDetailScreen', { sessionId: state.todayOccurrence.sessionId, workoutName: todayWorkout.name })}
-                        />
-                      ) : state.todayOccurrence.status === 'skipped' ? (
-                        <PrimaryButton label="Skipped" variant="quiet" disabled onPress={() => {}} />
-                      ) : (
-                        <PrimaryButton label="Start workout" icon={generalIcons.play} busy={busy === `start-${state.todayOccurrence.id}`} onPress={() => start(state.todayOccurrence!)} />
-                      )}
-                    </View>
-                  )}
-                </View>
-                {!notStarted && state.todayOccurrence && todayWorkout && state.todayOccurrence.status === 'scheduled' && (
-                  <>
-                    <View style={{ flexDirection: 'row', gap: spacing.sm, marginTop: spacing.md }}>
-                      <View style={{ flex: 1 }}>
-                        <PrimaryButton label="Preview exercises" variant="quiet" onPress={() => openPreview(state.todayOccurrence!)} />
-                      </View>
-                      <View style={{ flex: 1 }}>
-                        <PrimaryButton
-                          label="Not today"
-                          variant="quiet"
-                          busy={busy === `not-today-${state.todayOccurrence.id}`}
-                          onPress={() => uid && askNotToday(uid, plan, cycle, state.todayDate, profile, fn => run(`not-today-${state.todayOccurrence!.id}`, fn))}
-                        />
-                      </View>
-                    </View>
                   </>
                 )}
               </Card>
@@ -460,18 +384,17 @@ export const WorkoutHomeScreen = () => {
             <View style={{ flex: 1, alignSelf: 'flex-start' }}>{cycleView.list}</View>
           </View>
         )}
-        {/* One column: the cycle headline with the quick workout at its right, the today card gone wide, then the day list. */}
+        {/* One column: the cycle headline with the quick workout at its right, the today card, then the day list. */}
         {!loading && cycleView && family === 'medium' && (
           <>
             {cycleView.report}
             {cycleView.missed}
             {cycleView.permission}
-            {/* The same geometry as the today card below (its padding, and its divider's room), so the quick workout button lines up over Start. */}
             <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.lg * 2 + 1, paddingHorizontal: spacing.lg }}>
               <View style={{ flex: 1 }}>{cycleView.headline}</View>
               {cycleView.quick && <View style={{ flex: 1 }}>{cycleView.quick}</View>}
             </View>
-            {cycleView.todayWide}
+            {cycleView.today}
             {cycleView.list}
           </>
         )}

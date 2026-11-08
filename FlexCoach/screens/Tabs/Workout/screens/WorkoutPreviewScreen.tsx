@@ -123,7 +123,7 @@ export const WorkoutPreviewScreen = () => {
         <View style={{ padding: spacing.lg, paddingBottom: spacing.lg + bottomInset, gap: spacing.sm }}>
           {occurrence.date > todayDate && (
             <CustomText variant="caption" color={colors.inkMuted} centered>
-              This swaps places with today's slot, so the rest of the cycle stays as planned.
+              This moves to today. Everything else stays where it is.
             </CustomText>
           )}
           <PrimaryButton

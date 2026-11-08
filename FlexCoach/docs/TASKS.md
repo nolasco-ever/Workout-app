@@ -91,9 +91,9 @@ Design (canvas first)
           filtered picker.
     - [x] 10.3 Cardio as its own plan item ("Add cardio exercise"); its target
           never progresses.
-    - [ ] 10.4 Several items per day: schedule model, fixed-weekday and rotation
+    - [x] 10.4 Several items per day: schedule model, fixed-weekday and rotation
           editors, cycle generation, missed day handled as a whole.
-    - [ ] 10.5 Workout tab: a day's items as rows that open the preview; any
+    - [x] 10.5 Workout tab: a day's items as rows that open the preview; any
           order.
     - [ ] 10.6 The cardio screen: one component, glass bottom panel, stats per
           kind (heart rate and calories on all), indoor graphic, Start/Pause/End.
