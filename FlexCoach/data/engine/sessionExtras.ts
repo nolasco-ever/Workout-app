@@ -1,6 +1,6 @@
 import { canonicalExerciseId, sameExercise } from '../catalog/exerciseIds';
 import { getCatalogExercise } from '../catalog/exerciseCatalog';
-import { Exercise, Id, LoggedSet, Plan, Session, SessionExercise, SetTarget, wantsWarmup, WeightUnit, Workout, WorkoutExercise } from '../models';
+import { Exercise, ExerciseKind, Id, LoggedSet, Plan, Session, SessionExercise, SetTarget, wantsWarmup, WeightUnit, Workout, WorkoutExercise } from '../models';
 import { newEntry } from './planDefaults';
 import { buildPlannedSets, buildWarmupSets, progressExercise } from './progression';
 import { findWorkout } from './schedule';
@@ -133,7 +133,7 @@ export const removeExerciseFrom = (session: Session, sessionExerciseId: Id): Ses
  * is going in. Starts empty; the session screen opens the picker at once.
  * Counts like any other session (history, streak, records, buddies).
  */
-export const newQuickSession = (uid: Id, date: string, makeId: () => Id, now: number = Date.now()): Session => ({
+export const newQuickSession = (uid: Id, date: string, makeId: () => Id, now: number = Date.now(), kind?: ExerciseKind): Session => ({
   id: makeId(),
   ownerId: uid,
   planId: null,
@@ -146,6 +146,7 @@ export const newQuickSession = (uid: Id, date: string, makeId: () => Id, now: nu
   finishedAt: null,
   status: 'in_progress',
   exercises: [],
+  ...(kind ? { kind } : {}),
   createdAt: now,
   updatedAt: now,
 });

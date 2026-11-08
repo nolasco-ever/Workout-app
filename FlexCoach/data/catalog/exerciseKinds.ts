@@ -1,4 +1,6 @@
-import { Exercise } from '../models';
+import { Exercise, ExerciseKind } from '../models';
+
+export type { ExerciseKind };
 
 /**
  * What an exercise is for planning (v1 #10, owner 2026-11-07): strength,
@@ -13,8 +15,6 @@ import { Exercise } from '../models';
  *   as cardio (burpees, jump rope, battle ropes, HIIT, the running drills done
  *   in place, Prowler Sprint): the owner put them with strength.
  */
-export type ExerciseKind = 'strength' | 'stretching' | 'cardio';
-
 /** Cardio-type exercises logged by distance that are drills, not a run or a machine. Ids from both libraries. */
 const DRILLS = new Set([
   '3638', // Alternating Knee-Drive Front-Kick Run

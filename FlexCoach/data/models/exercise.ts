@@ -53,6 +53,9 @@ export type ExerciseCategory =
   | 'strongman'
   | 'cardio';
 
+/** What an exercise is for planning (v1 #10): see catalog/exerciseKinds. */
+export type ExerciseKind = 'strength' | 'stretching' | 'cardio';
+
 export type ExerciseLevel = 'beginner' | 'intermediate' | 'expert';
 
 /**

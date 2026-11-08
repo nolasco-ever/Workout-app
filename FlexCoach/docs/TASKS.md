@@ -87,7 +87,7 @@ Design (canvas first)
     - [x] 10.1 Workout types: workouts carry a type (strength/stretching); the
           add card asks it; the picker shows only that type (strength =
           strength, plyometrics, powerlifting, strongman and timed drills).
-    - [ ] 10.2 Quick workout asks the type on its own screen, then the same
+    - [x] 10.2 Quick workout asks the type on its own screen, then the same
           filtered picker.
     - [ ] 10.3 Cardio as its own plan item ("Add cardio exercise"); its target
           never progresses.

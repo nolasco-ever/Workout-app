@@ -25,6 +25,7 @@ import { SessionDetailScreen } from '../screens/Tabs/Workout/screens/SessionDeta
 import { CycleReviewScreen } from '../screens/Tabs/Workout/screens/CycleReviewScreen';
 import { ActivePlanWorkoutsScreen } from '../screens/Tabs/Workout/screens/ActivePlanWorkoutsScreen';
 import { ExercisePickerScreen } from '../screens/Plans/screens/ExercisePickerScreen';
+import { QuickWorkoutKindScreen } from '../screens/Tabs/Workout/screens/QuickWorkoutKindScreen';
 import type { SessionRoutes } from '../screens/Tabs/Workout/sessionRoutes';
 import { BuddiesScreen } from '../screens/Buddies/BuddiesScreen';
 import { CardStack } from '../screens/Buddies/CardStack';
@@ -142,6 +143,7 @@ export const AppStack = () => {
                     {/* Legacy Swap (v1 #6b): temporary, for testers whose exercises the library move matched wrong. Over the tabs, so the tab bar never covers its buttons. */}
                     <Stack.Screen name="ExerciseDetailScreen" component={ExerciseDetailScreen} options={({ navigation }) => opts.modal('How to', () => <HeaderButton icon={generalIcons.xMark} accessibilityLabel="Close" onPress={() => navigation.goBack()} />)} />
                     {/* The running workout, over the tabs: a focus mode with no tab bar. Draws its own header row (see SessionScreen) so the title stays centred beside the rest pill. */}
+                    <Stack.Screen name="QuickWorkoutKindScreen" component={QuickWorkoutKindScreen} options={({ navigation }) => opts.modal('Quick workout', () => <HeaderButton icon={generalIcons.xMark} accessibilityLabel="Close" onPress={() => navigation.goBack()} />)} />
                     <Stack.Screen name="SessionScreen" component={SessionScreen} options={({ route }) => ({ ...opts.screen(route.params.session.workoutName), headerShown: false, gestureEnabled: false })} />
                     <Stack.Screen name="SessionCompleteScreen" component={SessionCompleteScreen} options={{ ...opts.base, headerShown: false, animation: 'fade', gestureEnabled: false }} />
                     <Stack.Screen name="SessionExercisesScreen" component={SessionExercisesScreen} options={({ navigation, route }) => opts.modal(route.params.workoutName, () => <HeaderButton icon={generalIcons.xMark} accessibilityLabel="Close" onPress={() => navigation.goBack()} />)} />

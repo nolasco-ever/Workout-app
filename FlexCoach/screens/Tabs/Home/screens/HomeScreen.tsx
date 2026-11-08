@@ -34,7 +34,7 @@ import { AppStackParams } from '../../../../appNavigators/AppStack';
 import { devFlags } from '../../../../dev/flags';
 import { seedSampleWeights } from '../../../../data/services/devSeeds';
 import { askNotToday } from '../../Workout/components/notToday';
-import { markCycleReportPrompted, startQuickSession } from '../../../../data/services/workoutService';
+import { markCycleReportPrompted } from '../../../../data/services/workoutService';
 import { CycleReportModal } from '../../../../components/overlays/CycleReportModal';
 import { useBuddies } from '../../../../data/hooks/useBuddies';
 import { useBuddyActivity } from '../../../../data/hooks/useBuddyActivity';
@@ -179,9 +179,8 @@ export const HomeScreen = () => {
   const canQuick = !!uid && !home.loading && !home.inProgressSession && !ins.todaySession && (!home.plan || !todayOcc || todayOcc.status !== 'scheduled');
   const quickWorkout = () => {
     if (!uid) return;
-    startQuickSession(uid)
-      .then(session => navigation.navigate('SessionScreen', { plan: null, cycle: null, session, activePlan: home.plan ? { plan: home.plan, cycle: home.cycle } : undefined }))
-      .catch(err => console.warn('quick workout failed', err));
+    // What kind of workout comes first (v1 #10); that screen starts it.
+    navigation.navigate('QuickWorkoutKindScreen', { activePlan: home.plan ? { plan: home.plan, cycle: home.cycle } : undefined });
   };
   const todayStatus = !home.plan
     ? { tone: colors.inkMuted, kicker: 'Today', headline: 'No plan yet', detail: 'Set up a plan and your daily workout shows here.', action: 'Set up a plan' }

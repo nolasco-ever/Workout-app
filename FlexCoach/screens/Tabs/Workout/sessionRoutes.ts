@@ -14,6 +14,8 @@ export type SessionRoutes = {
   SessionCompleteScreen: { result: SessionResult };
   /** The running workout's exercise list, as a modal over the session; reads the session through sessionChannel. */
   SessionExercisesScreen: { workoutName: string; currentIndex: number; /** The workout's kind, so Add exercise only offers it (v1 #10). */ kind?: ExerciseKind };
+  /** Quick workout's first step: what kind it is (v1 #10). `activePlan` passes on to the session. */
+  QuickWorkoutKindScreen: { activePlan?: { plan: Plan; cycle: Cycle | null } } | undefined;
   /** The active plan's workouts to copy into an empty quick workout, as a modal over the picker. */
   ActivePlanWorkoutsScreen: { workouts: Workout[] };
   /**

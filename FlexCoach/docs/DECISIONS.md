@@ -4,6 +4,17 @@ Every decision the owner makes, newest first, with why. Open questions sit at th
 bottom until they're answered. Decisions before 2026-11-07 were recorded only in
 commit messages, `docs/RELEASES.md` and Claude's session notes.
 
+## 2026-11-07 21:30 · Quick workout keeps its name (10.2)
+
+- **Project:** FlexCoach
+- **Type:** functional
+- **Decision:** A quick workout is called "Quick workout" whatever kind is
+  picked (not "Quick strength" or the cardio exercise's name). Its kind is kept
+  on the session and limits its picker.
+- **Why:** Owner's choice.
+- **Source:** v1 #10, step 10.2.
+- **Decided by:** owner.
+
 ## 2026-11-07 21:05 · 10.1 details, and Legacy Swap's button goes
 
 - **Project:** FlexCoach

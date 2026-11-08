@@ -170,3 +170,12 @@ describe('past exercises like one being swapped', () => {
     expect(pastExercisesLike(bench, history, new Set([incline.id]))).toEqual([]);
   });
 });
+
+describe('newQuickSession kind (v1 #10)', () => {
+  it('keeps the kind picked first, and none when started without one', () => {
+    let n = 0;
+    const id = () => `id${n++}`;
+    expect(newQuickSession('u', '2026-11-07', id, 1, 'cardio')).toMatchObject({ kind: 'cardio', workoutName: 'Quick workout', exercises: [] });
+    expect('kind' in newQuickSession('u', '2026-11-07', id, 1)).toBe(false);
+  });
+});

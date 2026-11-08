@@ -8,7 +8,7 @@ import { useAuth } from '../../../../data/auth/AuthProvider';
 import { Occurrence, Plan } from '../../../../data/models';
 import { findWorkout } from '../../../../data/engine/schedule';
 import { addDays, fromLocalDate } from '../../../../data/engine/dates';
-import { pushWorkoutTo, seedSamplePlan, skipWorkout, startNextCycle, startQuickSession, startSession } from '../../../../data/services/workoutService';
+import { pushWorkoutTo, seedSamplePlan, skipWorkout, startNextCycle, startSession } from '../../../../data/services/workoutService';
 import { activatePlan, startFreshCycle, validatePlan } from '../../../../data/services/planService';
 import { CustomText } from '../../../../components/text/customText';
 import { Icon } from '../../../../components/icons/Icon';
@@ -115,12 +115,8 @@ export const WorkoutHomeScreen = () => {
 
 
   /** Nothing planned, or not in the mood for what is: an empty workout to fill as it goes. */
-  const startQuick = () =>
-    run('quick', async () => {
-      if (!uid) return;
-      const session = await startQuickSession(uid);
-      navigation.navigate('SessionScreen', { plan: null, cycle: null, session, activePlan: plan ? { plan, cycle } : undefined });
-    });
+  // What kind of workout comes first (v1 #10); that screen starts it.
+  const startQuick = () => navigation.navigate('QuickWorkoutKindScreen', { activePlan: plan ? { plan, cycle } : undefined });
   const quickButton = <PrimaryButton label="Quick workout" variant="outline" icon={generalIcons.zap} busy={busy === 'quick'} onPress={startQuick} />;
 
   // The cycle view in pieces; the layout family arranges them below.

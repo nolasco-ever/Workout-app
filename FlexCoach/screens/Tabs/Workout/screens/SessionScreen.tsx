@@ -57,8 +57,8 @@ export const SessionScreen = () => {
   const navigation = useNavigation<NativeStackNavigationProp<AppStackParams>>();
   const { params } = useRoute<RouteProp<AppStackParams, 'SessionScreen'>>();
   const { plan, cycle, activePlan } = params;
-  // What Add exercise offers during a planned workout: that workout's type (v1 #10). A quick workout, or a workout made before types, offers everything.
-  const workoutKind: ExerciseKind | undefined = plan?.workouts.find(w => w.id === params.session.workoutId)?.type;
+  // What Add exercise offers (v1 #10): a quick workout's kind, or a planned workout's type. One made before types offers everything.
+  const workoutKind: ExerciseKind | undefined = params.session.kind ?? plan?.workouts.find(w => w.id === params.session.workoutId)?.type;
   /** A swap offers the same kind as the exercise it replaces (owner, 2026-11-07). */
   const kindOf = (exerciseId: string): ExerciseKind | undefined => {
     const ex = getCatalogExercise(exerciseId);
@@ -348,7 +348,10 @@ export const SessionScreen = () => {
   // An empty quick workout can also start as a copy of one of the plan's
   // workouts, from a link at the top of the picker: same exercises and
   // targets, but outside the plan. The link only shows while it is empty.
-  const planWorkouts = activePlan ? [...activePlan.plan.workouts].sort((a, b) => a.order - b.order).filter(w => w.exercises.length > 0) : [];
+  // An empty quick workout can copy in a plan workout of its own kind; an untyped one only into a strength or stretching quick workout, never cardio.
+  const planWorkouts = activePlan
+    ? [...activePlan.plan.workouts].sort((a, b) => a.order - b.order).filter(w => w.exercises.length > 0 && (!workoutKind || w.type === workoutKind || (!w.type && workoutKind !== 'cardio')))
+    : [];
   // The header row's measurements, for keeping the centred title clear of the rest pill.
   const [rowWidth, setRowWidth] = useState(0);
   const [pillWidth, setPillWidth] = useState(0);

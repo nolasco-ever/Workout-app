@@ -1,5 +1,5 @@
 import { BaseDocument, Id, LocalDate, Timestamp } from './common';
-import { MeasurementType } from './exercise';
+import { ExerciseKind, MeasurementType } from './exercise';
 
 /**
  * What the app suggested for an exercise before the session started. Stored
@@ -81,6 +81,8 @@ export interface Session extends BaseDocument {
   exercises: SessionExercise[];
   /** What the Apple Watch measured over the workout, when one tracked it (v1 #6); absent otherwise. */
   watch?: WatchMetrics | null;
+  /** A quick workout's kind, picked as it starts (v1 #10); its picker only offers that kind. Absent otherwise and on older sessions. */
+  kind?: ExerciseKind;
 }
 
 /** The Watch's Health workout, summed up: active calories, and heart rate over the workout. */

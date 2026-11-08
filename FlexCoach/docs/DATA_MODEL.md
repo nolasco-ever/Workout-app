@@ -54,7 +54,7 @@ Two schedule modes share one occurrence model:
   `occurrenceId` and `workoutId` all null and the name "Quick workout"
   (`engine/sessionExtras.newQuickSession`, started by
   `startQuickSession`). It starts empty; the session screen opens the
-  exercise picker at once and every exercise is session-only. It counts
+  exercise picker at once and every exercise is session-only. Since v1 #10 it first asks what kind of workout it is (`QuickWorkoutKindScreen`: strength, stretching or cardio), stored as `Session.kind`, and its picker only offers that kind; the Watch still starts one without a kind. It counts
   like any session (history, streak, records, buddy feed, Iron Card) and
   touches no occurrence, so the day's planned workout stays as it was.
   Leaving one with nothing logged abandons it without asking. Offered on

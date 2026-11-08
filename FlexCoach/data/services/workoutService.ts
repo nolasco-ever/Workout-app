@@ -1,5 +1,6 @@
 import { catalogName } from '../catalog/exerciseCatalog';
 import {
+  ExerciseKind,
   Cycle,
   CycleSummary,
   Id,
@@ -131,9 +132,9 @@ export const copyWorkoutIntoQuickSession = async (uid: Id, session: Session, pla
   return sessionRepository.saveExercises(uid, next);
 };
 
-/** Start a workout outside the plan, empty; exercises are added as it goes. */
-export const startQuickSession = async (uid: Id): Promise<Session> => {
-  const session = newQuickSession(uid, today(), newId);
+/** Start a workout outside the plan, empty; exercises are added as it goes. `kind`, picked first (v1 #10), limits what can be added; the Watch starts one without. */
+export const startQuickSession = async (uid: Id, kind?: ExerciseKind): Promise<Session> => {
+  const session = newQuickSession(uid, today(), newId, Date.now(), kind);
   await sessionRepository.save(uid, session);
   return session;
 };
