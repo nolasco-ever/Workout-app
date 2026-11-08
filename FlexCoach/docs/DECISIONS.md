@@ -4,6 +4,22 @@ Every decision the owner makes, newest first, with why. Open questions sit at th
 bottom until they're answered. Decisions before 2026-11-07 were recorded only in
 commit messages, `docs/RELEASES.md` and Claude's session notes.
 
+## 2026-11-07 21:05 · 10.1 details, and Legacy Swap's button goes
+
+- **Project:** FlexCoach
+- **Type:** functional
+- **Decision:** (a) A new workout has no type until the user picks Strength or
+  Stretching; Add stays off with the hint "Pick a workout type." (b) In a
+  strength picker the catalog's Cardio type chip, which holds the timed drills,
+  is labelled "Timed drills". (c) Swapping during a workout offers only
+  exercises of the same kind as the one swapped. (d) Workouts made before types
+  keep an unfiltered picker until the split (10.11) types them. Separately, the
+  Legacy Swap button comes off the Workout tab.
+- **Why:** Owner agreed to the four proposals; every tester has finished
+  migrating and swapping, so Legacy Swap is no longer needed.
+- **Source:** v1 #10, step 10.1; Legacy Swap (v1 #6b).
+- **Decided by:** owner.
+
 ## 2026-11-07 20:55 · Cardio redesign designs signed off (v1 #10)
 
 - **Project:** FlexCoach
