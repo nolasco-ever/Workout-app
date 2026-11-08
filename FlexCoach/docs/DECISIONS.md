@@ -4,6 +4,22 @@ Every decision the owner makes, newest first, with why. Open questions sit at th
 bottom until they're answered. Decisions before 2026-11-07 were recorded only in
 commit messages, `docs/RELEASES.md` and Claude's session notes.
 
+## 2026-11-07 20:30 · Outdoor routes and who sees them (v1 #10)
+
+- **Project:** FlexCoach
+- **Type:** functional and design
+- **Decision:** An outdoor cardio session keeps its GPS route. The route shows
+  on the done screen and on the session in History. "What buddies see" gets a
+  Location section with a Route maps switch deciding whether buddies see the
+  map of outdoor runs, walks and rides. The rest of the cardio redesign boards
+  are signed off ("other than this, looks good"); the done-screen note about
+  scanned numbers is removed.
+- **Why:** The app now uses location, so the route is worth keeping, and
+  sharing it must be the user's choice.
+- **Source:** v1 #10.
+- **Decided by:** owner. Route maps off by default is Claude's suggestion,
+  flagged to the owner.
+
 ## 2026-11-07 20:10 · Cardio redesign: second canvas notes (v1 #10)
 
 - **Project:** FlexCoach
