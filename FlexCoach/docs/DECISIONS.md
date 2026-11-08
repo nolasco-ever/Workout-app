@@ -4,6 +4,24 @@ Every decision the owner makes, newest first, with why. Open questions sit at th
 bottom until they're answered. Decisions before 2026-11-07 were recorded only in
 commit messages, `docs/RELEASES.md` and Claude's session notes.
 
+## 2026-11-08 09:10 · Schedule editors keep the old rotation row (10.4b)
+
+- **Project:** FlexCoach
+- **Type:** design
+- **Decision:** The rotation editor keeps its existing row: Day n, the X to
+  remove the day, and the drag grip on the right. Tapping a closed day opens
+  it to the numbered pills. An open day can't be dragged or closed by tapping
+  the row, and its X is hidden; an up-chevron in the grip's place is the only
+  way to close it. The fixed-weekday editor is as drawn (Sun to Sat bar with
+  dots, the day's numbered pills, "Nothing picked is a rest day."). The cycle
+  help (?) and its caption stay under both editors.
+- **Why:** Owner: the first build moved the grip left and swapped the X for
+  a "Remove day" button; "you should've just left that design. and just
+  tapping the day would expand it to the pills view." Locking an open day was
+  the owner's follow-up.
+- **Source:** v1 #10, step 10.4b.
+- **Decided by:** owner.
+
 ## 2026-11-08 09:10 · Schedule days are stored as maps (10.4a fix)
 
 - **Project:** FlexCoach

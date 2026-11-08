@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { TouchableOpacity, View } from 'react-native';
+import { Pressable, View } from 'react-native';
 import Animated, { useAnimatedRef } from 'react-native-reanimated';
 import { SortableRows } from '../../../../components/lists/SortableRows';
 import { newId } from '../../../../data/engine/ids';
@@ -9,6 +9,8 @@ import { Id, RotationSchedule, ScheduleDay, WeeklySchedule, Weekday } from '../.
 import { CustomText } from '../../../../components/text/customText';
 import { SurfaceCard } from '../../../../components/cards/SurfaceCard';
 import { ChoiceChips } from '../../../../components/inputs/ChoiceChips';
+import { SegmentedControl } from '../../../../components/inputs/SegmentedControl';
+import { PrimaryButton } from '../../../../components/buttons/PrimaryButton';
 import { Stepper } from '../../../../components/inputs/Stepper';
 import { Icon } from '../../../../components/icons/Icon';
 import { directionIcons, generalIcons } from '../../../../components/icons/icon-library';
@@ -29,22 +31,29 @@ export const PlanScheduleStep = ({ mode, embedded = false }: { mode: EditorMode;
   const navigation = useNavigation<NativeStackNavigationProp<PlansStackParams>>();
   const { colors, spacing } = useTheme();
   const { draft, update } = usePlanEditor();
-  const [editingDay, setEditingDay] = useState<number | null>(null);
+  // The weekday shown in the fixed-weekdays editor, and the rotation day that is open.
+  const [weekday, setWeekday] = useState<number>(draft?.schedule.mode === 'weekly' ? draft.schedule.startWeekday : 1);
+  const [openKey, setOpenKey] = useState<string | null>(null);
   const scrollRef = useAnimatedRef<Animated.ScrollView>();
-  // Rotation slots can repeat (several rest days), so give each a stable local key for dragging.
+  // Rotation days can repeat (several rest days), so give each a stable local key for dragging and opening.
   const [slotItems, setSlotItems] = useState<{ key: string; day: ScheduleDay }[]>([]);
   const daySig = (day: ScheduleDay) => day.join(',');
   const slotsSig = draft?.schedule.mode === 'rotation' ? draft.schedule.slots.map(daySig).join('|') : '';
   useEffect(() => {
     if (!draft || draft.schedule.mode !== 'rotation') return;
     const slots = draft.schedule.slots;
-    setSlotItems(prev => (prev.map(i => daySig(i.day)).join('|') === slotsSig ? prev : slots.map((day, i) => ({ key: prev[i] && daySig(prev[i].day) === daySig(day) ? prev[i].key : newId(), day }))));
+    setSlotItems(prev => (prev.map(i => daySig(i.day)).join('|') === slotsSig ? prev : slots.map((day, i) => ({ key: prev[i]?.key ?? newId(), day }))));
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [slotsSig]);
   if (!draft) return null;
 
   const plan = draft;
-  const options = [{ value: 'rest', label: 'Rest' }, ...plan.workouts.map(w => ({ value: w.id, label: w.name }))];
+  // A day's pills: what's on it first, in its order (numbered), then the rest of the plan's items.
+  const pillsFor = (day: ScheduleDay) => [
+    ...day.map(id => plan.workouts.find(w => w.id === id)).filter(w => !!w),
+    ...plan.workouts.filter(w => !day.includes(w.id)),
+  ].map(w => ({ value: w.id, label: w.name }));
+  const toggle = (day: ScheduleDay, id: Id): ScheduleDay => (day.includes(id) ? day.filter(d => d !== id) : [...day, id]);
 
   const setMode = (mode: 'rotation' | 'weekly') =>
     update(p => {
@@ -64,6 +73,11 @@ export const PlanScheduleStep = ({ mode, embedded = false }: { mode: EditorMode;
   const reorderSlots = (items: { key: string; day: ScheduleDay }[]) => {
     setSlotItems(items);
     setRotation(s => ({ ...s, slots: items.map(i => i.day) }));
+  };
+  const addDay = () => {
+    const key = newId();
+    reorderSlots([...slotItems, { key, day: [] }]);
+    setOpenKey(key);
   };
 
   const scheduledCount = scheduledIds(plan.schedule).length;
@@ -97,32 +111,60 @@ export const PlanScheduleStep = ({ mode, embedded = false }: { mode: EditorMode;
                   keyOf={i => i.key}
                   onReorder={reorderSlots}
                   scrollableRef={scrollRef}
-                  renderRow={(item, i) => (
-                    <View style={{ flexDirection: 'row', alignItems: 'center', paddingLeft: spacing.lg }}>
-                      <View style={{ width: 52 }}>
-                        <CustomText variant="overline" color={colors.inkMuted}>Day {i + 1}</CustomText>
+                  // An open day stays put: no drag, no X, and only its chevron closes it.
+                  lockedTrailing={item =>
+                    openKey === item.key ? (
+                      <Pressable onPress={() => setOpenKey(null)} hitSlop={6} accessibilityRole="button" accessibilityLabel="Close day" style={{ paddingVertical: spacing.lg, paddingHorizontal: spacing.md }}>
+                        <Icon icon={directionIcons.angleUp} size={20} color={colors.inkMuted} />
+                      </Pressable>
+                    ) : undefined
+                  }
+                  renderRow={(item, i) => {
+                    const open = openKey === item.key;
+                    const names = dayNames(plan, item.day);
+                    return (
+                      <View style={{ paddingLeft: spacing.lg }}>
+                        <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                          <Pressable
+                            onPress={() => setOpenKey(item.key)}
+                            disabled={open}
+                            accessibilityRole="button"
+                            accessibilityState={{ expanded: open }}
+                            accessibilityLabel={`Day ${i + 1}, ${names ?? 'Rest'}`}
+                            style={{ flex: 1, flexDirection: 'row', alignItems: 'center', paddingVertical: spacing.md }}
+                          >
+                            <View style={{ width: 52 }}>
+                              <CustomText variant="overline" color={colors.inkMuted}>Day {i + 1}</CustomText>
+                            </View>
+                            <View style={{ flex: 1 }}>
+                              {!open && <CustomText variant={names ? 'bodyStrong' : 'body'} color={names ? colors.ink : colors.inkMuted}>{names ?? 'Rest'}</CustomText>}
+                            </View>
+                          </Pressable>
+                          {!open && (
+                            <Pressable onPress={() => reorderSlots(slotItems.filter(s => s.key !== item.key))} hitSlop={6} accessibilityRole="button" accessibilityLabel={`Remove day ${i + 1}`} style={{ padding: spacing.sm }}>
+                              <Icon icon={generalIcons.xMark} size={20} color={colors.inkMuted} />
+                            </Pressable>
+                          )}
+                        </View>
+                        {open && (
+                          <View style={{ paddingBottom: spacing.md }}>
+                            <ChoiceChips<string>
+                              options={pillsFor(item.day)}
+                              value={item.day}
+                              numbered
+                              onChange={id => reorderSlots(slotItems.map(s => (s.key === item.key ? { ...s, day: toggle(s.day, id) } : s)))}
+                            />
+                          </View>
+                        )}
                       </View>
-                      <View style={{ flex: 1, paddingVertical: spacing.md }}>
-                        <CustomText variant={item.day.length ? 'bodyStrong' : 'body'} color={item.day.length ? colors.ink : colors.inkMuted}>{dayNames(plan, item.day) ?? 'Rest'}</CustomText>
-                      </View>
-                      <TouchableOpacity onPress={() => reorderSlots(slotItems.filter(s => s.key !== item.key))} hitSlop={6} style={{ padding: spacing.sm }}>
-                        <Icon icon={generalIcons.xMark} size={20} color={colors.inkMuted} />
-                      </TouchableOpacity>
-                    </View>
-                  )}
+                    );
+                  }}
                 />
               ) : (
-                <CustomText variant="body" color={colors.inkMuted} style={{ padding: spacing.lg }}>No days yet. Add workouts and rest days below.</CustomText>
+                <CustomText variant="body" color={colors.inkMuted} style={{ padding: spacing.lg }}>No days yet. Add a day below.</CustomText>
               )}
             </SurfaceCard>
-            <View style={{ gap: spacing.sm }}>
-              <CustomText variant="overline" color={colors.inkMuted}>Add a day</CustomText>
-              <ChoiceChips<string>
-                options={options}
-                value={null}
-                onChange={v => setRotation(s => ({ ...s, slots: [...s.slots, v === 'rest' ? [] : [v as Id]] }))}
-              />
-            </View>
+            <PrimaryButton label="Add a day" icon={generalIcons.plus} variant="outline" onPress={addDay} />
             <SurfaceCard style={{ gap: spacing.sm }}>
               <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.md }}>
                 <View style={{ flex: 1 }}>
@@ -137,36 +179,28 @@ export const PlanScheduleStep = ({ mode, embedded = false }: { mode: EditorMode;
           </>
         ) : (
           <>
-            <SurfaceCard style={{ padding: 0 }}>
-              {plan.schedule.weekdays.map((slot, i) => (
-                <View key={i} style={{ borderTopWidth: i ? 1 : 0, borderTopColor: colors.line }}>
-                  <TouchableOpacity onPress={() => setEditingDay(editingDay === i ? null : i)} style={{ flexDirection: 'row', alignItems: 'center', padding: spacing.lg, gap: spacing.md }}>
-                    <View style={{ width: 44 }}>
-                      <CustomText variant="overline" color={colors.inkMuted}>{DAY_SHORT[i]}</CustomText>
-                    </View>
-                    <View style={{ flex: 1 }}>
-                      <CustomText variant={slot.length ? 'bodyStrong' : 'body'} color={slot.length ? colors.ink : colors.inkMuted}>{dayNames(plan, slot) ?? 'Rest'}</CustomText>
-                    </View>
-                    <Icon icon={editingDay === i ? directionIcons.angleUp : directionIcons.angleDown} size={18} color={colors.inactive} />
-                  </TouchableOpacity>
-                  {editingDay === i && (
-                    <View style={{ paddingHorizontal: spacing.lg, paddingBottom: spacing.lg }}>
-                      <ChoiceChips<string>
-                        options={options}
-                        value={slot[0] ?? 'rest'}
-                        onChange={v => {
-                          setWeekly(s => {
-                            const weekdays = [...s.weekdays] as WeeklySchedule['weekdays'];
-                            weekdays[i] = v === 'rest' ? [] : [v as Id];
-                            return { ...s, weekdays };
-                          });
-                          setEditingDay(null);
-                        }}
-                      />
-                    </View>
-                  )}
-                </View>
-              ))}
+            <SegmentedControl<string>
+              options={DAY_SHORT.map((d, i) => ({ value: String(i), label: d }))}
+              value={String(weekday)}
+              onChange={v => setWeekday(Number(v))}
+              marked={plan.schedule.weekdays.flatMap((day, i) => (day.length ? [String(i)] : []))}
+              equal
+            />
+            <SurfaceCard style={{ gap: spacing.md }}>
+              <CustomText variant="overline" color={colors.inkMuted}>{DAY[weekday]}</CustomText>
+              <ChoiceChips<string>
+                options={pillsFor(plan.schedule.weekdays[weekday])}
+                value={plan.schedule.weekdays[weekday]}
+                numbered
+                onChange={id =>
+                  setWeekly(s => {
+                    const weekdays = [...s.weekdays] as WeeklySchedule['weekdays'];
+                    weekdays[weekday] = toggle(weekdays[weekday], id);
+                    return { ...s, weekdays };
+                  })
+                }
+              />
+              <CustomText variant="caption" color={colors.inkMuted}>Nothing picked is a rest day.</CustomText>
             </SurfaceCard>
             <SurfaceCard style={{ gap: spacing.sm }}>
               <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.md }}>

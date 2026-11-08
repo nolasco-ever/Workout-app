@@ -7,6 +7,10 @@ interface Props<T extends string> {
   options: { value: T; label: string }[];
   value: T;
   onChange: (value: T) => void;
+  /** Segments with a dot under the label, e.g. weekdays that hold something. */
+  marked?: T[];
+  /** Equal-width segments with tight padding, for many short labels (seven weekdays). */
+  equal?: boolean;
 }
 
 /**
@@ -16,7 +20,7 @@ interface Props<T extends string> {
  * room, so a long label gets a longer pill rather than a smaller type size.
  * For two or three options; chips are for longer lists.
  */
-export function SegmentedControl<T extends string>({ options, value, onChange }: Props<T>) {
+export function SegmentedControl<T extends string>({ options, value, onChange, marked, equal = false }: Props<T>) {
   const { colors, spacing, radius } = useTheme();
   const index = Math.max(0, options.findIndex(o => o.value === value));
   // Where each segment landed in the track, so the pill can take its exact place.
@@ -60,9 +64,13 @@ export function SegmentedControl<T extends string>({ options, value, onChange }:
             onLayout={onSegmentLayout(o.value)}
             accessibilityRole="tab"
             accessibilityState={{ selected: on }}
-            style={{ flexGrow: 1, flexShrink: 0, flexBasis: 'auto', paddingVertical: spacing.sm, paddingHorizontal: spacing.lg, alignItems: 'center', justifyContent: 'center' }}
+            accessibilityHint={marked?.includes(o.value) ? 'Has something on it' : undefined}
+            style={equal
+              ? { flex: 1, paddingVertical: spacing.sm, alignItems: 'center', justifyContent: 'center' }
+              : { flexGrow: 1, flexShrink: 0, flexBasis: 'auto', paddingVertical: spacing.sm, paddingHorizontal: spacing.lg, alignItems: 'center', justifyContent: 'center' }}
           >
             <CustomText variant="label" color={on ? colors.ink : colors.inkMuted} numberOfLines={1}>{o.label}</CustomText>
+            {marked && <View style={{ width: 4, height: 4, borderRadius: 2, marginTop: 2, backgroundColor: marked.includes(o.value) ? colors.accent : 'transparent' }} />}
           </Pressable>
         );
       })}
