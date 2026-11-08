@@ -103,8 +103,8 @@ Design (canvas first)
     - [ ] 10.9 Route maps sharing switch (off by default, ends hidden from
           buddies) and its Notice.
     - [ ] 10.10 Reusable Notice sheet.
-    - [ ] 10.11 Split existing plans, behind a switch, with its Notice; tried on
-          the owner's account first.
+    - [ ] 10.11 Split existing plans, with its Notice; ships in the next build
+          for everyone, no switch (owner).
 11. Weight unit as an app-wide setting changeable after onboarding (only the
     Profile/Account control is missing).
 12. Pre-made beginner plans with a questionnaire that picks one (build 10).

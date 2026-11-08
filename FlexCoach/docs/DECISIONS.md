@@ -4,6 +4,18 @@ Every decision the owner makes, newest first, with why. Open questions sit at th
 bottom until they're answered. Decisions before 2026-11-07 were recorded only in
 commit messages, `docs/RELEASES.md` and Claude's session notes.
 
+## 2026-11-07 22:00 · Plan split ships without a switch (10.11)
+
+- **Project:** FlexCoach
+- **Type:** functional
+- **Decision:** The split of existing plans (10.11) is not put behind a
+  switch or tried on the owner's account first; it goes out in the next build
+  for everyone. The rest of the 19:00 decision stands (backup first, notice,
+  never mid-workout, synced plans follow their source).
+- **Why:** Owner's call: release the next build with it.
+- **Source:** v1 #10, step 10.11.
+- **Decided by:** owner.
+
 ## 2026-11-07 21:30 · Quick workout keeps its name (10.2)
 
 - **Project:** FlexCoach
