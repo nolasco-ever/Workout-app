@@ -53,7 +53,7 @@ export type LiveActivityExercise = { id: string; name: string; done: boolean; ca
 
 export type { LiveActivityCommand, WatchMetricsEvent };
 /** What the Watch asks of the phone with no workout running (v1 #6, step 4): the id is the occurrence, the exercise ids joined by commas, or the search. */
-export type WatchRequestKind = 'startWorkout' | 'startQuick' | 'resumeWorkout' | 'search' | 'cardioDistance';
+export type WatchRequestKind = 'startWorkout' | 'startQuick' | 'resumeWorkout' | 'search' | 'cardioDistance' | 'cardioLive';
 export type LiveActivityCommandKind = 'completeSet' | 'skipRest' | 'stopCardio' | 'resumeCardio' | 'showExercise' | 'finishWorkout' | 'closeSummary';
 
 const native = Platform.OS === 'ios' ? NativeLiveActivity : null;

@@ -190,6 +190,13 @@ final class WatchSession: NSObject, ObservableObject {
   }
 
   /// A message for the phone: straight there when it is listening, else queued until it is.
+  /// Only while the phone is listening: a live reading is stale by the time a queued one would arrive.
+  func sendLiveToPhone(_ message: [String: Any]) {
+    let session = WCSession.default
+    guard session.activationState == .activated, session.isReachable else { return }
+    session.sendMessage(message, replyHandler: nil, errorHandler: nil)
+  }
+
   func sendToPhone(_ message: [String: Any]) {
     let session = WCSession.default
     guard session.activationState == .activated else { return }

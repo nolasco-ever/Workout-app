@@ -193,6 +193,12 @@ import WatchConnectivity
       return
     }
     let id = message[Key.id] as? String
+    // Live numbers from a cardio entry (v1 #10.6): only worth anything now, so passed on and never queued.
+    if kind == "cardioLive" {
+      let record: [String: Any] = ["kind": kind, "id": id ?? "", "at": Date().timeIntervalSince1970 * 1000]
+      DispatchQueue.main.async { NotificationCenter.default.post(name: Self.requestNotification, object: nil, userInfo: record) }
+      return
+    }
     if Self.requestKinds.contains(kind) {
       received(request: kind, id: id)
       return

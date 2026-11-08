@@ -48,6 +48,9 @@ final class WorkoutManager: NSObject, ObservableObject {
   private var segment: Segment?
   /// Distance from the entry's earlier stretches (before a Pause), by set id.
   private var carried: [String: Double] = [:]
+  /// When the running entry's numbers last went to the phone (v1 #10.6); a few seconds apart is plenty.
+  private var liveSentAt = Date.distantPast
+  private static let liveEvery: TimeInterval = 3
   private let location = CLLocationManager()
 
   /// Asked once: read heart rate and energy, save workouts.
@@ -187,6 +190,15 @@ final class WorkoutManager: NSObject, ObservableObject {
     if total > 0 { WatchSession.shared.sendToPhone(["command": "cardioDistance", "id": "\(segment.setId):\(total)"]) }
   }
 
+  /// The running cardio entry's numbers for the phone's cardio screen: "setId:meters:bpm:kcal", meters -1 when
+  /// the Watch doesn't measure the distance and bpm 0 before a reading.
+  private func sendLive() {
+    guard let segment, Date().timeIntervalSince(liveSentAt) >= Self.liveEvery else { return }
+    liveSentAt = Date()
+    let meters = segment.distanceType == nil ? -1 : (cardioMeters ?? 0)
+    WatchSession.shared.sendLiveToPhone(["command": "cardioLive", "id": "\(segment.setId):\(meters):\(heartRate ?? 0):\(kcal)"])
+  }
+
   private static func activityType(_ name: String) -> HKWorkoutActivityType {
     switch name {
     case "running": return .running
@@ -230,6 +242,7 @@ extension WorkoutManager: HKLiveWorkoutBuilderDelegate {
         self.beats = (self.beats.sum + heart, self.beats.count + 1, max(self.beats.max, heart))
       }
       if let energy { self.kcal = energy }
+      self.sendLive()
     }
   }
 }
