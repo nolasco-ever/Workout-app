@@ -25,6 +25,7 @@ import { PrimaryButton } from '../../../../components/buttons/PrimaryButton';
 import { NotificationPermissionCard } from '../../../../components/cards/NotificationPermissionCard';
 import { DayRow } from '../components/OccurrenceRow';
 import { TodayItemRow } from '../components/TodayItemRow';
+import { NoticeHost } from '../components/NoticeHost';
 import { askNotToday, listNames } from '../components/notToday';
 import { AppStackParams } from '../../../../appNavigators/AppStack';
 import { devFlags } from '../../../../dev/flags';
@@ -399,6 +400,8 @@ export const WorkoutHomeScreen = () => {
           </>
         )}
       </ScrollView>
+      {/* One-time notices about a change (v1 #10.10); held back while a workout is going. */}
+      <NoticeHost blocked={loading || !!resume} />
       <StickyTabHeader title="Workout" action={{ icon: generalIcons.list, accessibilityLabel: 'My plans', onPress: () => openPlans() }} onHeight={setHeaderHeight} />
     </SafeAreaView>
   );

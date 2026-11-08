@@ -4,7 +4,7 @@ import { Gesture, GestureDetector, GestureHandlerRootView } from 'react-native-g
 import Animated, { Easing, runOnJS, useAnimatedStyle, useSharedValue, withSpring, withTiming } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { CustomText } from '../text/customText';
-import { Icon } from '../icons/Icon';
+import { Icon, IconSource } from '../icons/Icon';
 import { generalIcons } from '../icons/icon-library';
 import { useComfortableColumn } from '../layout/useComfortableColumn';
 import { useTheme } from '../../theme';
@@ -18,6 +18,10 @@ interface Props {
   footer?: React.ReactNode;
   /** Replaces the close button at the right of the title; the scrim and a swipe down still close the sheet. */
   headerRight?: React.ReactNode;
+  /** A round icon before the title (the Notice sheet's info mark). */
+  titleIcon?: { icon: IconSource; color: string; tint: string };
+  /** No close button: the sheet's own buttons close it (the scrim and a swipe down still do). */
+  hideClose?: boolean;
 }
 
 /** Drag distance or fling speed that counts as "put it away". */
@@ -36,7 +40,7 @@ const SPRING = { damping: 20, stiffness: 220 };
  * PanResponder: the JS responder system was losing the drag inside the
  * Modal on devices, so the swipe never took.
  */
-export const BottomSheet = ({ open, title, onClose, children, footer, headerRight }: Props) => {
+export const BottomSheet = ({ open, title, onClose, children, footer, headerRight, titleIcon, hideClose = false }: Props) => {
   const { colors, spacing, radius } = useTheme();
   const column = useComfortableColumn();
   const insets = useSafeAreaInsets();
@@ -142,8 +146,15 @@ export const BottomSheet = ({ open, title, onClose, children, footer, headerRigh
                   <View style={{ width: 36, height: 4, borderRadius: 2, backgroundColor: colors.line }} />
                 </View>
                 <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: spacing.lg, paddingVertical: spacing.md }}>
-                  <CustomText variant="heading">{title}</CustomText>
-                  {headerRight ?? (
+                  <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.sm, flexShrink: 1 }}>
+                    {titleIcon && (
+                      <View style={{ width: 36, height: 36, borderRadius: 18, backgroundColor: titleIcon.tint, alignItems: 'center', justifyContent: 'center' }}>
+                        <Icon icon={titleIcon.icon} size={22} color={titleIcon.color} weight="fill" />
+                      </View>
+                    )}
+                    <CustomText variant="heading" accessibilityRole="header">{title}</CustomText>
+                  </View>
+                  {hideClose ? null : headerRight ?? (
                     <TouchableOpacity onPress={onClose} hitSlop={10} accessibilityRole="button" accessibilityLabel="Close" style={{ width: 32, height: 32, borderRadius: 16, backgroundColor: colors.surfaceRaised, alignItems: 'center', justifyContent: 'center' }}>
                       <Icon icon={generalIcons.xMark} size={18} color={colors.ink} />
                     </TouchableOpacity>

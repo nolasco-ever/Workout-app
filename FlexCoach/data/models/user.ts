@@ -35,6 +35,8 @@ export interface UserProfile extends BaseDocument {
   sharing?: Partial<SharingPrefs> | null;
   /** When the one-time "what buddies see" sheet was shown, after the first buddy. */
   sharingPromptSeenAt?: Timestamp | null;
+  /** Notices already shown on this account (v1 #10.10), by id; each shows once. */
+  noticesSeen?: string[] | null;
   /** When badges already earned were granted in one go, on the first launch with achievements. */
   achievementsBackfilledAt?: Timestamp | null;
 }

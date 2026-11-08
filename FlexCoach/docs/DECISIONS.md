@@ -4,6 +4,26 @@ Every decision the owner makes, newest first, with why. Open questions sit at th
 bottom until they're answered. Decisions before 2026-11-07 were recorded only in
 commit messages, `docs/RELEASES.md` and Claude's session notes.
 
+## 2026-11-08 13:40 · The reusable Notice sheet (10.10)
+
+- **Project:** FlexCoach
+- **Type:** design and functional
+- **Decision:** One Notice sheet for announcing changes, as drawn: the info
+  mark and "Notice", an optional intro, the changes in a box with a check
+  each, an optional footnote, "Got it" and an optional second button. It is
+  the existing BottomSheet widened with a title icon and no close button
+  (swiping it away counts as "Got it"). Notices are listed in
+  config/notices.ts; each shows once per account (seen ids on the profile, so
+  not again on another phone), one per visit to the Workout tab, never while
+  a workout is going. Accounts made after a notice went out never see it. A
+  notice's button can open What buddies see, which now also sits on the root
+  stack so back returns to the Workout tab. The list ships empty; 10.9 and
+  10.11 add theirs.
+- **Why:** Owner: "yes to both, go ahead" (new accounts skip older notices;
+  build 10.10 and 10.9 back to back).
+- **Source:** feature work, v1 #10.10.
+- **Decided by:** owner.
+
 ## 2026-11-08 13:00 · Outdoor routes: phone GPS, Watch GPS when there is one (10.8)
 
 - **Project:** FlexCoach

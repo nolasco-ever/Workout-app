@@ -20,6 +20,7 @@ import { AccountScreen } from '../screens/Tabs/Profile/screens/AccountScreen';
 import { ExerciseDetailScreen } from '../screens/Tabs/Workout/screens/ExerciseDetailScreen';
 import { SessionScreen } from '../screens/Tabs/Workout/screens/SessionScreen';
 import { SessionCompleteScreen } from '../screens/Tabs/Workout/screens/SessionCompleteScreen';
+import { SharingScreen } from '../screens/Tabs/Profile/screens/SharingScreen';
 import { SessionExercisesScreen } from '../screens/Tabs/Workout/screens/SessionExercisesScreen';
 import { SessionDetailScreen } from '../screens/Tabs/Workout/screens/SessionDetailScreen';
 import { CycleReviewScreen } from '../screens/Tabs/Workout/screens/CycleReviewScreen';
@@ -64,6 +65,8 @@ export type AppStackParams = BuddyRoutes & SessionRoutes & ReactionsParams & Omi
     SessionDetailScreen: { sessionId: string; workoutName?: string };
     /** The review of a finished cycle: by id, or with the plan and cycle in hand straight from the Workout tab. */
     CycleReviewScreen: { plan: Plan; cycle: Cycle; cycleId?: undefined } | { cycleId: string; plan?: undefined; cycle?: undefined };
+    /** What buddies see, opened from outside the Profile tab (a Notice's button, v1 #10.10), so back returns there. The Profile tab has its own copy. */
+    SharingScreen: undefined;
 };
 
 const Stack = createNativeStackNavigator<AppStackParams>();
@@ -136,6 +139,7 @@ export const AppStack = () => {
                     {/* Reached from a badge's "Earned in" pill, a notification or an in-app banner: pushed here so back goes to where the tap was. */}
                     <Stack.Screen name="SessionDetailScreen" component={SessionDetailScreen} options={({ route }) => opts.screen(route.params.workoutName ?? 'Workout')} />
                     <Stack.Screen name="CycleReviewScreen" component={CycleReviewScreen} options={opts.screen('Cycle review')} />
+                    <Stack.Screen name="SharingScreen" component={SharingScreen} options={opts.screen('What buddies see')} />
                     <Stack.Screen name="BuddyActivityScreen" component={BuddyActivityScreen} options={opts.screen('Buddy activity')} />
                     <Stack.Screen name="BuddyPlansScreen" component={BuddyPlansScreen} options={opts.screen('Plans from buddies')} />
                     <Stack.Screen name="BuddyPlanScreen" component={BuddyPlanScreen} options={opts.screen('Plan')} />
