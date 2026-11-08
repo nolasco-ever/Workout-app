@@ -2,6 +2,7 @@ import { Cycle, Id, LocalDate, Plan, Schedule, Workout, WorkoutType } from '../m
 import { newId } from '../engine/ids';
 import { today } from '../engine/dates';
 import { closeCycle, generateCycle, nextCycleNumber, rebuildCycle } from '../engine/schedule';
+import { mapScheduleDays, scheduledIds } from '../engine/scheduleDays';
 import { applySource, detachFromSource } from '../engine/planSync';
 import { planRepository } from '../repositories/planRepository';
 import { cycleRepository } from '../repositories/cycleRepository';
@@ -42,8 +43,7 @@ export const validatePlan = (plan: Plan): PlanProblem[] => {
   const empty = plan.workouts.filter(w => w.exercises.length === 0);
   if (empty.length) problems.push({ field: 'workouts', message: `${empty.map(w => w.name || 'Untitled').join(', ')} ${empty.length === 1 ? 'has' : 'have'} no exercises.` });
   const ids = new Set(plan.workouts.map(w => w.id));
-  const scheduled =
-    plan.schedule.mode === 'rotation' ? plan.schedule.slots.filter(s => s && ids.has(s)) : plan.schedule.weekdays.filter(s => s && ids.has(s));
+  const scheduled = scheduledIds(plan.schedule).filter(id => ids.has(id));
   if (scheduled.length === 0) problems.push({ field: 'schedule', message: 'Put at least one workout on the schedule.' });
   return problems;
 };
@@ -51,11 +51,7 @@ export const validatePlan = (plan: Plan): PlanProblem[] => {
 /** Drop schedule references to workouts that no longer exist. */
 export const pruneSchedule = (plan: Plan): Plan => {
   const ids = new Set(plan.workouts.map(w => w.id));
-  const keep = (id: Id | null) => (id && ids.has(id) ? id : null);
-  const schedule: Schedule =
-    plan.schedule.mode === 'rotation'
-      ? { ...plan.schedule, slots: plan.schedule.slots.map(keep) }
-      : { ...plan.schedule, weekdays: plan.schedule.weekdays.map(keep) as typeof plan.schedule.weekdays };
+  const schedule: Schedule = mapScheduleDays(plan.schedule, day => day.filter(id => ids.has(id)));
   return { ...plan, schedule };
 };
 

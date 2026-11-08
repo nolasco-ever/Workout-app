@@ -1,20 +1,21 @@
 import { paths } from '../firebase/paths';
 import { Id, Plan } from '../models';
+import { mapScheduleDays, normalizePlan } from '../engine/scheduleDays';
 import { listDocs, mergeDoc, orderBy, patchDoc, readDoc, removeDoc, touch, watchDoc, watchDocOrError, watchDocs, where, writeDoc, Unsubscribe } from './base';
 import { userRepository } from './userRepository';
 
 export const planRepository = {
-  get: (uid: Id, planId: Id) => readDoc<Plan>(paths.plan(uid, planId)),
+  get: (uid: Id, planId: Id) => readDoc<Plan>(paths.plan(uid, planId)).then(normalizePlan),
 
   watch: (uid: Id, planId: Id, onChange: (plan: Plan | null) => void): Unsubscribe =>
-    watchDoc<Plan>(paths.plan(uid, planId), onChange),
+    watchDoc<Plan>(paths.plan(uid, planId), plan => onChange(normalizePlan(plan))),
 
-  list: (uid: Id) => listDocs<Plan>(paths.plans(uid), orderBy('updatedAt', 'desc')),
+  list: (uid: Id) => listDocs<Plan>(paths.plans(uid), orderBy('updatedAt', 'desc')).then(plans => plans.map(normalizePlan)),
 
-  listActiveAndDrafts: (uid: Id) => listDocs<Plan>(paths.plans(uid), where('status', 'in', ['active', 'draft'])),
+  listActiveAndDrafts: (uid: Id) => listDocs<Plan>(paths.plans(uid), where('status', 'in', ['active', 'draft'])).then(plans => plans.map(normalizePlan)),
 
   /** Plans a buddy shares. The filter is what the security rule allows a buddy to query. */
-  listSharedBy: (ownerUid: Id) => listDocs<Plan>(paths.plans(ownerUid), where('visibleToBuddies', '==', true)),
+  listSharedBy: (ownerUid: Id) => listDocs<Plan>(paths.plans(ownerUid), where('visibleToBuddies', '==', true)).then(plans => plans.map(normalizePlan)),
 
   /**
    * Follow a buddy's plan. `onError` fires when it can no longer be read
@@ -22,12 +23,12 @@ export const planRepository = {
    * it was deleted.
    */
   watchShared: (ownerUid: Id, planId: Id, onChange: (plan: Plan | null) => void, onError: (err: unknown) => void): Unsubscribe =>
-    watchDocOrError<Plan>(paths.plan(ownerUid, planId), onChange, onError),
+    watchDocOrError<Plan>(paths.plan(ownerUid, planId), plan => onChange(normalizePlan(plan)), onError),
 
   setVisibleToBuddies: (uid: Id, planId: Id, visible: boolean) => patchDoc<Plan>(paths.plan(uid, planId), { visibleToBuddies: visible, updatedAt: Date.now() }),
 
   watchAll: (uid: Id, onChange: (plans: Plan[]) => void): Unsubscribe =>
-    watchDocs<Plan>(paths.plans(uid), onChange, orderBy('updatedAt', 'desc')),
+    watchDocs<Plan>(paths.plans(uid), plans => onChange(plans.map(normalizePlan)), orderBy('updatedAt', 'desc')),
 
   save: (uid: Id, plan: Plan) => writeDoc(paths.plan(uid, plan.id), touch(plan)),
 
@@ -105,11 +106,7 @@ export const planRepository = {
     if (!synced) {
       // Workout ids changed, so remap the schedule to the new ids.
       const idMap = new Map(source.workouts.map((w, i) => [w.id, copy.workouts[i].id]));
-      const remap = (id: Id | null) => (id ? idMap.get(id) ?? null : null);
-      copy.schedule =
-        source.schedule.mode === 'rotation'
-          ? { ...source.schedule, slots: source.schedule.slots.map(remap) }
-          : { ...source.schedule, weekdays: source.schedule.weekdays.map(remap) as typeof source.schedule.weekdays };
+      copy.schedule = mapScheduleDays(source.schedule, day => day.map(id => idMap.get(id)).filter((id): id is Id => !!id));
     }
     await writeDoc(paths.plan(recipientUid, copy.id), copy);
     return copy;

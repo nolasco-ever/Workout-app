@@ -57,7 +57,7 @@ export const rotationPlan = (): Plan => ({
     { id: 'pull', name: 'Pull', order: 1, exercises: [] },
     { id: 'legs', name: 'Legs', order: 2, exercises: [] },
   ],
-  schedule: { mode: 'rotation', slots: ['push', 'pull', 'legs', null], passesPerCycle: 1 },
+  schedule: { mode: 'rotation', slots: [['push'], ['pull'], ['legs'], []], passesPerCycle: 1 },
   sharedFrom: null,
   archivedAt: null,
   createdAt: 0,
@@ -70,7 +70,7 @@ export const weeklyPlan = (): Plan => ({
   schedule: {
     mode: 'weekly',
     // Sun Mon Tue Wed Thu Fri Sat
-    weekdays: [null, 'push', null, 'pull', null, 'legs', null],
+    weekdays: [[], ['push'], [], ['pull'], [], ['legs'], []],
     startWeekday: 1,
     weeksPerCycle: 1,
   },

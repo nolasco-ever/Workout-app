@@ -72,27 +72,35 @@ export interface Workout {
 }
 
 /**
+ * What one day of the schedule holds: workout ids (cardio items included), in
+ * the order they're listed. Several are done as separate sessions, in any
+ * order (v1 #10). An empty day is a rest day. Plans saved before this held a
+ * single id or null per day; `normalizeSchedule` reads those.
+ */
+export type ScheduleDay = Id[];
+
+/**
  * Rotation scheduling: the plan repeats an ordered list of slots day after
- * day regardless of weekday. A null slot is a rest day. "Push, Pull, Legs,
+ * day regardless of weekday. An empty slot is a rest day. "Push, Pull, Legs,
  * Rest" is a 4-slot rotation. One cycle is `passesPerCycle` trips through the
- * list. Pushing a missed workout shifts the rest of the cycle forward.
+ * list. Pushing a missed day shifts the rest of the cycle forward.
  */
 export interface RotationSchedule {
   mode: 'rotation';
-  slots: (Id | null)[];
+  slots: ScheduleDay[];
   passesPerCycle: number;
 }
 
 /**
  * Weekly scheduling: workouts are pinned to weekdays. One cycle is
- * `weeksPerCycle` weeks starting on `startWeekday`. Pushing a missed workout
+ * `weeksPerCycle` weeks starting on `startWeekday`. Pushing a missed day
  * shifts within the cycle only; the next cycle always regenerates fresh, so
  * Monday stays Monday.
  */
 export interface WeeklySchedule {
   mode: 'weekly';
-  /** Workout id per weekday (index 0 = Sunday). Null is a rest day. */
-  weekdays: [Id | null, Id | null, Id | null, Id | null, Id | null, Id | null, Id | null];
+  /** What each weekday holds (index 0 = Sunday). Empty is a rest day. */
+  weekdays: [ScheduleDay, ScheduleDay, ScheduleDay, ScheduleDay, ScheduleDay, ScheduleDay, ScheduleDay];
   startWeekday: Weekday;
   weeksPerCycle: number;
 }

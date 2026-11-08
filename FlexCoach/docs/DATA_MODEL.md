@@ -22,7 +22,7 @@ data/
 | Workout    | A day template inside a plan, e.g. "Push". Holds ordered exercises with targets. Has a `type`, strength or stretching (v1 #10), and its picker only offers that kind (`catalog/exerciseKinds`); missing on workouts made before types. A **cardio item** is a workout of type `cardio` holding exactly one cardio exercise and named after it: added to a plan on its own and never shown as a workout (`engine/planItems`); its target never progresses. |
 | Plan       | A set of workouts plus a schedule. One plan is active at a time.        |
 | Cycle      | One pass through the schedule, materialised as dated occurrences. The "sprint". |
-| Occurrence | One planned day in a cycle: a workout or a rest day, with a status.     |
+| Occurrence | One planned item in a cycle (a workout or cardio item) on a date, or a rest day, with a status. A date can hold several (v1 #10). |
 | Session    | One logged instance of a workout. Holds per-set rows.                   |
 
 ## Firestore layout
@@ -59,9 +59,10 @@ Two schedule modes share one occurrence model:
   touches no occurrence, so the day's planned workout stays as it was.
   Leaving one with nothing logged abandons it without asking. Offered on
   the Workout tab in every state and on Home when nothing is planned.
-- **Missed workouts** (build 16): the in-app sheet `MissedWorkoutPrompt` (app root) asks on the first open after a workout day went by: Do it today (cascading push), Move to another day (calendar; `moveWorkoutToDate` pushes any workout on the chosen day forward first), or Skip. Only the most recent missed workout is asked about; `resolveMissed` marks older ones skipped with reason `missed` and stamps `Occurrence.missedPromptedAt` so the sheet shows once.
+- **Missed workouts** (build 16): the in-app sheet `MissedWorkoutPrompt` (app root) asks on the first open after a workout day went by: Do it today (cascading push), Move to another day (calendar; `moveDayTo` pushes anything on the chosen day forward first), or Skip. A missed day is handled as a whole (v1 #10): everything missed on it moves or is skipped together. Only the most recent missed day is asked about; `resolveMissed` marks the older days' items skipped with reason `missed` and stamps `Occurrence.missedPromptedAt` on the latest day's so the sheet shows once.
+- **Several items a day** (v1 #10): each schedule day is a list of workout ids (`ScheduleDay`), done as separate sessions in any order; an empty list is a rest day. Plans saved before held one id or null per day and are read into lists by `engine/scheduleDays` (`normalizePlan`, applied in `planRepository`); nothing is migrated. Each item gets its own occurrence on the date, in the day's order. "Not today" and pushes move the day: whatever is still scheduled on it goes together and finished items stay (`pushDay`, `pushDayTo`, `skipDay`). Starting a future item early moves only that item to today (`moveOccurrenceToDate`). A single "today" card shows `focusOccurrence`: the item under way, else the next not done, else the day's last.
 - **Rotation**: an ordered list of slots repeated day after day. Pushing a
-  missed workout shifts the remainder of the cycle forward and the cycle
+  missed day shifts the remainder of the cycle forward and the cycle
   grows. The next cycle starts the day after the last occurrence.
 - **Weekly**: workouts pinned to weekdays for N weeks. Pushing shifts within
   the cycle only. Anything pushed past the end is recorded as skipped with

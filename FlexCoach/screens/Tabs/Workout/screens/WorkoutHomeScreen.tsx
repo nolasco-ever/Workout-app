@@ -8,7 +8,7 @@ import { useAuth } from '../../../../data/auth/AuthProvider';
 import { Occurrence, Plan } from '../../../../data/models';
 import { findWorkout } from '../../../../data/engine/schedule';
 import { addDays, fromLocalDate } from '../../../../data/engine/dates';
-import { pushWorkoutTo, seedSamplePlan, skipWorkout, startNextCycle, startSession } from '../../../../data/services/workoutService';
+import { pushDayTo, seedSamplePlan, skipDay, startNextCycle, startSession } from '../../../../data/services/workoutService';
 import { activatePlan, startFreshCycle, validatePlan } from '../../../../data/services/planService';
 import { CustomText } from '../../../../components/text/customText';
 import { Icon } from '../../../../components/icons/Icon';
@@ -24,7 +24,7 @@ import { SurfaceCard as Card } from '../../../../components/cards/SurfaceCard';
 import { PrimaryButton } from '../../../../components/buttons/PrimaryButton';
 import { NotificationPermissionCard } from '../../../../components/cards/NotificationPermissionCard';
 import { DayRow } from '../components/OccurrenceRow';
-import { askNotToday } from '../components/notToday';
+import { askNotToday, listNames } from '../components/notToday';
 import { AppStackParams } from '../../../../appNavigators/AppStack';
 import { devFlags } from '../../../../dev/flags';
 import { describeCycle } from '../../../../screens/Plans/components/planSummary';
@@ -164,23 +164,27 @@ export const WorkoutHomeScreen = () => {
               </Card>
             ) : null,
           missed: !state.cycleFinished
-            ? state.overdue.map(o => (
-                <Card key={o.id}>
-                  <CustomText variant="overline" color={colors.warning}>Missed</CustomText>
-                  <CustomText variant="heading" style={{ marginTop: spacing.xs }}>{o.workoutName}</CustomText>
-                  <CustomText variant="caption" color={colors.inkMuted} style={{ marginBottom: spacing.md }}>
-                    Was scheduled for {longDate(o.date)}
-                  </CustomText>
-                  <View style={{ flexDirection: 'row', gap: spacing.sm }}>
-                    <View style={{ flex: 1 }}>
-                      <PrimaryButton label="Skip" variant="outline" busy={busy === `skip-${o.id}`} onPress={() => run(`skip-${o.id}`, async () => { if (uid) await skipWorkout(uid, cycle, o.id, profile); })} />
+            ? // One card per missed day: the day is handled as a whole (v1 #10).
+              [...new Set(state.overdue.map(o => o.date))].map(date => {
+                const day = state.overdue.filter(o => o.date === date);
+                return (
+                  <Card key={date}>
+                    <CustomText variant="overline" color={colors.warning}>Missed</CustomText>
+                    <CustomText variant="heading" style={{ marginTop: spacing.xs }}>{listNames(day.map(o => o.workoutName ?? 'A workout'))}</CustomText>
+                    <CustomText variant="caption" color={colors.inkMuted} style={{ marginBottom: spacing.md }}>
+                      Was scheduled for {longDate(date)}
+                    </CustomText>
+                    <View style={{ flexDirection: 'row', gap: spacing.sm }}>
+                      <View style={{ flex: 1 }}>
+                        <PrimaryButton label="Skip" variant="outline" busy={busy === `skip-${date}`} onPress={() => run(`skip-${date}`, async () => { if (uid) await skipDay(uid, cycle, date, profile); })} />
+                      </View>
+                      <View style={{ flex: 1 }}>
+                        <PrimaryButton label="Do it today" busy={busy === `push-${date}`} onPress={() => run(`push-${date}`, async () => { if (uid) await pushDayTo(uid, plan, cycle, date, state.todayDate, profile); })} />
+                      </View>
                     </View>
-                    <View style={{ flex: 1 }}>
-                      <PrimaryButton label="Do it today" busy={busy === `push-${o.id}`} onPress={() => run(`push-${o.id}`, async () => { if (uid) await pushWorkoutTo(uid, plan, cycle, o.id, state.todayDate, profile); })} />
-                    </View>
-                  </View>
-                </Card>
-              ))
+                  </Card>
+                );
+              })
             : null,
           permission: <NotificationPermissionCard />,
           today:
@@ -221,7 +225,7 @@ export const WorkoutHomeScreen = () => {
                               label="Not today"
                               variant="quiet"
                               busy={busy === `not-today-${state.todayOccurrence.id}`}
-                              onPress={() => uid && askNotToday(uid, plan, cycle, state.todayOccurrence!, state.todayDate, profile, fn => run(`not-today-${state.todayOccurrence!.id}`, fn))}
+                              onPress={() => uid && askNotToday(uid, plan, cycle, state.todayDate, profile, fn => run(`not-today-${state.todayOccurrence!.id}`, fn))}
                             />
                           </View>
                         </View>
@@ -298,7 +302,7 @@ export const WorkoutHomeScreen = () => {
                           label="Not today"
                           variant="quiet"
                           busy={busy === `not-today-${state.todayOccurrence.id}`}
-                          onPress={() => uid && askNotToday(uid, plan, cycle, state.todayOccurrence!, state.todayDate, profile, fn => run(`not-today-${state.todayOccurrence!.id}`, fn))}
+                          onPress={() => uid && askNotToday(uid, plan, cycle, state.todayDate, profile, fn => run(`not-today-${state.todayOccurrence!.id}`, fn))}
                         />
                       </View>
                     </View>

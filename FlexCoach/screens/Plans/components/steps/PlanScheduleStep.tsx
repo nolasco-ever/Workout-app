@@ -5,7 +5,7 @@ import { SortableRows } from '../../../../components/lists/SortableRows';
 import { newId } from '../../../../data/engine/ids';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { Id, RotationSchedule, WeeklySchedule, Weekday } from '../../../../data/models';
+import { Id, RotationSchedule, ScheduleDay, WeeklySchedule, Weekday } from '../../../../data/models';
 import { CustomText } from '../../../../components/text/customText';
 import { SurfaceCard } from '../../../../components/cards/SurfaceCard';
 import { ChoiceChips } from '../../../../components/inputs/ChoiceChips';
@@ -17,7 +17,8 @@ import { EditorMode, PlansStackParams } from '../../routes';
 import { StepRoot } from '../StepRoot';
 import { usePlanEditor } from '../../PlanEditorContext';
 import { StepFooter } from '../StepFooter';
-import { workoutName } from '../planSummary';
+import { dayNames } from '../planSummary';
+import { scheduledIds } from '../../../../data/engine/scheduleDays';
 import { CycleHelpButton } from '../CycleHelpSheet';
 
 const DAY = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
@@ -31,12 +32,13 @@ export const PlanScheduleStep = ({ mode, embedded = false }: { mode: EditorMode;
   const [editingDay, setEditingDay] = useState<number | null>(null);
   const scrollRef = useAnimatedRef<Animated.ScrollView>();
   // Rotation slots can repeat (several rest days), so give each a stable local key for dragging.
-  const [slotItems, setSlotItems] = useState<{ key: string; workoutId: Id | null }[]>([]);
-  const slotsSig = draft?.schedule.mode === 'rotation' ? draft.schedule.slots.join('|') : '';
+  const [slotItems, setSlotItems] = useState<{ key: string; day: ScheduleDay }[]>([]);
+  const daySig = (day: ScheduleDay) => day.join(',');
+  const slotsSig = draft?.schedule.mode === 'rotation' ? draft.schedule.slots.map(daySig).join('|') : '';
   useEffect(() => {
     if (!draft || draft.schedule.mode !== 'rotation') return;
     const slots = draft.schedule.slots;
-    setSlotItems(prev => (prev.map(i => i.workoutId).join('|') === slots.join('|') ? prev : slots.map((workoutId, i) => ({ key: prev[i]?.workoutId === workoutId ? prev[i].key : newId(), workoutId }))));
+    setSlotItems(prev => (prev.map(i => daySig(i.day)).join('|') === slotsSig ? prev : slots.map((day, i) => ({ key: prev[i] && daySig(prev[i].day) === daySig(day) ? prev[i].key : newId(), day }))));
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [slotsSig]);
   if (!draft) return null;
@@ -49,8 +51,8 @@ export const PlanScheduleStep = ({ mode, embedded = false }: { mode: EditorMode;
       if (p.schedule.mode === mode) return p;
       const schedule: RotationSchedule | WeeklySchedule =
         mode === 'rotation'
-          ? { mode: 'rotation', slots: [...p.workouts.map(w => w.id), null], passesPerCycle: 1 }
-          : { mode: 'weekly', weekdays: [null, null, null, null, null, null, null], startWeekday: 1, weeksPerCycle: 1 };
+          ? { mode: 'rotation', slots: [...p.workouts.map(w => [w.id]), []], passesPerCycle: 1 }
+          : { mode: 'weekly', weekdays: [[], [], [], [], [], [], []], startWeekday: 1, weeksPerCycle: 1 };
       return { ...p, schedule };
     });
 
@@ -59,13 +61,12 @@ export const PlanScheduleStep = ({ mode, embedded = false }: { mode: EditorMode;
   const setWeekly = (fn: (s: WeeklySchedule) => WeeklySchedule) =>
     update(p => (p.schedule.mode === 'weekly' ? { ...p, schedule: fn(p.schedule) } : p));
 
-  const reorderSlots = (items: { key: string; workoutId: Id | null }[]) => {
+  const reorderSlots = (items: { key: string; day: ScheduleDay }[]) => {
     setSlotItems(items);
-    setRotation(s => ({ ...s, slots: items.map(i => i.workoutId) }));
+    setRotation(s => ({ ...s, slots: items.map(i => i.day) }));
   };
 
-  const scheduledCount =
-    plan.schedule.mode === 'rotation' ? plan.schedule.slots.filter(Boolean).length : plan.schedule.weekdays.filter(Boolean).length;
+  const scheduledCount = scheduledIds(plan.schedule).length;
   const problem = scheduledCount === 0 ? 'Put at least one workout on the schedule.' : null;
 
   return (
@@ -102,7 +103,7 @@ export const PlanScheduleStep = ({ mode, embedded = false }: { mode: EditorMode;
                         <CustomText variant="overline" color={colors.inkMuted}>Day {i + 1}</CustomText>
                       </View>
                       <View style={{ flex: 1, paddingVertical: spacing.md }}>
-                        <CustomText variant={item.workoutId ? 'bodyStrong' : 'body'} color={item.workoutId ? colors.ink : colors.inkMuted}>{workoutName(plan, item.workoutId)}</CustomText>
+                        <CustomText variant={item.day.length ? 'bodyStrong' : 'body'} color={item.day.length ? colors.ink : colors.inkMuted}>{dayNames(plan, item.day) ?? 'Rest'}</CustomText>
                       </View>
                       <TouchableOpacity onPress={() => reorderSlots(slotItems.filter(s => s.key !== item.key))} hitSlop={6} style={{ padding: spacing.sm }}>
                         <Icon icon={generalIcons.xMark} size={20} color={colors.inkMuted} />
@@ -119,7 +120,7 @@ export const PlanScheduleStep = ({ mode, embedded = false }: { mode: EditorMode;
               <ChoiceChips<string>
                 options={options}
                 value={null}
-                onChange={v => setRotation(s => ({ ...s, slots: [...s.slots, v === 'rest' ? null : (v as Id)] }))}
+                onChange={v => setRotation(s => ({ ...s, slots: [...s.slots, v === 'rest' ? [] : [v as Id]] }))}
               />
             </View>
             <SurfaceCard style={{ gap: spacing.sm }}>
@@ -144,7 +145,7 @@ export const PlanScheduleStep = ({ mode, embedded = false }: { mode: EditorMode;
                       <CustomText variant="overline" color={colors.inkMuted}>{DAY_SHORT[i]}</CustomText>
                     </View>
                     <View style={{ flex: 1 }}>
-                      <CustomText variant={slot ? 'bodyStrong' : 'body'} color={slot ? colors.ink : colors.inkMuted}>{workoutName(plan, slot)}</CustomText>
+                      <CustomText variant={slot.length ? 'bodyStrong' : 'body'} color={slot.length ? colors.ink : colors.inkMuted}>{dayNames(plan, slot) ?? 'Rest'}</CustomText>
                     </View>
                     <Icon icon={editingDay === i ? directionIcons.angleUp : directionIcons.angleDown} size={18} color={colors.inactive} />
                   </TouchableOpacity>
@@ -152,11 +153,11 @@ export const PlanScheduleStep = ({ mode, embedded = false }: { mode: EditorMode;
                     <View style={{ paddingHorizontal: spacing.lg, paddingBottom: spacing.lg }}>
                       <ChoiceChips<string>
                         options={options}
-                        value={slot ?? 'rest'}
+                        value={slot[0] ?? 'rest'}
                         onChange={v => {
                           setWeekly(s => {
                             const weekdays = [...s.weekdays] as WeeklySchedule['weekdays'];
-                            weekdays[i] = v === 'rest' ? null : (v as Id);
+                            weekdays[i] = v === 'rest' ? [] : [v as Id];
                             return { ...s, weekdays };
                           });
                           setEditingDay(null);

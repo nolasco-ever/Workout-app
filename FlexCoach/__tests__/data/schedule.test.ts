@@ -1,4 +1,4 @@
-import { closeCycle, generateCycle, rebuildCycle, nextCycleStart, getOverdueOccurrences, moveOccurrenceToDate, resolveMissed, nextCycleNumber, nextCycleNumberAfter, pushOccurrence, renumberCycles, skipOccurrence, markOccurrence } from '../../data/engine/schedule';
+import { closeCycle, generateCycle, rebuildCycle, nextCycleStart, getOverdueOccurrences, moveDayToDate, moveOccurrenceToDate, resolveMissed, nextCycleNumber, nextCycleNumberAfter, pushDay, getOccurrencesForDate, focusOccurrence, renumberCycles, skipOccurrence, markOccurrence } from '../../data/engine/schedule';
 import { summarizeCycle } from '../../data/engine/stats';
 import { addDays } from '../../data/engine/dates';
 import { Plan } from '../../data/models';
@@ -20,7 +20,7 @@ describe('generateCycle', () => {
 
   it('repeats the rotation passesPerCycle times', () => {
     const plan = rotationPlan();
-    plan.schedule = { mode: 'rotation', slots: ['push', 'pull'], passesPerCycle: 3 };
+    plan.schedule = { mode: 'rotation', slots: [['push'], ['pull']], passesPerCycle: 3 };
     const cycle = generateCycle(plan, 'user-1', 1, '2026-09-21');
     expect(cycle.occurrences).toHaveLength(6);
     expect(cycle.endDate).toBe('2026-09-26');
@@ -83,11 +83,11 @@ describe('nextCycleStart', () => {
   });
 });
 
-describe('pushOccurrence', () => {
+describe('pushDay', () => {
   it('cascades pushes through following workouts and grows a rotation cycle', () => {
     const plan = rotationPlan();
     const cycle = generateCycle(plan, 'user-1', 1, '2026-09-21');
-    const pushed = pushOccurrence(cycle, plan, cycle.occurrences[0].id);
+    const pushed = pushDay(cycle, plan, '2026-09-21');
     expect(dates(pushed)).toEqual([
       '2026-09-21:rest:rest',
       '2026-09-22:push:scheduled',
@@ -101,9 +101,9 @@ describe('pushOccurrence', () => {
 
   it('extends a rotation cycle when the last workout is pushed', () => {
     const plan = rotationPlan();
-    plan.schedule = { mode: 'rotation', slots: ['push', 'pull'], passesPerCycle: 1 };
+    plan.schedule = { mode: 'rotation', slots: [['push'], ['pull']], passesPerCycle: 1 };
     const cycle = generateCycle(plan, 'user-1', 1, '2026-09-21');
-    const pushed = pushOccurrence(cycle, plan, cycle.occurrences[1].id);
+    const pushed = pushDay(cycle, plan, '2026-09-22');
     expect(pushed.endDate).toBe('2026-09-23');
   });
 
@@ -111,7 +111,7 @@ describe('pushOccurrence', () => {
     const plan = weeklyPlan();
     const cycle = generateCycle(plan, 'user-1', 1, '2026-09-28');
     const push = cycle.occurrences.find(o => o.workoutId === 'push')!;
-    const pushed = pushOccurrence(cycle, plan, push.id);
+    const pushed = pushDay(cycle, plan, push.date);
     expect(pushed.occurrences.find(o => o.workoutId === 'push')?.date).toBe('2026-09-29');
     expect(pushed.occurrences.find(o => o.workoutId === 'pull')?.date).toBe('2026-09-30');
     expect(pushed.endDate).toBe('2026-10-04');
@@ -119,13 +119,13 @@ describe('pushOccurrence', () => {
 
   it('marks a workout skipped when pushed past the end of a weekly cycle', () => {
     const plan = weeklyPlan();
-    plan.schedule = { ...plan.schedule, weekdays: [null, 'push', null, 'pull', null, null, 'legs'] } as typeof plan.schedule;
+    plan.schedule = { ...plan.schedule, weekdays: [[], ['push'], [], ['pull'], [], [], ['legs']] } as typeof plan.schedule;
     const cycle = generateCycle(plan, 'user-1', 1, '2026-09-28');
     const legs = cycle.occurrences.find(o => o.workoutId === 'legs')!;
     // Saturday -> Sunday is still inside the week; Sunday -> Monday is not.
-    const once = pushOccurrence(cycle, plan, legs.id);
+    const once = pushDay(cycle, plan, legs.date);
     expect(once.occurrences.find(o => o.workoutId === 'legs')).toMatchObject({ date: '2026-10-04', status: 'scheduled' });
-    const twice = pushOccurrence(once, plan, legs.id);
+    const twice = pushDay(once, plan, '2026-10-04');
     const after = twice.occurrences.find(o => o.workoutId === 'legs')!;
     expect(after.status).toBe('skipped');
     expect(after.skipReason).toBe('pushed_out');
@@ -133,11 +133,128 @@ describe('pushOccurrence', () => {
     expect(after.pushCount).toBe(2);
   });
 
-  it('refuses to push a completed workout', () => {
+  it('refuses to push a day with nothing left to do', () => {
     const plan = rotationPlan();
     const cycle = generateCycle(plan, 'user-1', 1, '2026-09-21');
     const done = markOccurrence(cycle, cycle.occurrences[0].id, 'completed', 'session-1');
-    expect(() => pushOccurrence(done, plan, cycle.occurrences[0].id)).toThrow(/Only scheduled/);
+    expect(() => pushDay(done, plan, '2026-09-21')).toThrow(/Nothing scheduled/);
+  });
+
+  // v1 #10: a day holds several items and moves as a group.
+  const multi = (): Plan => ({
+    ...rotationPlan(),
+    workouts: [...rotationPlan().workouts, { id: 'run', name: 'Run', order: 3, exercises: [], type: 'cardio' }],
+    schedule: { mode: 'rotation', slots: [['push', 'run'], ['pull'], [], ['legs', 'run']], passesPerCycle: 1 },
+  });
+
+  it('moves what is left of a day together and leaves what is done', () => {
+    const plan = multi();
+    let cycle = generateCycle(plan, 'user-1', 1, '2026-09-21');
+    cycle = markOccurrence(cycle, cycle.occurrences[0].id, 'completed', 's1');
+    const pushed = pushDay(cycle, plan, '2026-09-21');
+    expect(dates(pushed)).toEqual([
+      '2026-09-21:push:completed',
+      '2026-09-22:run:scheduled',
+      '2026-09-23:pull:scheduled',
+      '2026-09-24:legs:scheduled',
+      '2026-09-24:run:scheduled',
+    ]);
+    // The rest day had nowhere to go: Monday still holds the finished Push.
+    expect(pushed.endDate).toBe('2026-09-24');
+  });
+
+  it('lets a rest day take an emptied day, and keeps a day\'s order', () => {
+    const plan = multi();
+    const cycle = generateCycle(plan, 'user-1', 1, '2026-09-21');
+    const pushed = pushDay(cycle, plan, '2026-09-21');
+    expect(dates(pushed)).toEqual([
+      '2026-09-21:rest:rest',
+      '2026-09-22:push:scheduled',
+      '2026-09-22:run:scheduled',
+      '2026-09-23:pull:scheduled',
+      '2026-09-24:legs:scheduled',
+      '2026-09-24:run:scheduled',
+    ]);
+    expect(pushed.occurrences.filter(o => o.status === 'scheduled').map(o => o.pushCount)).toEqual([1, 1, 1, 0, 0]);
+  });
+
+  it('skips a whole day pushed past the end of a weekly cycle', () => {
+    // Monday start, so Sunday is the cycle's last day.
+    const plan: Plan = { ...multi(), schedule: { mode: 'weekly', weekdays: [['legs', 'run'], ['push'], [], [], [], [], []], startWeekday: 1, weeksPerCycle: 1 } };
+    const cycle = generateCycle(plan, 'user-1', 1, '2026-09-21');
+    const pushed = pushDay(cycle, plan, '2026-09-27');
+    expect(pushed.occurrences.filter(o => o.date === '2026-09-27').map(o => `${o.workoutId}:${o.status}:${o.skipReason}`)).toEqual(['legs:skipped:pushed_out', 'run:skipped:pushed_out']);
+    expect(pushed.endDate).toBe('2026-09-27');
+  });
+});
+
+describe('several items a day', () => {
+  const plan = (): Plan => ({
+    ...weeklyPlan(),
+    workouts: [...weeklyPlan().workouts, { id: 'run', name: 'Run', order: 3, exercises: [], type: 'cardio' }, { id: 'yoga', name: 'Yoga', order: 4, exercises: [], type: 'stretching' }],
+    schedule: { mode: 'weekly', weekdays: [[], ['push', 'run', 'yoga'], [], ['pull'], [], ['legs'], []], startWeekday: 1, weeksPerCycle: 1 },
+  });
+
+  it('lays each item of a day out on that date, in order', () => {
+    const cycle = generateCycle(plan(), 'user-1', 1, '2026-09-21');
+    expect(getOccurrencesForDate(cycle, '2026-09-21').map(o => o.workoutId)).toEqual(['push', 'run', 'yoga']);
+    expect(getOccurrencesForDate(cycle, '2026-09-22')).toEqual([]);
+  });
+
+  it('points a single today card at the next item not done', () => {
+    let cycle = generateCycle(plan(), 'user-1', 1, '2026-09-21');
+    const [push, run, yoga] = getOccurrencesForDate(cycle, '2026-09-21');
+    expect(focusOccurrence(getOccurrencesForDate(cycle, '2026-09-21'))?.id).toBe(push.id);
+    cycle = markOccurrence(cycle, push.id, 'completed', 's1');
+    expect(focusOccurrence(getOccurrencesForDate(cycle, '2026-09-21'))?.id).toBe(run.id);
+    cycle = markOccurrence(cycle, yoga.id, 'in_progress', 's2');
+    expect(focusOccurrence(getOccurrencesForDate(cycle, '2026-09-21'))?.id).toBe(yoga.id);
+    cycle = markOccurrence(markOccurrence(cycle, run.id, 'completed', 's3'), yoga.id, 'completed', 's2');
+    expect(focusOccurrence(getOccurrencesForDate(cycle, '2026-09-21'))?.id).toBe(yoga.id);
+  });
+
+  it('moves a missed day to a chosen date, pushing what is there', () => {
+    const cycle = generateCycle(plan(), 'user-1', 1, '2026-09-21');
+    const moved = moveDayToDate(cycle, plan(), '2026-09-21', '2026-09-23');
+    expect(dates(moved).filter(d => !d.includes('rest'))).toEqual([
+      '2026-09-23:push:scheduled',
+      '2026-09-23:run:scheduled',
+      '2026-09-23:yoga:scheduled',
+      '2026-09-24:pull:scheduled',
+      '2026-09-25:legs:scheduled',
+    ]);
+  });
+
+  it('moves a rest day into the emptied date', () => {
+    const cycle = generateCycle(plan(), 'user-1', 1, '2026-09-21');
+    const moved = moveDayToDate(cycle, plan(), '2026-09-21', '2026-09-22');
+    expect(dates(moved).slice(0, 4)).toEqual(['2026-09-21:rest:rest', '2026-09-22:push:scheduled', '2026-09-22:run:scheduled', '2026-09-22:yoga:scheduled']);
+  });
+
+  it('brings one future item to today and leaves the rest of its day (owner, 2026-11-08)', () => {
+    const cycle = generateCycle(plan(), 'user-1', 1, '2026-09-21');
+    const run = getOccurrencesForDate(cycle, '2026-09-21')[1];
+    const moved = moveOccurrenceToDate(cycle, run.id, '2026-09-20');
+    expect(getOccurrencesForDate(moved, '2026-09-20').map(o => o.workoutId)).toEqual(['run']);
+    expect(getOccurrencesForDate(moved, '2026-09-21').map(o => o.workoutId)).toEqual(['push', 'yoga']);
+  });
+
+  it('asks about a missed day as a whole and skips the older days', () => {
+    const cycle = generateCycle(plan(), 'user-1', 1, '2026-09-21');
+    const { ask, skipped } = resolveMissed(cycle, '2026-09-24', 9);
+    expect(ask?.map(o => o.workoutId)).toEqual(['pull']);
+    expect(skipped.map(o => o.workoutId)).toEqual(['push', 'run', 'yoga']);
+    const monday = resolveMissed(cycle, '2026-09-22', 9);
+    expect(monday.ask?.map(o => `${o.workoutId}:${o.missedPromptedAt}`)).toEqual(['push:9', 'run:9', 'yoga:9']);
+    expect(resolveMissed(monday.cycle, '2026-09-22', 10).ask).toBeNull();
+  });
+
+  it('adds the new schedule\'s other items to a day that keeps a finished one', () => {
+    let cycle = generateCycle(plan(), 'user-1', 1, '2026-09-21');
+    cycle = markOccurrence(cycle, cycle.occurrences[0].id, 'completed', 's1');
+    const edited: Plan = { ...plan(), schedule: { ...(plan().schedule as Extract<Plan['schedule'], { mode: 'weekly' }>), weekdays: [[], ['run', 'push'], [], ['pull'], [], ['legs'], []] } };
+    const rebuilt = rebuildCycle(cycle, edited, '2026-09-21');
+    expect(dates(rebuilt).filter(d => d.startsWith('2026-09-21'))).toEqual(['2026-09-21:push:completed', '2026-09-21:run:scheduled']);
   });
 });
 
@@ -160,7 +277,7 @@ describe('overdue detection, skipping, and closing', () => {
     let cycle = generateCycle(plan, 'user-1', 1, '2026-09-21');
     const [push, pull, legs] = cycle.occurrences;
     cycle = markOccurrence(cycle, push.id, 'completed', 's1');
-    cycle = pushOccurrence(cycle, plan, pull.id);
+    cycle = pushDay(cycle, plan, pull.date);
     cycle = markOccurrence(cycle, pull.id, 'completed', 's2');
     cycle = skipOccurrence(cycle, legs.id);
     const summary = summarizeCycle(cycle, [], []);
@@ -174,7 +291,7 @@ describe('moveOccurrenceToDate', () => {
     const plan = rotationPlan();
     const cycle = generateCycle(plan, 'user-1', 1, '2026-09-21');
     // Pretend today is the rest day (09-24) and the user wants to do Push (09-21 next pass) early.
-    plan.schedule = { mode: 'rotation', slots: ['push', 'pull', 'legs', null], passesPerCycle: 2 };
+    plan.schedule = { mode: 'rotation', slots: [['push'], ['pull'], ['legs'], []], passesPerCycle: 2 };
     const two = generateCycle(plan, 'user-1', 1, '2026-09-21');
     const secondPush = two.occurrences.filter(o => o.workoutId === 'push')[1];
     const moved = moveOccurrenceToDate(two, secondPush.id, '2026-09-24');
@@ -185,13 +302,13 @@ describe('moveOccurrenceToDate', () => {
     expect(cycle.occurrences).toHaveLength(4);
   });
 
-  it('swaps two scheduled workouts', () => {
+  it('joins what is already on the day instead of swapping it out', () => {
     const plan = rotationPlan();
     const cycle = generateCycle(plan, 'user-1', 1, '2026-09-21');
     const legs = cycle.occurrences.find(o => o.workoutId === 'legs')!;
     const moved = moveOccurrenceToDate(cycle, legs.id, '2026-09-21');
-    expect(moved.occurrences.find(o => o.workoutId === 'legs')?.date).toBe('2026-09-21');
-    expect(moved.occurrences.find(o => o.workoutId === 'push')?.date).toBe('2026-09-23');
+    expect(getOccurrencesForDate(moved, '2026-09-21').map(o => o.workoutId)).toEqual(['push', 'legs']);
+    expect(getOccurrencesForDate(moved, '2026-09-23')).toEqual([]);
   });
 
   it('refuses to move a completed workout', () => {
@@ -239,9 +356,9 @@ describe('resolveMissed', () => {
     const last = workouts[workouts.length - 1];
     const todayDate = addDays(last.date, 1);
     const { cycle: next, ask, skipped } = resolveMissed(cycle, todayDate, 123);
-    expect(ask?.id).toBe(last.id);
-    expect(ask?.missedPromptedAt).toBe(123);
-    expect(ask?.status).toBe('scheduled');
+    expect(ask?.map(o => o.id)).toEqual([last.id]);
+    expect(ask?.[0].missedPromptedAt).toBe(123);
+    expect(ask?.[0].status).toBe('scheduled');
     expect(skipped.map(o => o.id)).toEqual(workouts.slice(0, -1).map(o => o.id));
     expect(skipped.every(o => o.status === 'skipped' && o.skipReason === 'missed')).toBe(true);
     expect(getOverdueOccurrences(next, todayDate).map(o => o.id)).toEqual([last.id]);
@@ -252,7 +369,7 @@ describe('resolveMissed', () => {
     expect(resolveMissed(cycle, '2026-09-21').ask).toBeNull();
     const workouts = cycle.occurrences.filter(o => o.workoutId);
     const once = resolveMissed(cycle, workouts[1].date, 5);
-    expect(once.ask?.id).toBe(workouts[0].id);
+    expect(once.ask?.map(o => o.id)).toEqual([workouts[0].id]);
     const again = resolveMissed(once.cycle, workouts[1].date, 6);
     expect(again.ask).toBeNull();
     expect(again.cycle).toBe(once.cycle);
@@ -264,7 +381,7 @@ describe('rebuildCycle: a plan edited mid-cycle', () => {
   const edited = (): Plan => {
     const plan = weeklyPlan();
     // Pull moves from Wednesday to Thursday; Legs is replaced by Arms.
-    const schedule = { ...plan.schedule, weekdays: [null, 'push', null, null, 'pull', 'arms', null] } as Plan['schedule'];
+    const schedule = { ...plan.schedule, weekdays: [[], ['push'], [], [], ['pull'], ['arms'], []] } as Plan['schedule'];
     return { ...plan, workouts: [...plan.workouts.filter(w => w.id !== 'legs'), { id: 'arms', name: 'Arms', order: 2, exercises: [] }], schedule };
   };
 

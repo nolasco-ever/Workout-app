@@ -4,8 +4,7 @@ import { SafeAreaView } from '../../components/layout/SafeAreaView';
 import { NavigationProp, RouteProp, useNavigation, useRoute } from '@react-navigation/native';
 import { useAuth } from '../../data/auth/AuthProvider';
 import { Plan } from '../../data/models';
-import { readDoc } from '../../data/repositories/base';
-import { paths } from '../../data/firebase/paths';
+import { planRepository } from '../../data/repositories/planRepository';
 import { copyBuddyPlan } from '../../data/services/buddyService';
 import { usePlans } from '../../data/hooks/usePlans';
 import { CustomText } from '../../components/text/customText';
@@ -39,7 +38,7 @@ export const BuddyPlanScreen = () => {
   const first = params.ownerName?.split(' ')[0] ?? 'they';
 
   useEffect(() => {
-    readDoc<Plan>(paths.plan(params.ownerUid, params.planId))
+    planRepository.get(params.ownerUid, params.planId)
       .then(setPlan)
       .catch(() => setPlan(null));
   }, [params.ownerUid, params.planId]);

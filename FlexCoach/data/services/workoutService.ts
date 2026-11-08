@@ -22,10 +22,11 @@ import {
   findWorkout,
   generateCycle,
   markOccurrence,
+  moveDayToDate,
   moveOccurrenceToDate,
   resolveMissed,
   nextCycleNumberAfter,
-  pushOccurrence,
+  pushDay,
   renumberCycles,
   skipOccurrence,
 } from '../engine/schedule';
@@ -58,29 +59,47 @@ export const seedSamplePlan = async (uid: Id): Promise<{ plan: Plan; cycle: Cycl
   return { plan, cycle };
 };
 
-export const skipWorkout = async (uid: Id, cycle: Cycle, occurrenceId: Id, profile: UserProfile | null = null): Promise<Cycle> => {
-  const updated = settleCycleReport(skipOccurrence(cycle, occurrenceId), Date.now(), withPrefDefaults(profile?.notifications).morningTime);
-  await cycleRepository.save(uid, updated);
-  const occ = updated.occurrences.find(o => o.id === occurrenceId);
-  if (occ) afterWorkoutSkipped(uid, profile, occ).catch(err => console.warn('buddy activity failed', err));
-  return updated;
+/** What is still scheduled on a day: what moves or is skipped when the day does. */
+const scheduledOn = (cycle: Cycle, date: LocalDate): Occurrence[] => cycle.occurrences.filter(o => o.date === date && o.status === 'scheduled');
+
+const tellBuddiesMoved = (uid: Id, profile: UserProfile | null, before: Cycle, after: Cycle, ids: Id[]) => {
+  if (after === before) return;
+  for (const id of ids) {
+    const moved = after.occurrences.find(o => o.id === id);
+    if (moved) afterWorkoutPushed(uid, profile, moved, moved.date).catch(err => console.warn('buddy activity failed', err));
+  }
 };
 
 /**
- * Push a missed workout forward until it lands on `targetDate` (normally
- * today). Each step cascades through the engine, so anything in the way
- * moves too. Stops early if the workout gets pushed out of a weekly cycle.
+ * Push a day forward until it lands on `targetDate` (tomorrow for "Not
+ * today", today for a missed day). The day moves, not one workout (v1 #10):
+ * everything still scheduled on it goes together, and each step cascades
+ * through the engine, so anything in the way moves too. Stops early if it
+ * gets pushed out of a weekly cycle.
  */
-export const pushWorkoutTo = async (uid: Id, plan: Plan, cycle: Cycle, occurrenceId: Id, targetDate: LocalDate, profile: UserProfile | null = null): Promise<Cycle> => {
+export const pushDayTo = async (uid: Id, plan: Plan, cycle: Cycle, date: LocalDate, targetDate: LocalDate, profile: UserProfile | null = null): Promise<Cycle> => {
+  const ids = scheduledOn(cycle, date).map(o => o.id);
   let updated = cycle;
   for (let guard = 0; guard < 60; guard++) {
-    const occ = updated.occurrences.find(o => o.id === occurrenceId);
+    const occ = updated.occurrences.find(o => o.id === ids[0]);
     if (!occ || occ.status !== 'scheduled' || occ.date >= targetDate) break;
-    updated = pushOccurrence(updated, plan, occurrenceId);
+    updated = pushDay(updated, plan, occ.date);
   }
   await cycleRepository.save(uid, updated);
-  const moved = updated.occurrences.find(o => o.id === occurrenceId);
-  if (moved && updated !== cycle) afterWorkoutPushed(uid, profile, moved, moved.date).catch(err => console.warn('buddy activity failed', err));
+  tellBuddiesMoved(uid, profile, cycle, updated, ids);
+  return updated;
+};
+
+/** Skip everything still scheduled on a day, for this cycle ("Not today", the missed sheet). */
+export const skipDay = async (uid: Id, cycle: Cycle, date: LocalDate, profile: UserProfile | null = null): Promise<Cycle> => {
+  const items = scheduledOn(cycle, date);
+  const skipped = items.reduce((c, o) => skipOccurrence(c, o.id), cycle);
+  const updated = settleCycleReport(skipped, Date.now(), withPrefDefaults(profile?.notifications).morningTime);
+  await cycleRepository.save(uid, updated);
+  for (const o of items) {
+    const occ = updated.occurrences.find(u => u.id === o.id);
+    if (occ) afterWorkoutSkipped(uid, profile, occ).catch(err => console.warn('buddy activity failed', err));
+  }
   return updated;
 };
 
@@ -140,32 +159,31 @@ export const startQuickSession = async (uid: Id, kind?: ExerciseKind): Promise<S
 };
 
 /**
- * Reschedule a scheduled workout to a chosen day. A rest day there swaps
- * into the vacated slot; a workout already on that day is pushed forward
- * first (cascading, like a missed workout), so nothing lands in the past.
- * Buddies see it as moved.
+ * Reschedule a day to a chosen date (the missed sheet). Everything still
+ * scheduled on it moves together. A rest day there swaps into the vacated
+ * day; scheduled items already there are pushed forward first (cascading,
+ * like a missed day), so nothing lands in the past. Buddies see each as moved.
  */
-export const moveWorkoutToDate = async (uid: Id, plan: Plan, cycle: Cycle, occurrenceId: Id, targetDate: LocalDate, profile: UserProfile | null = null): Promise<Cycle> => {
-  let current = cycle;
-  const occupant = current.occurrences.find(o => o.id !== occurrenceId && o.date === targetDate && o.status === 'scheduled');
-  if (occupant) current = pushOccurrence(current, plan, occupant.id);
-  current = moveOccurrenceToDate(current, occurrenceId, targetDate);
+export const moveDayTo = async (uid: Id, plan: Plan, cycle: Cycle, date: LocalDate, targetDate: LocalDate, profile: UserProfile | null = null): Promise<Cycle> => {
+  const ids = scheduledOn(cycle, date).map(o => o.id);
+  const current = moveDayToDate(cycle, plan, date, targetDate);
   await cycleRepository.save(uid, current);
-  const moved = current.occurrences.find(o => o.id === occurrenceId);
-  if (moved && current !== cycle) afterWorkoutPushed(uid, profile, moved, moved.date).catch(err => console.warn('buddy activity failed', err));
+  tellBuddiesMoved(uid, profile, cycle, current, ids);
   return current;
 };
 
-/** What a day holds for the move picker: the workout on it, if any, or a rest day, or nothing. */
-export const occupantOn = (cycle: Cycle, date: LocalDate, exceptId: Id): Occurrence | null =>
-  cycle.occurrences.find(o => o.id !== exceptId && o.date === date && (o.status === 'scheduled' || o.status === 'rest')) ?? null;
+/** What a day holds for the move picker: its scheduled items, or a rest day, or nothing. */
+export const occupantsOn = (cycle: Cycle, date: LocalDate): { items: Occurrence[]; rest: boolean } => ({
+  items: scheduledOn(cycle, date),
+  rest: cycle.occurrences.some(o => o.date === date && o.status === 'rest'),
+});
 
 /**
- * The missed-workout sheet's first step: skip all but the latest missed
- * workout, flag the latest as asked, save, and hand it back. Null when
- * there is nothing new to ask about.
+ * The missed-workout sheet's first step: skip everything on the older
+ * missed days, flag the latest missed day as asked, save, and hand that
+ * day's items back. Null when there is nothing new to ask about.
  */
-export const beginMissedPrompt = async (uid: Id, cycle: Cycle, todayDate: LocalDate): Promise<{ cycle: Cycle; ask: Occurrence; skipped: Occurrence[] } | null> => {
+export const beginMissedPrompt = async (uid: Id, cycle: Cycle, todayDate: LocalDate): Promise<{ cycle: Cycle; ask: Occurrence[]; skipped: Occurrence[] } | null> => {
   const result = resolveMissed(cycle, todayDate);
   if (!result.ask) return null;
   await cycleRepository.save(uid, result.cycle);
@@ -173,9 +191,10 @@ export const beginMissedPrompt = async (uid: Id, cycle: Cycle, todayDate: LocalD
 };
 
 /**
- * Start a workout regardless of the day it was scheduled for. A future
- * workout swaps places with today's slot; a missed one is pushed forward to
- * today, cascading anything in its way. Today's workout just starts.
+ * Start a workout regardless of the day it was scheduled for. A future one
+ * moves to today on its own; the rest of its day stays put (owner,
+ * 2026-11-08). A missed one brings its whole day forward to today,
+ * cascading anything in its way. Today's just starts.
  */
 export const startWorkoutNow = async (uid: Id, plan: Plan, cycle: Cycle, occurrence: Occurrence, unit: WeightUnit = 'lb'): Promise<{ session: Session; cycle: Cycle }> => {
   const todayDate = today();
@@ -184,7 +203,7 @@ export const startWorkoutNow = async (uid: Id, plan: Plan, cycle: Cycle, occurre
     current = moveOccurrenceToDate(cycle, occurrence.id, todayDate);
     await cycleRepository.save(uid, current);
   } else if (occurrence.date < todayDate) {
-    current = await pushWorkoutTo(uid, plan, cycle, occurrence.id, todayDate);
+    current = await pushDayTo(uid, plan, cycle, occurrence.date, todayDate);
   }
   const moved = current.occurrences.find(o => o.id === occurrence.id);
   if (!moved || moved.status !== 'scheduled') throw new Error('Workout could not be scheduled for today');

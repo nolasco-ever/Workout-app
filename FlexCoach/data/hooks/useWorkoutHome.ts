@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { useAuth } from '../auth/AuthProvider';
 import { Cycle, Occurrence, Plan, Session } from '../models';
 import { today } from '../engine/dates';
-import { getOccurrenceForDate, getOverdueOccurrences, getUpcomingOccurrences } from '../engine/schedule';
+import { focusOccurrence, getOccurrencesForDate, getOverdueOccurrences, getUpcomingOccurrences } from '../engine/schedule';
 import { cycleReportReadyAt } from '../engine/cycleReport';
 import { withPrefDefaults } from '../engine/notifications';
 import { planRepository } from '../repositories/planRepository';
@@ -16,6 +16,9 @@ export interface WorkoutHomeState {
   cycle: Cycle | null;
   todayDate: string;
   overdue: Occurrence[];
+  /** Everything on today, in the day's order (v1 #10: a day can hold several items). */
+  todayOccurrences: Occurrence[];
+  /** The one item a single "today" card shows: the one under way, else the next not done, else the day's last. */
   todayOccurrence: Occurrence | null;
   upcoming: Occurrence[];
   inProgressSession: Session | null;
@@ -96,7 +99,8 @@ export const useWorkoutHome = (): WorkoutHomeState => {
     const cycleMatches = !!rawCycle && !!plan && rawCycle.planId === plan.id && rawCycle.status === 'active';
     const cycle = cycleMatches ? rawCycle : null;
     const overdue = cycle ? getOverdueOccurrences(cycle, todayDate) : [];
-    const todayOccurrence = cycle ? getOccurrenceForDate(cycle, todayDate) ?? null : null;
+    const todayOccurrences = cycle ? getOccurrencesForDate(cycle, todayDate) : [];
+    const todayOccurrence = focusOccurrence(todayOccurrences) ?? null;
     const upcoming = cycle ? getUpcomingOccurrences(cycle, todayDate) : [];
     const reportReady = !!cycle && reportReadyAt !== null && reportReadyAt <= Date.now();
     return {
@@ -105,6 +109,7 @@ export const useWorkoutHome = (): WorkoutHomeState => {
       cycle,
       todayDate,
       overdue,
+      todayOccurrences,
       todayOccurrence,
       upcoming,
       inProgressSession: inProgress.find(s => s.cycleId === cycle?.id) ?? inProgress[0] ?? null,

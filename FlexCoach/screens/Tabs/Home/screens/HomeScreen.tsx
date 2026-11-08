@@ -174,7 +174,7 @@ export const HomeScreen = () => {
   const canDefer = !!uid && !!home.plan && !!home.cycle && !!todayOcc && todayOcc.status === 'scheduled' && !home.inProgressSession;
   const notToday = () => {
     if (!uid || !home.plan || !home.cycle || !todayOcc) return;
-    askNotToday(uid, home.plan, home.cycle, todayOcc, home.todayDate, profile, fn => { fn().catch(err => console.warn(err)); });
+    askNotToday(uid, home.plan, home.cycle, home.todayDate, profile, fn => { fn().catch(err => console.warn(err)); });
   };
   // Nothing planned today and nothing done yet: offer a workout outside the plan.
   const canQuick = !!uid && !home.loading && !home.inProgressSession && !ins.todaySession && (!home.plan || !todayOcc || todayOcc.status !== 'scheduled');

@@ -4,6 +4,39 @@ Every decision the owner makes, newest first, with why. Open questions sit at th
 bottom until they're answered. Decisions before 2026-11-07 were recorded only in
 commit messages, `docs/RELEASES.md` and Claude's session notes.
 
+## 2026-11-08 08:30 · Starting a workout early never moves today's away (10.4)
+
+- **Project:** FlexCoach
+- **Type:** functional
+- **Decision:** Starting a future workout today puts it on today alongside
+  whatever is already there. Today's workout no longer swaps to the future
+  day, including on one-workout-a-day plans; the future day is left empty.
+- **Why:** Owner: moving a workout to today shouldn't move the one for today
+  away. It follows from several items a day.
+- **Source:** v1 #10, step 10.4a.
+- **Decided by:** owner.
+
+## 2026-11-08 07:38 · Several items per day: details (10.4)
+
+- **Project:** FlexCoach
+- **Type:** functional
+- **Decision:** (a) The schedule format changes so a day holds a list of
+  items. Older builds may read a new plan wrongly, and that is accepted. (b)
+  "Not today" works on the whole day: one button moves (or skips) every item
+  on today that isn't done, as a group, and the rest of the cycle shifts a day
+  as it does now. Items already done stay put. (c) Home's
+  Today card keeps its design and points to the next unfinished item: after
+  the first of three is done it shows the second, then the third. (d)
+  Starting a future item early moves only that item to today. Its day's other
+  items stay where they are.
+- **Why:** (a) Testers update as soon as a build ships, so writing an old-style
+  copy isn't worth the complexity. (b) The owner first asked for one button per
+  item, then changed it to one for the day to keep it simple: you move the
+  day, not the workouts, and the old shift logic stays. (c) It needs no design change. (d) If the
+  second of tomorrow's three is done today, the other two stay on tomorrow.
+- **Source:** v1 #10, step 10.4.
+- **Decided by:** owner.
+
 ## 2026-11-07 22:00 · Plan split ships without a switch (10.11)
 
 - **Project:** FlexCoach

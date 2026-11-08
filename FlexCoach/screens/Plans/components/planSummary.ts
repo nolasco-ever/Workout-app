@@ -1,10 +1,13 @@
-import { MuscleGroup, Plan, WorkoutExercise } from '../../../data/models';
+import { MuscleGroup, Plan, ScheduleDay, WorkoutExercise } from '../../../data/models';
 import { getCatalogExercise } from '../../../data/catalog/exerciseCatalog';
 import { formatDistance, formatDuration, formatWeight } from '../../../data/engine/units';
 
 const DAY = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
 export const workoutName = (plan: Plan, id: string | null): string => (id ? plan.workouts.find(w => w.id === id)?.name ?? 'Untitled' : 'Rest');
+
+/** A day's items by name, "Lower Body, Treadmill Running"; null for a rest day. */
+export const dayNames = (plan: Plan, day: ScheduleDay): string | null => (day.length ? day.map(id => workoutName(plan, id)).join(', ') : null);
 
 /**
  * The schedule as rows for a two-column card: the day on the left, what
@@ -13,11 +16,10 @@ export const workoutName = (plan: Plan, id: string | null): string => (id ? plan
  */
 export const scheduleRows = (plan: Plan): { day: string; workout: string | null }[] => {
   const s = plan.schedule;
-  if (s.mode === 'rotation') return s.slots.map((id, i) => ({ day: `Day ${i + 1}`, workout: id ? workoutName(plan, id) : null }));
+  if (s.mode === 'rotation') return s.slots.map((day, i) => ({ day: `Day ${i + 1}`, workout: dayNames(plan, day) }));
   return Array.from({ length: 7 }, (_, i) => {
     const weekday = (s.startWeekday + i) % 7;
-    const id = s.weekdays[weekday];
-    return { day: DAY[weekday], workout: id ? workoutName(plan, id) : null };
+    return { day: DAY[weekday], workout: dayNames(plan, s.weekdays[weekday]) };
   });
 };
 
@@ -25,10 +27,10 @@ export const describeSchedule = (plan: Plan): string => {
   const s = plan.schedule;
   if (s.mode === 'rotation') {
     if (s.slots.length === 0) return 'No schedule yet';
-    const seq = s.slots.map(id => workoutName(plan, id)).join(' · ');
+    const seq = s.slots.map(day => dayNames(plan, day) ?? 'Rest').join(' · ');
     return `${seq}${s.passesPerCycle > 1 ? ` · ${s.passesPerCycle}× per cycle` : ''}`;
   }
-  const days = s.weekdays.map((id, i) => (id ? `${DAY[i]} ${workoutName(plan, id)}` : null)).filter(Boolean);
+  const days = s.weekdays.map((day, i) => (day.length ? `${DAY[i]} ${dayNames(plan, day)}` : null)).filter(Boolean);
   if (days.length === 0) return 'No schedule yet';
   return `${days.join(', ')} · ${s.weeksPerCycle}-week cycle${s.weeksPerCycle > 1 ? 's' : ''}`;
 };
@@ -37,7 +39,7 @@ export const describeSchedule = (plan: Plan): string => {
 export const describeCycle = (plan: Plan): string => {
   const s = plan.schedule;
   if (s.mode === 'rotation') return s.slots.length === 0 ? 'No schedule yet' : `${s.slots.length * s.passesPerCycle}-day cycle`;
-  if (!s.weekdays.some(Boolean)) return 'No schedule yet';
+  if (!s.weekdays.some(day => day.length > 0)) return 'No schedule yet';
   return `${s.weeksPerCycle}-week cycle`;
 };
 
