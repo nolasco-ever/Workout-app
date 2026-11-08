@@ -79,7 +79,12 @@ android {
     compileSdk rootProject.ext.compileSdkVersion
 
     namespace "com.flexcoach"
+    // The Google Maps key for react-native-maps (v1 #10.8): FLEXCOACH_GOOGLE_MAPS_API_KEY in android/local.properties (git-ignored).
+    def localProps = new Properties()
+    def localFile = rootProject.file("local.properties")
+    if (localFile.exists()) localProps.load(new FileInputStream(localFile))
     defaultConfig {
+        manifestPlaceholders = [googleMapsApiKey: localProps.getProperty("FLEXCOACH_GOOGLE_MAPS_API_KEY", "")]
         applicationId "com.flexcoach"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
@@ -131,6 +136,8 @@ dependencies {
     implementation("androidx.window:window-java:1.5.1")
     // The console scan (com.flexcoach.textscan, v1 #10.7): ML Kit text recognition with its model in the app, so it works offline.
     implementation("com.google.mlkit:text-recognition:16.0.1")
+    // Outdoor routes (com.flexcoach.route, v1 #10.8): the fused location provider.
+    implementation("com.google.android.gms:play-services-location:21.3.0")
     // The exercise animations: animated WebP (the catalog's how-to visuals) through Fresco, which React Native's Image uses.
     implementation("com.facebook.fresco:animated-webp:3.7.0")
     implementation("com.facebook.fresco:webpsupport:3.7.0")

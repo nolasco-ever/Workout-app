@@ -31,6 +31,8 @@ import { onWatchDistance, takeWatchDistance } from '../../../../data/liveActivit
 import { WatchLive, freshWatchLive, onWatchLive } from '../../../../data/liveActivity/watchLive';
 import { cardioScreenKind } from '../../../../data/engine/cardioScreen';
 import { CardioSession } from '../components/CardioSession';
+import { useRouteRecorder } from '../components/useRouteRecorder';
+import { routeMeters, routeToSave } from '../../../../data/engine/route';
 import { useTick } from '../components/SessionHeader';
 import { cardioDone, cardioStats } from '../../../../data/engine/stats';
 import { planRestOverNotification, planTimerDoneNotification, withPrefDefaults } from '../../../../data/engine/notifications';
@@ -251,7 +253,8 @@ export const SessionScreen = () => {
   // clock is not typed. Stopping writes the seconds into the set's draft and
   // saves the set, so a stopped time survives leaving the screen. Starting
   // another set's timer stops the running one first.
-  const stopCardioTimer = (): { setId: string; draft: SetDraft } | null => {
+  // `extra`: more to save on the set with its time (an outdoor route and its distance, v1 #10.8).
+  const stopCardioTimer = (extra?: Partial<LoggedSet>): { setId: string; draft: SetDraft } | null => {
     if (!cardioTimer) return null;
     const seconds = timerElapsed(cardioTimer);
     const draft: SetDraft = { ...(drafts[cardioTimer.setId] ?? { a: '', b: '' }), b: String(seconds) };
@@ -259,7 +262,7 @@ export const SessionScreen = () => {
     setCardioTimer(null);
     const owner = session.exercises.find(ex => ex.sets.some(st => st.id === cardioTimer.setId));
     const set = owner?.sets.find(st => st.id === cardioTimer.setId);
-    if (owner && set) persist(owner, fromDraft(owner, set, draft, units)).catch(err => console.warn('timer save failed', err));
+    if (owner && set) persist(owner, { ...fromDraft(owner, set, draft, units), ...extra }).catch(err => console.warn('timer save failed', err));
     return { setId: cardioTimer.setId, draft };
   };
   // `owner`: the set's exercise, when it is not the one on screen (Play on the Watch).
@@ -793,6 +796,19 @@ export const SessionScreen = () => {
   }, [cardioSet?.id]);
   // The clock and the heart rate's freshness move on every second while it runs.
   useTick(cardioExercise && cardioTimer ? 1000 : 0);
+  // Outdoors, the route (v1 #10.8): the phone's GPS, or the Watch's when it is tracking.
+  const outdoorCardio = !!cardioExercise && cardioScreenKind(cardioExercise.exerciseId).behind === 'map';
+  const route = useRouteRecorder({ setId: cardioSet?.id ?? null, outdoor: outdoorCardio, running: !!cardioSet && cardioTimer?.setId === cardioSet.id, saved: cardioSet?.route });
+  // The route to save on the set, and the phone's distance for it when nothing better measured one: the Watch's
+  // distance and a scanned one both win over the phone's GPS.
+  const routeExtra = (set: LoggedSet): Partial<LoggedSet> => {
+    const line = routeToSave(route.points);
+    if (!line) return {};
+    const extra: Partial<LoggedSet> = { route: { line, source: route.source } };
+    if (route.source === 'phone' && set.distanceSource !== 'watch' && set.scan?.distanceM === undefined) extra.distanceM = routeMeters(route.points);
+    return extra;
+  };
+  const phoneMeters = outdoorCardio && route.source === 'phone' && route.points.length > 1 ? routeMeters(route.points) : null;
   const endCardio = () => {
     if (!uid || !cardioExercise || !cardioSet || finishingRef.current) return;
     Alert.alert(`End ${cardioExercise.exerciseName}?`, 'This finishes the workout.', [
@@ -809,6 +825,7 @@ export const SessionScreen = () => {
             const draft: SetDraft = { ...(drafts[set.id] ?? toDraft(cardioExercise, set, units)), b: String(seconds) };
             logged = { ...fromDraft(cardioExercise, set, draft, units), completed: true, completedAt: Date.now() };
             // The Watch's distance so far, until its own final one comes in (it fills the entry over this).
+            logged = { ...logged, ...routeExtra(logged) };
             if (logged.distanceM === null && watchLive?.meters) logged = { ...logged, distanceM: watchLive.meters, distanceSource: 'watch' };
           }
           const next: Session = { ...current, exercises: current.exercises.map(e => (e.id === cardioExercise.id ? { ...e, sets: e.sets.map(st => (st.id === set.id ? logged : st)) } : e)) };
@@ -981,14 +998,15 @@ export const SessionScreen = () => {
         elapsedSec={elapsedSec}
         running={running}
         logged={cardioSet.completed}
-        distanceM={running && watchLive?.meters != null ? watchLive.meters : cardioSet.distanceM ?? watchLive?.meters ?? null}
+        distanceM={running && watchLive?.meters != null ? watchLive.meters : running && phoneMeters !== null && cardioSet.distanceSource !== 'watch' ? phoneMeters : cardioSet.distanceM ?? watchLive?.meters ?? phoneMeters}
         bpm={running ? fresh?.bpm ?? null : null}
         kcal={watchLive?.kcal ?? null}
         unit={units.distance}
         busy={finishing}
         onBack={() => confirmLeaveRef.current(() => navigation.goBack())}
         onStart={() => startCardioTimer(cardioSet, cardioExercise)}
-        onPause={stopCardioTimer}
+        onPause={() => stopCardioTimer(routeExtra(cardioSet))}
+        route={outdoorCardio ? route.points : null}
         onEnd={endCardio}
       />
     );

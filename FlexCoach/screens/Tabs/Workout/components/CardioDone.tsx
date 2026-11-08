@@ -19,6 +19,8 @@ import { SurfaceCard as Card } from '../../../../components/cards/SurfaceCard';
 import { BottomSheet } from '../../../../components/overlays/BottomSheet';
 import { TextField } from '../../../../components/inputs/TextField';
 import { useComfortableColumn } from '../../../../components/layout/useComfortableColumn';
+import { RouteMap } from '../../../../components/maps/RouteMap';
+import { decodeRoute } from '../../../../data/engine/route';
 import { useTheme } from '../../../../theme';
 
 const FIELD_LABEL: Record<ScanField, string> = { distance: 'Distance', calories: 'Calories', speed: 'Avg speed' };
@@ -183,6 +185,13 @@ export const CardioDone = ({ result, onDone }: { result: SessionResult; onDone: 
               </View>
             ))}
           </Card>
+        )}
+
+        {/* Outdoors, the line marking the path taken, under the table (v1 #10.8). */}
+        {kind.behind === 'map' && set.route && (
+          <View style={{ height: 200, borderRadius: 20, overflow: 'hidden', borderWidth: 1, borderColor: colors.line }}>
+            <RouteMap points={decodeRoute(set.route.line)} style={{ flex: 1 }} />
+          </View>
         )}
 
         {kind.scan && !hasScan(set) && <PrimaryButton label="Scan the console" variant="outline" icon={generalIcons.camera} busy={scanning} onPress={() => { scan().catch(() => undefined); }} />}

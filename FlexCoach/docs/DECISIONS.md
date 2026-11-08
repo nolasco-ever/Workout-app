@@ -4,6 +4,32 @@ Every decision the owner makes, newest first, with why. Open questions sit at th
 bottom until they're answered. Decisions before 2026-11-07 were recorded only in
 commit messages, `docs/RELEASES.md` and Claude's session notes.
 
+## 2026-11-08 13:00 · Outdoor routes: phone GPS, Watch GPS when there is one (10.8)
+
+- **Project:** FlexCoach
+- **Type:** functional, design and architectural
+- **Decision:** Outdoor cardio records its route with the phone's GPS by
+  default; when a Watch is tracking the workout, the Watch's GPS is used
+  instead (the phone stops once the Watch's readings come in, and the Watch's
+  whole route replaces them when its clock stops). The Watch also saves the
+  route with its workout in Health. Recording carries on with the screen off:
+  on iOS with "while using" permission and the location indicator; on Android
+  as a location foreground service with a "Recording your route"
+  notification. Maps are react-native-maps (Apple Maps on iOS, Google Maps on
+  Android, key in android/local.properties as FLEXCOACH_GOOGLE_MAPS_API_KEY).
+  The route is a line marking the path taken, simplified to about 10 m and
+  saved as an encoded polyline on the entry. The live map follows the newest
+  point and can't be panned; the prompt for location comes with Start; with
+  location refused the rings show. Without a Watch distance, the phone's GPS
+  measures the distance (a Watch or scanned distance wins). The map sits
+  under the table on the done screen and in the entry's card in History.
+- **Why:** Owner's answers: "default to the phone GPS, but if the user has a
+  watch, use the watch GPS instead"; background recording and
+  react-native-maps approved; "it needs to be a line marking the path they
+  took".
+- **Source:** feature work, v1 #10.8.
+- **Decided by:** owner.
+
 ## 2026-11-08 12:10 · Cardio done screen and console scan, as built (10.7)
 
 - **Project:** FlexCoach

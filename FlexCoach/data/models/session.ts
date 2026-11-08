@@ -46,6 +46,8 @@ export interface LoggedSet {
   distanceSource?: 'watch';
   /** Cardio: numbers read off the machine's console (v1 #10.7). Absent with no scan. */
   scan?: ConsoleScan;
+  /** Outdoor cardio: the path taken (v1 #10.8), an encoded polyline, from the phone's GPS or the Watch's. Absent indoors. */
+  route?: { line: string; source: 'phone' | 'watch' };
 }
 
 /**

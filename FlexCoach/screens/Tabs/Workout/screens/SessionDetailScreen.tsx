@@ -27,6 +27,8 @@ import { useTabScrollInset } from '../../../../navigation/useTabBarInset';
 import { SetDraft, SetRow, setLabel } from '../components/SetRow';
 import { fromDraft, toDraft, Units, unitLabels } from '../components/setDrafts';
 import { watchStats } from '../../../../data/liveActivity/watchMetrics';
+import { RouteMap } from '../../../../components/maps/RouteMap';
+import { decodeRoute } from '../../../../data/engine/route';
 
 type Params = { SessionDetailScreen: { sessionId: string; workoutName?: string } };
 
@@ -316,6 +318,12 @@ export const SessionDetail = ({ sessionId, workoutName, embedded = false }: { se
                           </View>
                         );
                       })}
+                    </View>
+                  )}
+                  {/* An outdoor run, walk or ride: the line marking the path taken (v1 #10.8). */}
+                  {isCardio(ex) && ex.sets[0]?.route && (
+                    <View style={{ height: 240, borderRadius: radius.lg, overflow: 'hidden', borderWidth: 1, borderColor: colors.line, marginTop: spacing.xs }}>
+                      <RouteMap points={decodeRoute(ex.sets[0].route.line)} style={{ flex: 1 }} />
                     </View>
                   )}
                 </Card>

@@ -1393,6 +1393,53 @@ PODS:
     - ReactCommon/turbomodule/core
     - ReactNativeDependencies
     - Yoga
+  - react-native-maps (1.29.11):
+    - react-native-maps/Maps (= 1.29.11)
+  - react-native-maps/Generated (1.29.11):
+    - hermes-engine
+    - RCTRequired
+    - RCTTypeSafety
+    - React-bridging
+    - React-Core
+    - React-Core-prebuilt
+    - React-debug
+    - React-Fabric
+    - React-featureflags
+    - React-graphics
+    - React-ImageManager
+    - React-jsi
+    - React-NativeModulesApple
+    - React-RCTFabric
+    - React-renderercss
+    - React-rendererdebug
+    - React-utils
+    - ReactCodegen
+    - ReactCommon/turbomodule/core
+    - ReactNativeDependencies
+    - Yoga
+  - react-native-maps/Maps (1.29.11):
+    - hermes-engine
+    - RCTRequired
+    - RCTTypeSafety
+    - React-bridging
+    - React-Core
+    - React-Core-prebuilt
+    - React-debug
+    - React-Fabric
+    - React-featureflags
+    - React-graphics
+    - React-ImageManager
+    - React-jsi
+    - react-native-maps/Generated
+    - React-NativeModulesApple
+    - React-RCTFabric
+    - React-renderercss
+    - React-rendererdebug
+    - React-utils
+    - ReactCodegen
+    - ReactCommon/turbomodule/core
+    - ReactNativeDependencies
+    - Yoga
   - react-native-safe-area-context (5.10.1):
     - hermes-engine
     - RCTRequired
@@ -2402,6 +2449,7 @@ DEPENDENCIES:
   - React-mutationobservernativemodule (from `../node_modules/react-native/ReactCommon/react/nativemodule/mutationobserver`)
   - react-native-bottom-tabs (from `../node_modules/react-native-bottom-tabs`)
   - react-native-image-picker (from `../node_modules/react-native-image-picker`)
+  - react-native-maps (from `../node_modules/react-native-maps`)
   - react-native-safe-area-context (from `../node_modules/react-native-safe-area-context`)
   - React-NativeModulesApple (from `../node_modules/react-native/ReactCommon/react/nativemodule/core/platform/ios`)
   - React-networking (from `../node_modules/react-native/ReactCommon/react/networking`)
@@ -2576,6 +2624,8 @@ EXTERNAL SOURCES:
     :path: "../node_modules/react-native-bottom-tabs"
   react-native-image-picker:
     :path: "../node_modules/react-native-image-picker"
+  react-native-maps:
+    :path: "../node_modules/react-native-maps"
   react-native-safe-area-context:
     :path: "../node_modules/react-native-safe-area-context"
   React-NativeModulesApple:
@@ -2749,6 +2799,7 @@ SPEC CHECKSUMS:
   React-mutationobservernativemodule: d43fab416e6059dc34ca9f4c420d74c797ff1ccb
   react-native-bottom-tabs: b565c9f906d915e74285d5daad98b3f86be70a48
   react-native-image-picker: dee7d352c77f66ec26851bd7ee4198cda02962f3
+  react-native-maps: e619930f25b4ba819b33cb7b0346fc0b30b91f2a
   react-native-safe-area-context: 4f25a679caee400840cb0f9daf21df173dd2fe68
   React-NativeModulesApple: 885f4cd7626a1ffe20e0dcd23ef8528f415795d3
   React-networking: a5e9c1939d8ee9146a34e53b571f479807c3d94e
@@ -2783,7 +2834,7 @@ SPEC CHECKSUMS:
   React-viewtransitionnativemodule: 4efffc1f835b85ea2bdb1205baa07eeb4e0ebe83
   React-webperformancenativemodule: 2caa33504c064a19f1a84721d431e5e4320dfead
   ReactAppDependencyProvider: 531dee09fa5ac21ef8a236a0c4767c3b2f9db977
-  ReactCodegen: df03d0c13f7b561fefc0aec6490e720271498f3e
+  ReactCodegen: f672970c27cc213df5df5539fa598bf4a012c13e
   ReactCommon: 7d2d036b7250e66dce71d19f47160d4b31fbb92a
   ReactNativeCameraKit: 9843fd9b6e089e4b203983ed5402c2fdd2b0663b
   ReactNativeDependencies: 94c922c39e0e6150ee9ad05e2ca1946e0ef55783

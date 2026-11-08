@@ -1,5 +1,5 @@
-import React, { useEffect } from 'react';
-import { TouchableOpacity, View } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { StyleSheet, TouchableOpacity, View } from 'react-native';
 import Animated, { cancelAnimation, Easing, useAnimatedStyle, useSharedValue, withRepeat, withSequence, withTiming } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { LiquidGlassView, isLiquidGlassSupported } from '@callstack/liquid-glass';
@@ -10,6 +10,7 @@ import { CustomText } from '../../../../components/text/customText';
 import { Icon } from '../../../../components/icons/Icon';
 import { cardioControlIcons, cardioIcons, directionIcons } from '../../../../components/icons/icon-library';
 import { GlassIconButton } from '../../../../components/buttons/GlassIconButton';
+import { RouteMap } from '../../../../components/maps/RouteMap';
 import { useTheme } from '../../../../theme';
 
 interface Props {
@@ -25,6 +26,8 @@ interface Props {
   kcal: number | null;
   unit: DistanceUnit;
   busy: boolean;
+  /** Outdoors, the route so far (v1 #10.8): drawn behind the panel once it has a point. Null indoors. */
+  route: { lat: number; lon: number }[] | null;
   onBack: () => void;
   onStart: () => void;
   onPause: () => void;
@@ -34,10 +37,10 @@ interface Props {
 const LABEL: Record<CardioStat, string> = { distance: 'Distance', pace: 'Pace', speed: 'Speed', heartRate: 'Heart rate', calories: 'Calories' };
 
 /** A glass surface on iOS 26, the raised surface elsewhere (Android, older iOS). */
-const Glass = ({ style, children }: { style: object; children: React.ReactNode }) => {
+const Glass = ({ style, children, onLayout }: { style: object; children: React.ReactNode; onLayout?: (height: number) => void }) => {
   const { colors } = useTheme();
   return (
-    <LiquidGlassView effect="regular" style={[style, { borderWidth: 1, borderColor: colors.line }, !isLiquidGlassSupported && { backgroundColor: colors.surface }]}>
+    <LiquidGlassView effect="regular" onLayout={onLayout ? e => onLayout(e.nativeEvent.layout.height) : undefined} style={[style, { borderWidth: 1, borderColor: colors.line }, !isLiquidGlassSupported && { backgroundColor: colors.surface }]}>
       {children}
     </LiquidGlassView>
   );
@@ -50,7 +53,7 @@ const Glass = ({ style, children }: { style: object; children: React.ReactNode }
  * this kind, and round Start, Pause and End. Outdoor kinds get the map behind
  * the panel in 10.8; until then they show the rings too.
  */
-export const CardioSession = ({ name, kind, elapsedSec, running, logged, distanceM, bpm, kcal, unit, busy, onBack, onStart, onPause, onEnd }: Props) => {
+export const CardioSession = ({ name, kind, elapsedSec, running, logged, distanceM, bpm, kcal, unit, busy, route, onBack, onStart, onPause, onEnd }: Props) => {
   const { colors, spacing, fonts } = useTheme();
   const insets = useSafeAreaInsets();
   const started = running || elapsedSec > 0 || logged;
@@ -129,10 +132,15 @@ export const CardioSession = ({ name, kind, elapsedSec, running, logged, distanc
     { size: 176, opacity: 0.3 },
   ];
 
+  const [panelHeight, setPanelHeight] = useState(320);
+  const showMap = kind.behind === 'map' && !!route && route.length > 0;
+
   return (
     <View style={{ flex: 1, backgroundColor: colors.ground }}>
+      {/* Outdoors the map fills the screen behind the panel; until the first reading (or with location off), the rings. */}
+      {showMap && <RouteMap points={route!} live style={StyleSheet.absoluteFill} padding={{ top: insets.top + 72, right: 32, bottom: panelHeight + 24, left: 32 }} />}
       {/* The kind's icon in rings; decoration, so screen readers skip it. */}
-      <View importantForAccessibility="no-hide-descendants" accessibilityElementsHidden style={{ position: 'absolute', left: 0, right: 0, top: insets.top + 56, height: 400, alignItems: 'center', justifyContent: 'center' }}>
+      {!showMap && <View importantForAccessibility="no-hide-descendants" accessibilityElementsHidden style={{ position: 'absolute', left: 0, right: 0, top: insets.top + 56, height: 400, alignItems: 'center', justifyContent: 'center' }}>
         <Animated.View style={[{ position: 'absolute', width: 340, height: 340, alignItems: 'center', justifyContent: 'center' }, ringsStyle]}>
           <View style={{ position: 'absolute', width: 340, height: 340, borderRadius: 170, backgroundColor: colors.accent, opacity: 0.08 }} />
           {rings.map(r => (
@@ -142,7 +150,7 @@ export const CardioSession = ({ name, kind, elapsedSec, running, logged, distanc
         <View style={{ width: 120, height: 120, borderRadius: 60, backgroundColor: colors.accentTint, alignItems: 'center', justifyContent: 'center' }}>
           <Icon icon={cardioIcons[kind.glyph]} size={64} color={colors.accent} weight="fill" />
         </View>
-      </View>
+      </View>}
 
       <View style={{ position: 'absolute', left: spacing.lg, right: spacing.lg, top: insets.top, height: 56, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: spacing.sm }}>
         <GlassIconButton icon={directionIcons.angleLeft} nudgeX={-1} accessibilityLabel="Back" onPress={onBack} />
@@ -152,7 +160,7 @@ export const CardioSession = ({ name, kind, elapsedSec, running, logged, distanc
         <View style={{ width: 44 }} />
       </View>
 
-      <Glass style={{ position: 'absolute', left: spacing.sm, right: spacing.sm, bottom: spacing.md + insets.bottom, borderRadius: 32, paddingTop: spacing.lg, paddingBottom: spacing.xl, paddingHorizontal: spacing.md, gap: spacing.md }}>
+      <Glass onLayout={h => setPanelHeight(h)} style={{ position: 'absolute', left: spacing.sm, right: spacing.sm, bottom: spacing.md + insets.bottom, borderRadius: 32, paddingTop: spacing.lg, paddingBottom: spacing.xl, paddingHorizontal: spacing.md, gap: spacing.md }}>
         <CustomText
           centered
           accessibilityLabel={`Time ${formatDuration(elapsedSec)}`}
