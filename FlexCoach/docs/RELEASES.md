@@ -3,6 +3,27 @@
 Newest build first. **Store notes** is the tester-facing text, identical for
 TestFlight and Google Play (under 500 characters). **Details** is for us.
 
+## Build 21 (2026-11-08)
+
+### Store notes
+
+Build 21
+
+• Cardio is its own thing: add it to a plan by itself, with its own full-screen view and done screen
+• Outdoor runs, walks and rides save your route map. Buddies only see it if you turn on Route maps
+• Scan a machine's console to fill distance, calories and speed
+• Several workouts or cardio on one day, done in any order
+• Existing plans are split automatically; a notice shows what moved
+• Live heart rate and calories from your Watch
+
+### Details
+
+- Commits 8d7d0a1..HEAD: all of v1 #10 (10.1 to 10.11). Workout types and filtered pickers; quick workout asks the kind; cardio as its own plan item; several items a day (schedule model stored as maps, both editors, missed day and Not today handled as a day, reminders naming every item); Workout tab rows; the cardio screen with the Watch's live heart rate, calories and distance; the cardio done screen and console scan; outdoor GPS routes (phone by default, the Watch's when tracking) on the cardio, done and History screens; the reusable Notice sheet; Route maps sharing (off by default, 200 m hidden at each end); the automatic plan split with its Notice. Legacy Swap is gone.
+- Native: new local modules NativeTextScan (Vision on iOS, ML Kit bundled on Android) and NativeRouteTracker (CoreLocation with background updates on iOS, a location foreground service on Android); react-native-maps 1.29.11 (Google Maps key from android/local.properties); Watch: live stats and GPS route to the phone, route saved to Health; the Watch now asks the phone for the workout while "Starting on your phone" shows. iOS adds the location background mode and location text; Android adds location and foreground-service permissions. No Firestore rules change.
+- What to test: the full list from 2026-11-08 (plan split on an existing plan first; then the cardio screen with and without a Watch, a console scan, an outdoor run with the screen locked, Route maps on and off with a buddy, both Notices).
+- Store review: Play Console needs the location foreground service declared (likely a short video); Apple reads the new location and camera texts.
+- Not yet proven on hardware: any of the new native code, the Watch changes, the Android map.
+
 ## Build 20 (2026-10-27)
 
 ### Store notes
