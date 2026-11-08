@@ -95,7 +95,7 @@ Design (canvas first)
           editors, cycle generation, missed day handled as a whole.
     - [x] 10.5 Workout tab: a day's items as rows that open the preview; any
           order.
-    - [ ] 10.6 The cardio screen: one component, glass bottom panel, stats per
+    - [x] 10.6 The cardio screen: one component, glass bottom panel, stats per
           kind (heart rate and calories on all), indoor graphic, Start/Pause/End.
     - [ ] 10.7 Cardio done screen and console scan (machines only; edit and
           remove scanned numbers).

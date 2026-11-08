@@ -28,6 +28,10 @@ import { currentDeviceToken } from '../../../../data/notifications/pushService';
 import { buildLiveActivityState, describeDone, describeFinish } from '../components/liveActivityState';
 import { droppedLine, finishPrompt } from '../components/finishPrompt';
 import { onWatchDistance, takeWatchDistance } from '../../../../data/liveActivity/watchDistance';
+import { WatchLive, freshWatchLive, onWatchLive } from '../../../../data/liveActivity/watchLive';
+import { cardioScreenKind } from '../../../../data/engine/cardioScreen';
+import { CardioSession } from '../components/CardioSession';
+import { useTick } from '../components/SessionHeader';
 import { cardioDone, cardioStats } from '../../../../data/engine/stats';
 import { planRestOverNotification, planTimerDoneNotification, withPrefDefaults } from '../../../../data/engine/notifications';
 import { cancelRestOver, cancelTimerDone, exactAlarmsAllowed, openExactAlarmSettings, scheduleRestOver, scheduleTimerDone } from '../../../../data/notifications/notificationService';
@@ -486,12 +490,13 @@ export const SessionScreen = () => {
       ],
     );
   };
-  const doFinish = async () => {
+  // `current`: the session as just changed, when the caller logged something in the same go (End on the cardio screen).
+  const doFinish = async (current: Session = session) => {
     if (!uid || finishingRef.current) return;
     finishingRef.current = true;
     setFinishing(true);
     try {
-      const result = await finishSession(uid, profile, session, cycle);
+      const result = await finishSession(uid, profile, current, cycle);
       // The activity's last word: the summary lingers on the lock screen while the screen goes.
       activityEndedRef.current = true;
       liveActivity.end(
@@ -775,6 +780,51 @@ export const SessionScreen = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [restStartedAt, restFor, session.id, restOverEnabled]);
 
+  // The cardio screen (v1 #10.6): a session that is one cardio entry, a cardio plan item or a quick cardio with one
+  // exercise in it, runs full screen instead of the exercise list.
+  const cardioExercise = session.exercises.length === 1 && session.exercises[0].measurement === 'distance_time' && session.exercises[0].sets.length > 0 ? session.exercises[0] : null;
+  const cardioSet = cardioExercise?.sets[0] ?? null;
+  const [watchLive, setWatchLive] = useState<WatchLive | null>(null);
+  useEffect(() => {
+    if (!cardioSet) return;
+    return onWatchLive((setId, live) => {
+      if (setId === cardioSet.id) setWatchLive(live);
+    });
+  }, [cardioSet?.id]);
+  // The clock and the heart rate's freshness move on every second while it runs.
+  useTick(cardioExercise && cardioTimer ? 1000 : 0);
+  const endCardio = () => {
+    if (!uid || !cardioExercise || !cardioSet || finishingRef.current) return;
+    Alert.alert(`End ${cardioExercise.exerciseName}?`, 'This finishes the workout.', [
+      { text: 'Keep going', style: 'cancel' },
+      {
+        text: 'End',
+        onPress: async () => {
+          const seconds = cardioTimer?.setId === cardioSet.id ? timerElapsed(cardioTimer) : Math.max(0, Math.round(Number(drafts[cardioSet.id]?.b) || 0));
+          setCardioTimer(null);
+          const current = sessionRef.current;
+          const set = current.exercises[0]?.sets.find(st => st.id === cardioSet.id) ?? cardioSet;
+          let logged = set;
+          if (!set.completed) {
+            const draft: SetDraft = { ...(drafts[set.id] ?? toDraft(cardioExercise, set, units)), b: String(seconds) };
+            logged = { ...fromDraft(cardioExercise, set, draft, units), completed: true, completedAt: Date.now() };
+            // The Watch's distance so far, until its own final one comes in (it fills the entry over this).
+            if (logged.distanceM === null && watchLive?.meters) logged = { ...logged, distanceM: watchLive.meters, distanceSource: 'watch' };
+          }
+          const next: Session = { ...current, exercises: current.exercises.map(e => (e.id === cardioExercise.id ? { ...e, sets: e.sets.map(st => (st.id === set.id ? logged : st)) } : e)) };
+          sessionRef.current = next;
+          setSession(next);
+          try {
+            if (logged !== set) await logSet(uid, next, cardioExercise.id, logged);
+            await doFinish(next);
+          } catch (err) {
+            console.warn('end cardio failed', err);
+          }
+        },
+      },
+    ]);
+  };
+
   const headerRow = (
     <>
         {/* The top inset by hand: beside a folding phone's status column the inset is 0, so the row drops to the Dynamic Island's level, clear of the round corners. */}
@@ -920,6 +970,30 @@ export const SessionScreen = () => {
   // Tent mode: one row of header, the progress strip, then the muscle map, the exercise's details and the way between
   // exercises down the left, and the sets filling the right. No tab bar, so the content runs to the edges; only the
   // status rail is kept clear, along whichever long edge it landed on (a small bottom inset is the home indicator, run under).
+  if (cardioExercise && cardioSet) {
+    const running = cardioTimer?.setId === cardioSet.id;
+    const elapsedSec = running ? timerElapsed(cardioTimer!) : Math.max(0, Math.round(Number(drafts[cardioSet.id]?.b) || cardioSet.durationSec || 0));
+    const fresh = freshWatchLive(watchLive, Date.now());
+    return (
+      <CardioSession
+        name={cardioExercise.exerciseName}
+        kind={cardioScreenKind(cardioExercise.exerciseId)}
+        elapsedSec={elapsedSec}
+        running={running}
+        logged={cardioSet.completed}
+        distanceM={running && watchLive?.meters != null ? watchLive.meters : cardioSet.distanceM ?? watchLive?.meters ?? null}
+        bpm={running ? fresh?.bpm ?? null : null}
+        kcal={watchLive?.kcal ?? null}
+        unit={units.distance}
+        busy={finishing}
+        onBack={() => confirmLeaveRef.current(() => navigation.goBack())}
+        onStart={() => startCardioTimer(cardioSet, cardioExercise)}
+        onPause={stopCardioTimer}
+        onEnd={endCardio}
+      />
+    );
+  }
+
   if (tent) {
     const railBottom = insets.bottom >= 60 ? insets.bottom : 0;
     // The map takes what the header (56), the strip (30), two lines of details (44), previous / next (52) and the gaps leave.

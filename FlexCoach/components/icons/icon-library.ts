@@ -1,5 +1,14 @@
 import {
   AnchorIcon,
+  BicycleIcon,
+  HeartbeatIcon,
+  PersonSimpleSkiIcon,
+  PersonSimpleSwimIcon,
+  PersonSimpleWalkIcon,
+  SneakerMoveIcon,
+  StairsIcon,
+  StopIcon,
+  WavesIcon,
   ArrowCircleRightIcon,
   ArrowsLeftRightIcon,
   BarbellIcon,
@@ -196,6 +205,26 @@ export const generalIcons = {
   warning: WarningIcon,
   xMark: XIcon,
   xMarkCircle: XCircleIcon,
+};
+
+/** A cardio kind's glyph (v1 #10.6), by the name data/engine/cardioScreen.ts gives it. */
+export const cardioIcons = {
+  run: PersonSimpleRunIcon,
+  walk: PersonSimpleWalkIcon,
+  bike: BicycleIcon,
+  elliptical: SneakerMoveIcon,
+  stairs: StairsIcon,
+  rower: WavesIcon,
+  ski: PersonSimpleSkiIcon,
+  swim: PersonSimpleSwimIcon,
+  cardio: HeartbeatIcon,
+};
+
+/** The cardio screen's round Start, Pause and End (v1 #10.6), drawn solid as on the board. */
+export const cardioControlIcons = {
+  start: withWeight(PlayIcon, 'fill'),
+  pause: withWeight(PauseIcon, 'fill'),
+  end: withWeight(StopIcon, 'fill'),
 };
 
 export const tabIcons = {

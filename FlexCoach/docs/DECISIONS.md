@@ -4,6 +4,34 @@ Every decision the owner makes, newest first, with why. Open questions sit at th
 bottom until they're answered. Decisions before 2026-11-07 were recorded only in
 commit messages, `docs/RELEASES.md` and Claude's session notes.
 
+## 2026-11-08 10:50 · The cardio screen and the Watch's live numbers (10.6)
+
+- **Project:** FlexCoach
+- **Type:** design, functional and architectural
+- **Decision:** A session that is one cardio entry (a cardio plan item, or a
+  quick cardio with one exercise) runs on its own full screen, built from the
+  signed-off boards: the name in a glass pill, the kind's icon in rings that
+  pulse with the heart rate, and one glass panel (solid on Android) with the
+  time, the kind's stats and round Start, Pause and End. The Watch now sends
+  heart rate, calories and distance to the phone every 3 seconds while the
+  clock runs; they are only shown, never queued or saved. For what the boards
+  don't draw:
+  - No Watch, or Android: stats show "—" and the rings stay still.
+  - Paused: Resume and End. End asks first ("This finishes the workout.").
+  - The clock counts up; the "Time's up" alert at the target stays.
+  - Outdoor kinds show the rings until the map (10.8).
+  - Back leaves it running, like a strength workout.
+  - Cardio inside older strength workouts keeps its card until 10.11.
+  - End goes to today's done screen until 10.7; ship 10.6 and 10.7 together.
+  - Swimming is added as a kind; the Watch records it as general cardio for
+    now (it needs a pool length to count laps), so its distance stays "—".
+  - The live numbers ride the existing Watch request channel, so the native
+    module's interface (and its generated code) is unchanged.
+- **Why:** Owner approved the proposal: "yes go ahead, include the watch
+  stream".
+- **Source:** feature work, v1 #10.6.
+- **Decided by:** owner (gaps proposed by Claude).
+
 ## 2026-11-08 10:05 · Workout tab: today's items as rows (10.5)
 
 - **Project:** FlexCoach

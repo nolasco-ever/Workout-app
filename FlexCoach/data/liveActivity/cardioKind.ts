@@ -9,7 +9,7 @@ import { canonicalExerciseId } from '../catalog/exerciseIds';
  * The exercise's name says indoor or outdoor (owner, 2026-10-25), so nobody
  * is asked. Ids from both libraries; anything else is general cardio.
  */
-export type CardioActivity = 'running' | 'walking' | 'cycling' | 'elliptical' | 'stairClimbing' | 'rowing' | 'crossCountrySkiing' | 'handCycling' | 'jumpRope' | 'mixedCardio';
+export type CardioActivity = 'running' | 'walking' | 'cycling' | 'elliptical' | 'stairClimbing' | 'rowing' | 'crossCountrySkiing' | 'handCycling' | 'jumpRope' | 'swimming' | 'mixedCardio';
 
 export type CardioKind = { activity: CardioActivity; outdoor: boolean; distance: boolean };
 
@@ -51,6 +51,10 @@ const KINDS: Record<string, CardioKind> = {
   x_Running_Outdoor: outdoorRun,
   x_Walking_Outdoor: outdoorWalk,
   x_Ski_Erg: indoor('crossCountrySkiing'),
+  // The Watch can't count laps without a pool length, so a swim has no measured distance yet.
+  x_Swimming: indoor('swimming'),
+  // Skating rides outdoors (owner, 2026-11-07).
+  Skating: outdoorRide,
 };
 
 /** The exercise's own id first (an old id can mean something its new twin doesn't), then its twin's. */
