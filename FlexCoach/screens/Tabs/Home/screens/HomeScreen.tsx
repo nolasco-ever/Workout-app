@@ -42,6 +42,7 @@ import { useBuddyPlans } from '../../../../data/hooks/useBuddyPlans';
 import { ActivityRow } from '../../../../components/buddies/ActivityRow';
 import { Avatar } from '../../../../components/buddies/Avatar';
 import { BuddyRoutes } from '../../../Buddies/routes';
+import { planItemsLabel } from '../../../../data/engine/planItems';
 
 const title = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
 
@@ -355,7 +356,7 @@ export const HomeScreen = () => {
                       <Avatar uri={sp.ownerPhoto} name={sp.ownerName} size={32} />
                       <View style={{ flex: 1 }}>
                         <CustomText variant="body" numberOfLines={1}>{sp.plan.name}</CustomText>
-                        <CustomText variant="caption" color={colors.inkMuted} numberOfLines={1}>by {sp.ownerName ?? 'a buddy'} · {sp.plan.workouts.length} workout{sp.plan.workouts.length === 1 ? '' : 's'}</CustomText>
+                        <CustomText variant="caption" color={colors.inkMuted} numberOfLines={1}>by {sp.ownerName ?? 'a buddy'} · {planItemsLabel(sp.plan)}</CustomText>
                       </View>
                     </TouchableOpacity>
                 ))}

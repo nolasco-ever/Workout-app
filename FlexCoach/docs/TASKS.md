@@ -89,7 +89,7 @@ Design (canvas first)
           strength, plyometrics, powerlifting, strongman and timed drills).
     - [x] 10.2 Quick workout asks the type on its own screen, then the same
           filtered picker.
-    - [ ] 10.3 Cardio as its own plan item ("Add cardio exercise"); its target
+    - [x] 10.3 Cardio as its own plan item ("Add cardio exercise"); its target
           never progresses.
     - [ ] 10.4 Several items per day: schedule model, fixed-weekday and rotation
           editors, cycle generation, missed day handled as a whole.

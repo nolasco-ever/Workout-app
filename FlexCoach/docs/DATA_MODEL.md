@@ -19,7 +19,7 @@ data/
 | Term       | Meaning                                                                 |
 |------------|-------------------------------------------------------------------------|
 | Exercise   | One movement from the catalog or a user's custom list.                  |
-| Workout    | A day template inside a plan, e.g. "Push". Holds ordered exercises with targets. Has a `type`, strength or stretching (v1 #10), and its picker only offers that kind (`catalog/exerciseKinds`); missing on workouts made before types. |
+| Workout    | A day template inside a plan, e.g. "Push". Holds ordered exercises with targets. Has a `type`, strength or stretching (v1 #10), and its picker only offers that kind (`catalog/exerciseKinds`); missing on workouts made before types. A **cardio item** is a workout of type `cardio` holding exactly one cardio exercise and named after it: added to a plan on its own and never shown as a workout (`engine/planItems`); its target never progresses. |
 | Plan       | A set of workouts plus a schedule. One plan is active at a time.        |
 | Cycle      | One pass through the schedule, materialised as dated occurrences. The "sprint". |
 | Occurrence | One planned day in a cycle: a workout or a rest day, with a status.     |

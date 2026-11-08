@@ -220,10 +220,13 @@ describe('progressExercise: timed and cardio', () => {
     expect(progressExercise(plank, logs, null, 'kg').target).toMatchObject({ durationSec: 60, reps: null });
   });
 
-  it('repeats last cardio distance and duration, plus the optional step', () => {
+  it('keeps a cardio target where it was set, whatever was done (owner, 2026-11-07)', () => {
     const run = entry({ measurement: 'distance_time', sets: 1, startingDistanceM: 3000, startingDurationSec: 1200, progression: { weightIncrementKg: 0, repStep: 0, durationStepSec: 0, distanceStepM: 200 } });
     const logs = [lastSession({ distanceM: 3000, durationSec: 1200 }, [set({ weightKg: null, reps: null, distanceM: 3200, durationSec: 1250 })], run)];
-    expect(progressExercise(run, logs, null, 'kg').target).toMatchObject({ distanceM: 3400, durationSec: 1250 });
+    const p = progressExercise(run, logs, null, 'kg');
+    expect(p.target).toMatchObject({ distanceM: 3000, durationSec: 1200 });
+    expect(p.change).toBe('hold');
+    expect(p.did).toMatchObject({ distanceM: 3200, durationSec: 1250 });
   });
 });
 

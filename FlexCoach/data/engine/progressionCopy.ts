@@ -45,7 +45,8 @@ export const describeProgression = (p: ExerciseProgression, unit: WeightUnit): {
       const held = formatDuration(p.from?.durationSec ?? p.target.durationSec);
       return p.change === 'increase' ? `You held ${held} every time in ${hit}` : p.change === 'drop' ? `You fell short of ${held} in ${missed}` : 'Same target as last cycle';
     }
-    if (p.measurement === 'distance_time') return p.change === 'increase' ? 'A step further after a completed cycle' : 'Repeats what you last did';
+    // A cardio target stays where it was set (owner, 2026-11-07).
+    if (p.measurement === 'distance_time') return 'Same target as in your plan';
     const reps = p.from ? targetRepsLabel(p.from) : targetRepsLabel(p.target);
     // Say just what was missed (owner, 2026-11-07): the reps, the weight, or both.
     if (p.verdict === 'missed' && (p.change === 'hold' || p.change === 'drop')) {

@@ -29,8 +29,8 @@ import { KG_PER_LB } from './units';
  * Weights still belong to each set, so someone who ramps 25, 30, 35 keeps
  * ramping instead of being pushed to 40 on every set. Bodyweight reps grow
  * past the top of the range instead of adding weight. Timed holds add a
- * step when every set of every session reached the target; cardio repeats
- * the last completed distance and duration plus the optional step.
+ * step when every set of every session reached the target. A cardio target
+ * never moves on its own: it stays where it was set (owner, 2026-11-07).
  */
 
 export type ProgressionChange = 'start' | 'hold' | 'increase' | 'climb' | 'drop';
@@ -245,16 +245,17 @@ export const progressExercise = (prescribed: WorkoutExercise, logs: SessionExerc
       const last = done[done.length - 1];
       const lastDistance = maxOf(last.map(s => s.distanceM)) ?? from.distanceM ?? entry.startingDistanceM;
       const lastDuration = maxOf(last.map(s => s.durationSec)) ?? from.durationSec ?? entry.startingDurationSec;
+      // The target stays where it was set (owner, 2026-11-07): the plan's own target when it has one, else the one it had.
       const target: SetTarget = {
         sets: entry.sets,
         reps: null,
         weightKg: null,
-        durationSec: lastDuration,
-        distanceM: lastDistance !== null ? lastDistance + p.distanceStepM : null,
+        durationSec: entry.startingDurationSec ?? from.durationSec,
+        distanceM: entry.startingDistanceM ?? from.distanceM,
       };
       const did: SetTarget = { sets: entry.sets, reps: null, weightKg: null, durationSec: lastDuration, distanceM: lastDistance };
-      // Cardio has no bar to clear, so no verdict: the next step is simply what was done plus the step.
-      return summary(entry, from, target, p.distanceStepM > 0 && lastDistance !== null ? 'increase' : 'hold', judged.length, judged.length, null, did);
+      // Cardio has no bar to clear, so no verdict.
+      return summary(entry, from, target, 'hold', judged.length, judged.length, null, did);
     }
   }
 };

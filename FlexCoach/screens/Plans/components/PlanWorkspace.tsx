@@ -223,7 +223,7 @@ export const PlanWorkspace = ({ mode, initial = 'basics', initialWorkoutId = nul
             <View style={{ ...slotStyle(1), borderRightWidth: openWorkout ? 1 : 0, borderRightColor: colors.line }}>
               <ColumnHeader title={titleOf} />
               {section === 'basics' && <PlanBasicsStep mode={mode} embedded />}
-              {section === 'workouts' && <PlanWorkoutsStep mode={mode} embedded onOpenWorkout={setWorkoutId} openWorkoutId={openWorkout} />}
+              {section === 'workouts' && <PlanWorkoutsStep mode={mode} embedded onOpenWorkout={(id, entry) => { setWorkoutId(id); setEntryId(entry ?? null); }} openWorkoutId={openWorkout} />}
               {section === 'schedule' && <PlanScheduleStep mode={mode} embedded />}
               {section === 'review' && (
                 <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ padding: spacing.lg, gap: spacing.lg }}>

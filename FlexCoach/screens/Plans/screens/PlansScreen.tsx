@@ -23,6 +23,7 @@ import { useLayoutFamily } from '../../../components/layout/useLayoutFamily';
 import { useBookGutter } from '../../../components/layout/useBookGutter';
 
 import { PlanOverview } from './PlanOverviewScreen';
+import { planItemsLabel } from '../../../data/engine/planItems';
 
 const PlanRow = ({ plan, selected = false, onPress }: { plan: Plan; selected?: boolean; onPress: () => void }) => {
   const { colors, spacing } = useTheme();
@@ -31,7 +32,7 @@ const PlanRow = ({ plan, selected = false, onPress }: { plan: Plan; selected?: b
       <View style={{ flex: 1 }}>
         <CustomText variant="bodyStrong">{plan.name || 'Untitled plan'}</CustomText>
         <CustomText variant="caption" color={colors.inkMuted}>
-          {plan.sharedFrom ? `${plan.sharedFrom.synced ? 'in sync with' : 'by'} ${plan.sharedFrom.displayName ?? 'a buddy'} · ` : ''}{plan.workouts.length} workout{plan.workouts.length === 1 ? '' : 's'} · {describeCycle(plan)}{plan.visibleToBuddies ? ' · shared' : ''}
+          {plan.sharedFrom ? `${plan.sharedFrom.synced ? 'in sync with' : 'by'} ${plan.sharedFrom.displayName ?? 'a buddy'} · ` : ''}{planItemsLabel(plan)} · {describeCycle(plan)}{plan.visibleToBuddies ? ' · shared' : ''}
         </CustomText>
       </View>
       <Icon icon={directionIcons.angleRight} color={colors.inactive} size={20} />

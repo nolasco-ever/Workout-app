@@ -15,6 +15,7 @@ import { planRepository } from '../repositories/planRepository';
 import { cycleRepository } from '../repositories/cycleRepository';
 import { notificationRepository } from '../repositories/notificationRepository';
 import { NotificationTarget, PersonalRecord, WeightUnit } from '../models';
+import { planItemsLabel } from '../engine/planItems';
 
 /**
  * Buddies: the Iron Card people scan to add each other, the summary each
@@ -302,7 +303,7 @@ export const afterAchievementsUnlocked = async (uid: Id, profile: UserProfile | 
 export const setPlanVisibleToBuddies = async (uid: Id, profile: UserProfile | null, plan: Plan, visible: boolean): Promise<void> => {
   await planRepository.setVisibleToBuddies(uid, plan.id, visible);
   if (visible && !plan.visibleToBuddies) {
-    const workouts = `${plan.workouts.length} workout${plan.workouts.length === 1 ? '' : 's'}`;
+    const workouts = planItemsLabel(plan);
     await recordActivity(uid, `plan_shared:${plan.id}`, 'plan_shared', `Shared a plan: ${plan.name}`, workouts);
     await notifyBuddies(uid, plan.id, 'buddy_plan_shared', `${firstName(profile?.displayName)} shared a plan: ${plan.name}`, `${workouts}. Use it in sync or save a copy.`, {
       screen: 'buddy_plan',

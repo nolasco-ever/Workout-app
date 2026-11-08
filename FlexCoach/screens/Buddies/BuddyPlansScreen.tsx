@@ -14,6 +14,7 @@ import { Avatar } from '../../components/buddies/Avatar';
 import { useComfortableColumn } from '../../components/layout/useComfortableColumn';
 import { useTheme } from '../../theme';
 import { BuddyRoutes } from './routes';
+import { planItemsLabel } from '../../data/engine/planItems';
 
 /** Every plan your buddies have chosen to share. Tap one to look through it and save a copy. */
 export const BuddyPlansScreen = () => {
@@ -67,7 +68,7 @@ export const BuddyPlansScreen = () => {
                 <View style={{ flex: 1 }}>
                   <CustomText variant="bodyStrong">{s.plan.name}</CustomText>
                   <CustomText variant="caption" color={colors.inkMuted}>
-                    by {s.ownerName ?? 'a buddy'} · {s.plan.workouts.length} workout{s.plan.workouts.length === 1 ? '' : 's'} · {describeCycle(s.plan)}
+                    by {s.ownerName ?? 'a buddy'} · {planItemsLabel(s.plan)} · {describeCycle(s.plan)}
                   </CustomText>
                 </View>
                 <Icon icon={directionIcons.angleRight} size={20} color={colors.inactive} />

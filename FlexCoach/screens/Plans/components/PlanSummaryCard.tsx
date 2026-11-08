@@ -14,6 +14,7 @@ import { useTheme } from '../../../theme';
 import { PlansStackParams } from '../routes';
 import { cycleLengthDays, describeEntry, GOAL_LABEL, muscleCoverage, scheduleRows } from './planSummary';
 import { useLayoutFamily } from '../../../components/layout/useLayoutFamily';
+import { isCardioItem } from '../../../data/engine/planItems';
 
 const title = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
 
@@ -38,7 +39,7 @@ const WorkoutRow = ({ workout, first }: { workout: Workout; first: boolean }) =>
         <View style={{ flex: 1 }}>
           <CustomText variant="bodyStrong">{workout.name || 'Untitled'}</CustomText>
         </View>
-        <CustomText variant="body" color={colors.inkMuted}>{count} exercise{count === 1 ? '' : 's'}</CustomText>
+        <CustomText variant="body" color={colors.inkMuted}>{isCardioItem(workout) && workout.exercises[0] ? describeEntry(workout.exercises[0], unit, dist) : `${count} exercise${count === 1 ? '' : 's'}`}</CustomText>
         {count > 0 && <Icon icon={open ? directionIcons.angleUp : directionIcons.angleDown} size={18} color={colors.inactive} />}
       </TouchableOpacity>
       {open &&

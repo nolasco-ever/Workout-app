@@ -53,8 +53,13 @@ export interface WorkoutExercise {
 export const wantsWarmup = (entry: Pick<WorkoutExercise, 'measurement' | 'warmup'>): boolean =>
   entry.measurement === 'weight_reps' && entry.warmup !== false;
 
-/** What a workout holds (v1 #10): its exercise picker only offers this kind. Cardio is added to a plan on its own. */
-export type WorkoutType = 'strength' | 'stretching';
+/**
+ * What a workout holds (v1 #10): its exercise picker only offers this kind.
+ * 'cardio' is a cardio item, added to a plan on its own: exactly one cardio
+ * exercise, named after it, never shown or called a workout (owner, 2026-11-07).
+ * It is a workout underneath so scheduling, sessions and history need no second path.
+ */
+export type WorkoutType = 'strength' | 'stretching' | 'cardio';
 
 /** One training day template, e.g. "Push" or "Full Body A". */
 export interface Workout {

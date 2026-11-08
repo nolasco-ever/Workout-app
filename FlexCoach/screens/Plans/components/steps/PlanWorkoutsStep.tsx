@@ -11,7 +11,10 @@ import { SurfaceCard } from '../../../../components/cards/SurfaceCard';
 import { TextField } from '../../../../components/inputs/TextField';
 import { ChoiceChips } from '../../../../components/inputs/ChoiceChips';
 import { PrimaryButton } from '../../../../components/buttons/PrimaryButton';
-import { Icon } from '../../../../components/icons/Icon';
+import { Icon, IconSource } from '../../../../components/icons/Icon';
+import { useAuth } from '../../../../data/auth/AuthProvider';
+import { isCardioItem } from '../../../../data/engine/planItems';
+import { describeEntry } from '../planSummary';
 import { generalIcons } from '../../../../components/icons/icon-library';
 import { useTheme } from '../../../../theme';
 import { EditorMode, PlansStackParams } from '../../routes';
@@ -26,7 +29,8 @@ const TYPES: { value: WorkoutType; label: string }[] = [
   { value: 'strength', label: 'Strength' },
   { value: 'stretching', label: 'Stretching' },
 ];
-const TYPE_ICON = { strength: generalIcons.dumbbell, stretching: generalIcons.stretching } as const;
+const TYPE_ICON: Record<WorkoutType, IconSource> = { strength: generalIcons.dumbbell, stretching: generalIcons.stretching, cardio: generalIcons.cardio };
+const TYPE_LABEL: Record<WorkoutType, string> = { strength: 'Strength', stretching: 'Stretching', cardio: 'Cardio' };
 
 /** A workout's type as a small tag on its row. */
 const TypeTag = ({ type }: { type: WorkoutType }) => {
@@ -34,16 +38,19 @@ const TypeTag = ({ type }: { type: WorkoutType }) => {
   return (
     <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4, alignSelf: 'flex-start', backgroundColor: colors.surfaceRaised, borderRadius: radius.pill, paddingHorizontal: spacing.sm, paddingVertical: 2 }}>
       <Icon icon={TYPE_ICON[type]} size={13} color={colors.inkMuted} />
-      <CustomText variant="label" color={colors.inkMuted}>{TYPES.find(t => t.value === type)?.label}</CustomText>
+      <CustomText variant="label" color={colors.inkMuted}>{TYPE_LABEL[type]}</CustomText>
     </View>
   );
 };
 
 /** The step itself: its own screen on a phone, a pane of the workspace on a wide window. */
-export const PlanWorkoutsStep = ({ mode, embedded = false, onOpenWorkout, openWorkoutId = null }: { mode: EditorMode; embedded?: boolean; /** Where a tapped workout goes on a wide window: the workspace's editor column rather than a pushed screen. */ onOpenWorkout?: (workoutId: string) => void; openWorkoutId?: string | null }) => {
+export const PlanWorkoutsStep = ({ mode, embedded = false, onOpenWorkout, openWorkoutId = null }: { mode: EditorMode; embedded?: boolean; /** Where a tapped workout goes on a wide window: the workspace's editor column rather than a pushed screen; a cardio item opens straight to its one exercise (`entryId`). */ onOpenWorkout?: (workoutId: string, entryId?: string) => void; openWorkoutId?: string | null }) => {
   const navigation = useNavigation<NativeStackNavigationProp<PlansStackParams>>();
   const { colors, spacing } = useTheme();
   const { draft, update } = usePlanEditor();
+  const { profile } = useAuth();
+  const unit = profile?.weightUnit ?? 'lb';
+  const dist = profile?.distanceUnit ?? 'mi';
   const [adding, setAdding] = useState(false);
   const [name, setName] = useState('');
   // No type until the user picks one (owner, 2026-11-07).
@@ -63,6 +70,12 @@ export const PlanWorkoutsStep = ({ mode, embedded = false, onOpenWorkout, openWo
   };
 
   const openWorkout = (workoutId: string) => (onOpenWorkout ? onOpenWorkout(workoutId) : navigation.navigate('WorkoutEditorScreen', { workoutId }));
+  // A cardio item has no workout to edit, only its one exercise's target (v1 #10).
+  const openItem = (w: Workout) => {
+    const entry = isCardioItem(w) ? w.exercises[0] : undefined;
+    if (!entry) return openWorkout(w.id);
+    return onOpenWorkout ? onOpenWorkout(w.id, entry.id) : navigation.navigate('ExerciseEntryScreen', { workoutId: w.id, entryId: entry.id });
+  };
 
   const remove = (id: string, label: string) =>
     Alert.alert(`Remove ${label}?`, 'Its exercises are removed from this plan.', [
@@ -93,12 +106,16 @@ export const PlanWorkoutsStep = ({ mode, embedded = false, onOpenWorkout, openWo
               scrollableRef={scrollRef}
               renderRow={w => (
                 <View style={{ flexDirection: 'row', alignItems: 'center', borderLeftWidth: 3, borderLeftColor: openWorkoutId === w.id ? colors.accent : colors.transparent }}>
-                  <TouchableOpacity onPress={() => openWorkout(w.id)} style={{ flex: 1, padding: spacing.lg }}>
+                  <TouchableOpacity onPress={() => openItem(w)} accessibilityRole="button" style={{ flex: 1, padding: spacing.lg }}>
                     <CustomText variant="bodyStrong">{w.name}</CustomText>
                     <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.sm, marginTop: 2 }}>
                       {w.type && <TypeTag type={w.type} />}
                       <CustomText variant="caption" color={w.exercises.length ? colors.inkMuted : colors.warning}>
-                        {w.exercises.length ? `${w.exercises.length} exercise${w.exercises.length === 1 ? '' : 's'}` : 'No exercises yet'}
+                        {isCardioItem(w) && w.exercises[0]
+                          ? describeEntry(w.exercises[0], unit, dist)
+                          : w.exercises.length
+                            ? `${w.exercises.length} exercise${w.exercises.length === 1 ? '' : 's'}`
+                            : 'No exercises yet'}
                       </CustomText>
                     </View>
                   </TouchableOpacity>
@@ -128,6 +145,8 @@ export const PlanWorkoutsStep = ({ mode, embedded = false, onOpenWorkout, openWo
         ) : (
           <PrimaryButton label="Add workout" icon={generalIcons.plus} variant="outline" onPress={() => setAdding(true)} />
         )}
+        {/* Cardio goes into a plan on its own, not inside a workout (v1 #10). */}
+        <PrimaryButton label="Add cardio exercise" icon={generalIcons.cardio} variant="outline" onPress={() => navigation.navigate('ExercisePickerScreen', { cardio: true })} />
       </Animated.ScrollView>
       {!embedded && (mode === 'edit' ? (
         <StepFooter label="Done" problem={problem} onPress={() => navigation.goBack()} />

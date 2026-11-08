@@ -1,4 +1,5 @@
 import React, { useLayoutEffect, useState } from 'react';
+import { isCardioItem } from '../../../../data/engine/planItems';
 import { TouchableOpacity, View } from 'react-native';
 import Animated, { useAnimatedRef } from 'react-native-reanimated';
 import { SortableRows } from '../../../../components/lists/SortableRows';
@@ -126,7 +127,8 @@ export const WorkoutEditor = ({ workoutId, embedded = false, onOpenEntry, openEn
           </View>
         )}
 
-        <PrimaryButton label="Add exercise" icon={generalIcons.plus} variant={workout.exercises.length ? 'outline' : 'filled'} onPress={() => navigation.navigate('ExercisePickerScreen', { workoutId: workout.id })} />
+        {/* A cardio item is its one exercise (v1 #10); nothing to add to it. */}
+        {!isCardioItem(workout) && <PrimaryButton label="Add exercise" icon={generalIcons.plus} variant={workout.exercises.length ? 'outline' : 'filled'} onPress={() => navigation.navigate('ExercisePickerScreen', { workoutId: workout.id })} />}
 
         {primary.length > 0 && (
           <SurfaceCard>

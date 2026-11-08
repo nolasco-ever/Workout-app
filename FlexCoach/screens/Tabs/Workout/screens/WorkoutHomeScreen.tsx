@@ -28,6 +28,7 @@ import { askNotToday } from '../components/notToday';
 import { AppStackParams } from '../../../../appNavigators/AppStack';
 import { devFlags } from '../../../../dev/flags';
 import { describeCycle } from '../../../../screens/Plans/components/planSummary';
+import { planItemsLabel } from '../../../../data/engine/planItems';
 
 const longDate = (d: string) => fromLocalDate(d).toLocaleDateString(undefined, { weekday: 'long', month: 'short', day: 'numeric' });
 const shortDate = (d: string) => fromLocalDate(d).toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric' });
@@ -398,7 +399,7 @@ export const WorkoutHomeScreen = () => {
                       <View style={{ flex: 1 }}>
                         <CustomText variant="bodyStrong">{draft.name || 'Untitled plan'}</CustomText>
                         <CustomText variant="caption" color={colors.inkMuted}>
-                          {complete ? `${draft.workouts.length} workout${draft.workouts.length === 1 ? '' : 's'} · ${describeCycle(draft)}` : 'Not finished yet'}
+                          {complete ? `${planItemsLabel(draft)} · ${describeCycle(draft)}` : 'Not finished yet'}
                         </CustomText>
                       </View>
                       <TouchableOpacity

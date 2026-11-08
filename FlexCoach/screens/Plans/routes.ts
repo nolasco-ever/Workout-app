@@ -10,7 +10,8 @@ export type PlansStackParams = {
   PlanWorkoutsScreen: { mode: EditorMode };
   WorkoutEditorScreen: { workoutId: string; /** An exercise to open with it: a rotation closed its sheet. */ entryId?: string };
   /** `replaceEntryId`: swap that entry of the workout for the pick (owner, 2026-10-24) instead of adding one. */
-  ExercisePickerScreen: { workoutId: string; replaceEntryId?: string };
+  /** Add to (or with `replaceEntryId`, swap in) a workout of the draft; or with `cardio`, add a cardio item to the plan (v1 #10). */
+  ExercisePickerScreen: { workoutId: string; replaceEntryId?: string; cardio?: undefined } | { cardio: true; workoutId?: undefined; replaceEntryId?: undefined };
   ExerciseEntryScreen: { workoutId: string; entryId: string };
   PlanScheduleScreen: { mode: EditorMode };
   PlanReviewScreen: { mode: EditorMode };

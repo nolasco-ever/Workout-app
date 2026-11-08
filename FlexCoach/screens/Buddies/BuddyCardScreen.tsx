@@ -17,6 +17,7 @@ import { directionIcons, generalIcons } from '../../components/icons/icon-librar
 import { IronCard } from '../../components/buddies/IronCard';
 import { useTheme } from '../../theme';
 import { BuddyCardParams, BuddyRoutes } from './routes';
+import { planItemsLabel } from '../../data/engine/planItems';
 
 type Relation = 'self' | 'accepted' | 'none';
 
@@ -198,7 +199,7 @@ export const BuddyCard = ({ params, embedded = false }: { params: BuddyCardParam
                   >
                     <View style={{ flex: 1 }}>
                       <CustomText variant="bodyStrong">{p.name}</CustomText>
-                      <CustomText variant="caption" color={colors.inkMuted}>{p.workouts.length} workout{p.workouts.length === 1 ? '' : 's'} · {describeCycle(p)}</CustomText>
+                      <CustomText variant="caption" color={colors.inkMuted}>{planItemsLabel(p)} · {describeCycle(p)}</CustomText>
                     </View>
                     <Icon icon={directionIcons.angleRight} size={20} color={colors.inactive} />
                   </TouchableOpacity>
