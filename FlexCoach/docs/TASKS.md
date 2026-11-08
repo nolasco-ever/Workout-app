@@ -82,6 +82,29 @@ Design (canvas first)
     strength (a workout has a kind, the picker filters by it); several items
     on one plan day; cardio added to a plan on its own, not inside a workout;
     cardio kinds listed and given their own screen differences (map outdoors).
+    Designed on the canvas (rows "Cardio redesign", 2026-11-07). Build order,
+    each its own commit, each proposed before code:
+    - [ ] 10.1 Workout types: workouts carry a type (strength/stretching); the
+          add card asks it; the picker shows only that type (strength =
+          strength, plyometrics, powerlifting, strongman and timed drills).
+    - [ ] 10.2 Quick workout asks the type on its own screen, then the same
+          filtered picker.
+    - [ ] 10.3 Cardio as its own plan item ("Add cardio exercise"); its target
+          never progresses.
+    - [ ] 10.4 Several items per day: schedule model, fixed-weekday and rotation
+          editors, cycle generation, missed day handled as a whole.
+    - [ ] 10.5 Workout tab: a day's items as rows that open the preview; any
+          order.
+    - [ ] 10.6 The cardio screen: one component, glass bottom panel, stats per
+          kind (heart rate and calories on all), indoor graphic, Start/Pause/End.
+    - [ ] 10.7 Cardio done screen and console scan (machines only; edit and
+          remove scanned numbers).
+    - [ ] 10.8 Outdoor GPS: live map, saved route, route on done and History.
+    - [ ] 10.9 Route maps sharing switch (off by default, ends hidden from
+          buddies) and its Notice.
+    - [ ] 10.10 Reusable Notice sheet.
+    - [ ] 10.11 Split existing plans, behind a switch, with its Notice; tried on
+          the owner's account first.
 11. Weight unit as an app-wide setting changeable after onboarding (only the
     Profile/Account control is missing).
 12. Pre-made beginner plans with a questionnaire that picks one (build 10).

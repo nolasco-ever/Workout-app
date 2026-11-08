@@ -4,6 +4,21 @@ Every decision the owner makes, newest first, with why. Open questions sit at th
 bottom until they're answered. Decisions before 2026-11-07 were recorded only in
 commit messages, `docs/RELEASES.md` and Claude's session notes.
 
+## 2026-11-07 20:45 · Route maps: default, notice, hidden ends (v1 #10)
+
+- **Project:** FlexCoach
+- **Type:** functional and design
+- **Decision:** Route maps is off by default, and a second Notice (the reusable
+  sheet) tells users routes are now saved and how to share them. Buddies never
+  see the first and last ~200 m of a route; the owner sees all of it. In What
+  buddies see, only the new Location section is added ("Allow buddies to see the
+  map of your outdoor cardio exercises."). On the done and History screens the
+  route map sits under the stats table; in History, "Buddies see this map too"
+  sits directly under the map and shows only while Route maps is on.
+- **Why:** A route can show where someone lives; sharing it is opt-in.
+- **Source:** v1 #10.
+- **Decided by:** owner.
+
 ## 2026-11-07 20:30 · Outdoor routes and who sees them (v1 #10)
 
 - **Project:** FlexCoach
