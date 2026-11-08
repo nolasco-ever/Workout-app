@@ -13,6 +13,7 @@ import { dateLabel } from '../../components/charts/scale';
 import { BadgeSvg } from '../../components/achievements/BadgeSvg';
 import { BadgeView, HERO_REST_YAW } from '../../components/achievements/BadgeView';
 import { artFor } from '../../components/achievements/badgeArt';
+import { BadgeHalo } from '../../components/achievements/BadgeHalo';
 import { CustomText } from '../../components/text/customText';
 import { Icon } from '../../components/icons/Icon';
 import { directionIcons } from '../../components/icons/icon-library';
@@ -120,7 +121,9 @@ export const BadgeScreen = () => {
       <StatusBar barStyle="light-content" />
       {/* No scroll view here: a vertical scroller would compete with the horizontal drag that turns the badge. */}
       <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', padding: spacing.lg, gap: spacing.xl }}>
-        <View style={{ width: size, height: size, alignItems: 'center', justifyContent: 'center' }}>
+        <View style={{ width: size, height: size, alignItems: 'center', justifyContent: 'center', overflow: 'visible' }}>
+          {/* The same halo as the celebration, in the badge's glow colour (owner, 2026-11-08); a locked badge has none. */}
+          {earned && <BadgeHalo color={art.glow} badgeSize={size} />}
           {earned ? (
             <BadgeView family={family.id} tier={tier} restYaw={HERO_REST_YAW} spinIn={spinIn} unlockedAt={unlock?.unlockedAt ?? null} onReady={() => setReady(true)} style={{ width: size, height: size }} />
           ) : (

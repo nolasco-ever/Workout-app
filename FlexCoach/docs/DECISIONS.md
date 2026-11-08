@@ -4,6 +4,31 @@ Every decision the owner makes, newest first, with why. Open questions sit at th
 bottom until they're answered. Decisions before 2026-11-07 were recorded only in
 commit messages, `docs/RELEASES.md` and Claude's session notes.
 
+## 2026-11-08 16:20 · Build 21 on the phone: location asked on open, halo on the badge viewer
+
+- **Project:** FlexCoach
+- **Type:** functional and design (bug reports)
+- **Decision:**
+  - Outdoor cardio asks for location as soon as its screen opens, not on
+    Start (replacing the 10.8 call), so the prompt comes when the owner
+    expects it. If location is off, Start says so once a workout with "Open
+    Settings"; the run is still timed. The native module gains `authorize`,
+    which asks without recording.
+  - The badge viewer gets the same halo as the celebration, in the badge's
+    glow colour; locked badges have none. The halo is one shared component.
+- **Why:** Owner on build 21: "if i select outdoor running, i don't get asked
+  location permissions" and "there's no glow on the badges screens". The build
+  carried the permission text, background mode and module. The real cause,
+  found from the owner's follow-up ("it works for just 'Running', but not
+  'Running, Outdoor'"): old-library exercises that have a twin in the new
+  library carry a `legacy:` prefix on their id when picked, and the cardio kind
+  lookup didn't strip it, so "Running, Outdoor" read as indoor cardio (no GPS,
+  no prompt). Fixed in cardioKind; it also fixes "Running, Treadmill" and the
+  like losing distance and pace, and the Watch recording them as general
+  cardio.
+- **Source:** bug fixes after build 21.
+- **Decided by:** owner (timing and Settings alert proposed by Claude).
+
 ## 2026-11-08 15:30 · Build feedback before the archive (v1 #10)
 
 - **Project:** FlexCoach
