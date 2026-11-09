@@ -21,6 +21,7 @@ import { ExerciseDetailScreen } from '../screens/Tabs/Workout/screens/ExerciseDe
 import { SessionScreen } from '../screens/Tabs/Workout/screens/SessionScreen';
 import { SessionCompleteScreen } from '../screens/Tabs/Workout/screens/SessionCompleteScreen';
 import { SharingScreen } from '../screens/Tabs/Profile/screens/SharingScreen';
+import { MissedWorkoutParams, MissedWorkoutScreen } from '../screens/Tabs/Workout/screens/MissedWorkoutScreen';
 import { runPlanSplits } from '../data/services/planSplitService';
 import { SessionExercisesScreen } from '../screens/Tabs/Workout/screens/SessionExercisesScreen';
 import { SessionDetailScreen } from '../screens/Tabs/Workout/screens/SessionDetailScreen';
@@ -66,6 +67,8 @@ export type AppStackParams = BuddyRoutes & SessionRoutes & ReactionsParams & Omi
     SessionDetailScreen: { sessionId: string; workoutName?: string };
     /** The review of a finished cycle: by id, or with the plan and cycle in hand straight from the Workout tab. */
     CycleReviewScreen: { plan: Plan; cycle: Cycle; cycleId?: undefined } | { cycleId: string; plan?: undefined; cycle?: undefined };
+    /** Workout missed (v1 #7): a modal asking what to do with the latest missed day. */
+    MissedWorkoutScreen: MissedWorkoutParams;
     /** What buddies see, opened from outside the Profile tab (a Notice's button, v1 #10.10), so back returns there. The Profile tab has its own copy. */
     SharingScreen: undefined;
 };
@@ -148,6 +151,7 @@ export const AppStack = () => {
                     <Stack.Screen name="SessionDetailScreen" component={SessionDetailScreen} options={({ route }) => opts.screen(route.params.workoutName ?? 'Workout')} />
                     <Stack.Screen name="CycleReviewScreen" component={CycleReviewScreen} options={opts.screen('Cycle review')} />
                     <Stack.Screen name="SharingScreen" component={SharingScreen} options={opts.screen('What buddies see')} />
+                    <Stack.Screen name="MissedWorkoutScreen" component={MissedWorkoutScreen} options={({ navigation }) => opts.modal('Workout missed', () => <HeaderButton icon={generalIcons.xMark} accessibilityLabel="Close" onPress={() => navigation.goBack()} />)} />
                     <Stack.Screen name="BuddyActivityScreen" component={BuddyActivityScreen} options={opts.screen('Buddy activity')} />
                     <Stack.Screen name="BuddyPlansScreen" component={BuddyPlansScreen} options={opts.screen('Plans from buddies')} />
                     <Stack.Screen name="BuddyPlanScreen" component={BuddyPlanScreen} options={opts.screen('Plan')} />

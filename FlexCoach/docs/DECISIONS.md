@@ -4,6 +4,41 @@ Every decision the owner makes, newest first, with why. Open questions sit at th
 bottom until they're answered. Decisions before 2026-11-07 were recorded only in
 commit messages, `docs/RELEASES.md` and Claude's session notes.
 
+## 2026-11-08 17:30 · Workout missed modal, as built (v1 #7)
+
+- **Project:** FlexCoach
+- **Type:** design and functional
+- **Decision:** Built from option A as signed off: a native modal "Workout
+  missed" (close button in the header) with the gold "Missed · {date}" label,
+  the day's items with their kind icons, then an "Actions" section: Do it/them
+  today (says what happens to today's items), Pick another day (the existing
+  calendar opens in place, with the existing note on what the chosen day
+  holds), Skip it/them. Skip asks first ("Skip … ? It's counted as missed and
+  the cycle carries on."). Closing the modal changes nothing. On a weekly
+  plan's last day Pick another day is left out, as before. The old bottom
+  sheet is gone; the prompt now opens the modal on the root stack.
+- **Why:** Owner: "yes skip them should ask if they're sure. designs look
+  good, you can build". Added the Actions header on request.
+- **Source:** feature work, v1 #7 (build 17 TF-5).
+- **Decided by:** owner.
+
+## 2026-11-08 17:00 · Missed workout: option A, as a modal (v1 #7)
+
+- **Project:** FlexCoach
+- **Type:** design
+- **Decision:** The missed-workout prompt is redesigned as option A on the
+  canvas ("Missed workout sheet (v1 #7)" row): the gold "MISSED · {date}"
+  label and the missed day's items, then three choice rows that each say what happens (Do them today,
+  Pick another day, Skip them). It is a modal (the app's native modal with
+  its title and close button), not a bottom sheet, titled "Workout missed".
+  Pick another day opens the app's existing calendar in place, not a new day
+  picker. Only Pick another day has a disclosure caret (it opens in place);
+  the other two rows act when tapped, so they have no chevron.
+- **Why:** Owner: "i like A", with the modal, the title, the existing
+  calendar, and a question about what the chevrons do.
+- **Source:** design, v1 #7 (build 17 TF-5).
+- **Decided by:** owner.
+
 ## 2026-11-08 16:20 · Build 21 on the phone: location asked on open, halo on the badge viewer
 
 - **Project:** FlexCoach

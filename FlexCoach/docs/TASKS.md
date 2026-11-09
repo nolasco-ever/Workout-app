@@ -65,7 +65,8 @@ Design (canvas first)
    screens moved into #10, the Watch design pass is #23b.
 6b. ~~Exercise library merge + Legacy Swap.~~ Committed a49f153, shipped in build
    20. Legacy Swap removed 2026-11-07 (owner: every tester had migrated).
-7. Missed-workout bottom sheet redesign (build 17 TF-5).
+7. ~~Missed-workout bottom sheet redesign (build 17 TF-5).~~ Done 2026-11-08: a
+   "Workout missed" modal (canvas option A).
 8. Workout-done screen redesign, with the PR celebration as one screen per record
    in a carousel (build 17 TF-11, TF-20); pairs with the badge celebration.
 9. Cycle review: another UI/UX pass, still too busy (build 16, build 17 TF-14).
