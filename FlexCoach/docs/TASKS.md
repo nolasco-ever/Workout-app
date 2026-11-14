@@ -67,8 +67,9 @@ Design (canvas first)
    20. Legacy Swap removed 2026-11-07 (owner: every tester had migrated).
 7. ~~Missed-workout bottom sheet redesign (build 17 TF-5).~~ Done 2026-11-08: a
    "Workout missed" modal (canvas option A).
-8. Workout-done screen redesign, with the PR celebration as one screen per record
-   in a carousel (build 17 TF-11, TF-20); pairs with the badge celebration.
+8. ~~Workout-done screen redesign, with the PR celebration as one screen per record
+   in a carousel (build 17 TF-11, TF-20); pairs with the badge celebration.~~ Done
+   2026-11-13: a page per record, then summary A (canvas "Workout done" row).
 9. Cycle review: another UI/UX pass, still too busy (build 16, build 17 TF-14).
 10. Cardio modes deep dive (**discuss first**; owner 2026-10-24: "i can't ship a
     product out with a terrible cardio experience"). First part, canvas first:

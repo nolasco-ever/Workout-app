@@ -11,40 +11,34 @@ import { generalIcons } from '../../../../components/icons/icon-library';
 import { useComfortableColumn } from '../../../../components/layout/useComfortableColumn';
 import { useTheme } from '../../../../theme';
 import { AppStackParams } from '../../../../appNavigators/AppStack';
-import { useTabBarInset } from '../../../../navigation/useTabBarInset';
 import { SurfaceCard as Card } from '../../../../components/cards/SurfaceCard';
 import { PrimaryButton } from '../../../../components/buttons/PrimaryButton';
 import { useSessionOrientation } from '../../../../navigation/useSessionOrientation';
-import { onWatchMetrics, watchMetricsFor, watchStats } from '../../../../data/liveActivity/watchMetrics';
+import { onWatchMetrics, watchMetricsFor } from '../../../../data/liveActivity/watchMetrics';
 import { liveActivity } from '../../../../data/liveActivity/liveActivity';
 import { WatchMetrics } from '../../../../data/models';
-import { cardioStats } from '../../../../data/engine/stats';
+import { recordGain } from '../../../../data/engine/stats';
 import { CardioDone, soleCardioSet } from '../components/CardioDone';
+import { RecordPages } from '../components/RecordPages';
 
-const Stat = ({ label, value }: { label: string; value: string }) => {
-  const { colors } = useTheme();
-  return (
-    <View style={{ flex: 1 }}>
-      <CustomText variant="overline" color={colors.inkMuted}>{label}</CustomText>
-      {/* Shrinks rather than wraps: a five-figure volume was breaking onto a second line. */}
-      <CustomText variant="display" numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.6}>{value}</CustomText>
-    </View>
-  );
-};
-
+/**
+ * Workout done (v1 #8, option A on the canvas): a page per new record first,
+ * then the summary in the cardio done screen's style: the time large, a
+ * table, the records with what each gained, and Done. Cardio has its own
+ * done screen; a strength workout never holds cardio (owner, 2026-11-13).
+ */
 export const SessionCompleteScreen = () => {
   useSessionOrientation();
   const navigation = useNavigation<NativeStackNavigationProp<AppStackParams>>();
   const { params } = useRoute<RouteProp<AppStackParams, 'SessionCompleteScreen'>>();
   const { result } = params;
-  const { colors, spacing } = useTheme();
+  const { colors, spacing, fonts } = useTheme();
   const column = useComfortableColumn();
-  const tabBarInset = useTabBarInset();
   const { profile } = useAuth();
   const unit = profile?.weightUnit ?? 'lb';
   const dist = profile?.distanceUnit ?? 'mi';
-  const cardio = cardioStats(result.session, dist);
-  const volume = toDisplayWeight(result.volumeKg, unit) ?? 0;
+  const records = result.personalRecords;
+  const [showingRecords, setShowingRecords] = useState(records.length > 0);
   // The Watch's calories and heart rate land a moment after Finish (v1 #6); they show as soon as they do.
   const sessionId = result.session.id;
   const [watch, setWatch] = useState<WatchMetrics | null>(() => result.session.watch ?? watchMetricsFor(sessionId));
@@ -54,55 +48,71 @@ export const SessionCompleteScreen = () => {
 
   // A session that is one cardio entry has its own done screen (v1 #10.7).
   if (soleCardioSet(result.session)) return <CardioDone result={result} onDone={() => navigation.popToTop()} />;
+  if (showingRecords) return <RecordPages records={records} weightUnit={unit} distanceUnit={dist} onDone={() => setShowingRecords(false)} />;
+
+  const volume = toDisplayWeight(result.volumeKg, unit) ?? 0;
+  const rows = [
+    { label: 'Sets', value: String(result.setsCompleted) },
+    // A bodyweight-only workout moved no weight; it has no volume to show.
+    ...(volume > 0 ? [{ label: 'Volume', value: `${Math.round(volume).toLocaleString()} ${unit}` }] : []),
+    // From the Watch, when one was used: heart rate and calories, as on the board.
+    ...(watch?.avgBpm != null ? [{ label: 'Avg heart rate', value: `${watch.avgBpm} bpm` }] : []),
+    ...(watch && watch.kcal > 0 ? [{ label: 'Calories', value: `${watch.kcal.toLocaleString()} kcal` }] : []),
+  ];
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: colors.ground }}>
-      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={[{ padding: spacing.xl, gap: spacing.xl, paddingBottom: spacing.xl + tabBarInset, flexGrow: 1, justifyContent: 'center' }, column]}>
-        <View style={{ alignItems: 'center', gap: spacing.md }}>
+      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={[{ padding: spacing.xl, paddingBottom: spacing.lg, gap: spacing.lg, flexGrow: 1 }, column]}>
+        <View style={{ alignItems: 'center', gap: spacing.md, paddingTop: spacing.xl }}>
           <View style={{ width: 72, height: 72, borderRadius: 36, backgroundColor: colors.successTint, alignItems: 'center', justifyContent: 'center' }}>
             <Icon icon={generalIcons.check} color={colors.success} size={36} strokeWidth={3} />
           </View>
-          <CustomText variant="title" centered>{result.session.workoutName} done</CustomText>
+          <CustomText variant="title" centered accessibilityRole="header">{result.session.workoutName} done</CustomText>
+          <View style={{ alignItems: 'center', gap: 2 }}>
+            <CustomText variant="overline" color={colors.inkMuted}>Time</CustomText>
+            <CustomText style={{ fontFamily: fonts.display.bold, fontSize: 52, lineHeight: 58, letterSpacing: -1, fontVariant: ['tabular-nums'] }}>{formatDuration(result.durationSec)}</CustomText>
+          </View>
         </View>
 
-        <View style={{ flexDirection: 'row', gap: spacing.lg }}>
-          <Stat label="Time" value={formatDuration(result.durationSec)} />
-          {(result.setsCompleted > 0 || cardio.length === 0) && <Stat label="Sets" value={String(result.setsCompleted)} />}
-          {(volume > 0 || cardio.length === 0) && <Stat label={`Volume ${unit}`} value={Math.round(volume).toLocaleString()} />}
-        </View>
-        {/* Cardio is not a set: each exercise by its name, with its distance and time. */}
-        {cardio.length > 0 && (
-          <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: spacing.lg }}>
-            {cardio.map((s, i) => <Stat key={`${s.label}-${i}`} label={s.label} value={s.value} />)}
-          </View>
-        )}
-        {watchStats(watch).length > 0 && (
-          <View style={{ flexDirection: 'row', gap: spacing.lg }}>
-            {watchStats(watch).map(s => <Stat key={s.label} label={s.label} value={s.value} />)}
-          </View>
-        )}
-
-        {result.personalRecords.length > 0 && (
-          <Card tone="accent">
-            <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.sm, marginBottom: spacing.sm }}>
-              <Icon icon={generalIcons.trophy} color={colors.accent} size={20} />
-              <CustomText variant="heading">
-                {result.personalRecords.length === 1 ? 'New personal record' : `${result.personalRecords.length} new personal records`}
-              </CustomText>
+        <Card style={{ paddingVertical: 0, paddingHorizontal: spacing.md }}>
+          {rows.map((row, i) => (
+            <View key={row.label} style={{ flexDirection: 'row', alignItems: 'center', minHeight: 52, borderTopWidth: i === 0 ? 0 : 1, borderTopColor: colors.line }}>
+              <CustomText variant="body" style={{ flex: 1 }}>{row.label}</CustomText>
+              <CustomText variant="bodyStrong">{row.value}</CustomText>
             </View>
-            {result.personalRecords.map(pr => (
-              <View key={pr.exerciseId} style={{ flexDirection: 'row', justifyContent: 'space-between', paddingVertical: spacing.xs }}>
-                <CustomText variant="body">{pr.exerciseName}</CustomText>
-                <CustomText variant="bodyStrong" color={colors.accent}>
-                  {formatRecordValue(pr.kind, pr.value, unit, dist)}
-                </CustomText>
-              </View>
-            ))}
-          </Card>
-        )}
+          ))}
+        </Card>
 
-        <PrimaryButton label="Done" onPress={() => navigation.popToTop()} />
+        {records.length > 0 && (
+          <View style={{ gap: spacing.sm }}>
+            <CustomText variant="overline" color={colors.inkMuted}>{records.length === 1 ? 'New record' : `${records.length} new records`}</CustomText>
+            <Card style={{ paddingVertical: 0, paddingHorizontal: spacing.md }}>
+              {records.map((pr, i) => {
+                const value = formatRecordValue(pr.kind, pr.value, unit, dist);
+                const gain = recordGain(pr, unit, dist);
+                return (
+                  <View
+                    key={`${pr.exerciseId}-${pr.kind}`}
+                    accessible
+                    accessibilityLabel={`${pr.exerciseName}, ${value}${gain ? `, up ${gain.gain.slice(1)}` : ''}`}
+                    style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.md, minHeight: 52, paddingVertical: spacing.xs, borderTopWidth: i === 0 ? 0 : 1, borderTopColor: colors.line }}
+                  >
+                    <Icon icon={generalIcons.trophy} color={colors.accent} size={18} weight="fill" />
+                    <CustomText variant="body" style={{ flex: 1 }}>{pr.exerciseName}</CustomText>
+                    <View style={{ alignItems: 'flex-end' }}>
+                      <CustomText variant="bodyStrong">{value}</CustomText>
+                      {gain && <CustomText variant="caption" color={colors.success} style={{ fontFamily: fonts.body.bold }}>{gain.gain}</CustomText>}
+                    </View>
+                  </View>
+                );
+              })}
+            </Card>
+          </View>
+        )}
       </ScrollView>
+      <View style={[{ paddingHorizontal: spacing.xl, paddingBottom: spacing.lg }, column]}>
+        <PrimaryButton label="Done" onPress={() => navigation.popToTop()} />
+      </View>
     </SafeAreaView>
   );
 };

@@ -4,6 +4,49 @@ Every decision the owner makes, newest first, with why. Open questions sit at th
 bottom until they're answered. Decisions before 2026-11-07 were recorded only in
 commit messages, `docs/RELEASES.md` and Claude's session notes.
 
+## 2026-11-13 · Workout done, as built (v1 #8)
+
+- **Project:** FlexCoach
+- **Type:** design and functional
+- **Decision:** Built as signed off. The record pages and the summary are one
+  screen, so the Watch's "close summary" and the badge hold work as before. A
+  record's gain is worked out on the values as shown in the user's unit, so
+  "+5 lb from 30 lb" always adds up; a gain that rounds to nothing, or a
+  record with no old best, shows no pill. The summary table follows the
+  board: Sets, Volume (left out at 0, a bodyweight-only workout), Avg heart
+  rate and Calories from the Watch. Max heart rate, which the old screen
+  showed, isn't on the board, so it's gone. The record pages are always
+  black, like the badge celebration, in light mode too. With one record the
+  page reads "New record", with no count or dots.
+- **Why:** Owner: "yes go ahead" to the file-by-file proposal.
+- **Source:** feature work, v1 #8.
+- **Decided by:** owner (Max heart rate and the one-record wording were
+  Claude's reading of the board; flagged to the owner).
+
+## 2026-11-13 · Workout done: a page per record, then summary A (v1 #8)
+
+- **Project:** FlexCoach
+- **Type:** design
+- **Decision:** Finishing a workout with new records first shows one
+  full-screen page per record (the "DonePR1"/"DonePR3" boards in the "Workout
+  done (v1 #8)" canvas row): a black ground, the trophy in an orange halo,
+  "New record · n of N", the exercise, the new value, and a green "+gain from
+  previous" pill. You swipe or tap "Next record" between pages; Skip jumps to
+  the summary, and the last page's button is "See your workout". Then comes
+  summary option A, in the style of the cardio done screen: the check, "{name}
+  done", the time in large type, a table (Sets, Volume, plus Avg heart rate and
+  Calories when a Watch was used), a "n new records" list with each value and
+  its gain, and Done. There's no Replay link. With no new records the screen
+  opens straight on the summary. Badge celebrations still come after leaving
+  it.
+- **Why:** Owner: "record pages work as drawn", "i prefer A for the summary",
+  "we can remove the 'Replay' button". Option B (stat tiles plus one records
+  card) was not picked. The owner also pointed out that a strength workout
+  never holds cardio now (cardio is its own item with its own done screen
+  since v1 #10), so this screen has no cardio rows.
+- **Source:** feature work, v1 #8 (build 17 TF-11, TF-20).
+- **Decided by:** owner.
+
 ## 2026-11-08 17:30 · Workout missed modal, as built (v1 #7)
 
 - **Project:** FlexCoach

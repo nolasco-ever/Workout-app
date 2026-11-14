@@ -1,7 +1,7 @@
 import { canonicalExerciseId } from '../catalog/exerciseIds';
-import { Cycle, CycleSummary, DistanceUnit, Id, LoggedSet, PersonalRecord, Session, SessionExercise } from '../models';
+import { Cycle, CycleSummary, DistanceUnit, Id, LoggedSet, PersonalRecord, Session, SessionExercise, WeightUnit } from '../models';
 import { isWorkingSet, workingSets } from './sets';
-import { formatDistance, formatDuration } from './units';
+import { formatDistance, formatDuration, formatRecordValue, toDisplayDistance, toDisplayWeight } from './units';
 
 /**
  * Cardio (a run, a row, the bike) is logged as one entry, not as sets (owner, 2026-10-25): it never counts as a set,
@@ -125,6 +125,38 @@ export const findPersonalRecords = (sessions: Session[], history: Session[]): Pe
     }
   }
   return prs;
+};
+
+/**
+ * How much a record beat the old best, as the workout done screen shows it
+ * (v1 #8): "+5 lb" from "30 lb". Worked out on the numbers as shown, so the
+ * gain always adds up with the two values on screen. Null when there is no
+ * old best, or the gain rounds away in the user's unit.
+ */
+export const recordGain = (pr: Pick<PersonalRecord, 'kind' | 'value' | 'previousValue'>, weightUnit: WeightUnit, distanceUnit: DistanceUnit): { gain: string; from: string } | null => {
+  if (pr.previousValue === null) return null;
+  const prev = pr.previousValue;
+  const from = formatRecordValue(pr.kind, prev, weightUnit, distanceUnit);
+  // Float noise from the subtraction (35.5 - 33.1) is dropped the same way the units module does.
+  const clean = (n: number) => Number(n.toPrecision(12));
+  switch (pr.kind) {
+    case 'weight': {
+      const d = clean((toDisplayWeight(pr.value, weightUnit) ?? 0) - (toDisplayWeight(prev, weightUnit) ?? 0));
+      return d > 0 ? { gain: `+${Number.isInteger(d) ? d : d.toFixed(d % 0.5 === 0 ? 1 : 2)} ${weightUnit}`, from } : null;
+    }
+    case 'reps': {
+      const d = pr.value - prev;
+      return d > 0 ? { gain: `+${d} ${d === 1 ? 'rep' : 'reps'}`, from } : null;
+    }
+    case 'duration': {
+      const d = Math.round(pr.value) - Math.round(prev);
+      return d > 0 ? { gain: `+${formatDuration(d)}`, from } : null;
+    }
+    case 'distance': {
+      const d = clean((toDisplayDistance(pr.value, distanceUnit) ?? 0) - (toDisplayDistance(prev, distanceUnit) ?? 0));
+      return d > 0 ? { gain: `+${d} ${distanceUnit}`, from } : null;
+    }
+  }
 };
 
 export const summarizeCycle = (cycle: Cycle, cycleSessions: Session[], history: Session[]): CycleSummary => {
