@@ -4,6 +4,47 @@ Every decision the owner makes, newest first, with why. Open questions sit at th
 bottom until they're answered. Decisions before 2026-11-07 were recorded only in
 commit messages, `docs/RELEASES.md` and Claude's session notes.
 
+## 2026-11-14 · Cycle review sections, as built (v1 #9)
+
+- **Project:** FlexCoach
+- **Type:** design and functional
+- **Decision:** Built as signed off. The cycle line and the headline card
+  (workouts, records, lb moved) stay fixed above the sections, and each
+  section scrolls on its own, as on History. Summary is today's Stats card and
+  New records. Targets is today's rows, with Expected and Actual as a
+  two-column table (a missed Actual in amber), and Adjust plan under them.
+  Workouts is History's rows, now with each workout's volume. Start cycle N
+  stays pinned at the bottom of every section. An empty Targets or Workouts
+  section says so in one line.
+- **Why:** Owner: "the card should stay fixed"; "everything looks good, you
+  can build it".
+- **Source:** feature work, v1 #9.
+- **Decided by:** owner (the empty-section lines are Claude's; flagged to the
+  owner).
+
+## 2026-11-14 · Cycle review: sections (v1 #9)
+
+- **Project:** FlexCoach
+- **Type:** design
+- **Decision:** The cycle review is split into sections (option B on the
+  canvas, "Cycle review pass (v1 #9)" row). They use the app's existing
+  segmented pager (`SegmentedPager`, as on History and the how-to screen):
+  Summary, Targets, Workouts. Summary keeps today's Stats card (Training and
+  Schedule groups) and the New records list. Targets keeps today's rows; the
+  only change is that each row's Expected and Actual columns become a table,
+  with Expected and Actual as its column headers. Adjust plan sits under the
+  targets. Workouts is the same rows as History's Workouts list. Option A (one
+  page, targets behind a sheet) was not picked.
+- **Why:** Owner: "I like the sections format. we should use the existing
+  sections component"; "for the targets, let's just use what we have now, but
+  with slight tweaks. make the expected and actual columns into a table";
+  "just the workouts list like they are in history"; "for the summmary
+  section, let's use the stats UI that we have now"; "i feel like adjust plan
+  should be under the targets section". The screen was "still too
+  busy" (build 16, build 17 TF-14).
+- **Source:** feature work, v1 #9.
+- **Decided by:** owner.
+
 ## 2026-11-13 · Workout done, as built (v1 #8)
 
 - **Project:** FlexCoach

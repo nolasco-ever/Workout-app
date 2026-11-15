@@ -7,7 +7,7 @@ import { useAuth } from '../../../../data/auth/AuthProvider';
 import { Cycle, Plan } from '../../../../data/models';
 import { formatDuration, formatRecordValue, toDisplayWeight } from '../../../../data/engine/units';
 import { CycleReview, getCycleReview, loadCycleForReview, markCycleReportReviewed, startNextCycle } from '../../../../data/services/workoutService';
-import { describeLogged } from '../../../../data/engine/stats';
+import { describeLogged, totalVolumeKg } from '../../../../data/engine/stats';
 import { nextCycleNumberAfter } from '../../../../data/engine/schedule';
 import { describeProgression, verdictLabel } from '../../../../data/engine/progressionCopy';
 import { notificationRepository } from '../../../../data/repositories/notificationRepository';
@@ -21,6 +21,7 @@ import { WorkoutStackParams } from '../WorkoutStack';
 import { useTabBarInset, useTabScrollInset } from '../../../../navigation/useTabBarInset';
 import { SurfaceCard as Card } from '../../../../components/cards/SurfaceCard';
 import { PrimaryButton } from '../../../../components/buttons/PrimaryButton';
+import { SegmentedPager } from '../../../../components/layout/SegmentedPager';
 
 /** One of the three headline numbers: the value big, the label under it. */
 const Hero = ({ label, value, tone }: { label: string; value: string; tone?: string }) => {
@@ -44,6 +45,26 @@ const DetailRow = ({ label, value, tone, first = false }: { label: string; value
     </View>
   );
 };
+
+/** What was asked beside what was done: a two-column table, Expected and Actual as its headers. */
+const TargetTable = ({ expected, actual, actualTone }: { expected: string; actual: string; actualTone?: string }) => {
+  const { colors, spacing, radius } = useTheme();
+  const cell = { flex: 1, paddingHorizontal: spacing.sm, paddingVertical: spacing.xs } as const;
+  return (
+    <View style={{ marginVertical: spacing.xs, borderRadius: radius.md, borderWidth: 1, borderColor: colors.line, backgroundColor: colors.ground, overflow: 'hidden' }}>
+      <View style={{ flexDirection: 'row', backgroundColor: colors.surfaceRaised }}>
+        <CustomText variant="overline" color={colors.inkMuted} style={cell}>Expected</CustomText>
+        <CustomText variant="overline" color={colors.inkMuted} style={[cell, { borderLeftWidth: 1, borderLeftColor: colors.line }]}>Actual</CustomText>
+      </View>
+      <View style={{ flexDirection: 'row', borderTopWidth: 1, borderTopColor: colors.line }}>
+        <CustomText variant="caption" color={colors.ink} style={[cell, { paddingVertical: spacing.sm }]}>{expected}</CustomText>
+        <CustomText variant="caption" color={actualTone ?? colors.ink} style={[cell, { paddingVertical: spacing.sm, borderLeftWidth: 1, borderLeftColor: colors.line }]}>{actual}</CustomText>
+      </View>
+    </View>
+  );
+};
+
+type Section = 'summary' | 'targets' | 'workouts';
 
 /**
  * The "sprint review" for one cycle. Opened with the live plan and cycle
@@ -74,6 +95,7 @@ export const CycleReviewView = ({ cycleId, plan: planProp, cycle: cycleProp, onO
   const [missing, setMissing] = useState(false);
   const [review, setReview] = useState<CycleReview | null>(null);
   const [busy, setBusy] = useState(false);
+  const [section, setSection] = useState<Section>('summary');
   const unit = profile?.weightUnit ?? 'lb';
   const dist = profile?.distanceUnit ?? 'mi';
 
@@ -141,10 +163,139 @@ export const CycleReviewView = ({ cycleId, plan: planProp, cycle: cycleProp, onO
   // see-through tab bar and pads past it: stopping at the safe-area edge drew a hard cut-off line (build 19).
   const pinned = cycle.status === 'active';
   const bottomRoom = embedded ? insets.bottom : pinned ? 0 : scrollInset;
+  const pageStyle = { padding: spacing.lg, gap: spacing.lg, paddingBottom: spacing.xl + bottomRoom };
+
+  const summaryPage = (
+    <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={pageStyle}>
+      {/* The rest as a quiet list in two groups, so "on time" and "pushed" read as schedule facts. */}
+      <View style={{ gap: spacing.sm }}>
+        <CustomText variant="overline" color={colors.inkMuted}>Stats</CustomText>
+        <Card style={{ paddingVertical: spacing.sm, gap: spacing.md }}>
+          <View>
+            <CustomText variant="overline" color={colors.accent} style={{ paddingTop: spacing.xs, paddingBottom: spacing.xs }}>Training</CustomText>
+            <DetailRow first label="Total time trained" value={review.durationSec ? formatDuration(review.durationSec) : '—'} />
+            <DetailRow label="Avg per workout" value={avgSec ? formatDuration(avgSec) : '—'} />
+            <DetailRow label="Total sets" value={String(review.setsCompleted)} />
+            {judged.length > 0 && <DetailRow label="Targets hit" value={`${targetsHit} of ${judged.length}`} tone={targetsHit === judged.length ? colors.success : targetsHit === 0 ? colors.warning : undefined} />}
+          </View>
+          <View>
+            <CustomText variant="overline" color={colors.accent} style={{ paddingTop: spacing.xs, paddingBottom: spacing.xs }}>Schedule</CustomText>
+            <DetailRow first label="Done on time" value={String(summary.completedOnTime)} />
+            <DetailRow label="Pushed to another day" value={String(summary.pushed)} tone={summary.pushed ? colors.warning : undefined} />
+            <DetailRow label="Skipped" value={String(summary.skipped)} tone={summary.skipped ? colors.error : undefined} />
+          </View>
+        </Card>
+      </View>
+
+      {records > 0 && (
+        <View style={{ gap: spacing.sm }}>
+          <CustomText variant="overline" color={colors.inkMuted}>New records</CustomText>
+          <Card style={{ padding: 0 }}>
+            {summary.personalRecords.map((pr, i) => (
+              <View key={`${pr.exerciseId}-${pr.sessionId}-${pr.kind}`} style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.md, paddingHorizontal: spacing.lg, paddingVertical: spacing.md, borderTopWidth: i ? 1 : 0, borderTopColor: colors.line }}>
+                <Icon icon={generalIcons.trophy} size={18} color={colors.accent} />
+                <View style={{ flex: 1 }}>
+                  <CustomText variant="bodyStrong">{pr.exerciseName}</CustomText>
+                  <CustomText variant="caption" color={colors.inkMuted}>
+                    {pr.previousValue !== null ? `Up from ${formatRecordValue(pr.kind, pr.previousValue, unit, dist)}` : 'First record'}
+                  </CustomText>
+                </View>
+                <CustomText variant="bodyStrong" color={colors.accent}>{formatRecordValue(pr.kind, pr.value, unit, dist)}</CustomText>
+              </View>
+            ))}
+          </Card>
+        </View>
+      )}
+    </ScrollView>
+  );
+
+  // Swap an exercise or move a day before the next cycle starts; a synced copy of a buddy's plan is theirs to change.
+  const canAdjust = cycle.status === 'active' && !plan.sharedFrom?.synced;
+  const targetsPage = (
+    <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={pageStyle}>
+      {review.nextTargets.length === 0 && (
+        <CustomText variant="body" color={colors.inkMuted} centered style={{ paddingTop: spacing.xl }}>No targets to review this cycle.</CustomText>
+      )}
+      {review.nextTargets.length > 0 && (
+        <Card style={{ padding: 0 }}>
+          {review.nextTargets.map((p, i) => {
+            const { next, previous, did, reason } = describeProgression(p, unit);
+            const tone = p.change === 'increase' ? colors.success : p.change === 'climb' ? colors.accent : p.change === 'drop' ? colors.warning : colors.inkMuted;
+            const icon = p.change === 'increase' || p.change === 'climb' ? directionIcons.angleUp : p.change === 'drop' ? directionIcons.angleDown : generalIcons.minus;
+            const verdict = verdictLabel(p.verdict);
+            const verdictTone = p.verdict === 'beat' ? colors.accent : p.verdict === 'hit' ? colors.success : colors.warning;
+            return (
+              <View key={p.workoutExerciseId} style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.md, padding: spacing.lg, borderTopWidth: i ? 1 : 0, borderTopColor: colors.line }}>
+                <View style={{ width: 32, height: 32, borderRadius: 16, backgroundColor: colors.surfaceRaised, alignItems: 'center', justifyContent: 'center' }}>
+                  <Icon icon={icon} size={18} color={tone} strokeWidth={2.5} />
+                </View>
+                <View style={{ flex: 1, gap: spacing.xs }}>
+                  <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.sm }}>
+                    <View style={{ flex: 1 }}>
+                      <CustomText variant="bodyStrong">{p.exerciseName}</CustomText>
+                    </View>
+                    {/* How the cycle went against the target, at a glance. */}
+                    {verdict && (
+                      <View style={{ paddingHorizontal: spacing.sm, paddingVertical: 2, borderRadius: radius.pill, backgroundColor: colors.surfaceRaised }}>
+                        <CustomText variant="overline" color={verdictTone}>{verdict}</CustomText>
+                      </View>
+                    )}
+                  </View>
+                  {/* What was asked beside what was done, as a two-column table (owner, 2026-11-14), then the coming
+                      target and why. */}
+                  {did && <TargetTable expected={previous ?? '—'} actual={did} actualTone={p.verdict === 'missed' ? colors.warning : undefined} />}
+                  <CustomText variant="label" color={tone}>Next {next}</CustomText>
+                  <CustomText variant="caption" color={colors.inkMuted}>{reason}</CustomText>
+                </View>
+              </View>
+            );
+          })}
+        </Card>
+      )}
+      {canAdjust && (
+        <PrimaryButton label="Adjust plan" variant="outline" onPress={() => (navigation as unknown as NavigationProp<AppStackParams>).navigate('PlanEditScreen', { planId: plan.id })} />
+      )}
+    </ScrollView>
+  );
+
+  const workoutsPage = (
+    <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={pageStyle}>
+      {sessions.length === 0 && (
+        <CustomText variant="body" color={colors.inkMuted} centered style={{ paddingTop: spacing.xl }}>No workouts logged this cycle.</CustomText>
+      )}
+      {/* The rows from History's Workouts list. */}
+      {sessions.length > 0 && (
+        <Card style={{ padding: 0 }}>
+          {sessions.map((s, i) => {
+            const logged = describeLogged([s]);
+            const sessionVolume = Math.round(toDisplayWeight(totalVolumeKg([s]), unit) ?? 0);
+            const duration = s.finishedAt ? formatDuration(Math.round((s.finishedAt - s.startedAt) / 1000)) : null;
+            return (
+              <TouchableOpacity
+                key={s.id}
+                onPress={() => onOpenSession(s.id, s.workoutName)}
+                accessibilityRole="button"
+                style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.md, padding: spacing.lg, borderTopWidth: i ? 1 : 0, borderTopColor: colors.line }}
+              >
+                <View style={{ flex: 1 }}>
+                  <CustomText variant="bodyStrong">{s.workoutName}</CustomText>
+                  <CustomText variant="caption" color={colors.inkMuted}>
+                    {[dateLabel(s.date), ...logged].join(' · ')}{sessionVolume ? ` · ${sessionVolume.toLocaleString()} ${unit}` : ''}{duration ? ` · ${duration}` : ''}
+                  </CustomText>
+                </View>
+                <Icon icon={directionIcons.angleRight} size={18} color={colors.inactive} />
+              </TouchableOpacity>
+            );
+          })}
+        </Card>
+      )}
+    </ScrollView>
+  );
+
   const body = (
     <>
-      <ScrollView contentInsetAdjustmentBehavior="automatic" showsVerticalScrollIndicator={false} contentContainerStyle={{ padding: spacing.lg, gap: spacing.lg, paddingBottom: spacing.xl + bottomRoom }}>
-        {/* Which cycle, then the three numbers that matter, then the rest a size down. */}
+      {/* Which cycle and the three numbers that matter stay put above the sections (owner, 2026-11-14). */}
+      <View style={{ paddingHorizontal: spacing.lg, paddingTop: spacing.md, paddingBottom: spacing.md, gap: spacing.md }}>
         <CustomText variant="overline" color={colors.inkMuted}>
           {plan.name} · Cycle {cycle.number} · {dateLabel(cycle.startDate)} to {dateLabel(cycle.endDate)}
         </CustomText>
@@ -155,132 +306,18 @@ export const CycleReviewView = ({ cycleId, plan: planProp, cycle: cycleProp, onO
             <Hero label={`${unit} moved`} value={volume ? volume.toLocaleString() : '—'} />
           </View>
         </Card>
-        {/* The rest as a quiet list in two groups, so "on time" and "pushed" read as schedule facts. */}
-        <View style={{ gap: spacing.sm }}>
-          <CustomText variant="overline" color={colors.inkMuted}>Stats</CustomText>
-          <Card style={{ paddingVertical: spacing.sm, gap: spacing.md }}>
-            <View>
-              <CustomText variant="overline" color={colors.accent} style={{ paddingTop: spacing.xs, paddingBottom: spacing.xs }}>Training</CustomText>
-              <DetailRow first label="Total time trained" value={review.durationSec ? formatDuration(review.durationSec) : '—'} />
-              <DetailRow label="Avg per workout" value={avgSec ? formatDuration(avgSec) : '—'} />
-              <DetailRow label="Total sets" value={String(review.setsCompleted)} />
-              {judged.length > 0 && <DetailRow label="Targets hit" value={`${targetsHit} of ${judged.length}`} tone={targetsHit === judged.length ? colors.success : targetsHit === 0 ? colors.warning : undefined} />}
-            </View>
-            <View>
-              <CustomText variant="overline" color={colors.accent} style={{ paddingTop: spacing.xs, paddingBottom: spacing.xs }}>Schedule</CustomText>
-              <DetailRow first label="Done on time" value={String(summary.completedOnTime)} />
-              <DetailRow label="Pushed to another day" value={String(summary.pushed)} tone={summary.pushed ? colors.warning : undefined} />
-              <DetailRow label="Skipped" value={String(summary.skipped)} tone={summary.skipped ? colors.error : undefined} />
-            </View>
-          </Card>
-        </View>
-
-        {records > 0 && (
-          <View style={{ gap: spacing.sm }}>
-            <CustomText variant="overline" color={colors.inkMuted}>New records</CustomText>
-            <Card style={{ padding: 0 }}>
-              {summary.personalRecords.map((pr, i) => (
-                <View key={`${pr.exerciseId}-${pr.sessionId}-${pr.kind}`} style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.md, paddingHorizontal: spacing.lg, paddingVertical: spacing.md, borderTopWidth: i ? 1 : 0, borderTopColor: colors.line }}>
-                  <Icon icon={generalIcons.trophy} size={18} color={colors.accent} />
-                  <View style={{ flex: 1 }}>
-                    <CustomText variant="bodyStrong">{pr.exerciseName}</CustomText>
-                    <CustomText variant="caption" color={colors.inkMuted}>
-                      {pr.previousValue !== null ? `Up from ${formatRecordValue(pr.kind, pr.previousValue, unit, dist)}` : 'First record'}
-                    </CustomText>
-                  </View>
-                  <CustomText variant="bodyStrong" color={colors.accent}>{formatRecordValue(pr.kind, pr.value, unit, dist)}</CustomText>
-                </View>
-              ))}
-            </Card>
-          </View>
-        )}
-
-        {review.nextTargets.length > 0 && (
-          <View style={{ gap: spacing.sm }}>
-            <CustomText variant="overline" color={colors.inkMuted}>Next cycle</CustomText>
-            <Card style={{ padding: 0 }}>
-              {review.nextTargets.map((p, i) => {
-                const { next, previous, did, reason } = describeProgression(p, unit);
-                const tone = p.change === 'increase' ? colors.success : p.change === 'climb' ? colors.accent : p.change === 'drop' ? colors.warning : colors.inkMuted;
-                const icon = p.change === 'increase' || p.change === 'climb' ? directionIcons.angleUp : p.change === 'drop' ? directionIcons.angleDown : generalIcons.minus;
-                const verdict = verdictLabel(p.verdict);
-                const verdictTone = p.verdict === 'beat' ? colors.accent : p.verdict === 'hit' ? colors.success : colors.warning;
-                return (
-                  <View key={p.workoutExerciseId} style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.md, padding: spacing.lg, borderTopWidth: i ? 1 : 0, borderTopColor: colors.line }}>
-                    <View style={{ width: 32, height: 32, borderRadius: 16, backgroundColor: colors.surfaceRaised, alignItems: 'center', justifyContent: 'center' }}>
-                      <Icon icon={icon} size={18} color={tone} strokeWidth={2.5} />
-                    </View>
-                    <View style={{ flex: 1, gap: spacing.xs }}>
-                      <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.sm }}>
-                        <View style={{ flex: 1 }}>
-                          <CustomText variant="bodyStrong">{p.exerciseName}</CustomText>
-                        </View>
-                        {/* How the cycle went against the target, at a glance. */}
-                        {verdict && (
-                          <View style={{ paddingHorizontal: spacing.sm, paddingVertical: 2, borderRadius: radius.pill, backgroundColor: colors.surfaceRaised }}>
-                            <CustomText variant="overline" color={verdictTone}>{verdict}</CustomText>
-                          </View>
-                        )}
-                      </View>
-                      {/* What was asked beside what was done, then the coming target and why (owner, 2026-10-24: the
-                          one "Did … · asked …" line was too busy). */}
-                      {did && (
-                        <View style={{ flexDirection: 'row', gap: spacing.md, paddingVertical: spacing.xs }}>
-                          {(
-                            [
-                              ['Expected', previous ?? '—'],
-                              ['Actual', did],
-                            ] as const
-                          ).map(([label, value]) => (
-                            <View key={label} style={{ flex: 1, gap: 2 }}>
-                              <CustomText variant="overline" color={colors.inkMuted}>{label}</CustomText>
-                              <CustomText variant="caption" color={colors.ink}>{value}</CustomText>
-                            </View>
-                          ))}
-                        </View>
-                      )}
-                      <CustomText variant="label" color={tone}>Next {next}</CustomText>
-                      <CustomText variant="caption" color={colors.inkMuted}>{reason}</CustomText>
-                    </View>
-                  </View>
-                );
-              })}
-            </Card>
-          </View>
-        )}
-
-        {sessions.length > 0 && (
-          <View style={{ gap: spacing.sm }}>
-            <CustomText variant="overline" color={colors.inkMuted}>Workouts</CustomText>
-            <Card style={{ padding: 0 }}>
-              {sessions.map((s, i) => {
-                const logged = describeLogged([s]);
-                const duration = s.finishedAt ? formatDuration(Math.round((s.finishedAt - s.startedAt) / 1000)) : null;
-                return (
-                  <TouchableOpacity
-                    key={s.id}
-                    onPress={() => onOpenSession(s.id, s.workoutName)}
-                    style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.md, padding: spacing.lg, borderTopWidth: i ? 1 : 0, borderTopColor: colors.line }}
-                  >
-                    <View style={{ flex: 1 }}>
-                      <CustomText variant="bodyStrong">{s.workoutName}</CustomText>
-                      <CustomText variant="caption" color={colors.inkMuted}>
-                        {[dateLabel(s.date), ...logged].join(' · ')}{duration ? ` · ${duration}` : ''}
-                      </CustomText>
-                    </View>
-                    <Icon icon={directionIcons.angleRight} size={18} color={colors.inactive} />
-                  </TouchableOpacity>
-                );
-              })}
-            </Card>
-          </View>
-        )}
-        {/* Swap an exercise or move a day before the next cycle starts; a synced copy of a buddy's plan is theirs to change. */}
-        {cycle.status === 'active' && !plan.sharedFrom?.synced && (
-          <PrimaryButton label="Adjust plan" variant="outline" onPress={() => (navigation as unknown as NavigationProp<AppStackParams>).navigate('PlanEditScreen', { planId: plan.id })} />
-        )}
-      </ScrollView>
-      {/* Pinned, so starting the next cycle is one tap from anywhere in the review. */}
+      </View>
+      {/* Summary, Targets and Workouts a tap or a swipe apart (v1 #9), each scrolling on its own. */}
+      <SegmentedPager<Section>
+        value={section}
+        onChange={setSection}
+        pages={[
+          { value: 'summary', label: 'Summary', render: () => summaryPage },
+          { value: 'targets', label: 'Targets', render: () => targetsPage },
+          { value: 'workouts', label: 'Workouts', render: () => workoutsPage },
+        ]}
+      />
+      {/* Pinned, so starting the next cycle is one tap from any section. */}
       {pinned && (
         <View style={{ padding: spacing.lg, paddingBottom: spacing.lg + bottomInset, borderTopWidth: 1, borderTopColor: colors.line, backgroundColor: colors.ground }}>
           <PrimaryButton label={`Start cycle ${nextCycleNumberAfter(cycle)}`} busy={busy} onPress={() => { startNext().catch(err => console.warn(err)); }} />

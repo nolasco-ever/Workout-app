@@ -70,7 +70,8 @@ Design (canvas first)
 8. ~~Workout-done screen redesign, with the PR celebration as one screen per record
    in a carousel (build 17 TF-11, TF-20); pairs with the badge celebration.~~ Done
    2026-11-13: a page per record, then summary A (canvas "Workout done" row).
-9. Cycle review: another UI/UX pass, still too busy (build 16, build 17 TF-14).
+9. ~~Cycle review: another UI/UX pass, still too busy (build 16, build 17 TF-14).~~
+   Done 2026-11-14: Summary, Targets and Workouts sections (canvas option B).
 10. Cardio modes deep dive (**discuss first**; owner 2026-10-24: "i can't ship a
     product out with a terrible cardio experience"). First part, canvas first:
     no indoor/outdoor question (the exercise name says it); outdoor cardio
