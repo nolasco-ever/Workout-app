@@ -18,6 +18,9 @@ import { AuthStack } from '../screens/Auth/AuthStack';
 import { OnboardingStack } from '../screens/Onboarding/OnboardingStack';
 import { AccountScreen } from '../screens/Tabs/Profile/screens/AccountScreen';
 import { UnitsScreen } from '../screens/Tabs/Profile/screens/UnitsScreen';
+import { HistoryScreen } from '../screens/Tabs/Profile/screens/HistoryScreen';
+import { NotificationSettingsScreen } from '../screens/Tabs/Profile/screens/NotificationSettingsScreen';
+import { PlaceholderScreen } from '../screens/placeholderScreen';
 import { ExerciseDetailScreen } from '../screens/Tabs/Workout/screens/ExerciseDetailScreen';
 import { SessionScreen } from '../screens/Tabs/Workout/screens/SessionScreen';
 import { SessionCompleteScreen } from '../screens/Tabs/Workout/screens/SessionCompleteScreen';
@@ -60,6 +63,9 @@ export type AppStackParams = BuddyRoutes & SessionRoutes & ReactionsParams & Omi
     NotificationsScreen: undefined;
     AccountScreen: undefined;
     UnitsScreen: undefined;
+    HistoryScreen: undefined;
+    NotificationSettingsScreen: undefined;
+    PlaceholderScreen: { title: string };
     /** How-to for an exercise opened from a buddy's plan or the running workout's picker; the plan creator and Workout tab have their own copies. */
     ExerciseDetailScreen: { exerciseId: string; knownAs?: string; addToSession?: boolean; swapForSessionExerciseId?: string; addToWorkoutId?: string };
     /** The badge grid; `achievementId` opens that badge's family. */
@@ -130,6 +136,9 @@ export const AppStack = () => {
                     <Stack.Screen name="NotificationsScreen" component={NotificationsScreen} options={opts.screen('Notifications')} />
                     <Stack.Screen name="AccountScreen" component={AccountScreen} options={opts.screen('Account')} />
                     <Stack.Screen name="UnitsScreen" component={UnitsScreen} options={opts.screen('Units')} />
+                    <Stack.Screen name="HistoryScreen" component={HistoryScreen} options={opts.screen('History')} />
+                    <Stack.Screen name="NotificationSettingsScreen" component={NotificationSettingsScreen} options={opts.screen('Notifications')} />
+                    <Stack.Screen name="PlaceholderScreen" component={PlaceholderScreen} options={({ route }) => opts.screen(route.params.title)} />
                     {/* The plan screens, pushed like any other (they were a stack of their own once). Creating walks four numbered steps; editing opens one part at a time from the hub. */}
                     <Stack.Screen name="PlansScreen" component={PlansScreen} options={opts.screen('My plans')} />
                     <Stack.Screen name="PlanOverviewScreen" component={PlanOverviewScreen} options={opts.screen('Plan')} />

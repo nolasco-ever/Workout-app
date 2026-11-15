@@ -4,6 +4,23 @@ Every decision the owner makes, newest first, with why. Open questions sit at th
 bottom until they're answered. Decisions before 2026-11-07 were recorded only in
 commit messages, `docs/RELEASES.md` and Claude's session notes.
 
+## 2026-11-14 · Screens opened from Profile cover the tab bar
+
+- **Project:** FlexCoach
+- **Type:** design (navigation)
+- **Decision:** History, Notifications, What buddies see, Privacy and Contact
+  us (and the workout and cycle screens History opens) move from the Profile
+  tab's stack to the root stack, like Account, Units and My plans already
+  were, so none of them shows the tab bar. The Profile tab's stack now holds
+  only Profile. The "review what buddies see" prompt opens the root screen,
+  and back returns to where it was.
+- **Why:** Owner: "every screen in the profile tab shouldnt have the tab bar.
+  i.e. notifications, what buddies see, privacy, contact us, and history all
+  show the tab bar". Matches the standing rule that detail screens are pushed
+  on the root stack.
+- **Source:** bug fix before build 22.
+- **Decided by:** owner.
+
 ## 2026-11-14 · Tab bar: icons only, your photo on Profile, as built
 
 - **Project:** FlexCoach

@@ -36,7 +36,8 @@ export const SharingPrompt = () => {
   const review = () =>
     dismiss(() => {
       if (!navigationRef.isReady()) return;
-      (navigationRef as any).navigate('TabNavigator', { screen: 'ProfileStack', params: { screen: 'SharingScreen', initial: false } });
+      // On the root stack, over the tabs; back returns to where the prompt was.
+      navigationRef.navigate('SharingScreen');
     });
 
   const lines: { icon: typeof generalIcons.check; text: string }[] = [

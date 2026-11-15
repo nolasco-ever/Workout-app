@@ -24,7 +24,7 @@ import { useLayoutFamily } from '../../../../components/layout/useLayoutFamily';
 import { useBookGutter } from '../../../../components/layout/useBookGutter';
 import { SessionDetail } from '../../Workout/screens/SessionDetailScreen';
 import { CycleReviewView } from '../../Workout/screens/CycleReviewScreen';
-import { ProfileStackParams } from '../ProfileStack';
+import type { AppStackParams } from '../../../../appNavigators/AppStack';
 
 const monthOf = (d: string) => fromLocalDate(d).toLocaleDateString(undefined, { month: 'long', year: 'numeric' });
 
@@ -47,7 +47,7 @@ interface CycleRow {
  * numbers (tap one for its review).
  */
 export const HistoryScreen = () => {
-  const navigation = useNavigation<NativeStackNavigationProp<ProfileStackParams>>();
+  const navigation = useNavigation<NativeStackNavigationProp<AppStackParams>>();
   const { colors, spacing } = useTheme();
   useNoHeaderGlass();
   const bottomInset = useTabScrollInset();
