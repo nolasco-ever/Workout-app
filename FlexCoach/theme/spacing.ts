@@ -8,11 +8,12 @@ export const spacing = {
   xxl: 32,
 } as const;
 
+/** Softer corners since 2026-11-14 (owner, canvas "Corners" row): about half the old radii. Pills stay round. */
 export const radius = {
-  sm: 8,
-  md: 12,
-  lg: 16,
-  xl: 24,
+  sm: 4,
+  md: 6,
+  lg: 8,
+  xl: 12,
   pill: 999,
 } as const;
 

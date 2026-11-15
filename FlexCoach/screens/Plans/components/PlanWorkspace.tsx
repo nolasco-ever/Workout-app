@@ -45,7 +45,7 @@ const sectionOf = (p: PlanProblem): PlanSection => (p.field === 'name' ? 'basics
  */
 export const PlanWorkspace = ({ mode, initial = 'basics', initialWorkoutId = null, initialEntryId = null, onDone }: { mode: 'create' | 'edit'; initial?: PlanSection; /** A workout (and one of its exercises) to open at once: a phone's pushed screens, re-arranged on a rotation. */ initialWorkoutId?: string | null; initialEntryId?: string | null; onDone: () => void }) => {
   const navigation = useNavigation<NativeStackNavigationProp<PlansStackParams>>();
-  const { colors, spacing } = useTheme();
+  const { colors, spacing, radius } = useTheme();
   const { uid } = useAuth();
   const home = useWorkoutHome();
   const { draft, original, clear, stopAutosave } = usePlanEditor();
@@ -233,7 +233,7 @@ export const PlanWorkspace = ({ mode, initial = 'basics', initialWorkoutId = nul
                   </View>
                   {/* One banner per thing still missing; a tap opens the part it belongs to. */}
                   {problems.map(p => (
-                    <TouchableOpacity key={p.message} onPress={() => choose(sectionOf(p))} accessibilityRole="button" style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.md, padding: spacing.md, borderRadius: 12, backgroundColor: colors.accentTint }}>
+                    <TouchableOpacity key={p.message} onPress={() => choose(sectionOf(p))} accessibilityRole="button" style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.md, padding: spacing.md, borderRadius: radius.md, backgroundColor: colors.accentTint }}>
                       <View style={{ width: 10, height: 10, borderRadius: 5, backgroundColor: colors.error }} />
                       <CustomText variant="bodyStrong" style={{ flex: 1 }}>{p.message}</CustomText>
                       <CustomText variant="label" color={colors.accent}>Open {rows.find(r => r.key === sectionOf(p))?.title}</CustomText>

@@ -4,6 +4,26 @@ Every decision the owner makes, newest first, with why. Open questions sit at th
 bottom until they're answered. Decisions before 2026-11-07 were recorded only in
 commit messages, `docs/RELEASES.md` and Claude's session notes.
 
+## 2026-11-14 · Softer corners across the app (design pass)
+
+- **Project:** FlexCoach
+- **Type:** design
+- **Decision:** Corners are about half as round as before. The theme radii are
+  now `sm` 4, `md` 6, `lg` 8, `xl` 12 (were 8, 12, 16, 24). So cards are 8,
+  buttons, fields and tables 6, small icon tiles 4, and sheets 12. The few
+  hard-coded corners (the cardio glass panel, route map and console photo on
+  the cardio done screen, the plan check rows, the chart tooltip) now use the
+  tokens. Pills stay fully round: chips, tags, the section switch (History,
+  How to, Cycle review) and the progress bars. So do circles (checks,
+  numbered items, avatars, round buttons). The Watch app keeps its own
+  corners.
+- **Why:** The owner wanted the app less round, and compared now, softer and
+  sharp on the canvas ("Corners" row): "i like the softer look". Softer pills
+  were drawn too; the owner chose to keep the section switch and pills as they
+  are.
+- **Source:** design pass, not a task on the list.
+- **Decided by:** owner.
+
 ## 2026-11-14 · Units can be changed after onboarding (v1 #11)
 
 - **Project:** FlexCoach

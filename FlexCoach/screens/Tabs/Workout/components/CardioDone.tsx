@@ -38,7 +38,7 @@ export const soleCardioSet = (session: Session): LoggedSet | null =>
  * the check and get their route map under the table in 10.8.
  */
 export const CardioDone = ({ result, onDone }: { result: SessionResult; onDone: () => void }) => {
-  const { colors, spacing, fonts } = useTheme();
+  const { colors, spacing, fonts, radius } = useTheme();
   const column = useComfortableColumn();
   const { uid, profile } = useAuth();
   const unit = profile?.distanceUnit ?? 'mi';
@@ -191,7 +191,7 @@ export const CardioDone = ({ result, onDone }: { result: SessionResult; onDone: 
 
         {/* Outdoors, the line marking the path taken, under the table (v1 #10.8). */}
         {kind.behind === 'map' && set.route && (
-          <View style={{ height: 200, borderRadius: 20, overflow: 'hidden', borderWidth: 1, borderColor: colors.line }}>
+          <View style={{ height: 200, borderRadius: radius.lg, overflow: 'hidden', borderWidth: 1, borderColor: colors.line }}>
             <RouteMap points={decodeRoute(set.route.line)} style={{ flex: 1 }} />
           </View>
         )}
@@ -230,7 +230,7 @@ export const CardioDone = ({ result, onDone }: { result: SessionResult; onDone: 
       >
         {found && (
           <View style={{ gap: spacing.md }}>
-            <Image source={{ uri: found.uri }} resizeMode="cover" accessibilityLabel="The photo of the console" style={{ height: 168, borderRadius: 16, backgroundColor: colors.surfaceRaised }} />
+            <Image source={{ uri: found.uri }} resizeMode="cover" accessibilityLabel="The photo of the console" style={{ height: 168, borderRadius: radius.lg, backgroundColor: colors.surfaceRaised }} />
             <CustomText variant="body" color={colors.inkMuted} centered>The numbers you choose to keep will replace the existing numbers. Time stays as the app timed it.</CustomText>
             <Card style={{ paddingVertical: 0, paddingHorizontal: spacing.md }}>
               {foundRows.map((r, i) => (

@@ -38,7 +38,7 @@ const PAD = { top: 12, right: 12, bottom: 22, left: 40 };
  * hairline snaps to the nearest date, with the value shown above.
  */
 export const LineChart = ({ points, height = 180, format, reference = null, onScrub, highlight = null }: Props) => {
-  const { colors, fonts, spacing } = useTheme();
+  const { colors, fonts, spacing, radius } = useTheme();
   const [width, setWidth] = useState(0);
   const [active, setActive] = useState<number | null>(null);
   const activeX = useSharedValue(0);
@@ -122,7 +122,7 @@ export const LineChart = ({ points, height = 180, format, reference = null, onSc
   return (
     <View onLayout={onLayout} style={{ width: '100%' }}>
       <Animated.View pointerEvents="none" style={[{ position: 'absolute', top: -2, width: 88, alignItems: 'center', zIndex: 1 }, tooltipStyle]}>
-        <View style={{ backgroundColor: colors.ink, borderRadius: 8, paddingHorizontal: spacing.sm, paddingVertical: 4, alignItems: 'center' }}>
+        <View style={{ backgroundColor: colors.ink, borderRadius: radius.sm, paddingHorizontal: spacing.sm, paddingVertical: 4, alignItems: 'center' }}>
           <CustomText variant="label" color={colors.ground}>{activePoint ? format(activePoint.value) : ''}</CustomText>
           <CustomText variant="caption" color={colors.inactive}>{activePoint ? shortDate(activePoint.date) : ''}</CustomText>
         </View>

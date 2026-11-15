@@ -54,7 +54,7 @@ const Glass = ({ style, children, onLayout }: { style: object; children: React.R
  * the panel in 10.8; until then they show the rings too.
  */
 export const CardioSession = ({ name, kind, elapsedSec, running, logged, distanceM, bpm, kcal, unit, busy, route, onBack, onStart, onPause, onEnd }: Props) => {
-  const { colors, spacing, fonts } = useTheme();
+  const { colors, spacing, fonts, radius } = useTheme();
   const insets = useSafeAreaInsets();
   const started = running || elapsedSec > 0 || logged;
 
@@ -160,7 +160,7 @@ export const CardioSession = ({ name, kind, elapsedSec, running, logged, distanc
         <View style={{ width: 44 }} />
       </View>
 
-      <Glass onLayout={h => setPanelHeight(h)} style={{ position: 'absolute', left: spacing.sm, right: spacing.sm, bottom: spacing.md + insets.bottom, borderRadius: 32, paddingTop: spacing.lg, paddingBottom: spacing.xl, paddingHorizontal: spacing.md, gap: spacing.md }}>
+      <Glass onLayout={h => setPanelHeight(h)} style={{ position: 'absolute', left: spacing.sm, right: spacing.sm, bottom: spacing.md + insets.bottom, borderRadius: radius.xl, paddingTop: spacing.lg, paddingBottom: spacing.xl, paddingHorizontal: spacing.md, gap: spacing.md }}>
         <CustomText
           centered
           accessibilityLabel={`Time ${formatDuration(elapsedSec)}`}
