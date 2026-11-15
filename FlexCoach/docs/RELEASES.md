@@ -3,6 +3,27 @@
 Newest build first. **Store notes** is the tester-facing text, identical for
 TestFlight and Google Play (under 500 characters). **Details** is for us.
 
+## Build 22 (2026-11-14)
+
+### Store notes
+
+Build 22
+
+• New records get a page each when you finish a workout, then a cleaner summary
+• Cycle review is split into Summary, Targets and Workouts
+• Missed a workout? A clearer screen to do it today, move it or skip it
+• Change pounds/kilograms and miles/kilometres in Profile > Units
+• Your photo on the Profile tab; softer corners throughout
+• Fixed: starting a new cycle when only rest days were left, and console scans misreading distance
+
+### Details
+
+- Commits c172427..HEAD: v1 #7 (Workout missed as a modal), #8 (a page per new record, then summary A), #9 (cycle review sections), #11 (Units screen, locked during a workout); softer corners app-wide (theme radii halved; pills, the section switch and circles unchanged); tab bar icons only, with your uploaded photo on Profile (orange ring when chosen); screens opened from Profile now cover the tab bar; native toggles everywhere; fixes from build 21: GPS for "Running, Outdoor", the badge viewer halo, a cycle stuck with no review when only rest days were left (B21-1), console scan reading an icon as the distance (B21-2), console sheet toggle layout (B21-4).
+- Native: new local module NativeTabAvatar (iOS and Android) drawing the round photo icon. No new permissions. No Firestore rules change.
+- What to test: finish a workout with and without new records; a cycle review (all three sections, Adjust plan under Targets); the Workout missed modal (do today, pick another day, skip); Units (switch both, check History, targets, the Watch; locked during a workout); the Profile tab with a photo, a built-in avatar and none; History, Notifications, What buddies see, Privacy, Contact us open without the tab bar; a console scan on a console with icons beside its labels.
+- Open: B21-3 (tab icons glitched on iOS 26.6.2). Ask that tester whether it happens on build 22, and when. B21-5 (pre-set text reactions) is planned after this build.
+- Not yet proven on hardware: the NativeTabAvatar module on either platform, the icon-only tab bar on iOS 26/27, the console sheet toggle alignment on iOS 27.
+
 ## Build 21 (2026-11-08)
 
 ### Store notes
