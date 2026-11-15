@@ -130,6 +130,7 @@ export const ProfileScreen = () => {
               <SurfaceCard style={{ padding: 0 }}>
                 <Row icon={generalIcons.bell} title="Notifications" description="Reminders, rest timer, buddy activity" onPress={() => navigation.navigate('NotificationSettingsScreen')} />
                 <Row icon={generalIcons.eye} title="What buddies see" description="Workouts, records, totals, skipped days" divider onPress={() => navigation.navigate('SharingScreen')} />
+                <Row icon={generalIcons.ruler} title="Units" description={`${profile?.weightUnit === 'kg' ? 'Kilograms' : 'Pounds'} · ${profile?.distanceUnit === 'km' ? 'Kilometres' : 'Miles'}`} divider onPress={() => navigation.navigate('UnitsScreen')} />
                 <Row icon={generalIcons.user} title="Account" description={user?.email ?? undefined} divider onPress={() => navigation.navigate('AccountScreen')} />
                 <Row icon={generalIcons.key} title="Privacy" divider onPress={placeholder('Privacy')} />
                 <Row icon={generalIcons.envelope} title="Contact us" divider onPress={placeholder('Contact us')} />

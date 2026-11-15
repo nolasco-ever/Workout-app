@@ -4,6 +4,26 @@ Every decision the owner makes, newest first, with why. Open questions sit at th
 bottom until they're answered. Decisions before 2026-11-07 were recorded only in
 commit messages, `docs/RELEASES.md` and Claude's session notes.
 
+## 2026-11-14 · Units can be changed after onboarding (v1 #11)
+
+- **Project:** FlexCoach
+- **Type:** functional and design
+- **Decision:** A "Units" row on Profile's Settings card, between "What
+  buddies see" and "Account", opens a Units screen with Weight (Pounds /
+  Kilograms) and Distance (Miles / Kilometres). Distance is included with
+  weight. While a workout is running the choices are locked, with "Finish
+  your workout to change units." Each tap saves at once; a failed save puts
+  the old choice back and says so. No caption under the card (owner removed
+  "Everything you've logged shows in the new unit right away. Nothing is
+  converted or lost."). Nothing stored changes: weights are kept in
+  kg and distances in metres, and the unit only changes how they're shown.
+- **Why:** Units could only be set in onboarding. The lock is there because a
+  weight typed but not yet saved mid-workout is plain text, and would be read
+  in the new unit. Owner answered yes to the Profile placement, to including
+  distance, and to the lock. Account was not used because it's about sign-in.
+- **Source:** feature work, v1 #11.
+- **Decided by:** owner.
+
 ## 2026-11-14 · Cycle review sections, as built (v1 #9)
 
 - **Project:** FlexCoach

@@ -108,8 +108,9 @@ Design (canvas first)
     - [x] 10.10 Reusable Notice sheet.
     - [x] 10.11 Split existing plans, with its Notice; ships in the next build
           for everyone, no switch (owner).
-11. Weight unit as an app-wide setting changeable after onboarding (only the
-    Profile/Account control is missing).
+11. ~~Weight unit as an app-wide setting changeable after onboarding (only the
+    Profile/Account control is missing).~~ Done 2026-11-14: a Units screen from
+    Profile, weight and distance, locked during a workout.
 12. Pre-made beginner plans with a questionnaire that picks one (build 10).
 13. Progression algorithm deep dive (**discuss first**): targets ramp gradually
     and never dip set to set; "one more rep" per set from what was actually done.
