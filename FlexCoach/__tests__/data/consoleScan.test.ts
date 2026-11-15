@@ -21,6 +21,22 @@ describe('reading a console (v1 #10.7)', () => {
     expect(r.speedMps).toBeCloseTo((6.2 * MI) / 3600);
   });
 
+  it('never takes an icon read as a digit in front of a label (build 21: "9 Total Distance" read as 9 mi)', () => {
+    const r = readConsole(
+      [
+        at('Total Duration', 0.08, 0.40), at('20:09', 0.08, 0.45), at('minutes', 0.08, 0.50),
+        at('9 Total Distance', 0.26, 0.40), at('1.50', 0.28, 0.45), at('miles', 0.28, 0.50),
+        at('Avg Speed', 0.45, 0.40), at('4.5', 0.46, 0.45), at('mph', 0.46, 0.50),
+        at('Avg Incline', 0.62, 0.40), at('0', 0.64, 0.45), at('%', 0.64, 0.50),
+        at('Total Calories', 0.78, 0.40), at('199', 0.80, 0.45), at('kcal', 0.80, 0.50),
+      ],
+      'mi',
+    );
+    expect(r.distanceM).toBeCloseTo(1.5 * MI);
+    expect(r.kcal).toBe(199);
+    expect(r.speedMps).toBeCloseTo((4.5 * MI) / 3600);
+  });
+
   it('reads a label and number in one piece, and the unit on screen', () => {
     const r = readConsole([at('DIST 4.20 KM', 0.1, 0.1, 0.3), at('312 CAL', 0.1, 0.3, 0.3), at('8.4 km/h', 0.1, 0.5, 0.3)], 'mi');
     expect(r.distanceM).toBeCloseTo(4200);

@@ -1,5 +1,5 @@
 import { Cycle, Occurrence } from '../../data/models';
-import { cycleReportReadyAt, isCycleReportReady, reportReadyAfter, settleCycleReport } from '../../data/engine/cycleReport';
+import { cycleReportReadyAt, healCycleReport, isCycleReportReady, reportReadyAfter, settleCycleReport } from '../../data/engine/cycleReport';
 
 const MORNING = { hour: 9, minute: 0 };
 const local = (y: number, m: number, d: number, h: number, min = 0) => new Date(y, m - 1, d, h, min, 0, 0).getTime();
@@ -46,5 +46,22 @@ describe('cycleReportReadyAt', () => {
     const c = cycle([occ('a', '2026-10-05', 'completed')], { reportReadyAt: local(2026, 10, 5, 14) });
     expect(isCycleReportReady(c, MORNING, local(2026, 10, 5, 13, 59))).toBe(false);
     expect(isCycleReportReady(c, MORNING, local(2026, 10, 5, 14))).toBe(true);
+  });
+});
+
+describe('healCycleReport (build 21 feedback)', () => {
+  const NOW = local(2026, 11, 12, 15, 14);
+  it('makes the report ready now when every workout is resolved but no time was stamped', () => {
+    const c = cycle([occ('a', '2026-11-09', 'completed'), occ('b', '2026-11-10', 'skipped'), occ('r', '2026-11-12', 'rest'), occ('r2', '2026-11-13', 'rest')], { endDate: '2026-11-13' });
+    expect(healCycleReport(c, NOW).reportReadyAt).toBe(NOW);
+    expect(isCycleReportReady(healCycleReport(c, NOW), MORNING, NOW)).toBe(true);
+  });
+  it('leaves a cycle alone while a workout is still open, or once a time is stamped', () => {
+    const open = cycle([occ('a', '2026-11-09', 'completed'), occ('b', '2026-11-14', 'scheduled')]);
+    expect(healCycleReport(open, NOW)).toBe(open);
+    const stamped = cycle([occ('a', '2026-11-09', 'completed')], { reportReadyAt: 5 });
+    expect(healCycleReport(stamped, NOW)).toBe(stamped);
+    const closed = cycle([occ('a', '2026-11-09', 'completed')], { status: 'completed' });
+    expect(healCycleReport(closed, NOW)).toBe(closed);
   });
 });

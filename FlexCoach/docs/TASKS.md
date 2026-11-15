@@ -9,6 +9,27 @@ Until 2026-11-07 this list lived only in Claude's session memory; this file is
 now the official copy. Keep it current: add deferrals under the right heading
 and move finished work to **Done**.
 
+## Build 21 tester feedback (2026-11-14)
+
+Exports in `~/Documents/FlexCoach_Feedback/build_21/` (`testflight_feedback`,
+`-2` … `-5`; "B21-N" below).
+
+- [x] B21-1 "It's the 12th today. How do I start my new cycle?" The cycle's
+      workouts were all resolved but its report time was never stamped, so the
+      review waited out the rest days.
+- [x] B21-2 Console scan read distance as 9 mi: the route icon before "Total
+      Distance" was read as a digit.
+- [ ] B21-3 Tab bar icons glitched on iOS 26.6 (wrong glyphs, Workout blank).
+      Can't reproduce; ask the tester whether it happens on build 22, and when
+      (launch, switching tabs, back from the background). Suspect: the tab
+      library reloading every icon in the background in no fixed order.
+- [x] B21-4 Toggles misaligned in "From the console"; every toggle is now
+      green, as there.
+- [ ] B21-5 Pre-set text reactions alongside the emoji reactions. After build
+      22 (owner, 2026-11-14); needs a design.
+- [ ] Profile tab shows your photo (a ring when selected) and the tab bar
+      drops its labels (owner, 2026-11-14). Canvas first.
+
 ## Build 20 tester feedback (2026-11-07)
 
 Exports in `~/Documents/FlexCoach_Feedback/build_20/` (`testflight_feedback`,

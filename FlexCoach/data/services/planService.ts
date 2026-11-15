@@ -1,6 +1,8 @@
 import { Cycle, Id, LocalDate, Plan, Schedule, Workout, WorkoutType } from '../models';
 import { newId } from '../engine/ids';
 import { today } from '../engine/dates';
+import { settleCycleReport } from '../engine/cycleReport';
+import { withPrefDefaults } from '../engine/notifications';
 import { closeCycle, generateCycle, nextCycleNumber, rebuildCycle } from '../engine/schedule';
 import { mapScheduleDays, scheduledIds } from '../engine/scheduleDays';
 import { applySource, detachFromSource } from '../engine/planSync';
@@ -77,7 +79,8 @@ export const saveActivePlan = async (uid: Id, before: Plan, after: Plan, activeC
   if (!activeCycle || activeCycle.planId !== pruned.id || !cycleNeedsRestart(before, pruned)) return { rebuilt: false };
   const rebuilt = rebuildCycle(activeCycle, pruned, today());
   if (rebuilt === activeCycle) return { rebuilt: false };
-  await cycleRepository.save(uid, rebuilt);
+  // An edit can take away the last workouts still open; the report then follows as after any last workout.
+  await cycleRepository.save(uid, settleCycleReport(rebuilt, Date.now(), withPrefDefaults(undefined).morningTime));
   return { rebuilt: true };
 };
 

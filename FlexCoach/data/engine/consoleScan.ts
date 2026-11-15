@@ -36,6 +36,8 @@ const LABELS: Record<ScanField | 'skip', RegExp> = {
 };
 
 const NUMBER = /(\d+(?:[.,]\d+)?)/;
+/** Label words that are units, so the number before them is theirs: "330 CAL", "6.2 MPH", "4.20 KM". */
+const UNIT_WORD = /^(cal|cals|kcal|mph|km\/h|kph|km|mi|miles?|kilometers?)$/i;
 // A clock ("25:12", "1:02:33") is time, never one of ours.
 const CLOCK = /\d+:\d{2}/;
 
@@ -52,6 +54,15 @@ const numberIn = (text: string): number | null => {
   if (CLOCK.test(text)) return null;
   const m = text.match(NUMBER);
   return m ? Number(m[1].replace(',', '.')) : null;
+};
+
+/** A label piece's own number: after the label, or before it when the label is its unit; null otherwise. */
+const ownNumber = (text: string, field: ScanField): number | null => {
+  const value = numberIn(text);
+  if (value === null) return null;
+  const label = text.match(LABELS[field]);
+  const numberAt = text.search(NUMBER);
+  return label && label.index !== undefined && numberAt < label.index && !UNIT_WORD.test(label[0]) ? null : value;
 };
 
 const unitIn = (text: string): DistanceUnit | null => (/\bkm|kilomet|km\/h|kph/i.test(text) ? 'km' : /\bmi(les?)?\b|mph/i.test(text) ? 'mi' : null);
@@ -101,17 +112,19 @@ export const readConsole = (pieces: TextPiece[], unit: DistanceUnit): ConsoleRea
     return true;
   };
 
-  // A label and its number in one piece: "DIST 2.61", "330 CAL", "6.2 MPH".
+  // A label and its number in one piece: "DIST 2.61", "330 CAL", "6.2 MPH". A number ahead of the label only counts
+  // when the label is its unit ("330 CAL"); ahead of a name ("9 Total Distance") it is an icon read as a digit (build 21).
   pieces.forEach((p, i) => {
     const field = kindOf(p.text);
-    const value = numberIn(p.text);
-    if (field && field !== 'skip' && value !== null && put(field, value, unitIn(p.text))) used.add(i);
+    if (!field || field === 'skip') return;
+    const value = ownNumber(p.text, field);
+    if (value !== null && put(field, value, unitIn(p.text))) used.add(i);
   });
 
   // A label on its own, paired with the closest free number below or beside it.
   pieces.forEach((label, i) => {
     const field = kindOf(label.text);
-    if (!field || used.has(i) || numberIn(label.text) !== null) return;
+    if (!field || used.has(i) || (field === 'skip' ? numberIn(label.text) : ownNumber(label.text, field)) !== null) return;
     let best: { j: number; d: number } | null = null;
     pieces.forEach((n, j) => {
       // A clock is only ever claimed by a label we read past (TIME), so it can't lend its place to a number below.

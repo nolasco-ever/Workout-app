@@ -234,14 +234,17 @@ export const CardioDone = ({ result, onDone }: { result: SessionResult; onDone: 
             <CustomText variant="body" color={colors.inkMuted} centered>The numbers you choose to keep will replace the existing numbers. Time stays as the app timed it.</CustomText>
             <Card style={{ paddingVertical: 0, paddingHorizontal: spacing.md }}>
               {foundRows.map((r, i) => (
-                <View key={r.field} style={{ flexDirection: 'row', alignItems: 'center', minHeight: 56, gap: spacing.md, borderTopWidth: i === 0 ? 0 : 1, borderTopColor: colors.line }}>
+                // Laid out like SwitchRow, whose toggles sit right on iOS 27; a fixed minHeight here let this one ride high (build 21).
+                <View key={r.field} style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.md, paddingVertical: spacing.md, borderTopWidth: i === 0 ? 0 : 1, borderTopColor: colors.line }}>
                   <CustomText variant="body" style={{ flex: 1 }}>{FIELD_LABEL[r.field]}</CustomText>
                   <CustomText variant="bodyStrong" color={found.keep[r.field] ? colors.ink : colors.inkMuted}>{r.value}</CustomText>
                   <Switch
                     value={found.keep[r.field]}
                     onValueChange={v => setFound({ ...found, keep: { ...found.keep, [r.field]: v } })}
                     accessibilityLabel={`Keep ${FIELD_LABEL[r.field].toLowerCase()}`}
-                    trackColor={{ true: colors.success, false: colors.surfaceRaised }}
+                    trackColor={{ true: colors.success, false: colors.line }}
+                    thumbColor={colors.surface}
+                    ios_backgroundColor={colors.line}
                   />
                 </View>
               ))}

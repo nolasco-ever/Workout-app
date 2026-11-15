@@ -32,7 +32,7 @@ import {
 } from '../engine/schedule';
 import { ExerciseProgression, progressPlan, roundWarmupKg, targetsForCycle } from '../engine/progression';
 import { renumberSets } from '../engine/sets';
-import { settleCycleReport } from '../engine/cycleReport';
+import { healCycleReport, settleCycleReport } from '../engine/cycleReport';
 import { withPrefDefaults } from '../engine/notifications';
 import { countWorkingSets, findPersonalRecords, summarizeCycle, totalVolumeKg } from '../engine/stats';
 import { cycleRepository } from '../repositories/cycleRepository';
@@ -85,6 +85,8 @@ export const pushDayTo = async (uid: Id, plan: Plan, cycle: Cycle, date: LocalDa
     if (!occ || occ.status !== 'scheduled' || occ.date >= targetDate) break;
     updated = pushDay(updated, plan, occ.date);
   }
+  // A weekly plan can push the last item out of the cycle, which resolves it.
+  updated = settleCycleReport(updated, Date.now(), withPrefDefaults(profile?.notifications).morningTime);
   await cycleRepository.save(uid, updated);
   tellBuddiesMoved(uid, profile, cycle, updated, ids);
   return updated;
@@ -166,7 +168,7 @@ export const startQuickSession = async (uid: Id, kind?: ExerciseKind): Promise<S
  */
 export const moveDayTo = async (uid: Id, plan: Plan, cycle: Cycle, date: LocalDate, targetDate: LocalDate, profile: UserProfile | null = null): Promise<Cycle> => {
   const ids = scheduledOn(cycle, date).map(o => o.id);
-  const current = moveDayToDate(cycle, plan, date, targetDate);
+  const current = settleCycleReport(moveDayToDate(cycle, plan, date, targetDate), Date.now(), withPrefDefaults(profile?.notifications).morningTime);
   await cycleRepository.save(uid, current);
   tellBuddiesMoved(uid, profile, cycle, current, ids);
   return current;
@@ -357,6 +359,12 @@ export const repairCycleNumbers = async (uid: Id): Promise<void> => {
   for (const cycles of byPlan.values()) {
     for (const fixed of renumberCycles(cycles)) await cycleRepository.save(uid, fixed);
   }
+};
+
+/** Stamp a report time on a cycle that resolved without one (see healCycleReport); a no-op otherwise. */
+export const healStuckCycleReport = async (uid: Id, cycle: Cycle): Promise<void> => {
+  const healed = healCycleReport(cycle, Date.now());
+  if (healed !== cycle) await cycleRepository.save(uid, healed);
 };
 
 /** The owner opened the report: the next cycle may start. Stamped once. */

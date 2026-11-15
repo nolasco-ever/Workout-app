@@ -4,6 +4,40 @@ Every decision the owner makes, newest first, with why. Open questions sit at th
 bottom until they're answered. Decisions before 2026-11-07 were recorded only in
 commit messages, `docs/RELEASES.md` and Claude's session notes.
 
+## 2026-11-14 · Build 21 feedback: fixes, green toggles, tab bar direction
+
+- **Project:** FlexCoach
+- **Type:** functional and design
+- **Decision:**
+  - A cycle whose workouts are all resolved but has no report time gets one
+    at once when the Workout tab opens, and the paths that could resolve the
+    last workout without stamping it now stamp it: pushing a day, moving a day,
+    and a plan edit that rebuilds the cycle. (B21-1)
+  - The console reader takes a number in front of a label only when the label
+    is its unit ("330 CAL"); in front of a name ("9 Total Distance") it is an
+    icon read as a digit. (B21-2)
+  - The selected tab keeps its filled icon. A one-glyph-per-tab change was
+    tried for the iOS 26 glitch and reverted: the library hands iOS both images
+    once, so the swap is unlikely to be the cause, and filled-when-selected is
+    the app's icon rule. B21-3 stays open until the tester reports back on
+    build 22. (owner: "restore the filled icons and reopen B21-3")
+  - Every toggle in the app is green. The Notifications and Sharing toggles
+    were orange. The console sheet's rows are laid out like the shared switch
+    row. (B21-4)
+  - Pre-set text reactions go on the list for after build 22. (B21-5)
+  - Next, canvas first: the Profile tab shows your uploaded photo, in a circle
+    with an orange ring when selected. Without a photo (or with a built-in
+    avatar), it shows the person icon. The tab bar shows icons only, with no
+    labels.
+- **Why:** Build 21 tester feedback. Owner: "yes go ahead" to the fixes; "we
+  need consistency throughout the app, so make the notification toggles
+  green"; "we can add the pre-set text reactions to the task list after build
+  22"; on the tab bar: "i agree with your suggestion", "can we just have the
+  tab bar be icons?"
+- **Source:** bug fixes, build 21 feedback B21-1 to B21-5; feature request for
+  the Profile tab.
+- **Decided by:** owner (the fix mechanics are Claude's).
+
 ## 2026-11-14 · Softer corners across the app (design pass)
 
 - **Project:** FlexCoach

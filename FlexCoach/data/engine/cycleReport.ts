@@ -41,6 +41,15 @@ export const settleCycleReport = (cycle: Cycle, now: number, morning: ClockTime)
 };
 
 /**
+ * A cycle whose workouts are all resolved but whose report time was never
+ * stamped (a path that resolved the last one without settling it, build 21
+ * feedback: the tester sat on rest days with no way to start the next
+ * cycle). Its report is ready now. Anything else comes back unchanged.
+ */
+export const healCycleReport = (cycle: Cycle, now: number): Cycle =>
+  cycle.status === 'active' && !cycle.reportReadyAt && allResolved(cycle) ? { ...cycle, reportReadyAt: now } : cycle;
+
+/**
  * When this cycle's report is (or will be) ready, or null while workouts
  * are still open. Cycles from before the stamp existed fall back to the
  * morning after their end date.

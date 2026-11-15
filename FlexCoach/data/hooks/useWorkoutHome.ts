@@ -8,7 +8,7 @@ import { withPrefDefaults } from '../engine/notifications';
 import { planRepository } from '../repositories/planRepository';
 import { cycleRepository } from '../repositories/cycleRepository';
 import { sessionRepository } from '../repositories/sessionRepository';
-import { repairCycleNumbers } from '../services/workoutService';
+import { healStuckCycleReport, repairCycleNumbers } from '../services/workoutService';
 
 export interface WorkoutHomeState {
   loading: boolean;
@@ -77,6 +77,13 @@ export const useWorkoutHome = (): WorkoutHomeState => {
     if (!uid) return;
     return sessionRepository.watchInProgress(uid, setInProgress);
   }, [uid]);
+
+  // A cycle that resolved without a report time gets one now, so its review and the next cycle aren't stuck behind
+  // the rest days left in it (build 21 feedback).
+  useEffect(() => {
+    if (!uid || !rawCycle) return;
+    healStuckCycleReport(uid, rawCycle).catch(err => console.warn('cycle report heal failed', err));
+  }, [uid, rawCycle]);
 
   // Once per sign-in: cycles numbered before the current rule get fixed.
   useEffect(() => {
