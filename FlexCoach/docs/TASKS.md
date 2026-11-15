@@ -23,12 +23,12 @@ Exports in `~/Documents/FlexCoach_Feedback/build_21/` (`testflight_feedback`,
       Can't reproduce; ask the tester whether it happens on build 22, and when
       (launch, switching tabs, back from the background). Suspect: the tab
       library reloading every icon in the background in no fixed order.
-- [x] B21-4 Toggles misaligned in "From the console"; every toggle is now
-      green, as there.
+- [x] B21-4 Toggles misaligned in "From the console". Every toggle is now
+      the platform's own switch, with no colours of ours.
 - [ ] B21-5 Pre-set text reactions alongside the emoji reactions. After build
       22 (owner, 2026-11-14); needs a design.
-- [ ] Profile tab shows your photo (a ring when selected) and the tab bar
-      drops its labels (owner, 2026-11-14). Canvas first.
+- [x] Profile tab shows your photo (an orange ring when selected) and the tab
+      bar drops its labels (owner, 2026-11-14; canvas "Tab bar" row).
 
 ## Build 20 tester feedback (2026-11-07)
 

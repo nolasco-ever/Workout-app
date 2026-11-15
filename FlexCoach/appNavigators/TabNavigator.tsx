@@ -6,6 +6,7 @@ import { HomeStack } from '../screens/Tabs/Home/HomeStack';
 import { WorkoutStack } from '../screens/Tabs/Workout/WorkoutStack';
 import { ProfileStack } from '../screens/Tabs/Profile/ProfileStack';
 import { devFlags } from '../dev/flags';
+import { useProfileTabIcon } from '../navigation/useProfileTabIcon';
 
 export type TabNavigatorParams = {
     HomeStack: undefined;
@@ -30,6 +31,8 @@ const icon = (name: keyof typeof TAB_IMAGES, drawable: string) => ({ focused }: 
 
 export const TabNavigator = () => {
     const { colors } = useTheme();
+    // Your photo on the Profile tab, ringed when chosen; the person glyph without one (owner, 2026-11-14).
+    const photo = useProfileTabIcon(colors.accent);
     return (
         <Tab.Navigator
             initialRouteName={__DEV__ ? devFlags.startTab : 'HomeStack'}
@@ -39,11 +42,20 @@ export const TabNavigator = () => {
             translucent
             hapticFeedbackEnabled
             minimizeBehavior="never"
-            labeled
+            // Icons only (owner, 2026-11-14); each tab's title is still its accessibility label.
+            labeled={false}
         >
             <Tab.Screen name="HomeStack" component={HomeStack} options={{ title: 'Home', tabBarIcon: icon('home', 'ic_tab_home') }} />
             <Tab.Screen name="WorkoutStack" component={WorkoutStack} options={{ title: 'Workout', tabBarIcon: icon('workout', 'ic_tab_workout') }} />
-            <Tab.Screen name="ProfileStack" component={ProfileStack} options={{ title: 'Profile', tabBarIcon: icon('profile', 'ic_tab_profile') }} />
+            <Tab.Screen
+                name="ProfileStack"
+                component={ProfileStack}
+                options={
+                    photo
+                        ? { title: 'Profile', tabBarIcon: ({ focused }) => (focused ? photo.ringed : photo.plain), tabBarIconRenderingMode: 'original' }
+                        : { title: 'Profile', tabBarIcon: icon('profile', 'ic_tab_profile') }
+                }
+            />
         </Tab.Navigator>
     );
 };

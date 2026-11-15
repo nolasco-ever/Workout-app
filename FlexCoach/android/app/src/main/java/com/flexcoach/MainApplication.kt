@@ -10,6 +10,7 @@ import com.flexcoach.badges.BadgePackage
 import com.flexcoach.fold.FoldPackage
 import com.flexcoach.route.RoutePackage
 import com.flexcoach.textscan.TextScanPackage
+import com.flexcoach.tabavatar.TabAvatarPackage
 
 class MainApplication : Application(), ReactApplication {
 
@@ -22,6 +23,7 @@ class MainApplication : Application(), ReactApplication {
           add(BadgePackage())
           add(FoldPackage())
           add(TextScanPackage())
+          add(TabAvatarPackage())
           add(RoutePackage())
         },
     )

@@ -242,9 +242,6 @@ export const CardioDone = ({ result, onDone }: { result: SessionResult; onDone: 
                     value={found.keep[r.field]}
                     onValueChange={v => setFound({ ...found, keep: { ...found.keep, [r.field]: v } })}
                     accessibilityLabel={`Keep ${FIELD_LABEL[r.field].toLowerCase()}`}
-                    trackColor={{ true: colors.success, false: colors.line }}
-                    thumbColor={colors.surface}
-                    ios_backgroundColor={colors.line}
                   />
                 </View>
               ))}

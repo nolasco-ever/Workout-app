@@ -4,6 +4,27 @@ Every decision the owner makes, newest first, with why. Open questions sit at th
 bottom until they're answered. Decisions before 2026-11-07 were recorded only in
 commit messages, `docs/RELEASES.md` and Claude's session notes.
 
+## 2026-11-14 · Tab bar: icons only, your photo on Profile, as built
+
+- **Project:** FlexCoach
+- **Type:** design and architectural
+- **Decision:** The tab bar shows icons only. Each tab's title stays its
+  accessibility name. With an uploaded photo the Profile tab shows it in a
+  circle, with an orange ring (the theme accent) when Profile is selected.
+  Without a photo, or with a built-in avatar, it shows the person glyph,
+  filled when selected like the other tabs. The native tab bar can't round an
+  image, so a small native module (`NativeTabAvatar`, iOS and Android) draws
+  both versions from the photo and caches them. Without the ring the photo
+  nearly fills the icon; with it, the photo steps in to make room, as on
+  Instagram (owner: "the image when it's not active is a little too small").
+  A new photo makes new icons.
+- **Why:** Owner: "change the profile tab icon to the user's profile photo
+  (if they have one only...) similar to how instagram/reddit/youtube does
+  it", "can we just have the tab bar be icons?"; signed off on the canvas
+  board and said "build the tab bar".
+- **Source:** feature work, before build 22.
+- **Decided by:** owner (the native module is Claude's means to the design).
+
 ## 2026-11-14 · Build 21 feedback: fixes, green toggles, tab bar direction
 
 - **Project:** FlexCoach
@@ -21,9 +42,11 @@ commit messages, `docs/RELEASES.md` and Claude's session notes.
     once, so the swap is unlikely to be the cause, and filled-when-selected is
     the app's icon rule. B21-3 stays open until the tester reports back on
     build 22. (owner: "restore the filled icons and reopen B21-3")
-  - Every toggle in the app is green. The Notifications and Sharing toggles
-    were orange. The console sheet's rows are laid out like the shared switch
-    row. (B21-4)
+  - Every toggle is the platform's own switch with no colours of ours (iOS
+    system green, Android's Material switch), for consistency. They had been
+    orange in Notifications and Sharing and the app's green in the console
+    sheet; owner: "i just want the toggles to look native". The console
+    sheet's rows are laid out like the shared switch row. (B21-4)
   - Pre-set text reactions go on the list for after build 22. (B21-5)
   - Next, canvas first: the Profile tab shows your uploaded photo, in a circle
     with an orange ring when selected. Without a photo (or with a built-in

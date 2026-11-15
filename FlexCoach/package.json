@@ -88,6 +88,7 @@
         "NativeFold": "NativeFold",
         "NativeRouteTracker": "NativeRouteTracker",
         "NativeTextScan": "NativeTextScan",
+        "NativeTabAvatar": "NativeTabAvatar",
         "NativeLiveActivity": "NativeLiveActivity"
       }
     }

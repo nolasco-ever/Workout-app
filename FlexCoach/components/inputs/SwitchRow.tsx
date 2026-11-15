@@ -15,7 +15,7 @@ interface Props {
   divider?: boolean;
 }
 
-/** A settings row with a toggle at the right edge. Use inside a SurfaceCard with padding 0. Toggles are green everywhere (owner, 2026-11-14). */
+/** A settings row with a toggle at the right edge. Use inside a SurfaceCard with padding 0. Toggles are the platform's own, with no colours of ours (owner, 2026-11-14). */
 export const SwitchRow = ({ title, description, icon, value, onChange, disabled = false, divider = false }: Props) => {
   const { colors, spacing, radius } = useTheme();
   return (
@@ -29,7 +29,7 @@ export const SwitchRow = ({ title, description, icon, value, onChange, disabled 
         <CustomText variant="bodyStrong">{title}</CustomText>
         {description ? <CustomText variant="caption" color={colors.inkMuted}>{description}</CustomText> : null}
       </View>
-      <Switch value={value} onValueChange={onChange} disabled={disabled} trackColor={{ true: colors.success, false: colors.line }} thumbColor={colors.surface} ios_backgroundColor={colors.line} accessibilityLabel={title} />
+      <Switch value={value} onValueChange={onChange} disabled={disabled} accessibilityLabel={title} />
     </View>
   );
 };
