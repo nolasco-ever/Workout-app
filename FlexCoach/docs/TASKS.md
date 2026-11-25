@@ -19,7 +19,7 @@ behaviour change.
 Bugs and small fixes
 - [x] B22-1 A quick workout on a rest day still shows "Rest day" in This cycle
       (fb-18).
-- [ ] B22-2 Workout preview shows the tab bar; move it to the root stack (fb-5).
+- [x] B22-2 Workout preview shows the tab bar; move it to the root stack (fb-5).
 - [ ] B22-3 "This workout" over the reaction chips makes no sense (fb-9).
 - [ ] B22-4 Records graphs on a buddy's workout: always open, no chevrons (fb-1).
 - [ ] B22-5 Log weight: native date picker instead of day pills (fb-7).

@@ -30,6 +30,7 @@ import { runPlanSplits } from '../data/services/planSplitService';
 import { SessionExercisesScreen } from '../screens/Tabs/Workout/screens/SessionExercisesScreen';
 import { SessionDetailScreen } from '../screens/Tabs/Workout/screens/SessionDetailScreen';
 import { CycleReviewScreen } from '../screens/Tabs/Workout/screens/CycleReviewScreen';
+import { WorkoutPreviewScreen } from '../screens/Tabs/Workout/screens/WorkoutPreviewScreen';
 import { ActivePlanWorkoutsScreen } from '../screens/Tabs/Workout/screens/ActivePlanWorkoutsScreen';
 import { ExercisePickerScreen } from '../screens/Plans/screens/ExercisePickerScreen';
 import { QuickWorkoutKindScreen } from '../screens/Tabs/Workout/screens/QuickWorkoutKindScreen';
@@ -44,7 +45,7 @@ import { BuddyPlanScreen } from '../screens/Buddies/BuddyPlanScreen';
 import { BuddyWorkoutScreen } from '../screens/Buddies/BuddyWorkoutScreen';
 import { AchievementsScreen } from '../screens/Achievements/AchievementsScreen';
 import { BadgeScreen } from '../screens/Achievements/BadgeScreen';
-import { AchievementFamilyId, Plan, Cycle } from '../data/models';
+import { AchievementFamilyId, Plan, Cycle, Occurrence } from '../data/models';
 import type { BuddyRoutes } from '../screens/Buddies/routes';
 import { HeaderButton } from '../components/headers/HeaderButton';
 import { generalIcons } from '../components/icons/icon-library';
@@ -75,6 +76,8 @@ export type AppStackParams = BuddyRoutes & SessionRoutes & ReactionsParams & Omi
     SessionDetailScreen: { sessionId: string; workoutName?: string };
     /** The review of a finished cycle: by id, or with the plan and cycle in hand straight from the Workout tab. */
     CycleReviewScreen: { plan: Plan; cycle: Cycle; cycleId?: undefined } | { cycleId: string; plan?: undefined; cycle?: undefined };
+    /** A planned workout before it starts, from the Workout tab: over the tabs, so no tab bar (build 22 feedback). */
+    WorkoutPreviewScreen: { plan: Plan; cycle: Cycle; occurrence: Occurrence };
     /** Workout missed (v1 #7): a modal asking what to do with the latest missed day. */
     MissedWorkoutScreen: MissedWorkoutParams;
     /** What buddies see, opened from outside the Profile tab (a Notice's button, v1 #10.10), so back returns there. The Profile tab has its own copy. */
@@ -161,6 +164,7 @@ export const AppStack = () => {
                     <Stack.Screen name="BadgeScreen" component={BadgeScreen} options={{ ...opts.screen(''), headerStyle: { backgroundColor: '#000000' }, headerTintColor: '#FFFFFF', headerTitleStyle: { color: '#FFFFFF' }, contentStyle: { backgroundColor: '#000000' } }} />
                     {/* Reached from a badge's "Earned in" pill, a notification or an in-app banner: pushed here so back goes to where the tap was. */}
                     <Stack.Screen name="SessionDetailScreen" component={SessionDetailScreen} options={({ route }) => opts.screen(route.params.workoutName ?? 'Workout')} />
+                    <Stack.Screen name="WorkoutPreviewScreen" component={WorkoutPreviewScreen} options={({ route }) => opts.screen(route.params.occurrence.workoutName ?? 'Workout')} />
                     <Stack.Screen name="CycleReviewScreen" component={CycleReviewScreen} options={opts.screen('Cycle review')} />
                     <Stack.Screen name="SharingScreen" component={SharingScreen} options={opts.screen('What buddies see')} />
                     <Stack.Screen name="MissedWorkoutScreen" component={MissedWorkoutScreen} options={({ navigation }) => opts.modal('Workout missed', () => <HeaderButton icon={generalIcons.xMark} accessibilityLabel="Close" onPress={() => navigation.goBack()} />)} />

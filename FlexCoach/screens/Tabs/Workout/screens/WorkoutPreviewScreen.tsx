@@ -18,7 +18,7 @@ import { MuscleMap } from '../../../../components/anatomy/MuscleMap';
 import { generalIcons } from '../../../../components/icons/icon-library';
 import { useComfortableColumn } from '../../../../components/layout/useComfortableColumn';
 import { useTheme } from '../../../../theme';
-import { WorkoutStackParams } from '../WorkoutStack';
+import { AppStackParams } from '../../../../appNavigators/AppStack';
 import { useTabScrollInset } from '../../../../navigation/useTabBarInset';
 import { SurfaceCard as Card } from '../../../../components/cards/SurfaceCard';
 import { PrimaryButton } from '../../../../components/buttons/PrimaryButton';
@@ -47,8 +47,8 @@ const describeTarget = (entry: WorkoutExercise, t: SetTarget, unit: 'kg' | 'lb',
 };
 
 export const WorkoutPreviewScreen = () => {
-  const navigation = useNavigation<NativeStackNavigationProp<WorkoutStackParams>>();
-  const { params } = useRoute<RouteProp<WorkoutStackParams, 'WorkoutPreviewScreen'>>();
+  const navigation = useNavigation<NativeStackNavigationProp<AppStackParams>>();
+  const { params } = useRoute<RouteProp<AppStackParams, 'WorkoutPreviewScreen'>>();
   const { plan, cycle, occurrence } = params;
   const { colors, spacing } = useTheme();
   const column = useComfortableColumn();
@@ -135,9 +135,8 @@ export const WorkoutPreviewScreen = () => {
               setBusy(true);
               try {
                 const { session, cycle: updated } = await startWorkoutNow(uid, plan, cycle, occurrence, profile?.weightUnit ?? 'lb');
-                // The session opens in the root stack, over the tabs; the preview under it goes, so back from the workout lands on the Workout home.
-                navigation.navigate('SessionScreen', { plan, cycle: updated, session });
-                navigation.popToTop();
+                // The session takes the preview's place, so back from the workout lands on the Workout home.
+                navigation.replace('SessionScreen', { plan, cycle: updated, session });
               } finally {
                 setBusy(false);
               }

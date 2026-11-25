@@ -91,7 +91,8 @@ export const WorkoutHomeScreen = () => {
   const position = cycle ? cycleDayPosition(cycle, state.todayDate) : { day: null, of: 0 };
   const dayLabel = notStarted ? `Starts ${shortDate(cycle!.startDate)}` : position.day === null ? `${position.of} days` : `Day ${position.day} of ${position.of}`;
 
-  const openPreview = (occurrence: Occurrence) => plan && cycle && navigation.navigate('WorkoutPreviewScreen', { plan, cycle, occurrence });
+  // The preview sits in the root stack, over the tabs (build 22 feedback).
+  const openPreview = (occurrence: Occurrence) => plan && cycle && (navigation as unknown as NavigationProp<AppStackParams>).navigate('WorkoutPreviewScreen', { plan, cycle, occurrence });
   /** A finished day opens what was logged; anything else opens the preview. */
   // Every date of the cycle, so the list never loses a day when a workout moves off it.
   const cycleDays: string[] = [];
