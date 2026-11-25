@@ -259,6 +259,25 @@ export const skipOccurrence = (cycle: Cycle, occurrenceId: Id, now: number = Dat
   return { ...cycle, occurrences, updatedAt: now };
 };
 
+/**
+ * A skipped workout the user changed their mind about (build 22 feedback):
+ * it is scheduled again and sits on `targetDate` (today), like a workout
+ * brought forward. Nothing else moves; the days since went on without it.
+ * A report time stamped when the skip resolved the cycle is cleared: the
+ * cycle has a workout left again, and finishing it stamps a new one.
+ */
+export const unskipOccurrence = (cycle: Cycle, occurrenceId: Id, targetDate: LocalDate, now: number = Date.now()): Cycle => {
+  const skipped = cycle.occurrences.find(o => o.id === occurrenceId);
+  if (!skipped) throw new Error(`Occurrence ${occurrenceId} not found`);
+  if (skipped.status !== 'skipped') return cycle;
+  const back: Cycle = {
+    ...cycle,
+    reportReadyAt: null,
+    occurrences: cycle.occurrences.map(o => (o.id === occurrenceId ? { ...o, status: 'scheduled' as const, skipReason: null, missedPromptedAt: null } : o)),
+  };
+  return moveOccurrenceToDate(back, occurrenceId, targetDate, now);
+};
+
 export const markOccurrence = (
   cycle: Cycle,
   occurrenceId: Id,

@@ -1,4 +1,4 @@
-import { closeCycle, generateCycle, rebuildCycle, nextCycleStart, getOverdueOccurrences, moveDayToDate, moveOccurrenceToDate, resolveMissed, nextCycleNumber, nextCycleNumberAfter, pushDay, getOccurrencesForDate, focusOccurrence, cycleDayPosition, renumberCycles, skipOccurrence, markOccurrence } from '../../data/engine/schedule';
+import { closeCycle, generateCycle, rebuildCycle, nextCycleStart, getOverdueOccurrences, moveDayToDate, moveOccurrenceToDate, resolveMissed, nextCycleNumber, nextCycleNumberAfter, pushDay, getOccurrencesForDate, focusOccurrence, cycleDayPosition, renumberCycles, skipOccurrence, unskipOccurrence, markOccurrence } from '../../data/engine/schedule';
 import { summarizeCycle } from '../../data/engine/stats';
 import { addDays } from '../../data/engine/dates';
 import { Plan } from '../../data/models';
@@ -436,5 +436,26 @@ describe('cycleDayPosition', () => {
     expect(cycleDayPosition(cycle, '2026-09-25')).toEqual({ day: 5, of: 7 });
     expect(cycleDayPosition(cycle, '2026-09-20')).toEqual({ day: null, of: 7 });
     expect(cycleDayPosition(cycle, '2026-09-28')).toEqual({ day: null, of: 7 });
+  });
+});
+
+describe('unskipOccurrence', () => {
+  it('schedules a skipped workout again on the given day, leaving the rest alone', () => {
+    const plan = rotationPlan();
+    let cycle = generateCycle(plan, 'user-1', 1, '2026-09-21');
+    const [push, pull] = cycle.occurrences;
+    cycle = skipOccurrence(cycle, push.id);
+    cycle = markOccurrence(cycle, pull.id, 'completed', 's1');
+    cycle = { ...cycle, reportReadyAt: 123 };
+    const back = unskipOccurrence(cycle, push.id, '2026-09-23');
+    const again = back.occurrences.find(o => o.id === push.id)!;
+    expect(again).toMatchObject({ status: 'scheduled', skipReason: null, date: '2026-09-23' });
+    expect(back.occurrences.find(o => o.id === pull.id)).toMatchObject({ status: 'completed', date: pull.date });
+    expect(back.reportReadyAt).toBeNull();
+  });
+
+  it('leaves a workout that was not skipped as it is', () => {
+    const cycle = generateCycle(rotationPlan(), 'user-1', 1, '2026-09-21');
+    expect(unskipOccurrence(cycle, cycle.occurrences[0].id, '2026-09-23')).toBe(cycle);
   });
 });

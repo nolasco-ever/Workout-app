@@ -24,6 +24,7 @@ import {
   markOccurrence,
   moveDayToDate,
   moveOccurrenceToDate,
+  unskipOccurrence,
   resolveMissed,
   nextCycleNumberAfter,
   pushDay,
@@ -196,12 +197,16 @@ export const beginMissedPrompt = async (uid: Id, cycle: Cycle, todayDate: LocalD
  * Start a workout regardless of the day it was scheduled for. A future one
  * moves to today on its own; the rest of its day stays put (owner,
  * 2026-11-08). A missed one brings its whole day forward to today,
- * cascading anything in its way. Today's just starts.
+ * cascading anything in its way. Today's just starts. A skipped one is
+ * scheduled again on today, nothing else moving (build 22 feedback).
  */
 export const startWorkoutNow = async (uid: Id, plan: Plan, cycle: Cycle, occurrence: Occurrence, unit: WeightUnit = 'lb'): Promise<{ session: Session; cycle: Cycle }> => {
   const todayDate = today();
   let current = cycle;
-  if (occurrence.date > todayDate) {
+  if (occurrence.status === 'skipped') {
+    current = unskipOccurrence(cycle, occurrence.id, todayDate);
+    await cycleRepository.save(uid, current);
+  } else if (occurrence.date > todayDate) {
     current = moveOccurrenceToDate(cycle, occurrence.id, todayDate);
     await cycleRepository.save(uid, current);
   } else if (occurrence.date < todayDate) {

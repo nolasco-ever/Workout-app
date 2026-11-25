@@ -77,7 +77,10 @@ export const WorkoutPreviewScreen = () => {
   if (!workout) return null;
   const dist = profile?.distanceUnit ?? 'mi';
   const todayDate = today();
-  const canStart = occurrence.status === 'scheduled';
+  // A skipped workout up to today can still be done while its cycle's review isn't out (build 22 feedback).
+  const reportOut = !!cycle.reportReviewedAt || (!!cycle.reportReadyAt && cycle.reportReadyAt <= Date.now());
+  const reviving = occurrence.status === 'skipped' && occurrence.date <= todayDate && cycle.status === 'active' && !reportOut;
+  const canStart = occurrence.status === 'scheduled' || reviving;
   // Today's workout can be moved or skipped from here too, with the same prompt as Home (build 22 feedback).
   const canDefer = canStart && occurrence.date === todayDate;
   const notToday = () =>
@@ -133,7 +136,7 @@ export const WorkoutPreviewScreen = () => {
       </ScrollView>
       {canStart && (
         <View style={{ padding: spacing.lg, paddingBottom: spacing.lg + bottomInset, gap: spacing.sm }}>
-          {occurrence.date > todayDate && (
+          {(occurrence.date > todayDate || (reviving && occurrence.date < todayDate)) && (
             <CustomText variant="caption" color={colors.inkMuted} centered>
               This moves to today. Everything else stays where it is.
             </CustomText>

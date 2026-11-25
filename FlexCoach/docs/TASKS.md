@@ -27,7 +27,7 @@ Bugs and small fixes
 Behaviour (owner OK'd 2026-11-25)
 - [x] B22-6 "Not today" on the workout preview, same Move or skip prompt as
       Home (fb-5).
-- [ ] B22-7 A skipped workout dated today or earlier in the current cycle can
+- [x] B22-7 A skipped workout dated today or earlier in the current cycle can
       still be started (fb-15).
 - [ ] B22-8 Skip an exercise mid-workout: swipe to skip, swipe to unskip,
       skipped ones move to their own section. **Canvas first** (fb-8).
