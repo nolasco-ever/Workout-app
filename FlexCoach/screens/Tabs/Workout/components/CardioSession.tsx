@@ -142,13 +142,13 @@ export const CardioSession = ({ name, kind, elapsedSec, running, logged, distanc
       {/* The kind's icon in rings; decoration, so screen readers skip it. */}
       {!showMap && <View importantForAccessibility="no-hide-descendants" accessibilityElementsHidden style={{ position: 'absolute', left: 0, right: 0, top: insets.top + 56, height: 400, alignItems: 'center', justifyContent: 'center' }}>
         <Animated.View style={[{ position: 'absolute', width: 340, height: 340, alignItems: 'center', justifyContent: 'center' }, ringsStyle]}>
-          <View style={{ position: 'absolute', width: 340, height: 340, borderRadius: 170, backgroundColor: colors.accent, opacity: 0.08 }} />
+          <View style={{ position: 'absolute', width: 340, height: 340, borderRadius: 170, backgroundColor: colors.data, opacity: 0.08 }} />
           {rings.map(r => (
-            <View key={r.size} style={{ position: 'absolute', width: r.size, height: r.size, borderRadius: r.size / 2, borderWidth: 2, borderColor: colors.accent, opacity: r.opacity }} />
+            <View key={r.size} style={{ position: 'absolute', width: r.size, height: r.size, borderRadius: r.size / 2, borderWidth: 2, borderColor: colors.data, opacity: r.opacity }} />
           ))}
         </Animated.View>
-        <View style={{ width: 120, height: 120, borderRadius: 60, backgroundColor: colors.accentTint, alignItems: 'center', justifyContent: 'center' }}>
-          <Icon icon={cardioIcons[kind.glyph]} size={64} color={colors.accent} weight="fill" />
+        <View style={{ width: 120, height: 120, borderRadius: 60, backgroundColor: colors.surfaceRaised, alignItems: 'center', justifyContent: 'center' }}>
+          <Icon icon={cardioIcons[kind.glyph]} size={64} color={colors.ink} weight="fill" />
         </View>
       </View>}
 

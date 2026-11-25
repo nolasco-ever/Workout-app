@@ -20,7 +20,7 @@ export const StatusPill = ({ status, pushed = false }: { status: OccurrenceStatu
       : status === 'skipped'
         ? { bg: colors.errorTint, fg: colors.error }
         : status === 'in_progress'
-          ? { bg: colors.accentTint, fg: colors.accent }
+          ? { bg: colors.selectedTint, fg: colors.ink }
           : pushed
             ? { bg: colors.warningTint, fg: colors.warning }
             : { bg: colors.surfaceRaised, fg: colors.inkMuted };

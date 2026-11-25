@@ -27,16 +27,16 @@ export function ChoiceChips<T extends string>({ options, value, onChange, scroll
         accessibilityRole="button"
         accessibilityState={{ selected: on }}
         accessibilityLabel={place ? `${o.label}, ${place}` : undefined}
-        style={({ pressed }) => ({ flexDirection: 'row', alignItems: 'center', gap: spacing.xs + 2, backgroundColor: on || pressed ? colors.accent : colors.surfaceRaised, borderRadius: radius.pill, paddingLeft: place ? spacing.sm : spacing.md + 2, paddingRight: spacing.md + 2, paddingVertical: spacing.sm })}
+        style={({ pressed }) => ({ flexDirection: 'row', alignItems: 'center', gap: spacing.xs + 2, backgroundColor: on || pressed ? colors.selected : colors.surfaceRaised, borderRadius: radius.pill, paddingLeft: place ? spacing.sm : spacing.md + 2, paddingRight: spacing.md + 2, paddingVertical: spacing.sm })}
       >
         {({ pressed }) => (
           <>
             {place && (
-              <View style={{ minWidth: 20, height: 20, borderRadius: 10, paddingHorizontal: 4, backgroundColor: colors.onAccent, alignItems: 'center', justifyContent: 'center' }}>
-                <CustomText variant="caption" color={colors.accent} style={{ fontWeight: '800' }}>{place}</CustomText>
+              <View style={{ minWidth: 20, height: 20, borderRadius: 10, paddingHorizontal: 4, backgroundColor: colors.onSelected, alignItems: 'center', justifyContent: 'center' }}>
+                <CustomText variant="caption" color={colors.selected} style={{ fontWeight: '800' }}>{place}</CustomText>
               </View>
             )}
-            <CustomText variant="label" color={on || pressed ? colors.onAccent : colors.ink}>{o.label}</CustomText>
+            <CustomText variant="label" color={on || pressed ? colors.onSelected : colors.ink}>{o.label}</CustomText>
           </>
         )}
       </Pressable>

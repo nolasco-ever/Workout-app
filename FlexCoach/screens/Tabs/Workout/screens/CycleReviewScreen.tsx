@@ -132,7 +132,7 @@ export const CycleReviewView = ({ cycleId, plan: planProp, cycle: cycleProp, onO
   if (!loaded || !review) {
     return (
       <SafeAreaView edges={['bottom', 'left', 'right']} style={{ flex: 1, backgroundColor: colors.ground, alignItems: 'center', justifyContent: 'center' }}>
-        <ActivityIndicator color={colors.accent} />
+        <ActivityIndicator color={colors.inkMuted} />
       </SafeAreaView>
     );
   }
@@ -172,14 +172,14 @@ export const CycleReviewView = ({ cycleId, plan: planProp, cycle: cycleProp, onO
         <CustomText variant="overline" color={colors.inkMuted}>Stats</CustomText>
         <Card style={{ paddingVertical: spacing.sm, gap: spacing.md }}>
           <View>
-            <CustomText variant="overline" color={colors.accent} style={{ paddingTop: spacing.xs, paddingBottom: spacing.xs }}>Training</CustomText>
+            <CustomText variant="overline" color={colors.inkMuted} style={{ paddingTop: spacing.xs, paddingBottom: spacing.xs }}>Training</CustomText>
             <DetailRow first label="Total time trained" value={review.durationSec ? formatDuration(review.durationSec) : '—'} />
             <DetailRow label="Avg per workout" value={avgSec ? formatDuration(avgSec) : '—'} />
             <DetailRow label="Total sets" value={String(review.setsCompleted)} />
             {judged.length > 0 && <DetailRow label="Targets hit" value={`${targetsHit} of ${judged.length}`} tone={targetsHit === judged.length ? colors.success : targetsHit === 0 ? colors.warning : undefined} />}
           </View>
           <View>
-            <CustomText variant="overline" color={colors.accent} style={{ paddingTop: spacing.xs, paddingBottom: spacing.xs }}>Schedule</CustomText>
+            <CustomText variant="overline" color={colors.inkMuted} style={{ paddingTop: spacing.xs, paddingBottom: spacing.xs }}>Schedule</CustomText>
             <DetailRow first label="Done on time" value={String(summary.completedOnTime)} />
             <DetailRow label="Pushed to another day" value={String(summary.pushed)} tone={summary.pushed ? colors.warning : undefined} />
             <DetailRow label="Skipped" value={String(summary.skipped)} tone={summary.skipped ? colors.error : undefined} />
@@ -220,10 +220,10 @@ export const CycleReviewView = ({ cycleId, plan: planProp, cycle: cycleProp, onO
         <Card style={{ padding: 0 }}>
           {review.nextTargets.map((p, i) => {
             const { next, previous, did, reason } = describeProgression(p, unit);
-            const tone = p.change === 'increase' ? colors.success : p.change === 'climb' ? colors.accent : p.change === 'drop' ? colors.warning : colors.inkMuted;
+            const tone = p.change === 'increase' ? colors.success : p.change === 'climb' ? colors.ink : p.change === 'drop' ? colors.warning : colors.inkMuted;
             const icon = p.change === 'increase' || p.change === 'climb' ? directionIcons.angleUp : p.change === 'drop' ? directionIcons.angleDown : generalIcons.minus;
             const verdict = verdictLabel(p.verdict);
-            const verdictTone = p.verdict === 'beat' ? colors.accent : p.verdict === 'hit' ? colors.success : colors.warning;
+            const verdictTone = p.verdict === 'beat' ? colors.ink : p.verdict === 'hit' ? colors.success : colors.warning;
             return (
               <View key={p.workoutExerciseId} style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.md, padding: spacing.lg, borderTopWidth: i ? 1 : 0, borderTopColor: colors.line }}>
                 <View style={{ width: 32, height: 32, borderRadius: 16, backgroundColor: colors.surfaceRaised, alignItems: 'center', justifyContent: 'center' }}>
@@ -302,7 +302,7 @@ export const CycleReviewView = ({ cycleId, plan: planProp, cycle: cycleProp, onO
         <Card>
           <View style={{ flexDirection: 'row', gap: spacing.md }}>
             <Hero label="workouts" value={`${summary.completed}/${summary.totalWorkouts}`} tone={summary.completed === summary.totalWorkouts && summary.totalWorkouts > 0 ? colors.success : undefined} />
-            <Hero label={records === 1 ? 'record' : 'records'} value={String(records)} tone={records > 0 ? colors.accent : undefined} />
+            <Hero label={records === 1 ? 'record' : 'records'} value={String(records)} tone={records > 0 ? colors.ink : undefined} />
             <Hero label={`${unit} moved`} value={volume ? volume.toLocaleString() : '—'} />
           </View>
         </Card>

@@ -105,7 +105,7 @@ export const PlanWorkoutsStep = ({ mode, embedded = false, onOpenWorkout, openWo
               onReorder={reorder}
               scrollableRef={scrollRef}
               renderRow={w => (
-                <View style={{ flexDirection: 'row', alignItems: 'center', borderLeftWidth: 3, borderLeftColor: openWorkoutId === w.id ? colors.accent : colors.transparent }}>
+                <View style={{ flexDirection: 'row', alignItems: 'center', borderLeftWidth: 3, borderLeftColor: openWorkoutId === w.id ? colors.ink : colors.transparent }}>
                   <TouchableOpacity onPress={() => openItem(w)} accessibilityRole="button" style={{ flex: 1, padding: spacing.lg }}>
                     <CustomText variant="bodyStrong">{w.name}</CustomText>
                     <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.sm, marginTop: 2 }}>

@@ -113,9 +113,9 @@ const RecordRow = ({ name, value, line, units, divider }: { name: string; value:
   return (
     <View style={{ borderTopWidth: divider ? 1 : 0, borderTopColor: colors.line }}>
       <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.md, padding: spacing.lg }}>
-        <Icon icon={generalIcons.trophy} size={18} color={colors.accent} />
+        <Icon icon={generalIcons.trophy} size={18} color={colors.inkMuted} />
         <CustomText variant="body" style={{ flex: 1 }} numberOfLines={1}>{name}</CustomText>
-        <CustomText variant="bodyStrong" color={colors.accent}>{value}</CustomText>
+        <CustomText variant="bodyStrong" color={colors.ink}>{value}</CustomText>
       </View>
       {rec && (
         <View style={{ paddingHorizontal: spacing.lg, paddingBottom: spacing.lg, gap: spacing.sm }}>
@@ -172,7 +172,7 @@ const SharedExerciseCard = ({ ex, units }: { ex: SharedExercise; units: Units })
               <View key={i} style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.md, paddingVertical: spacing.sm, borderTopWidth: 1, borderTopColor: colors.line }}>
                 <View style={{ width: 28 }}>
                   {/* Cardio is one entry, not a numbered set. */}
-                  {ex.measurement !== 'distance_time' && <CustomText variant="label" color={set.warmup ? colors.accent : colors.inkMuted}>{label}</CustomText>}
+                  {ex.measurement !== 'distance_time' && <CustomText variant="label" color={colors.inkMuted}>{label}</CustomText>}
                 </View>
                 {cols.a && <CustomText variant="bodyStrong" style={{ flex: 1, textAlign: 'center' }}>{a ?? '—'}</CustomText>}
                 {cols.b && <CustomText variant="bodyStrong" style={{ flex: 1, textAlign: 'center' }}>{b ?? '—'}</CustomText>}
@@ -264,7 +264,7 @@ export const BuddyWorkoutScreen = () => {
   return (
     <SafeAreaView edges={['bottom', 'left', 'right']} style={{ flex: 1, backgroundColor: colors.ground }}>
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={[{ padding: spacing.lg, gap: spacing.lg, paddingBottom: spacing.xxl}, column]}>
-        {item === undefined && <ActivityIndicator color={colors.accent} style={{ marginTop: spacing.xxl }} />}
+        {item === undefined && <ActivityIndicator color={colors.inkMuted} style={{ marginTop: spacing.xxl }} />}
         {item === null && (
           <View style={{ marginTop: spacing.xxl, gap: spacing.sm }}>
             <CustomText variant="heading" centered>Not here any more</CustomText>

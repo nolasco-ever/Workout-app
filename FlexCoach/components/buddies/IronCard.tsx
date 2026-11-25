@@ -51,12 +51,12 @@ export const IronCard = ({ card, unit, distanceUnit = 'mi', footer }: { card: Pu
   const badges = highestBadges(card.achievementIds ?? []);
   return (
     <View style={{ backgroundColor: colors.surface, borderRadius: radius.xl, borderWidth: 1, borderColor: colors.line, padding: spacing.lg, gap: spacing.lg, overflow: 'hidden' }}>
-      {/* Accent band so the card reads as a card, not a settings group. */}
-      <View style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 6, backgroundColor: colors.accent }} />
+      {/* A band so the card reads as a card, not a settings group. */}
+      <View style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 6, backgroundColor: colors.data }} />
       <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.md, paddingTop: spacing.xs }}>
         <Avatar uri={card.photoUrl} name={card.displayName} size={64} />
         <View style={{ flex: 1 }}>
-          <CustomText variant="overline" color={colors.accent}>Iron Card</CustomText>
+          <CustomText variant="overline" color={colors.inkMuted}>Iron Card</CustomText>
           <CustomText variant="title" numberOfLines={1}>{card.displayName ?? 'FlexCoach lifter'}</CustomText>
           <CustomText variant="caption" color={colors.inkMuted}>{since ? `Training since ${since}` : 'Just getting started'}</CustomText>
         </View>

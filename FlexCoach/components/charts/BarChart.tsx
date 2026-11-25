@@ -16,7 +16,7 @@ interface Props {
   bars: Bar[];
   height?: number;
   format: (v: number) => string;
-  /** Index drawn in the accent; the rest use the muted tint. Defaults to the last. */
+  /** Index drawn in the data colour; the rest use the muted data fill. Defaults to the last. */
   emphasize?: number;
   /** Print each column's value above it. */
   showValues?: boolean;
@@ -58,7 +58,7 @@ export const BarChart = ({ bars, height = 160, format, emphasize, showValues = t
           ))}
           {bars.map((b, i) => {
             const x = PAD.left + band * i + (band - barW) / 2;
-            const fill = i === focus ? colors.accent : colors.accentTint;
+            const fill = i === focus ? colors.data : colors.dataMuted;
             return (
               <G key={i}>
                 {b.value > 0 && <Path d={barPath(x, y.map(b.value), PAD.top + h)} fill={fill} />}

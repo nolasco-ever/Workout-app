@@ -64,7 +64,7 @@ export const SharingPrompt = () => {
         <View style={{ gap: spacing.md }}>
           {lines.map(l => (
             <View key={l.text} style={{ flexDirection: 'row', gap: spacing.md, alignItems: 'center' }}>
-              <Icon icon={l.icon} size={18} color={colors.accent} />
+              <Icon icon={l.icon} size={18} color={colors.ink} />
               <CustomText variant="body" style={{ flex: 1 }}>{l.text}</CustomText>
             </View>
           ))}

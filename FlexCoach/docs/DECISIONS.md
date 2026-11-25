@@ -4,6 +4,29 @@ Every decision the owner makes, newest first, with why. Open questions sit at th
 bottom until they're answered. Decisions before 2026-11-07 were recorded only in
 commit messages, `docs/RELEASES.md` and Claude's session notes.
 
+## 2026-11-25 · Colour A: where the orange stays
+
+- **Project:** FlexCoach
+- **Type:** design
+- **Decision:** Applying colour A across the app (the canvas drew only Home).
+  Orange stays on actions (buttons, text links, the header back button,
+  cardio controls), the streak, and new-record moments (record pages, the
+  cycle report pop-up, record trophies). Everything else goes neutral: data
+  (body map, charts, progress bars, record values) uses new `data` tokens;
+  selected chips and the calendar day use an inverted fill, selected rows a
+  soft grey (`selected`, `selectedTint`); tinted cards become plain cards;
+  icon and number discs go grey; spinners and the counting rest timer go
+  neutral. The app icon, avatar art and badge art keep their orange. Light
+  mode's focused tab icon is ink (near-black).
+- **Why:** After the 257 orange uses were sorted, Claude proposed this split.
+  Owner: selected states "neutral", new-record moments "keep them orange",
+  rest timer "make it neutral", and "ink in light mode is fine". Inverted
+  fill for chips vs a soft grey for rows is Claude's reading of "neutral".
+  The data colours are tokens, so colour can come back later in one place
+  (the owner kept that option open).
+- **Source:** feature work, B22-13.
+- **Decided by:** owner.
+
 ## 2026-11-25 · Tab bar and colour: darker glass in dark mode, orange only for actions
 
 - **Project:** FlexCoach

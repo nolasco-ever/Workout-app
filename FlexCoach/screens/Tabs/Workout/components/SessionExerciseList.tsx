@@ -18,7 +18,7 @@ import { useTheme } from '../../../../theme';
  * a phone; on a wide window the session keeps it standing beside the
  * current exercise.
  */
-/** Progress at a glance: one segment per exercise, green when all its sets are in, the current one in accent; the count beneath. */
+/** Progress at a glance: one segment per exercise, green when all its sets are in, the current one in the data colour; the count beneath. */
 export const SessionProgressStrip = ({ session, currentIndex }: { session: Session; currentIndex: number }) => {
   const { colors, spacing } = useTheme();
   // Cardio is not a set: the count is the lifting's alone.
@@ -30,7 +30,7 @@ export const SessionProgressStrip = ({ session, currentIndex }: { session: Sessi
       <View style={{ flexDirection: 'row', gap: 4 }}>
         {session.exercises.map((ex, i) => {
           const done = ex.sets.length > 0 && ex.sets.every(s => s.completed);
-          return <View key={ex.id} style={{ flex: 1, height: 4, borderRadius: 2, backgroundColor: done ? colors.success : i === currentIndex ? colors.accent : colors.surfaceRaised }} />;
+          return <View key={ex.id} style={{ flex: 1, height: 4, borderRadius: 2, backgroundColor: done ? colors.success : i === currentIndex ? colors.data : colors.surfaceRaised }} />;
         })}
       </View>
       <CustomText variant="caption" color={colors.inkMuted}>
@@ -65,13 +65,13 @@ export const SessionExerciseList = ({ session, currentIndex, onJump, onRemove }:
                   activeOpacity={0.7}
                   accessibilityRole="button"
                   accessibilityLabel={`${ex.exerciseName}, ${isCardio(ex) ? (complete ? 'logged' : 'not logged') : `${done} of ${ex.sets.length} sets`}${current ? ', current' : ''}`}
-                  style={{ flexDirection: 'row', alignItems: 'center', padding: spacing.lg, gap: spacing.md, borderTopWidth: rowIndex ? 1 : 0, borderTopColor: colors.line, backgroundColor: current ? colors.accentTint : colors.surface }}
+                  style={{ flexDirection: 'row', alignItems: 'center', padding: spacing.lg, gap: spacing.md, borderTopWidth: rowIndex ? 1 : 0, borderTopColor: colors.line, backgroundColor: current ? colors.selectedTint : colors.surface }}
                 >
                   {cat && <MuscleMap primary={cat.primaryMuscles} secondary={cat.secondaryMuscles} height={56} views="auto" />}
                   <View style={{ flex: 1 }}>
                     <CustomText variant="bodyStrong">{ex.exerciseName}</CustomText>
                     {cat?.primaryMuscles.length ? <CustomText variant="caption" color={colors.inkMuted}>{cat.primaryMuscles.join(', ')}</CustomText> : null}
-                    <CustomText variant="label" color={complete ? colors.success : current ? colors.accent : colors.inkMuted} style={{ marginTop: spacing.xs }}>
+                    <CustomText variant="label" color={complete ? colors.success : current ? colors.ink : colors.inkMuted} style={{ marginTop: spacing.xs }}>
                       {isCardio(ex) ? (complete ? 'Logged' : 'Not logged yet') : `${done} of ${ex.sets.length} sets completed`}
                     </CustomText>
                   </View>

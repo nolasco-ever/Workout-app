@@ -110,7 +110,7 @@ export const HistoryScreen = () => {
   const pageStyle = { padding: spacing.lg, gap: spacing.lg, paddingBottom: spacing.xl + bottomInset };
   const cyclesPage = (
     <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={pageStyle}>
-            {cycles === null && <ActivityIndicator color={colors.accent} style={{ marginTop: spacing.xxl }} />}
+            {cycles === null && <ActivityIndicator color={colors.inkMuted} style={{ marginTop: spacing.xxl }} />}
             {cycles !== null && cycles.length === 0 && (
               <View style={{ alignItems: 'center', gap: spacing.md, paddingTop: spacing.xxl }}>
                 <Icon icon={generalIcons.medal} size={36} color={colors.inactive} />
@@ -128,7 +128,7 @@ export const HistoryScreen = () => {
                     <TouchableOpacity
                       key={cycle.id}
                       onPress={() => (wide ? choose({ kind: 'cycle', cycleId: cycle.id }) : navigation.navigate('CycleReviewScreen', { cycleId: cycle.id }))}
-                      style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.md, padding: spacing.lg, borderTopWidth: i ? 1 : 0, borderTopColor: colors.line, backgroundColor: shown?.kind === 'cycle' && shown.cycleId === cycle.id ? colors.accentTint : undefined }}
+                      style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.md, padding: spacing.lg, borderTopWidth: i ? 1 : 0, borderTopColor: colors.line, backgroundColor: shown?.kind === 'cycle' && shown.cycleId === cycle.id ? colors.selectedTint : undefined }}
                     >
                       <View style={{ flex: 1 }}>
                         <CustomText variant="bodyStrong">{row.planName} · Cycle {cycle.number}</CustomText>
@@ -147,7 +147,7 @@ export const HistoryScreen = () => {
   );
   const workoutsPage = (
     <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={pageStyle}>
-        {sessions === null && <ActivityIndicator color={colors.accent} style={{ marginTop: spacing.xxl }} />}
+        {sessions === null && <ActivityIndicator color={colors.inkMuted} style={{ marginTop: spacing.xxl }} />}
         {sessions !== null && sessions.length === 0 && (
           <View style={{ alignItems: 'center', gap: spacing.md, paddingTop: spacing.xxl }}>
             <Icon icon={generalIcons.clock} size={36} color={colors.inactive} />
@@ -167,7 +167,7 @@ export const HistoryScreen = () => {
                   <TouchableOpacity
                     key={s.id}
                     onPress={() => (wide ? choose({ kind: 'session', sessionId: s.id, workoutName: s.workoutName }) : navigation.navigate('SessionDetailScreen', { sessionId: s.id, workoutName: s.workoutName }))}
-                    style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.md, padding: spacing.lg, borderTopWidth: i ? 1 : 0, borderTopColor: colors.line, backgroundColor: shown?.kind === 'session' && shown.sessionId === s.id ? colors.accentTint : undefined }}
+                    style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.md, padding: spacing.lg, borderTopWidth: i ? 1 : 0, borderTopColor: colors.line, backgroundColor: shown?.kind === 'session' && shown.sessionId === s.id ? colors.selectedTint : undefined }}
                   >
                     <View style={{ flex: 1 }}>
                       <CustomText variant="bodyStrong">{s.workoutName}</CustomText>

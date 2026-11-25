@@ -254,9 +254,9 @@ export const ExercisePickerScreen = () => {
             onPress={() => setFiltersOpen(true)}
             accessibilityRole="button"
             accessibilityLabel={activeFilters ? `Filters, ${activeFilters} active` : 'Filters'}
-            style={{ width: 48, height: 48, borderRadius: radius.md, backgroundColor: activeFilters ? colors.accent : colors.surfaceRaised, alignItems: 'center', justifyContent: 'center' }}
+            style={{ width: 48, height: 48, borderRadius: radius.md, backgroundColor: activeFilters ? colors.selected : colors.surfaceRaised, alignItems: 'center', justifyContent: 'center' }}
           >
-            <Icon icon={generalIcons.sliders} size={20} color={activeFilters ? colors.onAccent : colors.ink} />
+            <Icon icon={generalIcons.sliders} size={20} color={activeFilters ? colors.onSelected : colors.ink} />
             {activeFilters > 0 && (
               <View style={{ position: 'absolute', top: -4, right: -4, minWidth: 18, height: 18, borderRadius: 9, paddingHorizontal: 4, backgroundColor: colors.ink, borderWidth: 2, borderColor: colors.ground, alignItems: 'center', justifyContent: 'center' }}>
                 <CustomText variant="overline" color={colors.ground}>{activeFilters}</CustomText>

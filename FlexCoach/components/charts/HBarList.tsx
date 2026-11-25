@@ -21,7 +21,7 @@ export const HBarList = ({ bars, max }: { bars: HBar[]; max?: number }) => {
             <CustomText variant="caption" numberOfLines={1}>{b.label}</CustomText>
           </View>
           <View style={{ flex: 1, height: 10, borderRadius: radius.sm, backgroundColor: colors.surfaceRaised, overflow: 'hidden' }}>
-            <View style={{ width: `${Math.max(2, (b.value / top) * 100)}%`, height: 10, borderRadius: radius.sm, backgroundColor: colors.accent, opacity: 0.35 + 0.65 * (b.value / top) }} />
+            <View style={{ width: `${Math.max(2, (b.value / top) * 100)}%`, height: 10, borderRadius: radius.sm, backgroundColor: colors.data, opacity: 0.35 + 0.65 * (b.value / top) }} />
           </View>
           <View style={{ width: 64, alignItems: 'flex-end' }}>
             <CustomText variant="caption" color={colors.inkMuted}>{b.valueLabel}</CustomText>

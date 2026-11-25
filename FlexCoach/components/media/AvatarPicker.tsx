@@ -27,7 +27,7 @@ const Section = ({ label, items, selected, onPick }: { label: string; items: rea
           const active = a.id === selected;
           return (
             <TouchableOpacity key={a.id} onPress={() => onPick(a.id)} accessibilityRole="button" accessibilityLabel={`${a.label} avatar${active ? ', selected' : ''}`} style={{ width: `${100 / COLUMNS}%`, alignItems: 'center' }}>
-              <View style={{ padding: 3, borderRadius: 999, borderWidth: 3, borderColor: active ? colors.accent : colors.transparent }}>
+              <View style={{ padding: 3, borderRadius: 999, borderWidth: 3, borderColor: active ? colors.ink : colors.transparent }}>
                 <Avatar uri={avatarUri(a.id)} size={60} />
               </View>
             </TouchableOpacity>

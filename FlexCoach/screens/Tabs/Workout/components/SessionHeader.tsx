@@ -83,7 +83,7 @@ export const RestPill = ({ startedAt, durationSec, onDismiss }: { startedAt: num
 
   const style = useAnimatedStyle(() => ({ transform: [{ scaleX: open.value }], opacity: open.value }));
   if (startedAt === null) return null;
-  const tone = done ? colors.success : colors.accent;
+  const tone = done ? colors.success : colors.ink;
 
   return (
     <Animated.View style={[{ transformOrigin: 'right center' }, style]}>
@@ -92,7 +92,7 @@ export const RestPill = ({ startedAt, durationSec, onDismiss }: { startedAt: num
         hitSlop={8}
         accessibilityRole="button"
         accessibilityLabel={done ? 'Rest over, dismiss' : `Rest, ${remaining} seconds left. Skip`}
-        style={{ flexDirection: 'row', alignItems: 'center', gap: 2, height: 36, paddingLeft: spacing.md, paddingRight: spacing.sm, borderRadius: radius.pill, backgroundColor: done ? colors.successTint : colors.accentTint, justifyContent: 'center' }}
+        style={{ flexDirection: 'row', alignItems: 'center', gap: 2, height: 36, paddingLeft: spacing.md, paddingRight: spacing.sm, borderRadius: radius.pill, backgroundColor: done ? colors.successTint : colors.surfaceRaised, justifyContent: 'center' }}
       >
         {done ? (
           <>

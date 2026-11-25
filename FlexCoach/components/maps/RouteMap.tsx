@@ -26,7 +26,7 @@ const darkStyle = (ground: string, road: string, park: string, label: string): M
 
 /**
  * The line marking the path an outdoor run, walk or ride took (v1 #10.8):
- * the route in the accent colour, a green dot where it started and an accent
+ * the route in the data colour, a green dot where it started and a data-colour
  * dot at its end (where you are, while live). It never pans or zooms by
  * touch, so a stray tap mid-run can't move it.
  */
@@ -68,13 +68,13 @@ export const RouteMap = ({ points, live = false, style, padding }: Props) => {
       accessible={false}
       importantForAccessibility="no-hide-descendants"
     >
-      <Polyline coordinates={coords} strokeColor={colors.accent} strokeWidth={5} lineCap="round" lineJoin="round" />
+      <Polyline coordinates={coords} strokeColor={colors.data} strokeWidth={5} lineCap="round" lineJoin="round" />
       <Marker coordinate={first} anchor={{ x: 0.5, y: 0.5 }} tracksViewChanges={false}>
         <View style={{ width: 16, height: 16, borderRadius: 8, backgroundColor: colors.success, borderWidth: 3, borderColor: colors.ground }} />
       </Marker>
       {coords.length > 1 && (
         <Marker coordinate={last} anchor={{ x: 0.5, y: 0.5 }} tracksViewChanges={false}>
-          <View style={{ width: 18, height: 18, borderRadius: 9, backgroundColor: colors.accent, borderWidth: 3, borderColor: colors.ground }} />
+          <View style={{ width: 18, height: 18, borderRadius: 9, backgroundColor: colors.data, borderWidth: 3, borderColor: colors.ground }} />
         </Marker>
       )}
     </MapView>

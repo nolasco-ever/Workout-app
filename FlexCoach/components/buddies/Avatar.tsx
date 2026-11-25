@@ -21,7 +21,7 @@ interface Props {
   uri: string | null | undefined;
   name?: string | null;
   size?: number;
-  /** What to show with no photo and no avatar: initials on the accent tint, or a plain person icon. */
+  /** What to show with no photo and no avatar: initials on a raised neutral disc, or a plain person icon. */
   fallback?: 'initials' | 'icon';
 }
 
@@ -70,8 +70,8 @@ export const Avatar = ({ uri, name, size = 44, fallback = 'initials' }: Props) =
   }
   const fontSize = Math.round(size * 0.38);
   return (
-    <Disc size={size} color={colors.accentTint}>
-      <CustomText variant="bodyStrong" color={colors.accent} style={{ fontFamily: fonts.display.bold, fontSize, lineHeight: Math.round(fontSize * 1.25), includeFontPadding: false }}>
+    <Disc size={size} color={colors.surfaceRaised}>
+      <CustomText variant="bodyStrong" color={colors.ink} style={{ fontFamily: fonts.display.bold, fontSize, lineHeight: Math.round(fontSize * 1.25), includeFontPadding: false }}>
         {initialsOf(name)}
       </CustomText>
     </Disc>

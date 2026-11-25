@@ -9,7 +9,7 @@ import { judgeAchievements, markAchievementsCelebrated } from '../../data/servic
 import { navigationRef } from '../../navigation/navigationRef';
 import { CustomText } from '../text/customText';
 import { PrimaryButton } from '../buttons/PrimaryButton';
-import { useTheme } from '../../theme';
+import { ironDark, useTheme } from '../../theme';
 import { BadgeView, HERO_REST_YAW } from './BadgeView';
 import { artFor } from './badgeArt';
 import { BadgeHalo } from './BadgeHalo';
@@ -71,7 +71,7 @@ const byMoment = (a: AchievementUnlock, b: AchievementUnlock): number => a.unloc
  */
 export const AchievementCelebration = () => {
   const { uid, profile } = useAuth();
-  const { colors, spacing } = useTheme();
+  const { spacing } = useTheme();
   const insets = useSafeAreaInsets();
   const { width } = useWindowDimensions();
   const unit = profile?.weightUnit ?? 'lb';
@@ -189,7 +189,7 @@ export const AchievementCelebration = () => {
           {queue.length > 1 && (
             <View style={{ flexDirection: 'row', justifyContent: 'center', gap: spacing.sm }}>
               {queue.map((u, i) => (
-                <View key={u.achievementId} style={{ width: i === index ? 20 : 6, height: 6, borderRadius: 3, backgroundColor: i === index ? colors.accent : 'rgba(255,255,255,0.3)' }} />
+                <View key={u.achievementId} style={{ width: i === index ? 20 : 6, height: 6, borderRadius: 3, backgroundColor: i === index ? ironDark.ink : 'rgba(255,255,255,0.3)' }} />
               ))}
             </View>
           )}

@@ -17,12 +17,27 @@ export interface ColorTokens {
   inactive: string;
   /** Hairlines and dividers. */
   line: string;
-  /** The one action color. Use sparingly. */
+  /**
+   * The one action color: buttons, links, the streak and new-record moments only
+   * (owner, 2026-11-25, B22-13 colour A "Spark"). Data and selection are neutral.
+   */
   accent: string;
   /** Text on top of the accent. */
   onAccent: string;
-  /** Soft tint of the accent for selected states. */
+  /** Soft tint of the accent, for the streak and new-record moments. */
   accentTint: string;
+  /** Data marks: the focused bar, chart lines, top muscles on the body map, record values. */
+  data: string;
+  /** Second-level data: the body map's other muscles. */
+  dataSoft: string;
+  /** Unfocused bars and quiet data fills. */
+  dataMuted: string;
+  /** Selected chip or calendar day: an inverted fill. */
+  selected: string;
+  /** Text and icons on `selected`. */
+  onSelected: string;
+  /** Soft background for a selected row. */
+  selectedTint: string;
   success: string;
   successTint: string;
   warning: string;
@@ -54,6 +69,12 @@ export const ironLight: ColorTokens = {
   accent: '#E2602A',
   onAccent: '#FFFFFF',
   accentTint: '#FBE7DD',
+  data: '#1A1A1C',
+  dataSoft: '#9A9692',
+  dataMuted: '#DAD7D2',
+  selected: '#1A1A1C',
+  onSelected: '#FFFFFF',
+  selectedTint: '#ECEAE6',
   success: '#2E9E6B',
   successTint: '#DDF3E8',
   warning: '#D99A1E',
@@ -79,6 +100,12 @@ export const ironDark: ColorTokens = {
   accent: '#FF7A3D',
   onAccent: '#1A1A1C',
   accentTint: '#3A2418',
+  data: '#E9E6E1',
+  dataSoft: '#8F8C88',
+  dataMuted: '#3A3B3F',
+  selected: '#F2F1EF',
+  onSelected: '#1A1A1C',
+  selectedTint: '#2A2B2F',
   success: '#4FC78F',
   successTint: '#1C3328',
   warning: '#F0B545',

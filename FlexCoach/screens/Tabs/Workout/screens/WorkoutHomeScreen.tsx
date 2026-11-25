@@ -143,14 +143,14 @@ export const WorkoutHomeScreen = () => {
                 </CustomText>
               </View>
               <View style={{ height: 6, borderRadius: 3, backgroundColor: colors.surfaceRaised, overflow: 'hidden' }}>
-                <View style={{ height: 6, width: `${workoutsTotal ? (workoutsDone / workoutsTotal) * 100 : 0}%`, backgroundColor: colors.accent }} />
+                <View style={{ height: 6, width: `${workoutsTotal ? (workoutsDone / workoutsTotal) * 100 : 0}%`, backgroundColor: colors.data }} />
               </View>
             </View>
           ),
           report:
             state.cycleFinished && !state.reportReviewed ? (
-              <Card tone="accent">
-                <CustomText variant="overline" color={colors.accent}>Cycle {cycle.number}</CustomText>
+              <Card>
+                <CustomText variant="overline" color={colors.inkMuted}>Cycle {cycle.number}</CustomText>
                 <CustomText variant="heading">Your cycle report is ready</CustomText>
                 <CustomText variant="body" color={colors.inkMuted} style={{ marginTop: spacing.xs, marginBottom: spacing.md }}>
                   Review it to see your stats and any changes to your next cycle.
@@ -158,7 +158,7 @@ export const WorkoutHomeScreen = () => {
                 <PrimaryButton label="Review report" onPress={() => (navigation as unknown as NavigationProp<AppStackParams>).navigate('CycleReviewScreen', { plan, cycle })} />
               </Card>
             ) : state.cycleFinished && state.reportReviewed ? (
-              <Card tone="accent">
+              <Card>
                 <CustomText variant="heading">Cycle {cycle.number} is done</CustomText>
                 <CustomText variant="body" color={colors.inkMuted} style={{ marginTop: spacing.xs, marginBottom: spacing.md }}>
                   Start the next one whenever you're ready.
@@ -288,14 +288,14 @@ export const WorkoutHomeScreen = () => {
       >
         {/* One scroll view for every state; the title row scrolls with the content.
             The content is never stretched to fill the screen, so short states don't scroll. */}
-        {loading && <ActivityIndicator color={colors.accent} style={{ marginTop: spacing.xxl }} />}
+        {loading && <ActivityIndicator color={colors.inkMuted} style={{ marginTop: spacing.xxl }} />}
 
         {/* Resume, whatever else is going on: a quick workout has no plan behind it. */}
         {/* Legacy Swap first, glowing, whatever else is going on. */}
 
         {!loading && resume && family === 'phone' && (
-          <Card tone="accent">
-            <CustomText variant="overline" color={colors.accent}>In progress</CustomText>
+          <Card>
+            <CustomText variant="overline" color={colors.inkMuted}>In progress</CustomText>
             <CustomText variant="heading" style={{ marginTop: spacing.xs }}>{resume.workoutName}</CustomText>
             <CustomText variant="caption" color={colors.inkMuted} style={{ marginBottom: spacing.md }}>
               Started {new Date(resume.startedAt).toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' })}
@@ -305,10 +305,10 @@ export const WorkoutHomeScreen = () => {
         )}
         {/* On a wide window the card takes the today card's shape: the workout on the left, Resume on the right behind a standing divider. */}
         {!loading && resume && family !== 'phone' && (
-          <Card tone="accent">
+          <Card>
             <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.lg }}>
               <View style={{ flex: 1 }}>
-                <CustomText variant="overline" color={colors.accent}>In progress</CustomText>
+                <CustomText variant="overline" color={colors.inkMuted}>In progress</CustomText>
                 <CustomText variant="heading" style={{ marginTop: spacing.xs }}>{resume.workoutName}</CustomText>
                 <CustomText variant="caption" color={colors.inkMuted}>
                   Started {new Date(resume.startedAt).toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' })}
@@ -334,7 +334,7 @@ export const WorkoutHomeScreen = () => {
 
         {!loading && !plan && (
           <View style={[{ gap: spacing.lg, padding: spacing.sm, paddingTop: spacing.xl }, narrow]}>
-            <Icon icon={generalIcons.dumbbell} color={colors.accent} size={40} />
+            <Icon icon={generalIcons.dumbbell} color={colors.ink} size={40} />
             <CustomText variant="title">No active plan</CustomText>
             <CustomText variant="body" color={colors.inkMuted}>
               {drafts.length

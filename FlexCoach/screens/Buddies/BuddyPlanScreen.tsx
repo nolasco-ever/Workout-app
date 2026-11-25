@@ -79,13 +79,13 @@ export const BuddyPlanScreen = () => {
     <SafeAreaView edges={['bottom', 'left', 'right']} style={{ flex: 1, backgroundColor: colors.ground }}>
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={[{ padding: spacing.lg, gap: spacing.lg}, column]}>
         {plan === undefined ? (
-          <ActivityIndicator color={colors.accent} style={{ marginTop: spacing.xxl }} />
+          <ActivityIndicator color={colors.inkMuted} style={{ marginTop: spacing.xxl }} />
         ) : plan === null ? (
           <CustomText variant="body" color={colors.inkMuted} centered>This plan isn't shared any more.</CustomText>
         ) : (
           <>
             <View>
-              <CustomText variant="overline" color={colors.accent}>Created by {params.ownerName ?? 'a buddy'}</CustomText>
+              <CustomText variant="overline" color={colors.inkMuted}>Created by {params.ownerName ?? 'a buddy'}</CustomText>
               {plan.description ? <CustomText variant="body" color={colors.inkMuted}>{plan.description}</CustomText> : null}
             </View>
             <PlanSummaryCard plan={plan} />

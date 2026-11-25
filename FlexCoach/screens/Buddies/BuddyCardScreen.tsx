@@ -163,7 +163,7 @@ export const BuddyCard = ({ params, embedded = false }: { params: BuddyCardParam
   const body = (
       <ScrollView contentInsetAdjustmentBehavior="automatic" showsVerticalScrollIndicator={false} contentContainerStyle={{ padding: spacing.lg, gap: spacing.lg, paddingBottom: spacing.xxl}}>
         {card === undefined ? (
-          <ActivityIndicator color={colors.accent} style={{ marginTop: spacing.xxl }} />
+          <ActivityIndicator color={colors.inkMuted} style={{ marginTop: spacing.xxl }} />
         ) : notFound ? (
           <View style={{ gap: spacing.md, paddingVertical: spacing.xl }}>
             <CustomText variant="heading" centered>No card for {formatInviteCode(params.code ?? '')}</CustomText>
@@ -184,7 +184,7 @@ export const BuddyCard = ({ params, embedded = false }: { params: BuddyCardParam
           <View style={{ gap: spacing.sm }}>
             <CustomText variant="overline" color={colors.inkMuted}>Shared plans</CustomText>
             {plans === null ? (
-              <ActivityIndicator color={colors.accent} />
+              <ActivityIndicator color={colors.inkMuted} />
             ) : plans.length === 0 ? (
               <SurfaceCard>
                 <CustomText variant="body" color={colors.inkMuted}>{name ?? 'They'} hasn't shared any plans with buddies.</CustomText>

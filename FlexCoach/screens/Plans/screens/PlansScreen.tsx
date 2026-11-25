@@ -28,7 +28,7 @@ import { planItemsLabel } from '../../../data/engine/planItems';
 const PlanRow = ({ plan, selected = false, onPress }: { plan: Plan; selected?: boolean; onPress: () => void }) => {
   const { colors, spacing } = useTheme();
   return (
-    <TouchableOpacity onPress={onPress} style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.md, padding: spacing.lg, backgroundColor: selected ? colors.accentTint : undefined }}>
+    <TouchableOpacity onPress={onPress} style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.md, padding: spacing.lg, backgroundColor: selected ? colors.selectedTint : undefined }}>
       <View style={{ flex: 1 }}>
         <CustomText variant="bodyStrong">{plan.name || 'Untitled plan'}</CustomText>
         <CustomText variant="caption" color={colors.inkMuted}>
@@ -115,12 +115,12 @@ export const PlansScreen = () => {
       <ScrollView showsVerticalScrollIndicator={false}
         contentInsetAdjustmentBehavior="automatic"
         contentContainerStyle={{ padding: spacing.lg, gap: spacing.xl}}
-        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.accent} />}
+        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.inkMuted} />}
       >
-        {loading && <ActivityIndicator color={colors.accent} style={{ marginTop: spacing.xxl }} />}
+        {loading && <ActivityIndicator color={colors.inkMuted} style={{ marginTop: spacing.xxl }} />}
         {!loading && plans.length === 0 && (
           <View style={{ gap: spacing.md, paddingVertical: spacing.xl }}>
-            <Icon icon={generalIcons.dumbbell} color={colors.accent} size={36} />
+            <Icon icon={generalIcons.dumbbell} color={colors.ink} size={36} />
             <CustomText variant="title">No plans yet</CustomText>
             <CustomText variant="body" color={colors.inkMuted}>A plan is your workouts plus a schedule. Build one and the Workout tab takes it from there.</CustomText>
           </View>

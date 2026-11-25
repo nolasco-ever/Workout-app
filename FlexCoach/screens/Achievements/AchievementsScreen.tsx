@@ -71,7 +71,7 @@ const FamilySection = ({ progress, unit, cell, measured, onOpen }: { progress: F
           <View style={{ width: 120, alignItems: 'flex-end', gap: spacing.xs, paddingTop: 2 }} accessible accessibilityLabel={done ? `${family.name}: every tier earned` : `${family.name}: ${towardNext(progress, unit)} to the next tier`}>
             <CustomText variant="caption" color={done ? colors.success : colors.ink} numberOfLines={1}>{done ? `All ${thresholds.length} earned` : towardNext(progress, unit)}</CustomText>
             <View style={{ width: '100%', height: 6, borderRadius: radius.pill, backgroundColor: colors.surfaceRaised, overflow: 'hidden' }}>
-              <View style={{ width: `${Math.round(Math.min(1, Math.max(0, progress.fraction)) * 100)}%`, height: '100%', borderRadius: radius.pill, backgroundColor: done ? colors.success : colors.accent }} />
+              <View style={{ width: `${Math.round(Math.min(1, Math.max(0, progress.fraction)) * 100)}%`, height: '100%', borderRadius: radius.pill, backgroundColor: done ? colors.success : colors.data }} />
             </View>
           </View>
         ) : (

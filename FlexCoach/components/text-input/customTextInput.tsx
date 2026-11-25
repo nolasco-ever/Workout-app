@@ -51,7 +51,7 @@ export const CustomTextInput = ({
       if (error) {
         return appColors.onError
       } else {
-        return appColors.primary
+        return appColors.tokens.ink
       }
     } else {
       if (error) {
@@ -77,7 +77,7 @@ export const CustomTextInput = ({
         {leftIcon && (
           <Icon
               icon={leftIcon}
-              color={error ? appColors.onError : isFocused ? appColors.primary : appColors.icon}
+              color={error ? appColors.onError : isFocused ? appColors.tokens.ink : appColors.icon}
           />
         )}
         {prefix && (
@@ -102,7 +102,7 @@ export const CustomTextInput = ({
         {rightIcon && (
           <Icon
               icon={rightIcon}
-              color={error ? appColors.onError : isFocused ? appColors.primary : appColors.icon}
+              color={error ? appColors.onError : isFocused ? appColors.tokens.ink : appColors.icon}
           />
         )}
       </View>

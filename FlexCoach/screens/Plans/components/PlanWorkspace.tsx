@@ -206,7 +206,7 @@ export const PlanWorkspace = ({ mode, initial = 'basics', initialWorkoutId = nul
                       onPress={() => choose(r.key)}
                       accessibilityRole="button"
                       accessibilityState={{ selected: section === r.key }}
-                      style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.md, padding: spacing.lg, borderTopWidth: i ? 1 : 0, borderTopColor: colors.line, backgroundColor: section === r.key ? colors.accentTint : undefined }}
+                      style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.md, padding: spacing.lg, borderTopWidth: i ? 1 : 0, borderTopColor: colors.line, backgroundColor: section === r.key ? colors.selectedTint : undefined }}
                     >
                       <View style={{ flex: 1 }}>
                         <CustomText variant="bodyStrong">{r.title}</CustomText>
@@ -233,7 +233,7 @@ export const PlanWorkspace = ({ mode, initial = 'basics', initialWorkoutId = nul
                   </View>
                   {/* One banner per thing still missing; a tap opens the part it belongs to. */}
                   {problems.map(p => (
-                    <TouchableOpacity key={p.message} onPress={() => choose(sectionOf(p))} accessibilityRole="button" style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.md, padding: spacing.md, borderRadius: radius.md, backgroundColor: colors.accentTint }}>
+                    <TouchableOpacity key={p.message} onPress={() => choose(sectionOf(p))} accessibilityRole="button" style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.md, padding: spacing.md, borderRadius: radius.md, backgroundColor: colors.surfaceRaised }}>
                       <View style={{ width: 10, height: 10, borderRadius: 5, backgroundColor: colors.error }} />
                       <CustomText variant="bodyStrong" style={{ flex: 1 }}>{p.message}</CustomText>
                       <CustomText variant="label" color={colors.accent}>Open {rows.find(r => r.key === sectionOf(p))?.title}</CustomText>

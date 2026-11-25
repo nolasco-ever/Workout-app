@@ -22,14 +22,14 @@ export const DayCard = ({ number, dayName, isToday, isSelected, onPress }: DayCa
                         styles.container, 
                         {
                             height: screenWidth / 5,
-                            backgroundColor: isSelected ? appColors.primary : appColors.background,
+                            backgroundColor: isSelected ? appColors.tokens.selected : appColors.background,
                             borderWidth: isSelected ? 0 : 1,
                             borderColor: appColors.inactive
                         }
                     ]}
                 >
-                    <Text style={[styles.number, {color: isSelected ? appColors.onPrimaryText : appColors.inactive}]}>{number}</Text>
-                    <Text style={[styles.dayName, {color: isSelected ? appColors.onPrimaryText : appColors.inactive}]}>{dayName}</Text>
+                    <Text style={[styles.number, {color: isSelected ? appColors.tokens.onSelected : appColors.inactive}]}>{number}</Text>
+                    <Text style={[styles.dayName, {color: isSelected ? appColors.tokens.onSelected : appColors.inactive}]}>{dayName}</Text>
                     {isToday && 
                         <View 
                             style={[
@@ -37,7 +37,7 @@ export const DayCard = ({ number, dayName, isToday, isSelected, onPress }: DayCa
                                 {
                                     height: screenWidth / 50,
                                     width: screenWidth / 50, 
-                                    backgroundColor: appColors.accent
+                                    backgroundColor: appColors.tokens.ink
                                 }
                             ]}
                         />

@@ -41,7 +41,7 @@ export const NotificationButton = ({ unseenNotifications, onPress }: Notificatio
         <View>
           <Icon icon={generalIcons.bell} size={20} color={appColors.text} />
         </View>
-        {showIndicator && <View style={[styles.notificationIndicator, {backgroundColor: appColors.accent}]} />}
+        {showIndicator && <View style={[styles.notificationIndicator, {backgroundColor: appColors.tokens.ink}]} />}
       </View>
     </TouchableOpacity>
   );

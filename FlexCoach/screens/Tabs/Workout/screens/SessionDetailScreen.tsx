@@ -229,7 +229,7 @@ export const SessionDetail = ({ sessionId, workoutName, embedded = false }: { se
   if (!loaded || !shown || !stats) {
     return (
       <SafeAreaView edges={['left', 'right']} style={{ flex: 1, backgroundColor: colors.ground, alignItems: 'center', justifyContent: 'center', padding: spacing.xl }}>
-        {loaded ? <CustomText variant="body" color={colors.inkMuted} centered>This workout is no longer in your history.</CustomText> : <ActivityIndicator color={colors.accent} />}
+        {loaded ? <CustomText variant="body" color={colors.inkMuted} centered>This workout is no longer in your history.</CustomText> : <ActivityIndicator color={colors.inkMuted} />}
       </SafeAreaView>
     );
   }
@@ -241,7 +241,7 @@ export const SessionDetail = ({ sessionId, workoutName, embedded = false }: { se
           contentContainerStyle={{ padding: spacing.lg, gap: spacing.lg, paddingBottom: (editing ? spacing.lg : spacing.xl + bottomInset)}}
           keyboardShouldPersistTaps="handled"
           keyboardDismissMode="on-drag"
-          refreshControl={editing ? undefined : <RefreshControl refreshing={refreshing} onRefresh={() => { refresh().catch(() => undefined); }} tintColor={colors.accent} />}
+          refreshControl={editing ? undefined : <RefreshControl refreshing={refreshing} onRefresh={() => { refresh().catch(() => undefined); }} tintColor={colors.inkMuted} />}
         >
           {/* Drawn inside another screen: the workout's name, since the header is the host's. It scrolls with the rest. */}
           {embedded && <CustomText variant="heading" numberOfLines={1}>{shown.workoutName}</CustomText>}
@@ -311,7 +311,7 @@ export const SessionDetail = ({ sessionId, workoutName, embedded = false }: { se
                           <View key={set.id} style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.md, paddingVertical: spacing.sm, borderTopWidth: 1, borderTopColor: colors.line, opacity: set.completed ? 1 : 0.5 }}>
                             <View style={{ width: 28 }}>
                               {/* Cardio is one entry, not a numbered set. */}
-                              {!isCardio(ex) && <CustomText variant="label" color={set.warmup ? colors.accent : colors.inkMuted}>{setLabel(set)}</CustomText>}
+                              {!isCardio(ex) && <CustomText variant="label" color={colors.inkMuted}>{setLabel(set)}</CustomText>}
                             </View>
                             <CustomText variant="bodyStrong" style={{ flex: 1, textAlign: 'center' }}>{a}</CustomText>
                             <CustomText variant="bodyStrong" style={{ flex: 1, textAlign: 'center' }}>{b}</CustomText>

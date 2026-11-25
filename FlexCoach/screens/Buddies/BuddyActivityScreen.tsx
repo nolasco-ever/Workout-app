@@ -56,10 +56,10 @@ export const BuddyActivityScreen = () => {
   return (
     <SafeAreaView edges={['bottom', 'left', 'right']} style={{ flex: 1, backgroundColor: colors.ground }}>
       <ScrollView showsVerticalScrollIndicator={false}
-        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.accent} />}
+        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.inkMuted} />}
         contentContainerStyle={[{ padding: spacing.lg, gap: spacing.lg, paddingBottom: spacing.xxl, flexGrow: 1}, column]}
       >
-        {(buddiesLoading || feed.loading) && <ActivityIndicator color={colors.accent} style={{ marginTop: spacing.xxl }} />}
+        {(buddiesLoading || feed.loading) && <ActivityIndicator color={colors.inkMuted} style={{ marginTop: spacing.xxl }} />}
         {!buddiesLoading && !feed.loading && feed.items.length === 0 && (
           <View style={{ flex: 1, justifyContent: 'center', gap: spacing.md, padding: spacing.lg }}>
             <CustomText variant="heading" centered>Nothing here yet</CustomText>

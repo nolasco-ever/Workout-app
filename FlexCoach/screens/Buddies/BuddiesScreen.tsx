@@ -62,12 +62,12 @@ export const BuddiesScreen = () => {
 
   const list = (
       <ScrollView contentInsetAdjustmentBehavior="automatic" showsVerticalScrollIndicator={false} style={wide ? { width: book?.left ?? LIST_PANE_WIDTH, flexGrow: 0 } : undefined} contentContainerStyle={{ padding: spacing.lg, gap: spacing.lg, paddingBottom: spacing.xxl}}>
-        {loading && <ActivityIndicator color={colors.accent} style={{ marginTop: spacing.xl }} />}
+        {loading && <ActivityIndicator color={colors.inkMuted} style={{ marginTop: spacing.xl }} />}
 
         {empty && (
           <View style={{ alignItems: 'center', gap: spacing.md, paddingVertical: spacing.xl }}>
-            <View style={{ width: 72, height: 72, borderRadius: 36, backgroundColor: colors.accentTint, alignItems: 'center', justifyContent: 'center' }}>
-              <Icon icon={generalIcons.users} size={32} color={colors.accent} />
+            <View style={{ width: 72, height: 72, borderRadius: 36, backgroundColor: colors.surfaceRaised, alignItems: 'center', justifyContent: 'center' }}>
+              <Icon icon={generalIcons.users} size={32} color={colors.ink} />
             </View>
             <CustomText variant="heading" centered>Train with people you know</CustomText>
             <CustomText variant="body" color={colors.inkMuted} centered>
@@ -86,7 +86,7 @@ export const BuddiesScreen = () => {
                 <TouchableOpacity
                   key={b.userId}
                   onPress={() => (wide ? setChosen(b.userId) : navigation.navigate('BuddyCardScreen', { uid: b.userId, displayName: b.card?.displayName ?? b.displayName ?? null }))}
-                  style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.md, padding: spacing.lg, borderTopWidth: i ? 1 : 0, borderTopColor: colors.line, backgroundColor: shownUid === b.userId ? colors.accentTint : undefined }}
+                  style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.md, padding: spacing.lg, borderTopWidth: i ? 1 : 0, borderTopColor: colors.line, backgroundColor: shownUid === b.userId ? colors.selectedTint : undefined }}
                 >
                   <Avatar uri={b.card?.photoUrl ?? b.photoUrl} name={b.card?.displayName ?? b.displayName} />
                   <View style={{ flex: 1 }}>

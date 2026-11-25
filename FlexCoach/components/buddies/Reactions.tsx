@@ -26,7 +26,7 @@ interface Props {
 
 /**
  * Reactions under a buddy's activity line: one chip per emoji with its
- * count, mine outlined in the accent. The smile button floats a bubble of
+ * count, mine outlined in ink. The smile button floats a bubble of
  * the emoji set above itself; tapping one sets it, tapping the one I
  * already gave takes it back, tapping a chip does the same for its emoji.
  * One reaction per person. A long press on any chip opens who reacted, as a
@@ -64,9 +64,9 @@ export const Reactions = ({ reactions, myUid, onReact, compact = false, header }
         hitSlop={6}
         accessibilityRole="button"
         accessibilityLabel="Add a reaction"
-        style={{ width: 36, height: 36, borderRadius: 18, alignItems: 'center', justifyContent: 'center', backgroundColor: anchor ? colors.accentTint : colors.surfaceRaised }}
+        style={{ width: 36, height: 36, borderRadius: 18, alignItems: 'center', justifyContent: 'center', backgroundColor: anchor ? colors.selectedTint : colors.surfaceRaised }}
       >
-        <Icon icon={generalIcons.smilePlus} size={20} color={anchor ? colors.accent : colors.inkMuted} />
+        <Icon icon={generalIcons.smilePlus} size={20} color={anchor ? colors.ink : colors.inkMuted} />
       </TouchableOpacity>
     </View>
   );
@@ -101,13 +101,13 @@ export const Reactions = ({ reactions, myUid, onReact, compact = false, header }
               paddingHorizontal: spacing.sm,
               height: 28,
               borderRadius: radius.pill,
-              backgroundColor: selected ? colors.accentTint : colors.surfaceRaised,
+              backgroundColor: selected ? colors.selectedTint : colors.surfaceRaised,
               borderWidth: 1,
-              borderColor: selected ? colors.accent : colors.transparent,
+              borderColor: selected ? colors.ink : colors.transparent,
             }}
           >
             <CustomText variant="caption" style={{ fontSize: 15, lineHeight: 20 }}>{emoji}</CustomText>
-            <CustomText variant="caption" color={selected ? colors.accent : colors.inkMuted}>{count}</CustomText>
+            <CustomText variant="caption" color={selected ? colors.ink : colors.inkMuted}>{count}</CustomText>
           </TouchableOpacity>
         );
       })}

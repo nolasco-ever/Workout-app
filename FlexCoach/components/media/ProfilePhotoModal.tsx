@@ -216,8 +216,8 @@ export const ProfilePhotoModal = ({ open, origin, uri, busy, onClose, onShown, o
           </Animated.View>
         </GestureDetector>
 
-        <Animated.View pointerEvents="none" style={[{ width: EDIT_BADGE, height: EDIT_BADGE, borderRadius: EDIT_BADGE / 2, backgroundColor: colors.accent, borderWidth: 3, borderColor: colors.ground, alignItems: 'center', justifyContent: 'center' }, badgeStyle]}>
-          <Icon icon={generalIcons.pencil} size={18} color={colors.onAccent} strokeWidth={2.5} />
+        <Animated.View pointerEvents="none" style={[{ width: EDIT_BADGE, height: EDIT_BADGE, borderRadius: EDIT_BADGE / 2, backgroundColor: colors.selected, borderWidth: 3, borderColor: colors.ground, alignItems: 'center', justifyContent: 'center' }, badgeStyle]}>
+          <Icon icon={generalIcons.pencil} size={18} color={colors.onSelected} strokeWidth={2.5} />
         </Animated.View>
 
         <Animated.View style={[{ position: 'absolute', left: 0, right: 0, bottom: 0, paddingHorizontal: spacing.lg, paddingBottom: insets.bottom + spacing.lg }, cardStyle]}>

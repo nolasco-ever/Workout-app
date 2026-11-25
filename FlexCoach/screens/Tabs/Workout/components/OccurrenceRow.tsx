@@ -42,10 +42,10 @@ export const DayRow = ({
   ];
   const dateColumn = (
     <View style={{ width: 44 }}>
-      <CustomText variant="overline" color={isToday ? colors.accent : colors.inkMuted}>
+      <CustomText variant="overline" color={isToday ? colors.ink : colors.inkMuted}>
         {DAY[d.getDay()]}
       </CustomText>
-      <CustomText variant="bodyStrong" color={isToday ? colors.accent : colors.ink}>
+      <CustomText variant="bodyStrong" color={colors.ink}>
         {d.getDate()}
       </CustomText>
     </View>

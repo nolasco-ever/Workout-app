@@ -61,7 +61,7 @@ export const ReactionsScreen = () => {
         accessibilityRole="tab"
         accessibilityState={{ selected: on }}
         accessibilityLabel={a11y}
-        style={{ height: 36, paddingHorizontal: spacing.md, borderRadius: radius.pill, flexDirection: 'row', alignItems: 'center', gap: 6, backgroundColor: on ? colors.accentTint : colors.surfaceRaised, borderWidth: 1, borderColor: on ? colors.accent : colors.transparent }}
+        style={{ height: 36, paddingHorizontal: spacing.md, borderRadius: radius.pill, flexDirection: 'row', alignItems: 'center', gap: 6, backgroundColor: on ? colors.selectedTint : colors.surfaceRaised, borderWidth: 1, borderColor: on ? colors.ink : colors.transparent }}
       >
         {label}
       </TouchableOpacity>
@@ -71,13 +71,13 @@ export const ReactionsScreen = () => {
   return (
     <SafeAreaView edges={['bottom', 'left', 'right']} style={{ flex: 1, backgroundColor: colors.ground }}>
       <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ flexGrow: 0 }} contentContainerStyle={{ gap: spacing.sm, paddingHorizontal: spacing.lg, paddingVertical: spacing.md }} accessibilityRole="tablist">
-        {chip(null, <CustomText variant="label" color={filter === null ? colors.accent : colors.ink}>All {rows.length}</CustomText>, `All reactions, ${rows.length}`)}
+        {chip(null, <CustomText variant="label" color={colors.ink}>All {rows.length}</CustomText>, `All reactions, ${rows.length}`)}
         {emojis.map(e =>
           chip(
             e,
             <>
               <CustomText variant="body" style={{ fontSize: 16, lineHeight: 20 }}>{e}</CustomText>
-              <CustomText variant="label" color={filter === e ? colors.accent : colors.ink}>{counts.get(e)}</CustomText>
+              <CustomText variant="label" color={colors.ink}>{counts.get(e)}</CustomText>
             </>,
             `${e}, ${counts.get(e)}`,
           ),

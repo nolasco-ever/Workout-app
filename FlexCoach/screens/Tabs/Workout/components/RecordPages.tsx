@@ -101,7 +101,7 @@ export const RecordPages = ({ records, weightUnit, distanceUnit, onDone }: { rec
         {records.length > 1 && (
           <View accessibilityLabel={`Record ${index + 1} of ${records.length}`} style={{ flexDirection: 'row', gap: 6 }}>
             {records.map((pr, i) => (
-              <View key={`${pr.exerciseId}-${pr.kind}`} style={{ width: i === index ? 18 : 7, height: 7, borderRadius: 4, backgroundColor: i === index ? dark.accent : dark.surfaceRaised }} />
+              <View key={`${pr.exerciseId}-${pr.kind}`} style={{ width: i === index ? 18 : 7, height: 7, borderRadius: 4, backgroundColor: i === index ? dark.ink : dark.surfaceRaised }} />
             ))}
           </View>
         )}

@@ -45,13 +45,13 @@ export const TodayItemRow = ({ name, kind, status, unplanned = false, index, cou
           borderRadius: 14,
           alignItems: 'center',
           justifyContent: 'center',
-          backgroundColor: done ? colors.success : skipped ? colors.surfaceRaised : colors.accentTint,
+          backgroundColor: done ? colors.success : colors.surfaceRaised,
         }}
       >
         {done ? (
           <Icon icon={generalIcons.check} size={16} color={colors.ground} strokeWidth={3} />
         ) : (
-          <CustomText variant="label" color={skipped ? colors.inkMuted : colors.accent}>{index + 1}</CustomText>
+          <CustomText variant="label" color={skipped ? colors.inkMuted : colors.ink}>{index + 1}</CustomText>
         )}
       </View>
       <View style={{ flex: 1, gap: 2 }}>

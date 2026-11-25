@@ -62,7 +62,7 @@ export const MyCardScreen = () => {
         {error ? (
           <CustomText variant="body" color={colors.error} centered>{error}</CustomText>
         ) : !card || !code ? (
-          <ActivityIndicator color={colors.accent} style={{ marginTop: spacing.xxl }} />
+          <ActivityIndicator color={colors.inkMuted} style={{ marginTop: spacing.xxl }} />
         ) : (
           <>
             <IronCard

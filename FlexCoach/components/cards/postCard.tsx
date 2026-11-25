@@ -94,7 +94,7 @@ export default function PostCard({
             <TouchableWithoutFeedback style={postCardStyle.actionItemContainer}>
                 <Icon
                     icon={generalIcons.comment}
-                    color={appColors.secondary}
+                    color={appColors.icon}
                     size={20}
                     style={{marginRight: 10}}
                 />

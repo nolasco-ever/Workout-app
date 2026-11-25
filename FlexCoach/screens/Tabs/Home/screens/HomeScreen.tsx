@@ -187,13 +187,13 @@ export const HomeScreen = () => {
   const todayStatus = !home.plan
     ? { tone: colors.inkMuted, kicker: 'Today', headline: 'No plan yet', detail: 'Set up a plan and your daily workout shows here.', action: 'Set up a plan' }
     : home.inProgressSession
-      ? { tone: colors.accent, kicker: 'In progress', headline: home.inProgressSession.workoutName, detail: 'Pick up where you left off.', action: 'Resume' }
+      ? { tone: colors.ink, kicker: 'In progress', headline: home.inProgressSession.workoutName, detail: 'Pick up where you left off.', action: 'Resume' }
       : home.cycle && home.todayDate < home.cycle.startDate
         ? { tone: colors.inkMuted, kicker: home.cycle.number > 1 ? `Cycle ${home.cycle.number} starts` : 'Plan starts', headline: dateLabel(home.cycle.startDate), detail: home.upcoming[0] ? `First up: ${home.upcoming[0].workoutName}` : 'The cycle begins then.', action: 'Open' }
       : ins.todaySession
         ? { tone: colors.success, kicker: 'Done today', headline: sessionDisplayName(ins.todaySession), detail: [...describeLogged([ins.todaySession]), ...(totalVolumeKg([ins.todaySession]) > 0 ? [`${fmtVolume(totalVolumeKg([ins.todaySession]))} ${unit} moved`] : [])].join(' · '), action: 'See workout' }
         : todayOcc && todayWorkout && todayOcc.status === 'scheduled'
-          ? { tone: colors.accent, kicker: 'Today', headline: todayWorkout.name, detail: `${todayWorkout.exercises.length} exercises · not started`, action: 'Start' }
+          ? { tone: colors.ink, kicker: 'Today', headline: todayWorkout.name, detail: `${todayWorkout.exercises.length} exercises · not started`, action: 'Start' }
           : todayOcc && todayOcc.status === 'skipped'
             ? { tone: colors.error, kicker: 'Today', headline: `${todayOcc.workoutName} skipped`, detail: 'Skipped for this cycle.', action: 'Open' }
             : { tone: colors.inkMuted, kicker: 'Today', headline: 'Rest day', detail: home.upcoming[0] ? `Next: ${home.upcoming[0].workoutName} on ${shortDate(home.upcoming[0].date)}` : 'Nothing scheduled.', action: 'Open' };
@@ -201,8 +201,8 @@ export const HomeScreen = () => {
   // The dashboard in pieces; the layout family arranges them below.
   const reportCard = (
             reportCycle && (
-              <SurfaceCard tone="accent">
-                <CustomText variant="overline" color={colors.accent}>Cycle {reportCycle.number}</CustomText>
+              <SurfaceCard>
+                <CustomText variant="overline" color={colors.inkMuted}>Cycle {reportCycle.number}</CustomText>
                 <CustomText variant="title">Your cycle report is ready</CustomText>
                 <CustomText variant="caption" color={colors.inkMuted} style={{ marginBottom: spacing.md }}>Review it to see your stats and any changes to your next cycle.</CustomText>
                 <PrimaryButton label="Review" onPress={openReport} />
@@ -211,7 +211,7 @@ export const HomeScreen = () => {
   );
   const todayCard = (
             <TouchableOpacity onPress={ins.todaySession && !home.inProgressSession ? () => goSession(ins.todaySession!.id, sessionDisplayName(ins.todaySession!)) : goWorkout} activeOpacity={0.7} style={medium ? { flex: 1 } : undefined}>
-              <SurfaceCard tone={todayStatus.tone === colors.accent ? 'accent' : 'surface'} style={medium ? { flex: 1, justifyContent: 'center' } : undefined}>
+              <SurfaceCard style={medium ? { flex: 1, justifyContent: 'center' } : undefined}>
                 <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.md }}>
                   <View style={{ flex: 1 }}>
                     <CustomText variant="overline" color={todayStatus.tone}>{todayStatus.kicker}</CustomText>
@@ -327,7 +327,7 @@ export const HomeScreen = () => {
                       <CustomText variant="bodyStrong">{pr.exerciseName}</CustomText>
                       <CustomText variant="caption" color={colors.inkMuted}>{dateLabel(pr.date)}{pr.previousValue !== null ? ` · up from ${formatRecordValue(pr.kind, pr.previousValue, unit, dist)}` : ' · first record'}</CustomText>
                     </View>
-                    <CustomText variant="bodyStrong" color={colors.accent}>{formatRecordValue(pr.kind, pr.value, unit, dist)}</CustomText>
+                    <CustomText variant="bodyStrong" color={colors.ink}>{formatRecordValue(pr.kind, pr.value, unit, dist)}</CustomText>
                   </TouchableOpacity>
                 ))}
               </SurfaceCard>
@@ -416,10 +416,10 @@ export const HomeScreen = () => {
         ref={scrollRef}
         contentContainerStyle={{ padding: spacing.lg, paddingTop: headerHeight + spacing.lg, gap: spacing.lg, paddingBottom: bottomRoom + bottomInset }}
         showsVerticalScrollIndicator={false}
-        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.accent} progressViewOffset={headerHeight} />}
+        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.inkMuted} progressViewOffset={headerHeight} />}
       >
         {/* One scroll view for every state; the title row scrolls with the content. */}
-        {loading && <ActivityIndicator color={colors.accent} style={{ marginTop: spacing.xxl }} />}
+        {loading && <ActivityIndicator color={colors.inkMuted} style={{ marginTop: spacing.xxl }} />}
         {!loading && family === 'phone' && (
           <>
             {reportCard}

@@ -37,7 +37,7 @@ export const GlassIconButton = ({ icon, onPress, accessibilityLabel, badge = fal
       >
         <View style={nudgeX ? { transform: [{ translateX: nudgeX }] } : undefined}>
           <Icon icon={icon} color={colors.ink} size={22} />
-          {badge && <View style={{ position: 'absolute', top: -1, right: -1, width: 10, height: 10, borderRadius: 5, backgroundColor: colors.accent, borderWidth: 2, borderColor: isLiquidGlassSupported ? colors.ground : colors.surfaceRaised }} />}
+          {badge && <View style={{ position: 'absolute', top: -1, right: -1, width: 10, height: 10, borderRadius: 5, backgroundColor: colors.ink, borderWidth: 2, borderColor: isLiquidGlassSupported ? colors.ground : colors.surfaceRaised }} />}
         </View>
       </LiquidGlassView>
     </TouchableOpacity>

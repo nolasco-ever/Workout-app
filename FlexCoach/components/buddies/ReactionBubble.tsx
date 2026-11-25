@@ -116,7 +116,7 @@ export const ReactionBubble = ({ anchor, mine, onPick, onClose }: Props) => {
               onPress={() => onPick(emoji)}
               accessibilityRole="button"
               accessibilityLabel={mine === emoji ? `${emoji}, yours, tap to remove` : `React ${emoji}`}
-              style={{ width: CELL, height: CELL, borderRadius: CELL / 2, alignItems: 'center', justifyContent: 'center', backgroundColor: mine === emoji ? colors.accentTint : colors.transparent }}
+              style={{ width: CELL, height: CELL, borderRadius: CELL / 2, alignItems: 'center', justifyContent: 'center', backgroundColor: mine === emoji ? colors.selectedTint : colors.transparent }}
             >
               <CustomText variant="body" style={{ fontSize: 26, lineHeight: 32 }}>{emoji}</CustomText>
             </TouchableOpacity>

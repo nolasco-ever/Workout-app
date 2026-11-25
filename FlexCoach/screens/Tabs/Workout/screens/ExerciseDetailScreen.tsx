@@ -114,12 +114,12 @@ export const ExerciseDetailScreen = () => {
         <MuscleMap primary={ex.primaryMuscles} secondary={ex.secondaryMuscles} height={220} />
         <View style={{ flexDirection: 'row', gap: spacing.lg, marginTop: spacing.md, flexWrap: 'wrap' }}>
           <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.xs }}>
-            <View style={{ width: 10, height: 10, borderRadius: 5, backgroundColor: colors.accent }} />
+            <View style={{ width: 10, height: 10, borderRadius: 5, backgroundColor: colors.data }} />
             <CustomText variant="caption" color={colors.ink}>{ex.primaryMuscles.map(title).join(', ') || '—'}</CustomText>
           </View>
           {ex.secondaryMuscles.length > 0 && (
             <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.xs }}>
-              <View style={{ width: 10, height: 10, borderRadius: 5, backgroundColor: colors.accent, opacity: 0.4 }} />
+              <View style={{ width: 10, height: 10, borderRadius: 5, backgroundColor: colors.dataSoft }} />
               <CustomText variant="caption" color={colors.inkMuted}>{ex.secondaryMuscles.map(title).join(', ')}</CustomText>
             </View>
           )}
@@ -133,8 +133,8 @@ export const ExerciseDetailScreen = () => {
       <Card style={{ gap: spacing.md }}>
         {ex.instructions.map((step, i) => (
           <View key={i} style={{ flexDirection: 'row', gap: spacing.md }}>
-            <View style={{ width: 26, height: 26, borderRadius: 13, backgroundColor: colors.accentTint, alignItems: 'center', justifyContent: 'center' }}>
-              <CustomText variant="label" color={colors.accent}>{i + 1}</CustomText>
+            <View style={{ width: 26, height: 26, borderRadius: 13, backgroundColor: colors.surfaceRaised, alignItems: 'center', justifyContent: 'center' }}>
+              <CustomText variant="label" color={colors.ink}>{i + 1}</CustomText>
             </View>
             <View style={{ flex: 1 }}>
               <CustomText variant="body">{step}</CustomText>

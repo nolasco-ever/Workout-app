@@ -41,7 +41,7 @@ export const NotificationPermissionCard = () => {
   return (
     <SurfaceCard>
       <View style={{ flexDirection: 'row', gap: spacing.md, alignItems: 'flex-start' }}>
-        <Icon icon={generalIcons.bell} size={22} color={colors.accent} />
+        <Icon icon={generalIcons.bell} size={22} color={colors.ink} />
         <View style={{ flex: 1, gap: spacing.xs }}>
           <CustomText variant="bodyStrong">Get reminded on workout days</CustomText>
           <CustomText variant="caption" color={colors.inkMuted}>A nudge in the morning, and a buzz when your rest is over. Only while a workout is still waiting.</CustomText>

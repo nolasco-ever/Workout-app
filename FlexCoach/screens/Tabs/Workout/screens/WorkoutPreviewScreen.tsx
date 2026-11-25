@@ -124,7 +124,7 @@ export const WorkoutPreviewScreen = () => {
                     <CustomText variant="caption" color={colors.inkMuted}>
                       {ex?.primaryMuscles.join(', ')}
                     </CustomText>
-                    <CustomText variant="label" color={colors.accent} style={{ marginTop: spacing.xs }}>
+                    <CustomText variant="label" color={colors.inkMuted} style={{ marginTop: spacing.xs }}>
                       {t ? describeTarget(entry, t, unit, dist) : entry.measurement === 'distance_time' ? 'Cardio' : `${entry.sets} sets`}
                     </CustomText>
                   </View>

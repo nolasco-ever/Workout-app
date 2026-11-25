@@ -27,7 +27,7 @@ interface Props {
   reference?: { value: number; label: string } | null;
   /** Called while scrubbing with the active point, and null on release. */
   onScrub?: (point: LinePoint | null) => void;
-  /** A point to call out: ringed in the accent with a label above it, e.g. a new record. */
+  /** A point to call out: ringed in the data colour with a label above it, e.g. a new record. */
   highlight?: { date: string; label: string } | null;
 }
 
@@ -154,24 +154,24 @@ export const LineChart = ({ points, height = 180, format, reference = null, onSc
                 </>
               )}
               {plot.secondaryPath && <Path d={plot.secondaryPath} fill="none" stroke={colors.inkMuted} strokeWidth={2} strokeLinejoin="round" strokeLinecap="round" strokeOpacity={0.5} />}
-              <Path d={plot.path} fill="none" stroke={colors.accent} strokeWidth={2} strokeLinejoin="round" strokeLinecap="round" />
+              <Path d={plot.path} fill="none" stroke={colors.data} strokeWidth={2} strokeLinejoin="round" strokeLinecap="round" />
               {points.length > 0 && (
                 <>
                   <Circle cx={plot.xs[plot.xs.length - 1]} cy={plot.ys[plot.ys.length - 1]} r={6} fill={colors.surface} />
-                  <Circle cx={plot.xs[plot.xs.length - 1]} cy={plot.ys[plot.ys.length - 1]} r={4} fill={colors.accent} />
+                  <Circle cx={plot.xs[plot.xs.length - 1]} cy={plot.ys[plot.ys.length - 1]} r={4} fill={colors.data} />
                 </>
               )}
               {hi >= 0 && highlight && (
                 <G>
-                  <Circle cx={plot.xs[hi]} cy={plot.ys[hi]} r={11} fill={colors.accent} fillOpacity={0.18} />
-                  <Circle cx={plot.xs[hi]} cy={plot.ys[hi]} r={6} fill={colors.surface} stroke={colors.accent} strokeWidth={2.5} />
-                  <SvgText x={hiLabelX} y={Math.max(10, plot.ys[hi] - 16)} fontSize={10} fontFamily={fonts.body.bold} fill={colors.accent} textAnchor="middle">
+                  <Circle cx={plot.xs[hi]} cy={plot.ys[hi]} r={11} fill={colors.data} fillOpacity={0.18} />
+                  <Circle cx={plot.xs[hi]} cy={plot.ys[hi]} r={6} fill={colors.surface} stroke={colors.data} strokeWidth={2.5} />
+                  <SvgText x={hiLabelX} y={Math.max(10, plot.ys[hi] - 16)} fontSize={10} fontFamily={fonts.body.bold} fill={colors.data} textAnchor="middle">
                     {highlight.label}
                   </SvgText>
                 </G>
               )}
               <AnimatedLine animatedProps={hairline} y1={PAD.top} y2={PAD.top + plot.h} stroke={colors.ink} strokeWidth={1} />
-              <AnimatedCircle animatedProps={dot} r={7} fill={colors.surface} stroke={colors.accent} strokeWidth={2.5} />
+              <AnimatedCircle animatedProps={dot} r={7} fill={colors.surface} stroke={colors.data} strokeWidth={2.5} />
             </Svg>
           )}
         </View>

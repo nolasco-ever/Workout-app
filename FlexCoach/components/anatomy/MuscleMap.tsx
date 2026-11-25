@@ -6,8 +6,8 @@ import { useTheme } from '../../theme';
 
 /**
  * Anatomical front and back figure from react-native-body-highlighter (MIT),
- * keyed by the catalog's muscle groups. Primary muscles fill with the accent,
- * secondary with a lighter tint.
+ * keyed by the catalog's muscle groups. Primary muscles fill with the data colour,
+ * secondary with its softer second level.
  */
 
 /** Catalog muscle group to body-highlighter slug. */
@@ -54,7 +54,7 @@ interface Props {
 }
 
 const MuscleMapInner = ({ primary, secondary = [], height = 200, views = 'both' }: Props) => {
-  const { colors, spacing, isDark } = useTheme();
+  const { colors, spacing } = useTheme();
   const scale = height / NATURAL_HEIGHT;
 
   // Several catalog groups share one region (lats and middle back are both
@@ -87,7 +87,7 @@ const MuscleMapInner = ({ primary, secondary = [], height = 200, views = 'both' 
       data={data}
       side={side}
       scale={scale}
-      colors={[colors.accent, isDark ? '#7A4530' : '#F3B79A']}
+      colors={[colors.data, colors.dataSoft]}
       defaultFill={colors.surfaceRaised}
       border="none"
       hiddenParts={['hair']}

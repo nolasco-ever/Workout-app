@@ -68,7 +68,7 @@ export const SetRow = ({ set, measurement, draft, unitLabels, onChange, onToggle
       <View style={{ width: 28, marginBottom: captionHeight }}>
         {/* Cardio is one entry, not a numbered set. */}
         {measurement !== 'distance_time' && (
-          <CustomText variant="label" color={set.warmup ? colors.accent : colors.inkMuted}>
+          <CustomText variant="label" color={colors.inkMuted}>
             {setLabel(set)}
           </CustomText>
         )}

@@ -52,8 +52,8 @@ export const NotificationsOnboardingScreen = () => {
       {/* Centred when there is room; scrolls on a short window (a folded phone's outer display). */}
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={[{ flexGrow: 1, padding: spacing.lg, gap: spacing.lg, justifyContent: 'center'}, column]}>
         <View style={{ alignItems: 'center', gap: spacing.md }}>
-          <View style={{ width: 96, height: 96, borderRadius: 48, backgroundColor: colors.accentTint, alignItems: 'center', justifyContent: 'center' }}>
-            <Icon icon={generalIcons.bell} size={44} color={colors.accent} />
+          <View style={{ width: 96, height: 96, borderRadius: 48, backgroundColor: colors.surfaceRaised, alignItems: 'center', justifyContent: 'center' }}>
+            <Icon icon={generalIcons.bell} size={44} color={colors.ink} />
           </View>
           <CustomText variant="title" centered>Stay on track</CustomText>
           <CustomText variant="body" color={colors.inkMuted} centered>Only on days you planned to train. You can change any of these later in Profile.</CustomText>
@@ -61,8 +61,8 @@ export const NotificationsOnboardingScreen = () => {
         <SurfaceCard style={{ gap: spacing.lg }}>
           {perks.map(p => (
             <View key={p.title} style={{ flexDirection: 'row', gap: spacing.md, alignItems: 'flex-start' }}>
-              <View style={{ width: 40, height: 40, borderRadius: 20, backgroundColor: colors.accentTint, alignItems: 'center', justifyContent: 'center' }}>
-                <Icon icon={p.icon} size={20} color={colors.accent} />
+              <View style={{ width: 40, height: 40, borderRadius: 20, backgroundColor: colors.surfaceRaised, alignItems: 'center', justifyContent: 'center' }}>
+                <Icon icon={p.icon} size={20} color={colors.ink} />
               </View>
               <View style={{ flex: 1 }}>
                 <CustomText variant="bodyStrong">{p.title}</CustomText>

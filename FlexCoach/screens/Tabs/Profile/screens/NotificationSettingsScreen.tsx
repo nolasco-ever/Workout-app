@@ -121,9 +121,9 @@ export const NotificationSettingsScreen = () => {
     <SafeAreaView edges={['left', 'right']} style={{ flex: 1, backgroundColor: colors.ground }}>
       <ScrollView contentInsetAdjustmentBehavior="automatic" showsVerticalScrollIndicator={false} contentContainerStyle={[{ padding: spacing.lg, gap: spacing.lg, paddingBottom: spacing.xxl + bottomInset}, column]}>
         {blocked && (
-          <SurfaceCard tone="accent">
+          <SurfaceCard>
             <View style={{ flexDirection: 'row', gap: spacing.md, alignItems: 'flex-start' }}>
-              <Icon icon={generalIcons.bellSlash} size={22} color={colors.accent} />
+              <Icon icon={generalIcons.bellSlash} size={22} color={colors.ink} />
               <View style={{ flex: 1, gap: spacing.xs }}>
                 <CustomText variant="bodyStrong">Notifications are off for FlexCoach</CustomText>
                 <CustomText variant="caption" color={colors.inkMuted}>Turn them on in your phone's settings to get reminders and the rest timer.</CustomText>
@@ -136,7 +136,7 @@ export const NotificationSettingsScreen = () => {
         )}
 
         {permission === 'undetermined' && prefs.enabled && (
-          <SurfaceCard tone="accent">
+          <SurfaceCard>
             <CustomText variant="bodyStrong">Allow notifications</CustomText>
             <CustomText variant="caption" color={colors.inkMuted} style={{ marginBottom: spacing.md }}>
               FlexCoach can remind you on workout days and buzz when your rest is over. Nothing is sent until you allow it.

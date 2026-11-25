@@ -70,7 +70,7 @@ export function SegmentedControl<T extends string>({ options, value, onChange, m
               : { flexGrow: 1, flexShrink: 0, flexBasis: 'auto', paddingVertical: spacing.sm, paddingHorizontal: spacing.lg, alignItems: 'center', justifyContent: 'center' }}
           >
             <CustomText variant="label" color={on ? colors.ink : colors.inkMuted} numberOfLines={1}>{o.label}</CustomText>
-            {marked && <View style={{ width: 4, height: 4, borderRadius: 2, marginTop: 2, backgroundColor: marked.includes(o.value) ? colors.accent : 'transparent' }} />}
+            {marked && <View style={{ width: 4, height: 4, borderRadius: 2, marginTop: 2, backgroundColor: marked.includes(o.value) ? colors.ink : 'transparent' }} />}
           </Pressable>
         );
       })}

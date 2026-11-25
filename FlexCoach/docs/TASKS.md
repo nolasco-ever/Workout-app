@@ -42,7 +42,7 @@ Design (canvas first)
 - [x] B22-12 Darker tab bar with a light selected hue, like YouTube; header
       glass matches (fb-12). Owner: dark mode only, darker glass tint, white
       focused icon; light mode and header unchanged.
-- [ ] B22-13 Too much orange, looks bland (fb-2). Pairs with B22-12. Owner
+- [x] B22-13 Too much orange, looks bland (fb-2). Pairs with B22-12. Owner
       picked colour A 'Spark': orange only for actions and the streak.
 - [ ] B22-14 Set-logging card "looks too AI" (fb-3).
 - [ ] B22-15 Workout done screen feels bare (fb-4, fb-20).

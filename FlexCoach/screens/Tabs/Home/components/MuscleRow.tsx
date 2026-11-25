@@ -16,7 +16,7 @@ export const MuscleRow = ({ muscle, sets, max, onPress }: { muscle: string; sets
         <CustomText variant="bodyStrong" numberOfLines={1}>{title(muscle)}</CustomText>
       </View>
       <View style={{ flex: 1, height: 8, borderRadius: 4, backgroundColor: colors.surfaceRaised, overflow: 'hidden' }}>
-        <View style={{ width: `${Math.max(3, (sets / max) * 100)}%`, height: 8, backgroundColor: colors.accent, opacity: 0.4 + 0.6 * (sets / max) }} />
+        <View style={{ width: `${Math.max(3, (sets / max) * 100)}%`, height: 8, backgroundColor: colors.data, opacity: 0.4 + 0.6 * (sets / max) }} />
       </View>
       <View style={{ width: 52, alignItems: 'flex-end' }}>
         <CustomText variant="caption" color={colors.inkMuted}>{sets} set{sets === 1 ? '' : 's'}</CustomText>

@@ -121,7 +121,7 @@ export const AppStack = () => {
     if (!ready) {
         return (
             <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', backgroundColor: colors.ground }}>
-                <ActivityIndicator color={colors.accent} />
+                <ActivityIndicator color={colors.inkMuted} />
             </View>
         );
     }

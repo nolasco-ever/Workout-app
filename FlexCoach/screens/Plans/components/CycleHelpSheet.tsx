@@ -24,8 +24,8 @@ export const CycleHelpSheet = ({ open, onClose }: { open: boolean; onClose: () =
         </CustomText>
         {POINTS.map((p, i) => (
           <View key={p.title} style={{ flexDirection: 'row', gap: spacing.md }}>
-            <View style={{ width: 26, height: 26, borderRadius: radius.pill, backgroundColor: colors.accentTint, alignItems: 'center', justifyContent: 'center' }}>
-              <CustomText variant="label" color={colors.accent}>{i + 1}</CustomText>
+            <View style={{ width: 26, height: 26, borderRadius: radius.pill, backgroundColor: colors.surfaceRaised, alignItems: 'center', justifyContent: 'center' }}>
+              <CustomText variant="label" color={colors.ink}>{i + 1}</CustomText>
             </View>
             <View style={{ flex: 1, gap: 2 }}>
               <CustomText variant="bodyStrong">{p.title}</CustomText>

@@ -95,14 +95,14 @@ export const CalendarPicker = ({ value, onChange, minDate, maxDate, today }: Pro
                   borderRadius: radius.pill,
                   alignItems: 'center',
                   justifyContent: 'center',
-                  backgroundColor: selected ? colors.accent : colors.transparent,
+                  backgroundColor: selected ? colors.selected : colors.transparent,
                   borderWidth: isToday && !selected ? 1.5 : 0,
-                  borderColor: colors.accent,
+                  borderColor: colors.ink,
                 }}
               >
                 <CustomText
                   variant="body"
-                  color={selected ? colors.onAccent : enabled ? colors.ink : colors.inactive}
+                  color={selected ? colors.onSelected : enabled ? colors.ink : colors.inactive}
                   style={{ fontFamily: selected || isToday ? fonts.body.semibold : fonts.body.regular }}
                 >
                   {fromLocalDate(d).getDate()}

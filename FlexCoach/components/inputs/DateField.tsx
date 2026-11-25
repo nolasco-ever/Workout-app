@@ -51,7 +51,7 @@ export const DateField = ({ label, value, onChange, maximumDate, minimumDate }: 
         accessibilityLabel={`${label ? `${label}, ` : ''}${dayLabel(value)}`}
         accessibilityHint="Opens a date picker"
         accessibilityState={Platform.OS === 'ios' ? { expanded: open } : undefined}
-        style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.sm, backgroundColor: colors.surface, borderWidth: 1, borderColor: open ? colors.accent : colors.line, borderRadius: radius.md, paddingHorizontal: spacing.md, paddingVertical: spacing.md }}
+        style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.sm, backgroundColor: colors.surface, borderWidth: 1, borderColor: open ? colors.ink : colors.line, borderRadius: radius.md, paddingHorizontal: spacing.md, paddingVertical: spacing.md }}
       >
         <CustomText variant="body" style={{ flex: 1 }}>{dayLabel(value)}</CustomText>
         <Icon icon={generalIcons.calendarDay} size={20} color={colors.inkMuted} />
@@ -64,7 +64,7 @@ export const DateField = ({ label, value, onChange, maximumDate, minimumDate }: 
           maximumDate={max}
           minimumDate={min}
           onChange={picked}
-          accentColor={colors.accent}
+          accentColor={colors.ink}
           themeVariant={isDark ? 'dark' : 'light'}
         />
       )}

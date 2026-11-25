@@ -6,7 +6,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { CustomText } from '../text/customText';
 import { Icon } from '../icons/Icon';
 import { generalIcons } from '../icons/icon-library';
-import { useTheme } from '../../theme';
+import { ironDark, useTheme } from '../../theme';
 
 interface Props {
   /** Image URIs, in order. */
@@ -38,7 +38,7 @@ const PHOTO_HEIGHT = 0.7;
  * and, at 1x, is the dismissal. Two fingers never dismiss.
  */
 export const PhotoViewer = ({ images, captions = [], index, onClose }: Props) => {
-  const { colors, spacing, radius } = useTheme();
+  const { spacing, radius } = useTheme();
   const insets = useSafeAreaInsets();
   const { width, height } = useWindowDimensions();
   const pager = useRef<React.ComponentRef<typeof ScrollView>>(null);
@@ -296,7 +296,7 @@ export const PhotoViewer = ({ images, captions = [], index, onClose }: Props) =>
           {images.length > 1 && (
             <View style={{ flexDirection: 'row', gap: spacing.sm }}>
               {images.map((uri, i) => (
-                <View key={uri} style={{ width: 6, height: 6, borderRadius: 3, backgroundColor: i === page ? colors.accent : 'rgba(255,255,255,0.4)' }} />
+                <View key={uri} style={{ width: 6, height: 6, borderRadius: 3, backgroundColor: i === page ? ironDark.ink : 'rgba(255,255,255,0.4)' }} />
               ))}
             </View>
           )}

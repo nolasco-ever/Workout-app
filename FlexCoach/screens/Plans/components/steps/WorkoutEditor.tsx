@@ -95,18 +95,18 @@ export const WorkoutEditor = ({ workoutId, embedded = false, onOpenEntry, openEn
               renderRow={(e, i) => {
                 const cat = getCatalogExercise(e.exerciseId);
                 return (
-                  <View style={{ flexDirection: 'row', alignItems: 'center', borderLeftWidth: 3, borderLeftColor: openEntryId === e.id ? colors.accent : colors.transparent }}>
+                  <View style={{ flexDirection: 'row', alignItems: 'center', borderLeftWidth: 3, borderLeftColor: openEntryId === e.id ? colors.ink : colors.transparent }}>
                     <TouchableOpacity
                       onPress={() => openEntry(e.id)}
                       style={{ flex: 1, flexDirection: 'row', alignItems: 'center', gap: spacing.md, paddingVertical: spacing.md, paddingLeft: spacing.md }}
                     >
-                      <View style={{ width: 26, height: 26, borderRadius: 13, backgroundColor: colors.accentTint, alignItems: 'center', justifyContent: 'center' }}>
-                        <CustomText variant="label" color={colors.accent}>{i + 1}</CustomText>
+                      <View style={{ width: 26, height: 26, borderRadius: 13, backgroundColor: colors.surfaceRaised, alignItems: 'center', justifyContent: 'center' }}>
+                        <CustomText variant="label" color={colors.ink}>{i + 1}</CustomText>
                       </View>
                       {cat && <MuscleMap primary={cat.primaryMuscles} secondary={cat.secondaryMuscles} height={56} views="auto" />}
                       <View style={{ flex: 1 }}>
                         <CustomText variant="bodyStrong" numberOfLines={1}>{e.exerciseName}</CustomText>
-                        <CustomText variant="caption" color={colors.accent}>{describeEntry(e, unit, dist)}</CustomText>
+                        <CustomText variant="caption" color={colors.inkMuted}>{describeEntry(e, unit, dist)}</CustomText>
                       </View>
                     </TouchableOpacity>
                     <TouchableOpacity onPress={() => navigation.navigate('ExerciseDetailScreen', { exerciseId: e.exerciseId, knownAs: e.exerciseName })} hitSlop={8} accessibilityRole="button" accessibilityLabel={`How to do ${e.exerciseName}`} style={{ padding: spacing.sm }}>
@@ -136,12 +136,12 @@ export const WorkoutEditor = ({ workoutId, embedded = false, onOpenEntry, openEn
             <MuscleMap primary={primary} secondary={secondary} height={170} />
             <View style={{ flexDirection: 'row', gap: spacing.lg, marginTop: spacing.md, flexWrap: 'wrap' }}>
               <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.xs }}>
-                <View style={{ width: 10, height: 10, borderRadius: 5, backgroundColor: colors.accent }} />
+                <View style={{ width: 10, height: 10, borderRadius: 5, backgroundColor: colors.data }} />
                 <CustomText variant="caption">{primary.join(', ')}</CustomText>
               </View>
               {secondary.length > 0 && (
                 <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.xs }}>
-                  <View style={{ width: 10, height: 10, borderRadius: 5, backgroundColor: colors.accent, opacity: 0.4 }} />
+                  <View style={{ width: 10, height: 10, borderRadius: 5, backgroundColor: colors.dataSoft }} />
                   <CustomText variant="caption" color={colors.inkMuted}>{secondary.join(', ')}</CustomText>
                 </View>
               )}

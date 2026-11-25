@@ -58,8 +58,8 @@ export const QuickWorkoutKindScreen = () => {
               accessibilityLabel={k.detail ? `${k.title}, ${k.detail}` : k.title}
               style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.md, minHeight: 76, padding: spacing.md, borderRadius: radius.lg, borderWidth: 1, borderColor: colors.line, backgroundColor: colors.surface }}
             >
-              <View style={{ width: 44, height: 44, borderRadius: 22, backgroundColor: colors.accentTint, alignItems: 'center', justifyContent: 'center' }}>
-                <Icon icon={k.icon} size={24} color={colors.accent} />
+              <View style={{ width: 44, height: 44, borderRadius: 22, backgroundColor: colors.surfaceRaised, alignItems: 'center', justifyContent: 'center' }}>
+                <Icon icon={k.icon} size={24} color={colors.ink} />
               </View>
               <View style={{ flex: 1, gap: 2 }}>
                 <CustomText variant="bodyStrong">{k.title}</CustomText>

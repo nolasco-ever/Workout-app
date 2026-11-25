@@ -96,12 +96,12 @@ export const PlanOverview = ({ planId, embedded = false, onGone }: { planId: str
     <>
       <ScrollView showsVerticalScrollIndicator={!embedded} contentContainerStyle={{ padding: spacing.lg, gap: spacing.lg }}>
         <View>
-          <CustomText variant="overline" color={isActive ? colors.accent : colors.inkMuted}>
+          <CustomText variant="overline" color={colors.inkMuted}>
             {isActive ? 'Active plan' : plan.status === 'archived' ? 'Archived' : 'Inactive'}
           </CustomText>
           <CustomText variant="title">{plan.name}</CustomText>
           {plan.sharedFrom && (
-            <CustomText variant="caption" color={colors.accent}>
+            <CustomText variant="caption" color={colors.inkMuted}>
               Created by {plan.sharedFrom.displayName ?? 'a buddy'} · {plan.sharedFrom.synced ? 'in sync with their edits' : 'your copy to edit'}
             </CustomText>
           )}

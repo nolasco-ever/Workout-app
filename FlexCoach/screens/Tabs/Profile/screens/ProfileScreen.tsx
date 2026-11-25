@@ -84,8 +84,8 @@ export const ProfileScreen = () => {
               <TouchableOpacity ref={avatarRef} onPress={openPhoto} disabled={photo.busy} accessibilityRole="button" accessibilityLabel="View or change profile photo" style={{ width: AVATAR, height: AVATAR, opacity: avatarHidden ? 0 : 1 }}>
                 <Avatar uri={profile?.photoUrl} name={profile?.displayName} size={AVATAR} fallback="icon" />
                 {/* Edit badge so the avatar reads as tappable. */}
-                <View style={{ position: 'absolute', right: 0, bottom: 0, width: EDIT_BADGE, height: EDIT_BADGE, borderRadius: EDIT_BADGE / 2, backgroundColor: colors.accent, borderWidth: 3, borderColor: colors.ground, alignItems: 'center', justifyContent: 'center' }}>
-                  {photo.busy ? <ActivityIndicator size="small" color={colors.onAccent} /> : <Icon icon={generalIcons.pencil} size={18} color={colors.onAccent} strokeWidth={2.5} />}
+                <View style={{ position: 'absolute', right: 0, bottom: 0, width: EDIT_BADGE, height: EDIT_BADGE, borderRadius: EDIT_BADGE / 2, backgroundColor: colors.selected, borderWidth: 3, borderColor: colors.ground, alignItems: 'center', justifyContent: 'center' }}>
+                  {photo.busy ? <ActivityIndicator size="small" color={colors.onSelected} /> : <Icon icon={generalIcons.pencil} size={18} color={colors.onSelected} strokeWidth={2.5} />}
                 </View>
               </TouchableOpacity>
               <CustomText variant="heading">{profile?.displayName ?? 'Your name'}</CustomText>
@@ -96,8 +96,8 @@ export const ProfileScreen = () => {
             <TouchableOpacity onPress={() => navigation.navigate('AchievementsScreen')} activeOpacity={0.7} accessibilityRole="button" accessibilityLabel="Achievements" disabled={!features.achievements}>
               <SurfaceCard>
                 <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.md }}>
-                  <View style={{ width: 40, height: 40, borderRadius: 20, backgroundColor: colors.accentTint, alignItems: 'center', justifyContent: 'center' }}>
-                    <Icon icon={generalIcons.award} size={20} color={colors.accent} />
+                  <View style={{ width: 40, height: 40, borderRadius: 20, backgroundColor: colors.surfaceRaised, alignItems: 'center', justifyContent: 'center' }}>
+                    <Icon icon={generalIcons.award} size={20} color={colors.ink} />
                   </View>
                   <View style={{ flex: 1 }}>
                     <CustomText variant="bodyStrong">Achievements</CustomText>
@@ -118,7 +118,7 @@ export const ProfileScreen = () => {
             <View style={{ gap: spacing.sm }}>
               <CustomText variant="overline" color={colors.inkMuted}>Training</CustomText>
               <SurfaceCard style={{ padding: 0 }}>
-                <Row icon={generalIcons.dumbbell} iconColor={colors.accent} title="My plans" description={active ? `Active: ${active.name}` : 'No active plan'} onPress={() => navigation.navigate('PlansScreen')} />
+                <Row icon={generalIcons.dumbbell} iconColor={colors.ink} title="My plans" description={active ? `Active: ${active.name}` : 'No active plan'} onPress={() => navigation.navigate('PlansScreen')} />
                 <Row icon={generalIcons.clock} title="History" description="Every workout you've logged" divider onPress={() => navigation.navigate('HistoryScreen')} />
                 <Row icon={generalIcons.users} title="Buddies" description="Train alongside people you know" divider onPress={() => navigation.navigate('BuddiesScreen')} />
               </SurfaceCard>

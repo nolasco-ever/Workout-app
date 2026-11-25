@@ -45,8 +45,8 @@ export const FirstPlanScreen = () => {
         <SurfaceCard style={{ gap: spacing.lg }}>
           {steps.map(s => (
             <View key={s.title} style={{ flexDirection: 'row', gap: spacing.md, alignItems: 'flex-start' }}>
-              <View style={{ width: 40, height: 40, borderRadius: 20, backgroundColor: colors.accentTint, alignItems: 'center', justifyContent: 'center' }}>
-                <Icon icon={s.icon} size={20} color={colors.accent} />
+              <View style={{ width: 40, height: 40, borderRadius: 20, backgroundColor: colors.surfaceRaised, alignItems: 'center', justifyContent: 'center' }}>
+                <Icon icon={s.icon} size={20} color={colors.ink} />
               </View>
               <View style={{ flex: 1 }}>
                 <CustomText variant="bodyStrong">{s.title}</CustomText>

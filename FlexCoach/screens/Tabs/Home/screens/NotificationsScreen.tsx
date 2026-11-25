@@ -82,7 +82,7 @@ export const NotificationsScreen = () => {
       setRefreshing(false);
     }
   }, [feed.refresh]);
-  const refreshControl = <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.accent} />;
+  const refreshControl = <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.inkMuted} />;
 
   // Leaving the screen (back, a tap through, or closing the app) marks
   // everything read. The ref keeps the latest feed for the cleanup.
@@ -114,7 +114,7 @@ export const NotificationsScreen = () => {
   return (
     <SafeAreaView edges={['bottom', 'left', 'right']} style={{ flex: 1, backgroundColor: colors.ground }}>
       {feed.loading ? (
-        <ActivityIndicator color={colors.accent} style={{ marginTop: spacing.xxl }} />
+        <ActivityIndicator color={colors.inkMuted} style={{ marginTop: spacing.xxl }} />
       ) : feed.items.length === 0 ? (
         <ScrollView showsVerticalScrollIndicator={false} refreshControl={refreshControl} contentContainerStyle={[{ flexGrow: 1, alignItems: 'center', justifyContent: 'center', padding: spacing.xl, gap: spacing.md}, column]}>
           <View style={{ width: 72, height: 72, borderRadius: 36, backgroundColor: colors.surfaceRaised, alignItems: 'center', justifyContent: 'center' }}>
@@ -141,8 +141,8 @@ export const NotificationsScreen = () => {
                       accessibilityLabel={`${unread ? 'Unread. ' : ''}${item.title}. ${item.body}`}
                       style={{ flexDirection: 'row', alignItems: 'flex-start', gap: spacing.md, padding: spacing.lg, borderTopWidth: i ? 1 : 0, borderTopColor: colors.line }}
                     >
-                      <View style={{ width: 36, height: 36, borderRadius: radius.sm, backgroundColor: unread ? colors.accentTint : colors.surfaceRaised, alignItems: 'center', justifyContent: 'center' }}>
-                        <Icon icon={iconFor(item.kind)} size={18} color={unread ? colors.accent : colors.inkMuted} />
+                      <View style={{ width: 36, height: 36, borderRadius: radius.sm, backgroundColor: colors.surfaceRaised, alignItems: 'center', justifyContent: 'center' }}>
+                        <Icon icon={iconFor(item.kind)} size={18} color={unread ? colors.ink : colors.inkMuted} />
                       </View>
                       <View style={{ flex: 1, gap: 2 }}>
                         <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.sm }}>
@@ -151,7 +151,7 @@ export const NotificationsScreen = () => {
                         </View>
                         <CustomText variant="caption" color={colors.inkMuted}>{item.body}</CustomText>
                       </View>
-                      {unread && <View style={{ width: 8, height: 8, borderRadius: 4, backgroundColor: colors.accent, marginTop: 6 }} />}
+                      {unread && <View style={{ width: 8, height: 8, borderRadius: 4, backgroundColor: colors.ink, marginTop: 6 }} />}
                     </TouchableOpacity>
                     </SwipeToDelete>
                   );
