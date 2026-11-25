@@ -29,7 +29,7 @@ Behaviour (owner OK'd 2026-11-25)
       Home (fb-5).
 - [x] B22-7 A skipped workout dated today or earlier in the current cycle can
       still be started (fb-15).
-- [ ] B22-8 Skip an exercise mid-workout: swipe to skip, swipe to unskip,
+- [x] B22-8 Skip an exercise mid-workout: swipe to skip, swipe to unskip,
       skipped ones move to their own section. **Canvas first** (fb-8).
 - [x] B22-9 More weight with fewer reps, still inside the rep range, counts as
       a hit; the next target keeps the new weight (fb-10).

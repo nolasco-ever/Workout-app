@@ -78,6 +78,11 @@ export interface SessionExercise {
   notes: string | null;
   /** Set when this exercise replaced the plan's one for this session only. */
   substitutedFor?: { exerciseId: Id; exerciseName: string };
+  /**
+   * Skipped mid-workout (build 22): its sets are cleared, it is not judged,
+   * and its target holds for next time. Absent on exercises never skipped.
+   */
+  skipped?: boolean;
 }
 
 export type SessionStatus = 'in_progress' | 'completed' | 'abandoned';

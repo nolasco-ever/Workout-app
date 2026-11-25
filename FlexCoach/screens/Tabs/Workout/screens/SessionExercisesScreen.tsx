@@ -18,7 +18,8 @@ import { useSessionOrientation } from '../../../../navigation/useSessionOrientat
  * progress strip, then every exercise with how many sets are done, the
  * current one marked. Tap one to
  * jump to it; the plus in the header adds an extra exercise (the picker
- * opens above this screen and comes back to it); extras swipe away.
+ * opens above this screen and comes back to it); extras swipe away, plan
+ * exercises swipe to Skipped and back.
  */
 export const SessionExercisesScreen = () => {
   useSessionOrientation();
@@ -47,11 +48,13 @@ export const SessionExercisesScreen = () => {
     navigation.goBack();
   };
   const remove = (ex: SessionExercise) => sendSessionCommand({ kind: 'remove', sessionExerciseId: ex.id });
+  const skip = (ex: SessionExercise) => sendSessionCommand({ kind: 'skip', sessionExerciseId: ex.id });
+  const unskip = (ex: SessionExercise) => sendSessionCommand({ kind: 'unskip', sessionExerciseId: ex.id });
 
   return (
     <SafeAreaView edges={['bottom', 'left', 'right']} style={{ flex: 1, backgroundColor: colors.ground }}>
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={[{ padding: spacing.lg, gap: spacing.lg, paddingBottom: spacing.xl}, column]}>
-        <SessionExerciseList session={session} currentIndex={params.currentIndex} onJump={jump} onRemove={remove} />
+        <SessionExerciseList session={session} currentIndex={params.currentIndex} onJump={jump} onRemove={remove} onSkip={skip} onUnskip={unskip} />
       </ScrollView>
     </SafeAreaView>
   );

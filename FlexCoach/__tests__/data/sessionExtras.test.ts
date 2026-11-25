@@ -1,7 +1,9 @@
 import { Session } from '../../data/models';
 import { searchCatalog } from '../../data/catalog/exerciseCatalog';
 import { Workout } from '../../data/models';
-import { addExerciseTo, fillFromWorkout, isQuickSession, newQuickSession, sessionDisplayName, pastExercisesLike, removeExerciseFrom, substituteExercise } from '../../data/engine/sessionExtras';
+import { addExerciseTo, fillFromWorkout, isQuickSession, newQuickSession, sessionDisplayName, pastExercisesLike, removeExerciseFrom, skipExercise, substituteExercise, unskipExercise, activeExercises } from '../../data/engine/sessionExtras';
+import { progressExercise } from '../../data/engine/progression';
+import { finishPrompt } from '../../screens/Tabs/Workout/components/finishPrompt';
 
 let n = 0;
 const makeId = () => `id-${++n}`;
@@ -184,5 +186,61 @@ describe('newQuickSession kind (v1 #10)', () => {
     const id = () => `id${n++}`;
     expect(newQuickSession('u', '2026-11-07', id, 1, 'cardio')).toMatchObject({ kind: 'cardio', workoutName: 'Quick workout', exercises: [] });
     expect('kind' in newQuickSession('u', '2026-11-07', id, 1)).toBe(false);
+  });
+});
+
+describe('skipping an exercise mid-workout', () => {
+  const logged: Session = {
+    ...base,
+    exercises: [
+      { ...base.exercises[0], sets: [
+        { id: 'w', setNumber: 1, weightKg: 30, reps: 9, durationSec: null, distanceM: null, completed: true, completedAt: 5, warmup: true },
+        { id: 'a', setNumber: 1, weightKg: 65, reps: 6, durationSec: null, distanceM: null, completed: true, completedAt: 6 },
+        { id: 'b', setNumber: 2, weightKg: 70, reps: 3, durationSec: null, distanceM: null, completed: false, completedAt: null },
+      ] },
+      { id: 'e2', workoutExerciseId: 'w2', exerciseId: 'row', exerciseName: 'Row', measurement: 'weight_reps', order: 1, notes: null, target: { sets: 3, reps: 10, weightKg: 50, durationSec: null, distanceM: null }, sets: [
+        { id: 'r1', setNumber: 1, weightKg: 50, reps: 10, durationSec: null, distanceM: null, completed: true, completedAt: 7 },
+      ] },
+    ],
+  };
+
+  it('clears what was typed or logged, back to fresh sets from the target', () => {
+    const next = skipExercise(logged, 'e1', 'kg', makeId);
+    const ex = next.exercises[0];
+    expect(ex.skipped).toBe(true);
+    expect(ex.sets.every(s => !s.completed)).toBe(true);
+    const working = ex.sets.filter(s => !s.warmup);
+    expect(working).toHaveLength(3);
+    expect(working.every(s => s.weightKg === 60 && s.reps === 8)).toBe(true);
+    // It had warm-ups, so it gets fresh ones back.
+    expect(ex.sets.some(s => s.warmup)).toBe(true);
+    expect(next.exercises[1]).toBe(logged.exercises[1]);
+  });
+
+  it('unskips back into place, with nothing logged', () => {
+    const back = unskipExercise(skipExercise(logged, 'e1', 'kg', makeId), 'e1');
+    expect(back.exercises[0].skipped).toBe(false);
+    expect(back.exercises[0].sets.every(s => !s.completed)).toBe(true);
+    expect(activeExercises(back)).toHaveLength(2);
+  });
+
+  it('lets every exercise be skipped', () => {
+    const all = skipExercise(skipExercise(logged, 'e1', 'kg', makeId), 'e2', 'kg', makeId);
+    expect(activeExercises(all)).toHaveLength(0);
+  });
+
+  it('holds the target for next time rather than counting a miss', () => {
+    const skipped = skipExercise(logged, 'e1', 'kg', makeId).exercises[0];
+    const entry = { id: 'w1', exerciseId: 'bench', exerciseName: 'Bench Press', measurement: 'weight_reps' as const, order: 0, sets: 3, repRangeMin: 8, repRangeMax: 12, startingWeightKg: 60, restSec: 90, progression: { weightIncrementKg: 2.5, repIncrement: 1 } };
+    const p = progressExercise(entry as never, [skipped], null, 'kg');
+    expect(p.target.weightKg).toBe(60);
+    expect(p.target.reps).toBe(8);
+  });
+
+  it('leaves a skipped exercise out of the finish warning', () => {
+    const next = skipExercise(logged, 'e1', 'kg', makeId);
+    const prompt = finishPrompt(next);
+    // Only the row is left, and its one set is in: nothing stays unlogged.
+    expect('title' in prompt && prompt.title).toBe('Finish workout?');
   });
 });

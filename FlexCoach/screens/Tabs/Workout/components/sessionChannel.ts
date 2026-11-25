@@ -5,7 +5,7 @@ import { Session } from '../../../../data/models';
  * itself (the exercise list) without putting it in navigation params,
  * which would go stale as sets are logged. The session screen publishes
  * every change; the list screen reads and subscribes. Commands flow the
- * other way: jump to an exercise, remove one.
+ * other way: jump to an exercise, remove, skip or unskip one.
  */
 
 let current: Session | null = null;
@@ -28,6 +28,7 @@ export const subscribeSession = (listener: (session: Session) => void): (() => v
 export type SessionCommand =
   | { kind: 'jump'; index: number }
   | { kind: 'remove'; sessionExerciseId: string }
+  | { kind: 'skip' | 'unskip'; sessionExerciseId: string }
   /** A button on the workout's notification (Android) or Live Activity: log the next set, skip the rest, stop the clock. */
   | { kind: 'activity'; command: 'completeSet' | 'skipRest' | 'stopCardio'; id: string };
 const commandListeners = new Set<(command: SessionCommand) => void>();

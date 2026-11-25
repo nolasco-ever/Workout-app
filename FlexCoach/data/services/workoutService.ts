@@ -254,7 +254,7 @@ export const addWarmupSetTo = (session: Session, sessionExerciseId: Id, unit: We
 };
 
 
-export { addExerciseTo, removeExerciseFrom, isQuickSession, substituteExercise } from '../engine/sessionExtras';
+export { addExerciseTo, removeExerciseFrom, isQuickSession, skipExercise, substituteExercise, unskipExercise } from '../engine/sessionExtras';
 import { buildWorkoutExercises, fillFromWorkout, newQuickSession } from '../engine/sessionExtras';
 
 export const saveExercises = (uid: Id, session: Session): Promise<Session> => sessionRepository.saveExercises(uid, session);

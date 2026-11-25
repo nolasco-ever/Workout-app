@@ -85,7 +85,10 @@ export const buildLiveActivityState = (args: {
   /** The rest ran out a moment ago: the next set is announced as "Rest over". */
   restJustEnded?: boolean;
 }): LiveActivityState => {
-  const { session, index, drafts, units, restStartedAt, restFor, restSec, clock, restJustEnded = false } = args;
+  const { session: whole, index: wholeIndex, drafts, units, restStartedAt, restFor, restSec, clock, restJustEnded = false } = args;
+  // Skipped exercises (build 22) are left off the lock screen and the Watch, as if they weren't in the workout.
+  const session: Session = { ...whole, exercises: whole.exercises.filter(ex => !ex.skipped) };
+  const index = Math.max(0, session.exercises.indexOf(whole.exercises[wholeIndex]));
   const next = nextOpenSet(session, index);
   const current = session.exercises[index];
   const shown = next?.exercise ?? current;

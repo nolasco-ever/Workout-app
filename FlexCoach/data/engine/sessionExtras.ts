@@ -124,6 +124,29 @@ export const fillFromWorkout = (session: Session, workout: Workout, targetFor: (
   exercises: buildWorkoutExercises(workout, targetFor, history, session, unit, makeId, false),
 });
 
+/**
+ * Skip an exercise mid-workout (build 22). Skipping means it won't be done,
+ * so anything typed or logged for it is cleared (owner, 2026-11-25): its
+ * sets go back to how the session started them, warm-ups included.
+ */
+export const skipExercise = (session: Session, sessionExerciseId: Id, unit: WeightUnit, makeId: () => Id): Session => ({
+  ...session,
+  exercises: session.exercises.map(e =>
+    e.id === sessionExerciseId
+      ? { ...e, skipped: true, sets: [...(e.sets.some(st => st.warmup) ? buildWarmupSets(e.target, unit, makeId) : []), ...buildPlannedSets(e.target, makeId)] }
+      : e,
+  ),
+});
+
+/** Bring a skipped exercise back; it returns to its place with the fresh sets the skip left. */
+export const unskipExercise = (session: Session, sessionExerciseId: Id): Session => ({
+  ...session,
+  exercises: session.exercises.map(e => (e.id === sessionExerciseId ? { ...e, skipped: false } : e)),
+});
+
+/** The exercises still to do or done: every one not skipped. */
+export const activeExercises = (session: Session): SessionExercise[] => session.exercises.filter(e => !e.skipped);
+
 /** Take an exercise back out of the session, e.g. one added by mistake. The last exercise stays. */
 export const removeExerciseFrom = (session: Session, sessionExerciseId: Id): Session =>
   session.exercises.length <= 1 ? session : { ...session, exercises: session.exercises.filter(e => e.id !== sessionExerciseId) };

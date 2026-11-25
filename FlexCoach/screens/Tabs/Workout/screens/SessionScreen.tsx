@@ -17,7 +17,7 @@ import { findWorkout } from '../../../../data/engine/schedule';
 import { newId } from '../../../../data/engine/ids';
 import { getCatalogExercise } from '../../../../data/catalog/exerciseCatalog';
 import { ExerciseKind, exerciseKind } from '../../../../data/catalog/exerciseKinds';
-import { abandonSession, addExerciseTo, addSetTo, addWarmupSetTo, copyWorkoutIntoQuickSession, finishSession, isQuickSession, logSet, removeExerciseFrom, removeSetFrom, saveExercises, saveSets, substituteExercise } from '../../../../data/services/workoutService';
+import { abandonSession, addExerciseTo, addSetTo, addWarmupSetTo, copyWorkoutIntoQuickSession, finishSession, isQuickSession, logSet, removeExerciseFrom, removeSetFrom, saveExercises, saveSets, skipExercise, substituteExercise, unskipExercise } from '../../../../data/services/workoutService';
 import { sessionRepository } from '../../../../data/repositories/sessionRepository';
 import { subscribeAdd, subscribeCopyWorkout, subscribeSwap } from '../components/swapChannel';
 import { publishSession, subscribeSessionCommands } from '../components/sessionChannel';
@@ -141,7 +141,7 @@ export const SessionScreen = () => {
   const sessionRef = useRef(session);
   sessionRef.current = session;
   const [index, setIndex] = useState(() => {
-    const firstOpen = params.session.exercises.findIndex(ex => ex.sets.some(s => !s.completed));
+    const firstOpen = params.session.exercises.findIndex(ex => !ex.skipped && ex.sets.some(s => !s.completed));
     return firstOpen === -1 ? 0 : firstOpen;
   });
   const [drafts, setDrafts] = useState<Record<string, SetDraft>>(() => {
@@ -178,7 +178,9 @@ export const SessionScreen = () => {
   const quick = isQuickSession(session);
   const total = session.exercises.length;
   const completedSets = useMemo(() => session.exercises.reduce((n, ex) => n + ex.sets.filter(s => s.completed).length, 0), [session]);
-  const allComplete = total > 0 && session.exercises.every(ex => ex.sets.length > 0 && ex.sets.every(st => st.completed));
+  // Skipped exercises are neither done nor left to do (build 22).
+  const kept = session.exercises.filter(ex => !ex.skipped);
+  const allComplete = kept.length > 0 && kept.every(ex => ex.sets.length > 0 && ex.sets.every(st => st.completed));
 
   // Leaving the screen keeps the session in progress; Home offers Resume.
   // The header's back button is our own rather than the native one, so the
@@ -414,6 +416,8 @@ export const SessionScreen = () => {
       subscribeSessionCommands(command => {
         if (command.kind === 'jump') goToRef.current(command.index);
         else if (command.kind === 'activity') applyCommandRef.current({ kind: command.command, id: command.id });
+        else if (command.kind === 'skip') skipRef.current(command.sessionExerciseId);
+        else if (command.kind === 'unskip') unskipRef.current(command.sessionExerciseId);
         else {
           const ex = sessionRef.current.exercises.find(e => e.id === command.sessionExerciseId);
           if (ex) askRemoveRef.current(ex);
@@ -447,6 +451,35 @@ export const SessionScreen = () => {
     ]);
   };
   askRemoveRef.current = askRemoveExercise;
+
+  // A plan exercise swiped to Skipped (build 22). Skipping means it won't be done, so what was typed or logged for it
+  // is cleared (owner, 2026-11-25). Skipping the one on screen moves on to the next one still to do.
+  const skipRef = useRef<(id: string) => void>(() => undefined);
+  skipRef.current = (id: string) => {
+    const current = sessionRef.current;
+    const at = current.exercises.findIndex(e => e.id === id);
+    if (at === -1 || current.exercises[at].skipped) return;
+    if (cardioTimer && current.exercises[at].sets.some(st => st.id === cardioTimer.setId)) setCardioTimer(null);
+    const next = skipExercise(current, id, units.weight, newId);
+    const skipped = next.exercises[at];
+    setSession(next);
+    setDrafts(d => {
+      const fresh = { ...d };
+      for (const st of skipped.sets) fresh[st.id] = toDraft(skipped, st, units);
+      return fresh;
+    });
+    if (uid) saveExercises(uid, next).catch(err => console.warn('skip exercise failed', err));
+    if (at !== index) return;
+    const order = [...next.exercises.slice(at + 1), ...next.exercises.slice(0, at)].filter(e => !e.skipped);
+    const following = order.find(e => e.sets.some(st => !st.completed)) ?? order[0];
+    if (following) goTo(next.exercises.indexOf(following));
+  };
+  const unskipRef = useRef<(id: string) => void>(() => undefined);
+  unskipRef.current = (id: string) => {
+    const next = unskipExercise(sessionRef.current, id);
+    setSession(next);
+    if (uid) saveExercises(uid, next).catch(err => console.warn('unskip exercise failed', err));
+  };
 
   const addWarmupSet = () => {
     if (!exercise) return;
@@ -519,7 +552,10 @@ export const SessionScreen = () => {
     }
   };
 
-  const isLast = index === total - 1;
+  // Back and Next step over skipped exercises.
+  const prevIndex = session.exercises.slice(0, index).map(e => !e.skipped).lastIndexOf(true);
+  const nextIndex = session.exercises.findIndex((e, i) => i > index && !e.skipped);
+  const isLast = nextIndex === -1;
   const exerciseId = exercise?.id ?? null;
   useLayoutEffect(() => {
     if (!exerciseId) return;
@@ -674,7 +710,7 @@ export const SessionScreen = () => {
           const at = exercises.indexOf(ex);
           const lastOfExercise = ex.sets.every(st => st.completed || st.id === set.id);
           const order = [...exercises.slice(at + 1), ...exercises.slice(0, at)];
-          const following = lastOfExercise ? order.find(e => e.sets.some(st => !st.completed)) : undefined;
+          const following = lastOfExercise ? order.find(e => !e.skipped && e.sets.some(st => !st.completed)) : undefined;
           const shown = following ? exercises.indexOf(following) : at;
           if (shown !== index) goTo(shown);
           // A timed set still running (End on the Watch) logs the time on its clock.
@@ -903,7 +939,13 @@ export const SessionScreen = () => {
               )}
             </View>
   ) : null;
-  const setsCard = exercise ? (timedExercise ? (
+  const setsCard = exercise ? (exercise.skipped ? (
+          // Only reached when every exercise is skipped: there is nowhere else to go.
+          <View style={{ backgroundColor: colors.surface, borderRadius: radius.lg, borderWidth: 1, borderColor: colors.line, padding: spacing.lg, gap: spacing.md }}>
+            <CustomText variant="body" color={colors.inkMuted}>Skipped. Its target stays for next time.</CustomText>
+            <PrimaryButton label="Unskip" variant="quiet" onPress={() => unskipRef.current(exercise.id)} />
+          </View>
+          ) : timedExercise ? (
           <CardioSetCard
             set={exercise.sets[0]}
             draft={drafts[exercise.sets[0].id] ?? { a: '', b: '' }}
@@ -962,9 +1004,9 @@ export const SessionScreen = () => {
           {exercise && (
           <View style={{ flexDirection: 'row', gap: spacing.sm }}>
             <TouchableOpacity
-              disabled={index === 0}
-              onPress={() => goTo(index - 1)}
-              style={{ width: 52, alignItems: 'center', justifyContent: 'center', borderRadius: radius.md, backgroundColor: colors.surfaceRaised, opacity: index === 0 ? 0.4 : 1 }}
+              disabled={prevIndex === -1}
+              onPress={() => goTo(prevIndex)}
+              style={{ width: 52, alignItems: 'center', justifyContent: 'center', borderRadius: radius.md, backgroundColor: colors.surfaceRaised, opacity: prevIndex === -1 ? 0.4 : 1 }}
             >
               <Icon icon={directionIcons.angleLeft} color={colors.ink} size={24} />
             </TouchableOpacity>
@@ -972,7 +1014,7 @@ export const SessionScreen = () => {
               {isLast ? (
                 <PrimaryButton label="Finish workout" icon={generalIcons.check} busy={finishing} onPress={finish} />
               ) : (
-                <PrimaryButton label="Next exercise" icon={directionIcons.angleRight} iconPosition="trailing" onPress={() => goTo(index + 1)} />
+                <PrimaryButton label="Next exercise" icon={directionIcons.angleRight} iconPosition="trailing" onPress={() => goTo(nextIndex)} />
               )}
             </View>
           </View>
@@ -1163,7 +1205,7 @@ export const SessionScreen = () => {
         {wide && (
           <View style={{ width: book ? Math.max(0, book.left - spacing.lg) : LIST_PANE_WIDTH }}>
             <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ gap: spacing.lg, paddingBottom: spacing.lg + insets.bottom }}>
-              <SessionExerciseList session={session} currentIndex={index} onJump={goTo} onRemove={ex => askRemoveRef.current(ex)} />
+              <SessionExerciseList session={session} currentIndex={index} onJump={goTo} onRemove={ex => askRemoveRef.current(ex)} onSkip={ex => skipRef.current(ex.id)} onUnskip={ex => unskipRef.current(ex.id)} />
               <PrimaryButton label="Add exercise" variant="outline" icon={generalIcons.plus} onPress={addExercise} />
             </ScrollView>
           </View>

@@ -1,4 +1,5 @@
 import {
+  ArrowUUpLeftIcon,
   AnchorIcon,
   NavigationArrowIcon,
   BicycleIcon,
@@ -117,6 +118,8 @@ export const directionIcons = {
   angleUp: CaretUpIcon,
   /** Double chevron: skip ahead. */
   skip: CaretDoubleRightIcon,
+  /** Bring a skipped exercise back. */
+  unskip: ArrowUUpLeftIcon,
   leftCaret: CaretLeftIcon,
   rightArrow: ArrowCircleRightIcon,
   rightCaret: CaretRightIcon,

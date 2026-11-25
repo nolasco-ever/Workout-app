@@ -12,8 +12,10 @@ const isDone = (ex: SessionExercise) => ex.sets.length > 0 && ex.sets.every(s =>
  * "12 of 15 sets and Running logged. 3 sets stay unlogged."
  */
 export const finishPrompt = (session: Session): { title: string; message: string } | { nothing: string } => {
-  const lifting = session.exercises.filter(ex => !isCardio(ex));
-  const cardio = session.exercises.filter(isCardio);
+  // A skipped exercise isn't left unlogged: it was skipped (build 22).
+  const kept = session.exercises.filter(ex => !ex.skipped);
+  const lifting = kept.filter(ex => !isCardio(ex));
+  const cardio = kept.filter(isCardio);
   const total = lifting.reduce((n, ex) => n + ex.sets.length, 0);
   const done = lifting.reduce((n, ex) => n + ex.sets.filter(s => s.completed).length, 0);
   const cardioDone = cardio.filter(ex => ex.sets.some(s => s.completed)).map(ex => ex.exerciseName);

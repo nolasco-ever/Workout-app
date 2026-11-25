@@ -4,6 +4,31 @@ Every decision the owner makes, newest first, with why. Open questions sit at th
 bottom until they're answered. Decisions before 2026-11-07 were recorded only in
 commit messages, `docs/RELEASES.md` and Claude's session notes.
 
+## 2026-11-25 · Skip an exercise mid-workout: swipe, Skipped section, cleared sets
+
+- **Project:** FlexCoach
+- **Type:** design and functional
+- **Decision:** On the workout's Exercises list, a plan exercise swipes left
+  to a grey Skip; it moves to a Skipped section at the bottom ("Skipped ·
+  target stays for next time"), and swiping it again shows Unskip (a light
+  neutral button), which puts it back in its place. Added exercises keep
+  their red Delete. Skipping clears anything typed or logged for it, back to
+  fresh sets from its target. A skipped exercise isn't judged, so its target
+  holds. Every exercise can be skipped. Back/Next, the progress strip and
+  count, the finish warning, the lock screen and the Watch all leave skipped
+  ones out. The workout's detail page lists them last as skipped.
+- **Why:** Tester: "We need a way to skip an exercise during a workout"
+  (build 22 fb-8). Owner: swipe to skip and unskip, like removing an added
+  exercise, with a Skipped section; drawn on the canvas row "Skip an exercise
+  mid-workout (build 22)". On logged sets the owner chose "clear any number
+  that inputted. skipping implies that im not going to do it" over keeping
+  them; Unskip "neutral is good"; "i should be able to skip everything".
+- **Source:** feature work, B22-8.
+- **Decided by:** owner. Claude's calls: a skipped row isn't tappable (swipe
+  or the screen reader's Unskip action brings it back), and when every
+  exercise is skipped the screen shows "Skipped" with an Unskip button.
+  Finishing still needs at least one set logged, as before.
+
 ## 2026-11-25 · Colour A: where the orange stays
 
 - **Project:** FlexCoach

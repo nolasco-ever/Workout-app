@@ -86,6 +86,21 @@ describe('buildLiveActivityState', () => {
   });
 });
 
+describe('buildLiveActivityState with skipped exercises', () => {
+  const base = { drafts: {}, units, restStartedAt: null, restFor: 90, restSec: 90, clock: null };
+  it('leaves them off the Watch list and counts the index without them', () => {
+    const s = session([exercise('a', 'Bench', [set('a1', 1, true)]), exercise('b', 'Row', [set('b1', 1)], { skipped: true }), exercise('c', 'Curl', [set('c1', 1)])]);
+    const state = buildLiveActivityState({ ...base, session: s, index: 2 });
+    expect(state.exercises?.map(e => e.id)).toEqual(['a', 'c']);
+    expect(state.exerciseIndex).toBe(1);
+    expect(state.nextSetId).toBe('c1');
+  });
+  it('has nothing to show when every one is skipped', () => {
+    const s = session([exercise('a', 'Bench', [set('a1', 1)], { skipped: true })]);
+    expect(buildLiveActivityState({ ...base, session: s, index: 0 }).nextSetId).toBeUndefined();
+  });
+});
+
 describe('describeFinish', () => {
   it('reads sets, volume in the lifter\'s unit and records, leaving out zeros', () => {
     expect(describeFinish(18, 5000, 1, units)).toBe('18 sets · 5,000 kg · 1 record');

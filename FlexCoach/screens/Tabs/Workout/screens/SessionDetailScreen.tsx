@@ -268,8 +268,9 @@ export const SessionDetail = ({ sessionId, workoutName, embedded = false }: { se
 
           <OwnReactions items={activity} />
 
+          {/* Skipped exercises come last, as they did in the workout (build 22). */}
           {[...shown.exercises]
-            .sort((a, b) => a.order - b.order)
+            .sort((a, b) => Number(!!a.skipped) - Number(!!b.skipped) || a.order - b.order)
             .map(ex => {
               const catalog = getCatalogExercise(ex.exerciseId);
               const labels = unitLabels(ex, units);
@@ -284,7 +285,9 @@ export const SessionDetail = ({ sessionId, workoutName, embedded = false }: { se
                       </CustomText>
                     </View>
                   </View>
-                  {editing ? (
+                  {ex.skipped ? (
+                    <CustomText variant="label" color={colors.inkMuted}>Skipped · target stays for next time</CustomText>
+                  ) : editing ? (
                     ex.sets.map(set => (
                       <SetRow
                         key={set.id}
