@@ -1941,6 +1941,28 @@ PODS:
   - RecaptchaInterop (101.0.0)
   - RNAppleAuthentication (2.5.1):
     - React-Core
+  - RNDateTimePicker (9.3.0):
+    - hermes-engine
+    - RCTRequired
+    - RCTTypeSafety
+    - React-bridging
+    - React-Core
+    - React-Core-prebuilt
+    - React-debug
+    - React-Fabric
+    - React-featureflags
+    - React-graphics
+    - React-ImageManager
+    - React-jsi
+    - React-NativeModulesApple
+    - React-RCTFabric
+    - React-renderercss
+    - React-rendererdebug
+    - React-utils
+    - ReactCodegen
+    - ReactCommon/turbomodule/core
+    - ReactNativeDependencies
+    - Yoga
   - RNFBApp (26.4.0):
     - hermes-engine
     - RCTRequired
@@ -2491,6 +2513,7 @@ DEPENDENCIES:
   - "ReactNativeHealthkit (from `../node_modules/@kingstinct/react-native-healthkit`)"
   - "ReactNativeHealthkitCore (from `../node_modules/@react-native-healthkit/core`)"
   - "RNAppleAuthentication (from `../node_modules/@invertase/react-native-apple-authentication`)"
+  - "RNDateTimePicker (from `../node_modules/@react-native-community/datetimepicker`)"
   - "RNFBApp (from `../node_modules/@react-native-firebase/app`)"
   - "RNFBAuth (from `../node_modules/@react-native-firebase/auth`)"
   - "RNFBFirestore (from `../node_modules/@react-native-firebase/firestore`)"
@@ -2708,6 +2731,8 @@ EXTERNAL SOURCES:
     :path: "../node_modules/@react-native-healthkit/core"
   RNAppleAuthentication:
     :path: "../node_modules/@invertase/react-native-apple-authentication"
+  RNDateTimePicker:
+    :path: "../node_modules/@react-native-community/datetimepicker"
   RNFBApp:
     :path: "../node_modules/@react-native-firebase/app"
   RNFBAuth:
@@ -2842,6 +2867,7 @@ SPEC CHECKSUMS:
   ReactNativeHealthkitCore: 614e6d1a996499be786a86e551086ad6ce3b0a2e
   RecaptchaInterop: 11e0b637842dfb48308d242afc3f448062325aba
   RNAppleAuthentication: d6fe579e5f43cf8db54bdc48518bccea61c592a4
+  RNDateTimePicker: c829017588262b1465533613c022e194e00c0414
   RNFBApp: 3c8163bfbf20a1e50b3197144cf6eb103982092a
   RNFBAuth: 82746bb9d6e3e18214ab35d5e17669b966a97afe
   RNFBFirestore: 89248d10027af8fb4be5f875b7b0d0668af0a585

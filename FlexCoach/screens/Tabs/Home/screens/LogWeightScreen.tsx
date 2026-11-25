@@ -6,20 +6,18 @@ import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useAuth } from '../../../../data/auth/AuthProvider';
 import { fromDisplayWeight, parseNumber, toDisplayWeight } from '../../../../data/engine/units';
-import { addDays, today } from '../../../../data/engine/dates';
+import { today } from '../../../../data/engine/dates';
 import { newId } from '../../../../data/engine/ids';
 import { bodyWeightRepository } from '../../../../data/repositories/bodyWeightRepository';
 import { userRepository } from '../../../../data/repositories/userRepository';
 import { pushWeightToHealth } from '../../../../data/services/healthSync';
-import { CustomText } from '../../../../components/text/customText';
 import { TextField } from '../../../../components/inputs/TextField';
-import { ChoiceChips } from '../../../../components/inputs/ChoiceChips';
+import { DateField } from '../../../../components/inputs/DateField';
 import { PrimaryButton } from '../../../../components/buttons/PrimaryButton';
 import { SurfaceCard } from '../../../../components/cards/SurfaceCard';
 import { useComfortableColumn } from '../../../../components/layout/useComfortableColumn';
 import { useTheme } from '../../../../theme';
 import { HomeStackParams } from '../HomeStack';
-import { shortDate } from '../../../../components/charts/scale';
 
 export const LogWeightScreen = () => {
   const navigation = useNavigation<NativeStackNavigationProp<HomeStackParams>>();
@@ -34,7 +32,6 @@ export const LogWeightScreen = () => {
   const [busy, setBusy] = useState(false);
 
   const value = parseNumber(weight);
-  const days = [0, 1, 2, 3, 4, 5, 6].map(n => addDays(todayDate, -n));
 
   const save = async () => {
     if (!uid || value === null) return;
@@ -60,10 +57,8 @@ export const LogWeightScreen = () => {
       <KeyboardAvoiding>
         <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={[{ padding: spacing.lg, gap: spacing.lg}, column]} keyboardShouldPersistTaps="handled" keyboardDismissMode="on-drag">
           <TextField id="weight" label="Weight" placeholder={unit === 'lb' ? '178.4' : '81.2'} value={weight} onChangeText={setWeight} keyboardType="decimal-pad" suffix={unit} autoFocus />
-          <View style={{ gap: spacing.sm }}>
-            <CustomText variant="overline" color={colors.inkMuted}>Day</CustomText>
-            <ChoiceChips scroll options={days.map(d => ({ value: d, label: d === todayDate ? 'Today' : d === days[1] ? 'Yesterday' : shortDate(d) }))} value={date} onChange={setDate} />
-          </View>
+          {/* Any day up to today (build 22 feedback); a weigh-in can't be in the future. */}
+          <DateField label="Day" value={date} onChange={setDate} maximumDate={todayDate} />
           <SurfaceCard>
             <TextField id="target-weight" label="Goal weight (optional)" placeholder="Leave blank for none" value={target} onChangeText={setTarget} keyboardType="decimal-pad" suffix={unit} hint="Shown as a line on the chart." />
           </SurfaceCard>

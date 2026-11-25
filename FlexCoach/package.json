@@ -16,6 +16,7 @@
     "@invertase/react-native-apple-authentication": "^2.5.1",
     "@kingstinct/react-native-healthkit": "^16.0.0",
     "@notifee/react-native": "^9.1.8",
+    "@react-native-community/datetimepicker": "^9.3.0",
     "@react-native-firebase/app": "^26.4.0",
     "@react-native-firebase/auth": "^26.4.0",
     "@react-native-firebase/firestore": "^26.4.0",

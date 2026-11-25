@@ -4,6 +4,23 @@ Every decision the owner makes, newest first, with why. Open questions sit at th
 bottom until they're answered. Decisions before 2026-11-07 were recorded only in
 commit messages, `docs/RELEASES.md` and Claude's session notes.
 
+## 2026-11-25 · Log weight: a date field that opens the native picker
+
+- **Project:** FlexCoach
+- **Type:** design and architectural
+- **Decision:** The day pills on Log weight are replaced by a field showing
+  the chosen day ("Today", "Yesterday", else the full date) with a calendar
+  icon. Tapping it opens the system date picker: Android's date dialog; on
+  iOS, which has no picker dialog, the system calendar opens under the field
+  and closes when a day is picked. Any day up to today can be chosen. Adds
+  the `@react-native-community/datetimepicker` native library.
+- **Why:** Tester: "This day pill picker is bad... pick any date I want".
+  Owner: OK to add the library, and "i want a field (not a text box
+  obviously), that shows the selected date. when tapping it, the native date
+  picker comes up". The inline calendar on iOS is Claude's means to that.
+- **Source:** B22-5 (build 22 feedback fb-7).
+- **Decided by:** owner.
+
 ## 2026-11-25 · Heavier but below the rep range goes back to the asked weight
 
 - **Project:** FlexCoach
