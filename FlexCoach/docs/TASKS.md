@@ -17,7 +17,7 @@ commit and push each item on its own, asking first only for a design or
 behaviour change.
 
 Bugs and small fixes
-- [ ] B22-1 A quick workout on a rest day still shows "Rest day" in This cycle
+- [x] B22-1 A quick workout on a rest day still shows "Rest day" in This cycle
       (fb-18).
 - [ ] B22-2 Workout preview shows the tab bar; move it to the root stack (fb-5).
 - [ ] B22-3 "This workout" over the reaction chips makes no sense (fb-9).

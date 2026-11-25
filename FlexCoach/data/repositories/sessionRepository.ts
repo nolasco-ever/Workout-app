@@ -28,6 +28,10 @@ export const sessionRepository = {
   watchInProgress: (uid: Id, onChange: (sessions: Session[]) => void): Unsubscribe =>
     watchDocs<Session>(paths.sessions(uid), onChange, where('status', '==', 'in_progress')),
 
+  /** Sessions dated on or after a day, live (one-field range, no composite index needed). */
+  watchFrom: (uid: Id, fromDate: string, onChange: (sessions: Session[]) => void): Unsubscribe =>
+    watchDocs<Session>(paths.sessions(uid), onChange, where('date', '>=', fromDate)),
+
   save: (uid: Id, session: Session) => writeDoc(paths.session(uid, session.id), touch(session)),
 
   /**

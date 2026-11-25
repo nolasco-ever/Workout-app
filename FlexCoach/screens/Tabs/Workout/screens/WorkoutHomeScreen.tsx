@@ -243,7 +243,14 @@ export const WorkoutHomeScreen = () => {
                 {/* One row per calendar day, start to end: a day two workouts landed on shows both, and a day nothing sits on any more is a rest day. */}
                 {cycleDays.map((date, i) => (
                   <View key={date} style={{ borderTopWidth: i === 0 ? 0 : 1, borderTopColor: colors.line }}>
-                    <DayRow date={date} occurrences={cycle.occurrences.filter(o => o.date === date)} isToday={date === state.todayDate} onOpen={openOccurrence} />
+                    <DayRow
+                      date={date}
+                      occurrences={cycle.occurrences.filter(o => o.date === date)}
+                      quickSessions={state.quickSessions.filter(s => s.date === date)}
+                      isToday={date === state.todayDate}
+                      onOpen={openOccurrence}
+                      onOpenSession={s => navigation.navigate('SessionDetailScreen', { sessionId: s.id, workoutName: s.workoutName })}
+                    />
                   </View>
                 ))}
               </Card>

@@ -30,6 +30,8 @@ export interface WorkoutHomeState {
   reportReviewed: boolean;
   /** An active plan with no live cycle, e.g. after an interrupted activation. */
   needsCycle: boolean;
+  /** Finished quick workouts dated inside the cycle; they sit on its days but aren't occurrences (build 22 feedback). */
+  quickSessions: Session[];
 }
 
 /**
@@ -78,6 +80,16 @@ export const useWorkoutHome = (): WorkoutHomeState => {
     return sessionRepository.watchInProgress(uid, setInProgress);
   }, [uid]);
 
+  const cycleStart = rawCycle?.startDate ?? null;
+  const [fromCycleStart, setFromCycleStart] = useState<Session[]>([]);
+  useEffect(() => {
+    if (!uid || !cycleStart) {
+      setFromCycleStart([]);
+      return;
+    }
+    return sessionRepository.watchFrom(uid, cycleStart, setFromCycleStart);
+  }, [uid, cycleStart]);
+
   // A cycle that resolved without a report time gets one now, so its review and the next cycle aren't stuck behind
   // the rest days left in it (build 21 feedback).
   useEffect(() => {
@@ -110,6 +122,7 @@ export const useWorkoutHome = (): WorkoutHomeState => {
     const todayOccurrence = focusOccurrence(todayOccurrences) ?? null;
     const upcoming = cycle ? getUpcomingOccurrences(cycle, todayDate) : [];
     const reportReady = !!cycle && reportReadyAt !== null && reportReadyAt <= Date.now();
+    const quickSessions = cycle ? fromCycleStart.filter(s => !s.occurrenceId && s.status === 'completed' && s.date <= cycle.endDate) : [];
     return {
       loading: !ready || !planLoaded || !cycleLoaded,
       plan,
@@ -124,7 +137,8 @@ export const useWorkoutHome = (): WorkoutHomeState => {
       reportReadyAt,
       reportReviewed: !!cycle?.reportReviewedAt,
       needsCycle: !!plan && plan.status === 'active' && !cycle,
+      quickSessions,
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [ready, planLoaded, cycleLoaded, plan, rawCycle, todayDate, inProgress, reportReadyAt]);
+  }, [ready, planLoaded, cycleLoaded, plan, rawCycle, todayDate, inProgress, reportReadyAt, fromCycleStart]);
 };
