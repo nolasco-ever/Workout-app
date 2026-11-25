@@ -4,6 +4,34 @@ Every decision the owner makes, newest first, with why. Open questions sit at th
 bottom until they're answered. Decisions before 2026-11-07 were recorded only in
 commit messages, `docs/RELEASES.md` and Claude's session notes.
 
+## 2026-11-25 09:15 · Build 22 feedback: triage and behaviour calls
+
+- **Project:** FlexCoach
+- **Type:** functional (progression, scheduling, session) and design
+- **Decision:**
+  - The workout preview gets "Not today" (the same Move or skip prompt as
+    Home). (B22-6)
+  - A skipped workout dated today or earlier in the current cycle can be
+    started; starting it brings it back. (B22-7)
+  - Skipping an exercise mid-workout works like removing an added exercise:
+    swipe to skip, swipe again to unskip; skipped exercises move to their own
+    Skipped section. Designed on the canvas before it's built. (B22-8)
+  - At the cycle review, a set done at more weight than asked with reps still
+    inside the rep range counts as a hit, and the next target keeps the new
+    weight. (B22-9)
+  - A miss no longer drops to the bottom of the rep range: it goes one rep
+    below the ask, or holds when most sets hit the ask. (B22-10)
+  - The per-set weight ramp carried from the last cycle stays; no first-time
+    "gauging" mode. (B22-11)
+  - Apple Health workout import is a v1 item, the route for Matrix (GymKit)
+    machines, since iPhone GymKit has no third-party API. (B22-19)
+- **Why:** Tester notes from build 22. Owner: "yea that works" on the hit
+  and miss rules (a tester did fewer reps because they went heavier); "let's
+  just keep it as is. it's fine" on the ramp; skip-exercise to mirror the
+  existing remove gesture and be designed on the canvas.
+- **Source:** build 22 feedback (fb-5, -8, -10, -11, -13, -15, -19).
+- **Decided by:** owner.
+
 ## 2026-11-14 · Screens opened from Profile cover the tab bar
 
 - **Project:** FlexCoach

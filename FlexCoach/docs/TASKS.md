@@ -9,6 +9,52 @@ Until 2026-11-07 this list lived only in Claude's session memory; this file is
 now the official copy. Keep it current: add deferrals under the right heading
 and move finished work to **Done**.
 
+## Build 22 tester feedback (2026-11-25)
+
+Exports in `~/Documents/FlexCoach_Feedback/build_22/` (`testflight_feedback`,
+`-2` … `-20`; "fb-N" below). Standing approval (owner, 2026-11-25): fix,
+commit and push each item on its own, asking first only for a design or
+behaviour change.
+
+Bugs and small fixes
+- [ ] B22-1 A quick workout on a rest day still shows "Rest day" in This cycle
+      (fb-18).
+- [ ] B22-2 Workout preview shows the tab bar; move it to the root stack (fb-5).
+- [ ] B22-3 "This workout" over the reaction chips makes no sense (fb-9).
+- [ ] B22-4 Records graphs on a buddy's workout: always open, no chevrons (fb-1).
+- [ ] B22-5 Log weight: native date picker instead of day pills (fb-7).
+
+Behaviour (owner OK'd 2026-11-25)
+- [ ] B22-6 "Not today" on the workout preview, same Move or skip prompt as
+      Home (fb-5).
+- [ ] B22-7 A skipped workout dated today or earlier in the current cycle can
+      still be started (fb-15).
+- [ ] B22-8 Skip an exercise mid-workout: swipe to skip, swipe to unskip,
+      skipped ones move to their own section. **Canvas first** (fb-8).
+- [ ] B22-9 More weight with fewer reps, still inside the rep range, counts as
+      a hit; the next target keeps the new weight (fb-10).
+- [ ] B22-10 A miss drops one rep below the ask, or holds if most sets hit it,
+      instead of falling to the bottom of the range (fb-11).
+- [x] B22-11 ~~no change (owner)~~ Second session still ramps weights per set;
+      first-time "gauging" (fb-19). Kept as is.
+
+Design (canvas first)
+- [ ] B22-12 Darker tab bar with a light selected hue, like YouTube; header
+      glass matches (fb-12).
+- [ ] B22-13 Too much orange, looks bland (fb-2). Pairs with B22-12.
+- [ ] B22-14 Set-logging card "looks too AI" (fb-3).
+- [ ] B22-15 Workout done screen feels bare (fb-4, fb-20).
+- [ ] B22-16 Past streaks lined on the calendar, unlike the current one (fb-6).
+- [ ] B22-17 Cardio detail shows all collected data: calories, avg pace, heart
+      rate (fb-14).
+- [ ] B22-18 Route map: clear start and finish markers, cues from Strava
+      (fb-16, fb-17).
+
+Research
+- [ ] B22-19 Matrix machine tap (GymKit) (fb-13): no third-party API on
+      iPhone; read the Fitness workout from Apple Health instead. Health import
+      is now v1 (owner, 2026-11-25), see v1 #10.
+
 ## Build 21 tester feedback (2026-11-14)
 
 Exports in `~/Documents/FlexCoach_Feedback/build_21/` (`testflight_feedback`,
@@ -100,8 +146,8 @@ Design (canvas first)
     optional photo of a machine's results screen fills the entry (on-device text
     recognition, confirm step); then remove manual distance typing. Later:
     per-mode session UI (treadmill, outdoor run/walk, cycling, bike, elliptical,
-    stairs), treadmills over Bluetooth FTMS (GymKit is Apple-only), maybe Health
-    import. Build 20 items B20-9 to B20-11 belong here.
+    stairs), treadmills over Bluetooth FTMS (GymKit is Apple-only), Health
+    import (v1, owner 2026-11-25; B22-19). Build 20 items B20-9 to B20-11 belong here.
     Owner 2026-11-07, functional changes in scope: cardio separate from
     strength (a workout has a kind, the picker filters by it); several items
     on one plan day; cardio added to a plan on its own, not inside a workout;
