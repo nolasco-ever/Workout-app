@@ -31,6 +31,13 @@ export interface ColorTokens {
   errorTint: string;
   info: string;
   infoTint: string;
+  /**
+   * Tint laid over the iOS tab bar's Liquid Glass; null keeps the system look.
+   * Dark mode only, a touch darker than the default (owner, 2026-11-25, B22-12).
+   */
+  tabBarGlass: string | null;
+  /** Android's solid tab bar. */
+  tabBarGround: string;
   /** Overlay behind modals. */
   scrim: string;
   transparent: string;
@@ -55,6 +62,8 @@ export const ironLight: ColorTokens = {
   errorTint: '#F9E0E0',
   info: '#3B7DD8',
   infoTint: '#DFEAFA',
+  tabBarGlass: null,
+  tabBarGround: '#F4F3F1',
   scrim: 'rgba(26, 26, 28, 0.45)',
   transparent: 'rgba(0, 0, 0, 0)',
 };
@@ -78,6 +87,8 @@ export const ironDark: ColorTokens = {
   errorTint: '#3B2020',
   info: '#6FA3EE',
   infoTint: '#1B2A40',
+  tabBarGlass: 'rgba(6, 6, 8, 0.45)',
+  tabBarGround: '#0D0E10',
   scrim: 'rgba(0, 0, 0, 0.6)',
   transparent: 'rgba(0, 0, 0, 0)',
 };

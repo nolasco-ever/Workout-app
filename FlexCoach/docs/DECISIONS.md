@@ -4,6 +4,29 @@ Every decision the owner makes, newest first, with why. Open questions sit at th
 bottom until they're answered. Decisions before 2026-11-07 were recorded only in
 commit messages, `docs/RELEASES.md` and Claude's session notes.
 
+## 2026-11-25 · Tab bar and colour: darker glass in dark mode, orange only for actions
+
+- **Project:** FlexCoach
+- **Type:** design
+- **Decision:** (1) Tab bar: light mode stays as it is. In dark mode the bar
+  gets a slightly darker tint and stays Liquid Glass on iOS (Android's solid
+  bar goes a little darker too). Only the tint changes; the header is not
+  restyled. (2) The chosen tab's icon is white, not orange (drawn in the ink
+  colour, so it reads near-black in light mode; the Profile photo's ring
+  follows it). (3) Colour option A, "Spark": orange is kept for actions and
+  the streak; your data (body map, bars) goes light-to-graphite and the Today
+  card becomes a plain card with Start and Not today.
+- **Why:** Testers found the app too orange and bland, and asked for a darker
+  bar with a lighter selection like YouTube (build 22 fb-2). Weighed on the
+  canvas row "Tab bar and colour (build 22)": bar A (white icon) vs B
+  (orange icon), light mode dark vs unchanged, colour Now / A Spark / B Teal.
+  Owner: keep light mode as is, darker tint for dark mode only, still glass;
+  white focused icon; "let's do A. i reserve the right to bring some color
+  back in future builds as i use it and may see opportunity for color".
+- **Source:** feature work, B22-12 and B22-13.
+- **Decided by:** owner (ink for the light-mode focused icon is Claude's
+  reading of "white icon").
+
 ## 2026-11-25 · A quick workout makes the day a training day
 
 - **Project:** FlexCoach

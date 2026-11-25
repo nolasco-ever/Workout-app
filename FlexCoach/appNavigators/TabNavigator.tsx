@@ -32,13 +32,16 @@ const icon = (name: keyof typeof TAB_IMAGES, drawable: string) => ({ focused }: 
 export const TabNavigator = () => {
     const { colors } = useTheme();
     // Your photo on the Profile tab, ringed when chosen; the person glyph without one (owner, 2026-11-14).
-    const photo = useProfileTabIcon(colors.accent);
+    // The chosen tab is drawn in ink, white in dark mode, not orange (owner, 2026-11-25, B22-12).
+    const photo = useProfileTabIcon(colors.ink);
     return (
         <Tab.Navigator
             initialRouteName={__DEV__ ? devFlags.startTab : 'HomeStack'}
-            tabBarActiveTintColor={colors.accent}
+            tabBarActiveTintColor={colors.ink}
             tabBarInactiveTintColor={colors.inactive}
-            tabBarStyle={Platform.OS === 'android' ? { backgroundColor: colors.ground } : undefined}
+            tabBarStyle={
+                Platform.OS === 'android' ? { backgroundColor: colors.tabBarGround } : colors.tabBarGlass ? { backgroundColor: colors.tabBarGlass } : undefined
+            }
             translucent
             hapticFeedbackEnabled
             minimizeBehavior="never"
