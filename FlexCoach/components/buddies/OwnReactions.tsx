@@ -5,9 +5,13 @@ import { CustomText } from '../text/customText';
 import { SurfaceCard } from '../cards/SurfaceCard';
 import { useTheme } from '../../theme';
 
-/** "Finished Lower Body" → "This workout"; "New record: Bench Press" → "Bench Press record". */
-const lineLabel = (item: Activity): string =>
-  item.kind === 'workout_done' ? 'This workout' : item.kind === 'record' ? `${item.title.replace(/^New record: /, '')} record` : item.title;
+/**
+ * "New record: Bench Press" → "Bench Press record". The workout's own line
+ * has no label: the section already says whose reactions these are, and
+ * "This workout" read as nonsense (build 22 feedback).
+ */
+const lineLabel = (item: Activity): string | null =>
+  item.kind === 'workout_done' ? null : item.kind === 'record' ? `${item.title.replace(/^New record: /, '')} record` : item.title;
 
 /**
  * What buddies said about one of my own workouts: a line per activity
@@ -24,7 +28,7 @@ export const OwnReactions = ({ items }: { items: Activity[] }) => {
       <SurfaceCard style={{ padding: 0 }}>
         {lines.map((item, i) => (
           <View key={item.id} style={{ padding: spacing.md, paddingHorizontal: spacing.lg, gap: spacing.xs, borderTopWidth: i > 0 ? 1 : 0, borderTopColor: colors.line }}>
-            <CustomText variant="bodyStrong">{lineLabel(item)}</CustomText>
+            {lineLabel(item) !== null && <CustomText variant="bodyStrong">{lineLabel(item)}</CustomText>}
             <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: spacing.xs }}>
               {Object.entries(item.reactions ?? {})
                 .sort((a, b) => a[1].at - b[1].at)
