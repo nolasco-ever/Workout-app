@@ -25,7 +25,7 @@ Bugs and small fixes
 - [ ] B22-5 Log weight: native date picker instead of day pills (fb-7).
 
 Behaviour (owner OK'd 2026-11-25)
-- [ ] B22-6 "Not today" on the workout preview, same Move or skip prompt as
+- [x] B22-6 "Not today" on the workout preview, same Move or skip prompt as
       Home (fb-5).
 - [ ] B22-7 A skipped workout dated today or earlier in the current cycle can
       still be started (fb-15).

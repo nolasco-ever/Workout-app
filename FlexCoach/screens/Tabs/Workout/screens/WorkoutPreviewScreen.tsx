@@ -22,6 +22,7 @@ import { AppStackParams } from '../../../../appNavigators/AppStack';
 import { useTabScrollInset } from '../../../../navigation/useTabBarInset';
 import { SurfaceCard as Card } from '../../../../components/cards/SurfaceCard';
 import { PrimaryButton } from '../../../../components/buttons/PrimaryButton';
+import { askNotToday } from '../components/notToday';
 
 /** "3 × 8–12 @ 25–35 lb" when the sets differ, "3 × 12 @ 55 lb" when they don't. */
 const weightLabel = (t: SetTarget, unit: 'kg' | 'lb'): string => {
@@ -77,6 +78,17 @@ export const WorkoutPreviewScreen = () => {
   const dist = profile?.distanceUnit ?? 'mi';
   const todayDate = today();
   const canStart = occurrence.status === 'scheduled';
+  // Today's workout can be moved or skipped from here too, with the same prompt as Home (build 22 feedback).
+  const canDefer = canStart && occurrence.date === todayDate;
+  const notToday = () =>
+    uid &&
+    askNotToday(uid, plan, cycle, todayDate, profile, fn => {
+      setBusy(true);
+      fn()
+        .then(() => navigation.goBack())
+        .catch(err => console.warn(err))
+        .finally(() => setBusy(false));
+    });
   const startLabel = occurrence.date === todayDate ? 'Start workout' : occurrence.date > todayDate ? 'Do this workout today' : 'Do it today';
 
   const openTutorial = (entry: WorkoutExercise) => navigation.navigate('ExerciseDetailScreen', { exerciseId: entry.exerciseId, knownAs: entry.exerciseName });
@@ -142,6 +154,7 @@ export const WorkoutPreviewScreen = () => {
               }
             }}
           />
+          {canDefer && <PrimaryButton label="Not today" variant="quiet" disabled={busy} onPress={notToday} />}
         </View>
       )}
     </SafeAreaView>
