@@ -180,10 +180,11 @@ describe('progressExercise: the verdict and what was done', () => {
     expect(describeProgression(p, 'kg').reason).toBe('You went heavier, so reps build up from there');
   });
 
-  it('still misses a heavier set that fell below the rep range', () => {
+  it('misses a heavier set that fell below the rep range and goes back to the asked weight (owner, 2026-11-25)', () => {
     const e = { ...entry(), repRangeMin: 8, repRangeMax: 12 };
     const p = progressExercise(e, [lastSession({ reps: 11, weightKg: 35 }, three(40, 6))], null, 'kg');
     expect(p.verdict).toBe('missed');
+    expect(p.target).toMatchObject({ reps: 10, weightKg: 35 });
   });
 
   it('names both parts when the reps and the weight fell short', () => {

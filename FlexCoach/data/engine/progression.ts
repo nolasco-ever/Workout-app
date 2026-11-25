@@ -29,6 +29,8 @@ import { KG_PER_LB } from './units';
  * - A bigger miss: the reps target drops MISS_DROP_REPS below the ask
  *   (never below the bottom of the range), weight stays (build 22: it used
  *   to fall to the fewest reps managed, often the bottom of the range).
+ *   A set that went heavier than asked and fell below the range goes back
+ *   to the weight it was asked for (owner, 2026-11-25).
  * - Not trained in the cycle: everything stays.
  *
  * Weights still belong to each set, so someone who ramps 25, 30, 35 keeps
@@ -221,14 +223,21 @@ export const progressExercise = (prescribed: WorkoutExercise, logs: SessionExerc
       const nearMiss = done.every(sets => indices.every(i => (sets[i]?.reps ?? 0) >= asked[i] - NEAR_MISS_REPS));
       const setsHit = done.reduce((n, sets) => n + indices.filter(i => setOk(sets[i], i)).length, 0);
       const mostHit = setsHit * 2 > done.length * indices.length;
+      // A set last done heavier than asked that fell below the rep range goes back to the weight it was asked for (owner, 2026-11-25).
+      const lastAttempt = (i: number) => [...done].reverse().map(sets => sets[i]).find(s => s !== undefined);
+      const overreached = indices.map(i => {
+        const s = lastAttempt(i);
+        return s !== undefined && askedWeight[i] > 0 && (s.weightKg ?? 0) > askedWeight[i] + WEIGHT_TOLERANCE_KG && (s.reps ?? 0) < rangeMin;
+      });
+      const missWeights = lastWeights.map((w, i) => (overreached[i] ? goalFor(from, i).weightKg : w));
       if (!hitAll && (nearMiss || mostHit)) {
         // Same target again: a set done lighter goes back to the weight it was asked for.
-        const holdWeights = lastWeights.map((w, i) => (askedWeight[i] > 0 && (w ?? 0) < askedWeight[i] ? goalFor(from, i).weightKg : w));
+        const holdWeights = missWeights.map((w, i) => (askedWeight[i] > 0 && (w ?? 0) < askedWeight[i] ? goalFor(from, i).weightKg : w));
         return summary(entry, from, withPerSet(entry.sets, holdWeights.map((weightKg, i) => ({ weightKg, reps: asked[i] }))), 'hold', judged.length, hits, verdict, did, missed);
       }
       if (!hitAll) {
         const reps = Math.max(rangeMin, Math.min(targetReps - MISS_DROP_REPS, rangeMax));
-        return summary(entry, from, withPerSet(entry.sets, lastWeights.map(weightKg => ({ weightKg, reps }))), changeFor(reps), judged.length, hits, verdict, did, missed);
+        return summary(entry, from, withPerSet(entry.sets, missWeights.map(weightKg => ({ weightKg, reps }))), changeFor(reps), judged.length, hits, verdict, did, missed);
       }
       // A set last done heavier than asked starts from the reps it managed at that weight, not from the old ask.
       const heavier = indices.map(i => askedWeight[i] > 0 && (lastWeights[i] ?? 0) > askedWeight[i] + WEIGHT_TOLERANCE_KG);

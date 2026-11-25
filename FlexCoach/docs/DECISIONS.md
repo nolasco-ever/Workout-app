@@ -4,6 +4,20 @@ Every decision the owner makes, newest first, with why. Open questions sit at th
 bottom until they're answered. Decisions before 2026-11-07 were recorded only in
 commit messages, `docs/RELEASES.md` and Claude's session notes.
 
+## 2026-11-25 · Heavier but below the rep range goes back to the asked weight
+
+- **Project:** FlexCoach
+- **Type:** functional (progression)
+- **Decision:** At the cycle review, a set done heavier than asked that fell
+  below the bottom of the rep range is a miss, and the next target puts it
+  back at the weight it was asked for (reps as for any other miss).
+- **Why:** After B22-9/B22-10 such a set kept the heavier weight with reps
+  one below the ask. Owner: "if someone goes up a weight and they fail the
+  low end rep range then next time, the app should go back to the weight
+  that was asked".
+- **Source:** follow-up to B22-9 / B22-10 (build 22 feedback).
+- **Decided by:** owner.
+
 ## 2026-11-25 09:15 · Build 22 feedback: triage and behaviour calls
 
 - **Project:** FlexCoach
