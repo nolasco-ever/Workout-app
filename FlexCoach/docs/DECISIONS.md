@@ -4,6 +4,23 @@ Every decision the owner makes, newest first, with why. Open questions sit at th
 bottom until they're answered. Decisions before 2026-11-07 were recorded only in
 commit messages, `docs/RELEASES.md` and Claude's session notes.
 
+## 2026-11-25 · A quick workout makes the day a training day
+
+- **Project:** FlexCoach
+- **Type:** functional and design
+- **Decision:** A quick workout finished today shows in the Workout tab's
+  Today card like a planned item: a done row named for its kind ("Quick
+  strength workout", "Quick stretch workout", "Quick cardio workout"; older
+  ones with no kind stay "Quick workout"), with the line "Done · not in your
+  plan", opening what was logged. The day no longer reads "Rest day". The
+  same name is used on the This cycle row and Home's "Done today" card.
+- **Why:** Owner: "if i did a workout, it's no longer a rest day. it should
+  just say quick strength/stretch/cardio workout or something like that.
+  treat like a regular workout that i did with a plan. the only difference
+  is that this one was unplanned".
+- **Source:** follow-up to B22-1 (build 22 feedback fb-18).
+- **Decided by:** owner (the "Done · not in your plan" line is Claude's wording).
+
 ## 2026-11-25 · Log weight: a date field that opens the native picker
 
 - **Project:** FlexCoach

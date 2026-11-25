@@ -30,7 +30,8 @@ import { askNotToday, listNames } from '../components/notToday';
 import { AppStackParams } from '../../../../appNavigators/AppStack';
 import { devFlags } from '../../../../dev/flags';
 import { describeCycle } from '../../../../screens/Plans/components/planSummary';
-import { itemSummary, planItemsLabel } from '../../../../data/engine/planItems';
+import { isCardioItem, itemSummary, planItemsLabel } from '../../../../data/engine/planItems';
+import { sessionDisplayName } from '../../../../data/engine/sessionExtras';
 
 const longDate = (d: string) => fromLocalDate(d).toLocaleDateString(undefined, { weekday: 'long', month: 'short', day: 'numeric' });
 const shortDate = (d: string) => fromLocalDate(d).toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric' });
@@ -115,6 +116,9 @@ export const WorkoutHomeScreen = () => {
       })
     : [];
   const resume = state.inProgressSession;
+  // Quick workouts finished today: they make it a training day like any planned one (build 22 feedback).
+  const todayQuick = state.quickSessions.filter(s => s.date === state.todayDate);
+  const openSession = (s: { id: string; workoutName: string }) => navigation.navigate('SessionDetailScreen', { sessionId: s.id, workoutName: s.workoutName });
 
 
   /** Nothing planned, or not in the mood for what is: an empty workout to fill as it goes. */
@@ -200,20 +204,35 @@ export const WorkoutHomeScreen = () => {
                       {state.upcoming[0] ? `First up: ${state.upcoming[0].workoutName} on ${longDate(state.upcoming[0].date)}.` : `The cycle begins ${longDate(cycle.startDate)}.`}
                     </CustomText>
                   </>
-                ) : todayItems.length > 0 ? (
+                ) : todayItems.length > 0 || todayQuick.length > 0 ? (
                   <>
                     {/* The day's items as rows (v1 #10.5): each opens its preview, which has Start, so they go in any order. */}
                     <View style={{ marginTop: spacing.xs }}>
                       {todayItems.map(({ occurrence, workout }, i) => (
                         <TodayItemRow
                           key={occurrence.id}
-                          occurrence={occurrence}
-                          workout={workout}
+                          name={workout.name}
+                          kind={isCardioItem(workout) ? 'cardio' : workout.type === 'stretching' ? 'stretching' : 'strength'}
+                          status={occurrence.status}
                           index={i}
-                          count={todayItems.length}
+                          count={todayItems.length + todayQuick.length}
                           summary={itemSummary(workout, profile?.distanceUnit ?? 'mi')}
                           first={i === 0}
                           onOpen={() => openOccurrence(occurrence)}
+                        />
+                      ))}
+                      {todayQuick.map((s, i) => (
+                        <TodayItemRow
+                          key={s.id}
+                          name={sessionDisplayName(s)}
+                          kind={s.kind ?? 'strength'}
+                          status="completed"
+                          unplanned
+                          index={todayItems.length + i}
+                          count={todayItems.length + todayQuick.length}
+                          summary=""
+                          first={todayItems.length + i === 0}
+                          onOpen={() => openSession({ id: s.id, workoutName: sessionDisplayName(s) })}
                         />
                       ))}
                     </View>
@@ -250,7 +269,7 @@ export const WorkoutHomeScreen = () => {
                       quickSessions={state.quickSessions.filter(s => s.date === date)}
                       isToday={date === state.todayDate}
                       onOpen={openOccurrence}
-                      onOpenSession={s => navigation.navigate('SessionDetailScreen', { sessionId: s.id, workoutName: s.workoutName })}
+                      onOpenSession={s => openSession({ id: s.id, workoutName: sessionDisplayName(s) })}
                     />
                   </View>
                 ))}

@@ -35,6 +35,7 @@ import { devFlags } from '../../../../dev/flags';
 import { seedSampleWeights } from '../../../../data/services/devSeeds';
 import { askNotToday } from '../../Workout/components/notToday';
 import { markCycleReportPrompted } from '../../../../data/services/workoutService';
+import { sessionDisplayName } from '../../../../data/engine/sessionExtras';
 import { CycleReportModal } from '../../../../components/overlays/CycleReportModal';
 import { useBuddies } from '../../../../data/hooks/useBuddies';
 import { useBuddyActivity } from '../../../../data/hooks/useBuddyActivity';
@@ -190,7 +191,7 @@ export const HomeScreen = () => {
       : home.cycle && home.todayDate < home.cycle.startDate
         ? { tone: colors.inkMuted, kicker: home.cycle.number > 1 ? `Cycle ${home.cycle.number} starts` : 'Plan starts', headline: dateLabel(home.cycle.startDate), detail: home.upcoming[0] ? `First up: ${home.upcoming[0].workoutName}` : 'The cycle begins then.', action: 'Open' }
       : ins.todaySession
-        ? { tone: colors.success, kicker: 'Done today', headline: ins.todaySession.workoutName, detail: [...describeLogged([ins.todaySession]), ...(totalVolumeKg([ins.todaySession]) > 0 ? [`${fmtVolume(totalVolumeKg([ins.todaySession]))} ${unit} moved`] : [])].join(' · '), action: 'See workout' }
+        ? { tone: colors.success, kicker: 'Done today', headline: sessionDisplayName(ins.todaySession), detail: [...describeLogged([ins.todaySession]), ...(totalVolumeKg([ins.todaySession]) > 0 ? [`${fmtVolume(totalVolumeKg([ins.todaySession]))} ${unit} moved`] : [])].join(' · '), action: 'See workout' }
         : todayOcc && todayWorkout && todayOcc.status === 'scheduled'
           ? { tone: colors.accent, kicker: 'Today', headline: todayWorkout.name, detail: `${todayWorkout.exercises.length} exercises · not started`, action: 'Start' }
           : todayOcc && todayOcc.status === 'skipped'
@@ -209,7 +210,7 @@ export const HomeScreen = () => {
             )
   );
   const todayCard = (
-            <TouchableOpacity onPress={ins.todaySession && !home.inProgressSession ? () => goSession(ins.todaySession!.id, ins.todaySession!.workoutName) : goWorkout} activeOpacity={0.7} style={medium ? { flex: 1 } : undefined}>
+            <TouchableOpacity onPress={ins.todaySession && !home.inProgressSession ? () => goSession(ins.todaySession!.id, sessionDisplayName(ins.todaySession!)) : goWorkout} activeOpacity={0.7} style={medium ? { flex: 1 } : undefined}>
               <SurfaceCard tone={todayStatus.tone === colors.accent ? 'accent' : 'surface'} style={medium ? { flex: 1, justifyContent: 'center' } : undefined}>
                 <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.md }}>
                   <View style={{ flex: 1 }}>

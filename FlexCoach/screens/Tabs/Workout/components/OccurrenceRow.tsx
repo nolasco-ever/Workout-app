@@ -2,6 +2,7 @@ import React from 'react';
 import { TouchableOpacity, View } from 'react-native';
 import { LocalDate, Occurrence, Session } from '../../../../data/models';
 import { fromLocalDate } from '../../../../data/engine/dates';
+import { sessionDisplayName } from '../../../../data/engine/sessionExtras';
 import { CustomText } from '../../../../components/text/customText';
 import { useTheme } from '../../../../theme';
 import { StatusPill } from './StatusPill';
@@ -37,7 +38,7 @@ export const DayRow = ({
   type Line = { key: string; name: string; status: Occurrence['status']; pushed: boolean; open: () => void };
   const workouts: Line[] = [
     ...planned.map(o => ({ key: o.id, name: o.workoutName ?? '', status: o.status, pushed: o.pushCount > 0, open: () => onOpen(o) })),
-    ...quickSessions.map(s => ({ key: s.id, name: s.workoutName, status: 'completed' as const, pushed: false, open: () => onOpenSession(s) })),
+    ...quickSessions.map(s => ({ key: s.id, name: sessionDisplayName(s), status: 'completed' as const, pushed: false, open: () => onOpenSession(s) })),
   ];
   const dateColumn = (
     <View style={{ width: 44 }}>

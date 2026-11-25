@@ -1,7 +1,7 @@
 import { Session } from '../../data/models';
 import { searchCatalog } from '../../data/catalog/exerciseCatalog';
 import { Workout } from '../../data/models';
-import { addExerciseTo, fillFromWorkout, isQuickSession, newQuickSession, pastExercisesLike, removeExerciseFrom, substituteExercise } from '../../data/engine/sessionExtras';
+import { addExerciseTo, fillFromWorkout, isQuickSession, newQuickSession, sessionDisplayName, pastExercisesLike, removeExerciseFrom, substituteExercise } from '../../data/engine/sessionExtras';
 
 let n = 0;
 const makeId = () => `id-${++n}`;
@@ -61,6 +61,13 @@ describe('adding exercises to a running session', () => {
     expect(quick.status).toBe('in_progress');
     expect(isQuickSession(quick)).toBe(true);
     expect(isQuickSession({ planId: 'p', cycleId: 'c' })).toBe(false);
+  });
+
+  it('names a quick workout by its kind, and a plan workout by its own name', () => {
+    expect(sessionDisplayName(newQuickSession('u', '2026-10-03', makeId, 42, 'cardio'))).toBe('Quick cardio workout');
+    expect(sessionDisplayName(newQuickSession('u', '2026-10-03', makeId, 42, 'stretching'))).toBe('Quick stretch workout');
+    expect(sessionDisplayName(newQuickSession('u', '2026-10-03', makeId, 42))).toBe('Quick workout');
+    expect(sessionDisplayName({ planId: 'p', cycleId: 'c', workoutName: 'Lower' })).toBe('Lower');
   });
 });
 

@@ -154,6 +154,16 @@ export const newQuickSession = (uid: Id, date: string, makeId: () => Id, now: nu
 /** A session that stands on its own, outside any plan. */
 export const isQuickSession = (session: Pick<Session, 'planId' | 'cycleId'>): boolean => session.planId === null && session.cycleId === null;
 
+const QUICK_NAMES: Record<ExerciseKind, string> = { strength: 'Quick strength workout', stretching: 'Quick stretch workout', cardio: 'Quick cardio workout' };
+
+/**
+ * What to call a logged workout: its plan workout's name, or for one done
+ * outside the plan, what kind it was ("Quick cardio workout"). Older quick
+ * sessions have no kind and stay "Quick workout" (build 22 feedback).
+ */
+export const sessionDisplayName = (session: Pick<Session, 'planId' | 'cycleId' | 'workoutName' | 'kind'>): string =>
+  isQuickSession(session) && session.kind ? QUICK_NAMES[session.kind] : session.workoutName;
+
 /** An exercise the lifter has logged before that could stand in for another, with what they did last time. */
 export interface PastExercise {
   exercise: Exercise;
