@@ -16,8 +16,8 @@ commit messages, `docs/RELEASES.md` and Claude's session notes.
   follows it). (3) Colour option A, "Spark": orange is kept for actions and
   the streak; your data (body map, bars) goes light-to-graphite and the Today
   card becomes a plain card with Start and Not today.
-- **Why:** Testers found the app too orange and bland, and asked for a darker
-  bar with a lighter selection like YouTube (build 22 fb-2). Weighed on the
+- **Why:** Testers found the app too orange and bland (build 22 fb-2) and asked
+  for a darker bar with a lighter selection like YouTube (fb-12). Weighed on the
   canvas row "Tab bar and colour (build 22)": bar A (white icon) vs B
   (orange icon), light mode dark vs unchanged, colour Now / A Spark / B Teal.
   Owner: keep light mode as is, darker tint for dark mode only, still glass;
