@@ -21,6 +21,9 @@ const targetLine = (t: ExerciseProgression['target'], measurement: ExerciseProgr
   return `${t.sets} × ${targetRepsLabel(t)} reps${weight ? ` @ ${weight}` : ''}`;
 };
 
+/** The lowest reps a target asks of any set. */
+const fewestReps = (t: ExerciseProgression['target']): number => Math.min(...(t.perSet?.map(g => g.reps ?? 0) ?? [t.reps ?? 0]));
+
 /** The chip on a cycle review row: how the cycle went against the target. */
 export const verdictLabel = (verdict: ExerciseProgression['verdict']): string | null => (verdict === 'beat' ? 'Beat' : verdict === 'hit' ? 'Hit' : verdict === 'missed' ? 'Missed' : null);
 
@@ -55,6 +58,8 @@ export const describeProgression = (p: ExerciseProgression, unit: WeightUnit): {
     }
     switch (p.change) {
       case 'increase':
+        // Went heavier for fewer reps (build 22): reps build back up at the new weight.
+        if (p.from && p.did && fewestReps(p.did) < fewestReps(p.from)) return 'You went heavier, so reps build up from there';
         return `You hit ${reps} reps on every set in ${hit}`;
       case 'climb':
         return `You hit every rep in ${hit}`;

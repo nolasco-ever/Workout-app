@@ -9,9 +9,12 @@ import { KG_PER_LB } from './units';
  * Targets are fixed for a whole cycle. When the cycle ends, every session
  * of an exercise in it is looked at together and the next cycle's target
  * comes out of that. The reps target is one number for the whole exercise,
- * judged across every set of every session. A set hits only when it reaches
+ * judged across every set of every session. A set hits when it reaches
  * both its reps and its weight; a lighter set is a miss (owner, 2026-11-07),
- * and a hold puts it back at the weight it was asked for:
+ * and a hold puts it back at the weight it was asked for. A set done heavier
+ * than asked with fewer reps, but still inside the rep range, also hits
+ * (build 22 feedback: fewer reps because the weight went up): the next
+ * target keeps the heavier weight and builds reps from what was done at it.
  *
  * - Every set of every session hit the target reps, and the target was
  *   already the top of the range: weight goes up by the increment on every
@@ -20,10 +23,12 @@ import { KG_PER_LB } from './units';
  * - Every set hit, target below the top: reps climb, to at least one step
  *   up and to whatever was managed on every set.
  * - A near miss, every set of every session within NEAR_MISS_REPS of what it
- *   asked: the target holds, reps and weight (owner, 2026-10-24: one set at
- *   11 of 12 used to drop the target to the fewest reps managed).
- * - A bigger miss: the reps target drops to the fewest reps managed on any
- *   set (never below the bottom of the range), weight stays.
+ *   asked, or most sets hitting: the target holds, reps and weight (owner,
+ *   2026-10-24: one set at 11 of 12 used to drop the target to the fewest
+ *   reps managed; build 22: hitting 11 on most sets held nothing).
+ * - A bigger miss: the reps target drops MISS_DROP_REPS below the ask
+ *   (never below the bottom of the range), weight stays (build 22: it used
+ *   to fall to the fewest reps managed, often the bottom of the range).
  * - Not trained in the cycle: everything stays.
  *
  * Weights still belong to each set, so someone who ramps 25, 30, 35 keeps
@@ -83,6 +88,9 @@ const roundTo = (value: number, step: number): number => Math.round(value / step
 
 /** How many reps short of its ask a set may fall and still count as a near miss, which holds the target. */
 export const NEAR_MISS_REPS = 2;
+
+/** How far the reps target drops after a miss that wasn't near and where most sets fell short. */
+export const MISS_DROP_REPS = 1;
 
 /** Slack when comparing a logged weight to its target, for unit round trips (kg stored, lb shown). */
 const WEIGHT_TOLERANCE_KG = 0.01;
@@ -182,7 +190,10 @@ export const progressExercise = (prescribed: WorkoutExercise, logs: SessionExerc
       // The target is the whole thing (owner, 2026-11-07): every set at its reps AND its weight. A lighter set is a miss.
       const repsOk = (s: LoggedSet | undefined, i: number) => s !== undefined && (s.reps ?? 0) >= asked[i];
       const weightOk = (s: LoggedSet | undefined, i: number) => s !== undefined && (s.weightKg ?? 0) >= askedWeight[i] - WEIGHT_TOLERANCE_KG;
-      const sessionHit = (sets: LoggedSet[]) => indices.every(i => repsOk(sets[i], i) && weightOk(sets[i], i));
+      // Heavier than asked with fewer reps, still in the range, is a hit too (build 22 feedback).
+      const heavierOk = (s: LoggedSet | undefined, i: number) => s !== undefined && askedWeight[i] > 0 && (s.weightKg ?? 0) > askedWeight[i] + WEIGHT_TOLERANCE_KG && (s.reps ?? 0) >= rangeMin;
+      const setOk = (s: LoggedSet | undefined, i: number) => (repsOk(s, i) && weightOk(s, i)) || heavierOk(s, i);
+      const sessionHit = (sets: LoggedSet[]) => indices.every(i => setOk(sets[i], i));
       const hits = done.filter(sessionHit).length;
       const hitAll = hits === done.length;
       // A set never done counts as zero reps: the exercise missed.
@@ -195,27 +206,39 @@ export const progressExercise = (prescribed: WorkoutExercise, logs: SessionExerc
       // What was done, set by set: the fewest reps the set reached in any session, at its last weight.
       const did = withPerSet(entry.sets, indices.map(i => ({ weightKg: lastWeights[i], reps: Math.min(...done.map(sets => sets[i]?.reps ?? 0)) })));
       // Beaten: every set of every session did at least what it was asked in both reps and weight, and more of one.
-      // More reps at a lighter weight is not a beat (build 20: 3 x 8 @ 95 lb against 3 x 8 @ 120 lb read "Beat").
-      const beatAll = hitAll && done.every(sets => indices.every(i => (sets[i].reps ?? 0) > asked[i] || (sets[i].weightKg ?? 0) > askedWeight[i] + WEIGHT_TOLERANCE_KG));
+      // More reps at a lighter weight is not a beat (build 20: 3 x 8 @ 95 lb against 3 x 8 @ 120 lb read "Beat"),
+      // and neither is more weight for fewer reps: that is a hit.
+      const beatAll = hitAll && done.every(sets => indices.every(i => repsOk(sets[i], i) && weightOk(sets[i], i) && ((sets[i].reps ?? 0) > asked[i] || (sets[i].weightKg ?? 0) > askedWeight[i] + WEIGHT_TOLERANCE_KG)));
       const verdict: ProgressionVerdict = beatAll ? 'beat' : hitAll ? 'hit' : 'missed';
       const missed = hitAll
         ? null
-        : { reps: done.some(sets => indices.some(i => !repsOk(sets[i], i))), weight: done.some(sets => indices.some(i => sets[i] !== undefined && !weightOk(sets[i], i))) };
+        : {
+            reps: done.some(sets => indices.some(i => !setOk(sets[i], i) && !repsOk(sets[i], i))),
+            weight: done.some(sets => indices.some(i => sets[i] !== undefined && !setOk(sets[i], i) && !weightOk(sets[i], i))),
+          };
 
       const changeFor = (reps: number): ProgressionChange => (reps > targetReps ? 'climb' : reps < targetReps ? 'drop' : 'hold');
       const nearMiss = done.every(sets => indices.every(i => (sets[i]?.reps ?? 0) >= asked[i] - NEAR_MISS_REPS));
-      if (!hitAll && nearMiss) {
+      const setsHit = done.reduce((n, sets) => n + indices.filter(i => setOk(sets[i], i)).length, 0);
+      const mostHit = setsHit * 2 > done.length * indices.length;
+      if (!hitAll && (nearMiss || mostHit)) {
         // Same target again: a set done lighter goes back to the weight it was asked for.
         const holdWeights = lastWeights.map((w, i) => (askedWeight[i] > 0 && (w ?? 0) < askedWeight[i] ? goalFor(from, i).weightKg : w));
         return summary(entry, from, withPerSet(entry.sets, holdWeights.map((weightKg, i) => ({ weightKg, reps: asked[i] }))), 'hold', judged.length, hits, verdict, did, missed);
       }
       if (!hitAll) {
-        const reps = Math.max(rangeMin, Math.min(minReps, rangeMax));
+        const reps = Math.max(rangeMin, Math.min(targetReps - MISS_DROP_REPS, rangeMax));
         return summary(entry, from, withPerSet(entry.sets, lastWeights.map(weightKg => ({ weightKg, reps }))), changeFor(reps), judged.length, hits, verdict, did, missed);
       }
-      if (targetReps < rangeMax) {
-        const reps = Math.max(rangeMin, Math.min(rangeMax, Math.max(targetReps + p.repStep, minReps)));
-        return summary(entry, from, withPerSet(entry.sets, lastWeights.map(weightKg => ({ weightKg, reps }))), changeFor(reps), judged.length, hits, verdict, did);
+      // A set last done heavier than asked starts from the reps it managed at that weight, not from the old ask.
+      const heavier = indices.map(i => askedWeight[i] > 0 && (lastWeights[i] ?? 0) > askedWeight[i] + WEIGHT_TOLERANCE_KG);
+      const wentHeavier = heavier.some(Boolean);
+      const baseReps = wentHeavier
+        ? Math.min(...indices.map(i => (heavier[i] ? Math.min(...done.filter(sets => Math.abs((sets[i]?.weightKg ?? 0) - (lastWeights[i] ?? 0)) <= WEIGHT_TOLERANCE_KG).map(sets => sets[i]?.reps ?? 0)) : asked[i])))
+        : targetReps;
+      if (baseReps < rangeMax) {
+        const reps = Math.max(rangeMin, Math.min(rangeMax, Math.max(baseReps + p.repStep, minReps)));
+        return summary(entry, from, withPerSet(entry.sets, lastWeights.map(weightKg => ({ weightKg, reps }))), wentHeavier ? 'increase' : changeFor(reps), judged.length, hits, verdict, did);
       }
       const canAddWeight = entry.measurement === 'weight_reps' || lastWeights.every(w => w !== null && w > 0);
       if (canAddWeight) {

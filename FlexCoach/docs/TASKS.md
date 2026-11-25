@@ -31,9 +31,9 @@ Behaviour (owner OK'd 2026-11-25)
       still be started (fb-15).
 - [ ] B22-8 Skip an exercise mid-workout: swipe to skip, swipe to unskip,
       skipped ones move to their own section. **Canvas first** (fb-8).
-- [ ] B22-9 More weight with fewer reps, still inside the rep range, counts as
+- [x] B22-9 More weight with fewer reps, still inside the rep range, counts as
       a hit; the next target keeps the new weight (fb-10).
-- [ ] B22-10 A miss drops one rep below the ask, or holds if most sets hit it,
+- [x] B22-10 A miss drops one rep below the ask, or holds if most sets hit it,
       instead of falling to the bottom of the range (fb-11).
 - [x] B22-11 ~~no change (owner)~~ Second session still ramps weights per set;
       first-time "gauging" (fb-19). Kept as is.

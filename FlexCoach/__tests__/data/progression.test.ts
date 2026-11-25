@@ -39,11 +39,21 @@ describe('progressExercise: weighted lifts, judged per cycle', () => {
     expect(progressExercise(e, logs, null, 'kg').target).toMatchObject({ reps: 12, weightKg: 11.5 });
   });
 
-  it('eases the whole exercise back after a bigger miss', () => {
-    const logs = [lastSession({ reps: 10, weightKg: 30 }, three(30, 10)), lastSession({ reps: 10, weightKg: 30 }, [set({ reps: 10 }), set({ reps: 9 }), set({ reps: 7 })])];
+  it('eases the reps back one after a bigger miss on most sets (build 22)', () => {
+    const logs = [lastSession({ reps: 10, weightKg: 30 }, [set({ reps: 10 }), set({ reps: 7 }), set({ reps: 6 })]), lastSession({ reps: 10, weightKg: 30 }, [set({ reps: 9 }), set({ reps: 7 }), set({ reps: 6 })])];
     const p = progressExercise(entry(), logs, null, 'kg');
     expect(p.change).toBe('drop');
-    expect(p.target).toEqual({ sets: 3, reps: 8, weightKg: 30, durationSec: null, distanceM: null });
+    expect(p.target).toEqual({ sets: 3, reps: 9, weightKg: 30, durationSec: null, distanceM: null });
+  });
+
+  it('holds the target after a bigger miss when most sets hit (build 22)', () => {
+    // Asked 11 in an 8-12 range; one session all 11s, the other 11, 8, 6: four sets of six hit.
+    const e = { ...entry(), repRangeMin: 8, repRangeMax: 12 };
+    const logs = [lastSession({ reps: 11, weightKg: 25 }, three(25, 11)), lastSession({ reps: 11, weightKg: 25 }, [set({ weightKg: 25, reps: 11 }), set({ weightKg: 25, reps: 8 }), set({ weightKg: 25, reps: 6 })])];
+    const p = progressExercise(e, logs, null, 'kg');
+    expect(p.verdict).toBe('missed');
+    expect(p.change).toBe('hold');
+    expect(p.target).toMatchObject({ reps: 11, weightKg: 25 });
   });
 
   it('judges a legacy per-set target set by set, then climbs from its lowest ask', () => {
@@ -77,7 +87,7 @@ describe('progressExercise: weighted lifts, judged per cycle', () => {
   });
 
   it('never drops below the bottom of the range', () => {
-    const logs = [lastSession({ reps: 10, weightKg: 35 }, [set({ weightKg: 35, reps: 5 }), set({ weightKg: 35, reps: 5 }), set({ weightKg: 35, reps: 4 })])];
+    const logs = [lastSession({ reps: 8, weightKg: 35 }, [set({ weightKg: 35, reps: 5 }), set({ weightKg: 35, reps: 5 }), set({ weightKg: 35, reps: 4 })])];
     expect(progressExercise(entry(), logs, null, 'kg').target).toMatchObject({ reps: 8, weightKg: 35 });
   });
 
@@ -90,12 +100,12 @@ describe('progressExercise: weighted lifts, judged per cycle', () => {
 
   it('keeps weights with their sets, so a ramp stays a ramp', () => {
     const ramp = { reps: 10, weightKg: 25, perSet: [{ weightKg: 25, reps: 10 }, { weightKg: 30, reps: 10 }, { weightKg: 35, reps: 10 }] };
-    const missed = progressExercise(entry(), [lastSession(ramp, [set({ weightKg: 25, reps: 10 }), set({ weightKg: 30, reps: 10 }), set({ weightKg: 35, reps: 7 })])], null, 'kg');
+    const missed = progressExercise(entry(), [lastSession(ramp, [set({ weightKg: 25, reps: 10 }), set({ weightKg: 30, reps: 6 }), set({ weightKg: 35, reps: 5 })])], null, 'kg');
     expect(missed.change).toBe('drop');
     expect(missed.target.perSet).toEqual([
-      { weightKg: 25, reps: 8 },
-      { weightKg: 30, reps: 8 },
-      { weightKg: 35, reps: 8 },
+      { weightKg: 25, reps: 9 },
+      { weightKg: 30, reps: 9 },
+      { weightKg: 35, reps: 9 },
     ]);
     const hit = progressExercise(entry(), [lastSession(ramp, [set({ weightKg: 25, reps: 10 }), set({ weightKg: 30, reps: 10 }), set({ weightKg: 35, reps: 10 })])], null, 'kg');
     expect(hit.change).toBe('increase');
@@ -107,10 +117,10 @@ describe('progressExercise: weighted lifts, judged per cycle', () => {
   });
 
   it('treats a set that was never done as a miss', () => {
-    const logs = [lastSession({ reps: 10, weightKg: 30 }, [set({ reps: 10 }), set({ reps: 10 })])];
+    const logs = [lastSession({ reps: 10, weightKg: 30 }, [set({ reps: 10 })])];
     const p = progressExercise(entry(), logs, null, 'kg');
     expect(p.change).toBe('drop');
-    expect(p.target).toEqual({ sets: 3, reps: 8, weightKg: 30, durationSec: null, distanceM: null });
+    expect(p.target).toEqual({ sets: 3, reps: 9, weightKg: 30, durationSec: null, distanceM: null });
     expect(p.hits).toBe(0);
   });
 
@@ -156,6 +166,24 @@ describe('progressExercise: the verdict and what was done', () => {
     expect(p.change).toBe('hold');
     expect(p.target).toMatchObject({ reps: 8, weightKg: 30 });
     expect(describeProgression(p, 'kg').reason).toBe('Missed your weight target in 1 of 2 sessions');
+  });
+
+  it('counts more weight for fewer reps, still in the range, as a hit and keeps the weight (build 22)', () => {
+    // Asked 3 x 11 @ 35, did 3 x 8 @ 40 in an 8-12 range.
+    const e = { ...entry(), repRangeMin: 8, repRangeMax: 12 };
+    const logs = [lastSession({ reps: 11, weightKg: 35 }, three(35, 11)), lastSession({ reps: 11, weightKg: 35 }, three(40, 8))];
+    const p = progressExercise(e, logs, null, 'kg');
+    expect(p.verdict).toBe('hit');
+    expect(p.hits).toBe(2);
+    expect(p.change).toBe('increase');
+    expect(p.target).toMatchObject({ reps: 9, weightKg: 40 });
+    expect(describeProgression(p, 'kg').reason).toBe('You went heavier, so reps build up from there');
+  });
+
+  it('still misses a heavier set that fell below the rep range', () => {
+    const e = { ...entry(), repRangeMin: 8, repRangeMax: 12 };
+    const p = progressExercise(e, [lastSession({ reps: 11, weightKg: 35 }, three(40, 6))], null, 'kg');
+    expect(p.verdict).toBe('missed');
   });
 
   it('names both parts when the reps and the weight fell short', () => {
