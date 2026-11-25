@@ -12,7 +12,6 @@ import { getCatalogExercise } from '../../data/catalog/exerciseCatalog';
 import { formatDuration, formatRecordValue, toDisplayDistance, toDisplayWeight } from '../../data/engine/units';
 import { LineChart } from '../../components/charts/LineChart';
 import { shortDate } from '../../components/charts/scale';
-import { directionIcons } from '../../components/icons/icon-library';
 import { MuscleMap } from '../../components/anatomy/MuscleMap';
 import { reactToActivity } from '../../data/services/buddyService';
 import { useBuddies } from '../../data/hooks/useBuddies';
@@ -102,25 +101,23 @@ const recordFormat = (kind: RecordKind, u: Units) => (v: number): string => {
 };
 
 /**
- * One record of the workout: the exercise and the value, and on a tap the
- * exercise's history with the record ringed. A line that carries no
- * history (written before graphs existed, or the first time logged) just
- * shows the value.
+ * One record of the workout: the exercise and the value, with the
+ * exercise's history graphed and the record ringed. Graphs are always
+ * open (build 22 feedback). A line that carries no history (written before
+ * graphs existed, or the first time logged) just shows the value.
  */
-const RecordRow = ({ name, value, line, units, open, onToggle, divider }: { name: string; value: string; line: Activity | null; units: Units; open: boolean; onToggle: () => void; divider: boolean }) => {
+const RecordRow = ({ name, value, line, units, divider }: { name: string; value: string; line: Activity | null; units: Units; divider: boolean }) => {
   const { colors, spacing } = useTheme();
   const rec = line?.record ?? null;
   const points = rec?.history ?? [];
-  const canOpen = !!rec;
   return (
     <View style={{ borderTopWidth: divider ? 1 : 0, borderTopColor: colors.line }}>
-      <TouchableOpacity disabled={!canOpen} onPress={onToggle} activeOpacity={0.7} accessibilityRole={canOpen ? 'button' : undefined} accessibilityState={canOpen ? { expanded: open } : undefined} style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.md, padding: spacing.lg }}>
+      <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.md, padding: spacing.lg }}>
         <Icon icon={generalIcons.trophy} size={18} color={colors.accent} />
         <CustomText variant="body" style={{ flex: 1 }} numberOfLines={1}>{name}</CustomText>
         <CustomText variant="bodyStrong" color={colors.accent}>{value}</CustomText>
-        {canOpen && <Icon icon={open ? directionIcons.angleUp : directionIcons.angleDown} size={16} color={colors.inkMuted} />}
-      </TouchableOpacity>
-      {open && rec && (
+      </View>
+      {rec && (
         <View style={{ paddingHorizontal: spacing.lg, paddingBottom: spacing.lg, gap: spacing.sm }}>
           {points.length >= 2 ? (
             <>
@@ -217,9 +214,6 @@ export const BuddyWorkoutScreen = () => {
   const [item, setItem] = useState<Activity | null | undefined>(undefined);
   // The record lines this workout wrote, for their graphs; a record line opened on its own is its own list.
   const [recordLines, setRecordLines] = useState<Activity[]>([]);
-  // Any number of records can be open at once; a tap on one leaves the others as they are.
-  const [openRecords, setOpenRecords] = useState<Set<string>>(() => new Set(params.focusRecordId ? [params.focusRecordId] : []));
-  const toggleRecord = (key: string) => setOpenRecords(prev => { const next = new Set(prev); if (next.has(key)) next.delete(key); else next.add(key); return next; });
 
   const load = useCallback(async () => {
     try {
@@ -227,7 +221,6 @@ export const BuddyWorkoutScreen = () => {
       setItem(line);
       if (line?.kind === 'record') {
         setRecordLines([line]);
-        setOpenRecords(prev => new Set(prev).add(line.id));
       } else if (line?.sessionId) {
         const lines = await buddyRepository.listActivityForSession(params.uid, line.sessionId).catch(() => [] as Activity[]);
         setRecordLines(lines.filter(l => l.kind === 'record'));
@@ -321,7 +314,7 @@ export const BuddyWorkoutScreen = () => {
                   </View>
                 ) : (
                   records.map((r, i) => (
-                    <RecordRow key={r.key} name={r.name} value={r.value} line={r.line} units={units} open={openRecords.has(r.key)} onToggle={() => toggleRecord(r.key)} divider={i > 0} />
+                    <RecordRow key={r.key} name={r.name} value={r.value} line={r.line} units={units} divider={i > 0} />
                   ))
                 )}
               </SurfaceCard>

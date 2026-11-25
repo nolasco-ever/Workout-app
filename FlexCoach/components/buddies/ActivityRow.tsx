@@ -75,7 +75,7 @@ export const ActivityRow = ({ item, divider = false, compact = false, onReact }:
   const workoutLine = item.isMe ? null : workoutLineOf(item);
   const planId = item.isMe ? null : sharedPlanIdOf(item);
   const open = workoutLine
-    ? () => navigation.navigate('BuddyWorkoutScreen', { uid: item.ownerId, activityId: workoutLine, displayName: item.actorName, focusRecordId: item.kind === 'record' ? item.id : undefined })
+    ? () => navigation.navigate('BuddyWorkoutScreen', { uid: item.ownerId, activityId: workoutLine, displayName: item.actorName })
     : planId
       ? () => navigation.navigate('BuddyPlanScreen', { ownerUid: item.ownerId, planId, ownerName: item.actorName })
       : undefined;
