@@ -37,13 +37,14 @@ interface Props {
 }
 
 /** The table's column names over the set rows: SET, then the two units, centred over their fields. */
-export const SetHeader = ({ unitLabels, inset = 0 }: { unitLabels: { a: string; b: string }; inset?: number }) => {
+export const SetHeader = ({ unitLabels, inset = 0, timed = false }: { unitLabels: { a: string; b: string }; inset?: number; timed?: boolean }) => {
   const { colors, spacing } = useTheme();
   return (
     <View accessibilityElementsHidden importantForAccessibility="no-hide-descendants" style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.md, paddingHorizontal: inset, paddingBottom: spacing.sm }}>
       <CustomText variant="overline" color={colors.inkMuted} style={{ width: 32 }}>Set</CustomText>
       <CustomText variant="overline" color={colors.inkMuted} style={{ flex: 1, textAlign: 'center' }}>{unitLabels.a}</CustomText>
-      <CustomText variant="overline" color={colors.inkMuted} style={{ flex: 1, textAlign: 'center' }}>{unitLabels.b}</CustomText>
+      {/* A timed set's clock field is wider, as in the row. */}
+      <CustomText variant="overline" color={colors.inkMuted} style={{ flex: timed ? 1.5 : 1, textAlign: 'center' }}>{unitLabels.b}</CustomText>
       <View style={{ width: CHECK_HIT }} />
     </View>
   );

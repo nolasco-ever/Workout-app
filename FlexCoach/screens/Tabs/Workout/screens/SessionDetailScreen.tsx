@@ -24,7 +24,7 @@ import { HeaderButton } from '../../../../components/headers/HeaderButton';
 import { generalIcons } from '../../../../components/icons/icon-library';
 import { useTheme } from '../../../../theme';
 import { useTabScrollInset } from '../../../../navigation/useTabBarInset';
-import { SetDraft, SetRow, setLabel } from '../components/SetRow';
+import { SetDraft, SetHeader, SetRow, setLabel } from '../components/SetRow';
 import { fromDraft, toDraft, Units, unitLabels } from '../components/setDrafts';
 import { watchStats } from '../../../../data/liveActivity/watchMetrics';
 import { RouteMap } from '../../../../components/maps/RouteMap';
@@ -288,18 +288,24 @@ export const SessionDetail = ({ sessionId, workoutName, embedded = false }: { se
                   {ex.skipped ? (
                     <CustomText variant="label" color={colors.inkMuted}>Skipped · target stays for next time</CustomText>
                   ) : editing ? (
-                    ex.sets.map(set => (
-                      <SetRow
-                        key={set.id}
-                        set={set}
-                        measurement={ex.measurement}
-                        draft={drafts[set.id] ?? { a: '', b: '' }}
-                        unitLabels={labels}
-                        onChange={d => setDrafts(prev => ({ ...prev, [set.id]: d }))}
-                        onToggleDone={() => toggleDone(ex, set)}
-                        alwaysEditable
-                      />
-                    ))
+                    // The same table as during the workout (B22-14).
+                    <View>
+                      <SetHeader unitLabels={labels} timed={ex.measurement === 'time' || ex.measurement === 'distance_time'} />
+                      {ex.sets.map((set, i) => (
+                        <SetRow
+                          key={set.id}
+                          set={set}
+                          measurement={ex.measurement}
+                          draft={drafts[set.id] ?? { a: '', b: '' }}
+                          unitLabels={labels}
+                          onChange={d => setDrafts(prev => ({ ...prev, [set.id]: d }))}
+                          onToggleDone={() => toggleDone(ex, set)}
+                          alwaysEditable
+                          table
+                          first={i === 0}
+                        />
+                      ))}
+                    </View>
                   ) : (
                     <View>
                       <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.md, paddingVertical: spacing.xs }}>
