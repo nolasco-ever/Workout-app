@@ -4,6 +4,32 @@ Every decision the owner makes, newest first, with why. Open questions sit at th
 bottom until they're answered. Decisions before 2026-11-07 were recorded only in
 commit messages, `docs/RELEASES.md` and Claude's session notes.
 
+## 2026-11-27 · Workout done gets muscles and exercises; history shows done sets only
+
+- **Project:** FlexCoach
+- **Type:** design
+- **Decision:** (1) Workout done keeps everything it has (check, time,
+  Sets/Volume, records, Done pinned) and adds, below, "Muscles worked" (Home's
+  body card without title, All or chevrons, listing every muscle the workout
+  hit) and "Exercises" (each as its card on the workout's history page).
+  (2) The muscles card loses its bars, on Home too; the muscles stay under the
+  body. The All muscles list keeps its bars. (3) The history exercise card
+  loses the green checks; the set that first broke a record gets a trophy
+  icon (no word); a later set at the same value is not a record. Sets that
+  weren't done aren't shown, and an exercise with nothing logged is left out
+  (a skipped one still shows as skipped; editing still shows every set).
+- **Why:** Testers found the done screen bare and missing data (build 22
+  fb-4, fb-20). Canvas options A recap, B body first, C against last time;
+  the owner chose a mix: "keep what we have now ... we just want to add
+  more", reuse the Home muscles card and the history exercise display. Owner:
+  muscles beside the body "looks too cramped"; "you can only break a record
+  once"; "a set that wasn't done shouldn't even be displayed"; leave out an
+  exercise with nothing logged; keep Done pinned; show all muscles.
+- **Source:** feature work, B22-15.
+- **Decided by:** owner. Keeping the bars on the All muscles list is Claude's
+  reading of "the only change to the component is removing the progress bar"
+  as being about the card.
+
 ## 2026-11-27 · Set card becomes a plain table
 
 - **Project:** FlexCoach

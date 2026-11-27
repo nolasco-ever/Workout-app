@@ -128,6 +128,22 @@ export const findPersonalRecords = (sessions: Session[], history: Session[]): Pe
 };
 
 /**
+ * The sets in `session` that broke one of `records`: per record, the first
+ * working set to reach its value. A later set at the same value did what
+ * was already done, not a new record (owner, 2026-11-27).
+ */
+export const recordSetIds = (session: Session, records: PersonalRecord[]): Set<Id> => {
+  const out = new Set<Id>();
+  for (const pr of records) {
+    if (pr.sessionId !== session.id) continue;
+    const ex = session.exercises.find(e => canonicalExerciseId(e.exerciseId) === pr.exerciseId);
+    const set = ex && workingSets(ex.sets).find(st => (valueOf(pr.kind, st) ?? -Infinity) >= pr.value);
+    if (set) out.add(set.id);
+  }
+  return out;
+};
+
+/**
  * How much a record beat the old best, as the workout done screen shows it
  * (v1 #8): "+5 lb" from "30 lb". Worked out on the numbers as shown, so the
  * gain always adds up with the two values on screen. Null when there is no

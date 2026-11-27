@@ -17,14 +17,19 @@ import { useSessionOrientation } from '../../../../navigation/useSessionOrientat
 import { onWatchMetrics, watchMetricsFor } from '../../../../data/liveActivity/watchMetrics';
 import { liveActivity } from '../../../../data/liveActivity/liveActivity';
 import { WatchMetrics } from '../../../../data/models';
-import { recordGain } from '../../../../data/engine/stats';
+import { recordGain, recordSetIds } from '../../../../data/engine/stats';
+import { muscleBreakdown } from '../../../../data/engine/insights';
+import { getCatalogExercise } from '../../../../data/catalog/exerciseCatalog';
+import { MusclesBody } from '../../Home/components/MusclesBody';
+import { LoggedExerciseCard } from '../components/LoggedExerciseCard';
 import { CardioDone, soleCardioSet } from '../components/CardioDone';
 import { RecordPages } from '../components/RecordPages';
 
 /**
  * Workout done (v1 #8, option A on the canvas): a page per new record first,
  * then the summary in the cardio done screen's style: the time large, a
- * table, the records with what each gained, and Done. Cardio has its own
+ * table, the records with what each gained, then (B22-15) the muscles the
+ * workout worked and each exercise as its page in history shows it, and Done. Cardio has its own
  * done screen; a strength workout never holds cardio (owner, 2026-11-13).
  */
 export const SessionCompleteScreen = () => {
@@ -51,6 +56,14 @@ export const SessionCompleteScreen = () => {
   if (showingRecords) return <RecordPages records={records} weightUnit={unit} distanceUnit={dist} onDone={() => setShowingRecords(false)} />;
 
   const volume = toDisplayWeight(result.volumeKg, unit) ?? 0;
+  // Every muscle this workout worked, most sets first (owner, 2026-11-27: all of them, not Home's top four).
+  const muscles = muscleBreakdown([result.session], id => getCatalogExercise(id)?.primaryMuscles ?? []);
+  // As on the workout's page: what was done, skipped ones last; an exercise with nothing logged is left out.
+  const exercises = [...result.session.exercises]
+    .filter(ex => ex.skipped || ex.sets.some(st => st.completed))
+    .sort((a, b) => Number(!!a.skipped) - Number(!!b.skipped) || a.order - b.order);
+  const recordSets = recordSetIds(result.session, records);
+  const units = { weight: unit, distance: dist };
   const rows = [
     { label: 'Sets', value: String(result.setsCompleted) },
     // A bodyweight-only workout moved no weight; it has no volume to show.
@@ -107,6 +120,23 @@ export const SessionCompleteScreen = () => {
                 );
               })}
             </Card>
+          </View>
+        )}
+
+        {muscles.length > 0 && (
+          <View style={{ gap: spacing.sm }}>
+            <CustomText variant="overline" color={colors.inkMuted}>Muscles worked</CustomText>
+            {/* Home's card without its title, links or chevrons: nothing to open from here. */}
+            <Card>
+              <MusclesBody muscles={muscles} />
+            </Card>
+          </View>
+        )}
+
+        {exercises.length > 0 && (
+          <View style={{ gap: spacing.sm }}>
+            <CustomText variant="overline" color={colors.inkMuted}>Exercises</CustomText>
+            {exercises.map(ex => <LoggedExerciseCard key={ex.id} ex={ex} units={units} recordSetIds={recordSets} />)}
           </View>
         )}
       </ScrollView>

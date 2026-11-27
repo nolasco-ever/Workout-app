@@ -1,4 +1,4 @@
-import { currentStreakDays, findPersonalRecords, totalVolumeKg, volumeByMuscle } from '../../data/engine/stats';
+import { currentStreakDays, findPersonalRecords, recordSetIds, totalVolumeKg, volumeByMuscle } from '../../data/engine/stats';
 import { addDays } from '../../data/engine/dates';
 import { Session } from '../../data/models';
 import { lastSession, set } from './support/fixtures';
@@ -87,5 +87,26 @@ describe('warm-up sets in stats', () => {
     const prs = findPersonalRecords([s], [session('h1', '2026-09-18', [lastSession({}, [set({ weightKg: 90 })])])]);
     expect(prs).toHaveLength(1);
     expect(prs[0].value).toBe(100);
+  });
+});
+
+describe('the set that broke a record', () => {
+  const history = [session('h1', '2026-09-01', [lastSession({}, [set({ weightKg: 60 })])])];
+  it('is the first set to reach the record; the same weight again after it is not a new record', () => {
+    const warm = set({ weightKg: 40, warmup: true });
+    const a = set({ weightKg: 60 });
+    const b = set({ weightKg: 62.5 });
+    const c = set({ weightKg: 62.5 });
+    const today = session('c1', '2026-09-08', [lastSession({}, [warm, a, b, c])], 10);
+    expect([...recordSetIds(today, findPersonalRecords([today], history))]).toEqual([b.id]);
+  });
+  it('is none when nothing broke a record', () => {
+    const today = session('c1', '2026-09-08', [lastSession({}, [set({ weightKg: 60 })])], 10);
+    expect(recordSetIds(today, findPersonalRecords([today], history)).size).toBe(0);
+  });
+  it('ignores records from other workouts', () => {
+    const today = session('c1', '2026-09-08', [lastSession({}, [set({ weightKg: 62.5 })])], 10);
+    const other = { ...today, id: 'c2' };
+    expect(recordSetIds(other, findPersonalRecords([today], history)).size).toBe(0);
   });
 });

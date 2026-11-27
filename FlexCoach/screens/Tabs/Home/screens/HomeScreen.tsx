@@ -20,8 +20,7 @@ import { StatTile } from '../../../../components/charts/StatTile';
 import { StreakFire } from '../../../../components/streaks/StreakFire';
 import { compactNumber, dateLabel, shortDate } from '../../../../components/charts/scale';
 import { MuscleMap } from '../../../../components/anatomy/MuscleMap';
-import { MuscleRow } from '../components/MuscleRow';
-import { MuscleGroup } from '../../../../data/models';
+import { MusclesBody } from '../components/MusclesBody';
 import { useTheme } from '../../../../theme';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { HomeStackParams } from '../HomeStack';
@@ -166,8 +165,6 @@ export const HomeScreen = () => {
   const latestWeight = ins.weight[ins.weight.length - 1] ?? null;
   const weightDelta = ins.weightChangeCycle ?? ins.weightChange30d;
   const target = profile?.targetWeightKg ?? null;
-  const coverage = ins.muscles30d.map(m => m.muscle as MuscleGroup);
-  const maxSets = Math.max(1, ...ins.muscles30d.map(m => m.sets));
 
   // Today's workout status
   const todayOcc = home.todayOccurrence;
@@ -259,18 +256,7 @@ export const HomeScreen = () => {
             <SurfaceCard>
               <CardHeader label="Muscles, last 30 days" action={ins.muscles30d.length > 0 ? 'All' : undefined} onAction={() => navigation.navigate('MusclesScreen')} />
               {ins.muscles30d.length > 0 ? (
-                <View style={medium ? { flexDirection: 'row', alignItems: 'center', gap: spacing.lg } : undefined}>
-                  <View style={{ alignItems: 'center', marginBottom: medium ? 0 : spacing.sm }}>
-                    <MuscleMap primary={coverage.slice(0, 6)} secondary={coverage.slice(6)} height={170} />
-                  </View>
-                  <View style={medium ? { flex: 1 } : undefined}>
-                  {ins.muscles30d.slice(0, 4).map((m, i) => (
-                    <View key={m.muscle} style={{ borderTopWidth: i ? 1 : 0, borderTopColor: colors.line }}>
-                      <MuscleRow muscle={m.muscle} sets={m.sets} max={maxSets} onPress={() => navigation.navigate('MuscleDetailScreen', { muscle: m.muscle })} />
-                    </View>
-                  ))}
-                  </View>
-                </View>
+                <MusclesBody muscles={ins.muscles30d} limit={4} beside={medium} onPressMuscle={muscle => navigation.navigate('MuscleDetailScreen', { muscle })} />
               ) : (
                 <CustomText variant="body" color={colors.inkMuted}>Finish a workout and your muscle coverage shows here.</CustomText>
               )}

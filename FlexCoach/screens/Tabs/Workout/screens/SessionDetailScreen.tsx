@@ -5,30 +5,24 @@ import { SafeAreaView } from '../../../../components/layout/SafeAreaView';
 import { RouteProp, useNavigation, useRoute } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useAuth } from '../../../../data/auth/AuthProvider';
-import { LoggedSet, Session, SessionExercise, SetTarget } from '../../../../data/models';
+import { LoggedSet, Session, SessionExercise } from '../../../../data/models';
 import { sessionRepository } from '../../../../data/repositories/sessionRepository';
 import { buddyRepository } from '../../../../data/repositories/buddyRepository';
 import { Activity } from '../../../../data/models';
 import { OwnReactions } from '../../../../components/buddies/OwnReactions';
-import { targetRepsLabel, targetWeightRange } from '../../../../data/engine/progression';
-import { cardioStats, countWorkingSets, isCardio, totalVolumeKg } from '../../../../data/engine/stats';
-import { formatDistance, formatDuration, formatWeight, toDisplayDistance, toDisplayWeight } from '../../../../data/engine/units';
+import { cardioStats, countWorkingSets, findPersonalRecords, recordSetIds, totalVolumeKg } from '../../../../data/engine/stats';
+import { formatDuration, toDisplayWeight } from '../../../../data/engine/units';
 import { fromLocalDate } from '../../../../data/engine/dates';
-import { getCatalogExercise } from '../../../../data/catalog/exerciseCatalog';
 import { CustomText } from '../../../../components/text/customText';
-import { SurfaceCard as Card } from '../../../../components/cards/SurfaceCard';
 import { PrimaryButton } from '../../../../components/buttons/PrimaryButton';
-import { MuscleMap } from '../../../../components/anatomy/MuscleMap';
-import { Icon } from '../../../../components/icons/Icon';
 import { HeaderButton } from '../../../../components/headers/HeaderButton';
 import { generalIcons } from '../../../../components/icons/icon-library';
 import { useTheme } from '../../../../theme';
 import { useTabScrollInset } from '../../../../navigation/useTabBarInset';
-import { SetDraft, SetHeader, SetRow, setLabel } from '../components/SetRow';
+import { SetDraft, SetHeader, SetRow } from '../components/SetRow';
+import { LoggedExerciseCard } from '../components/LoggedExerciseCard';
 import { fromDraft, toDraft, Units, unitLabels } from '../components/setDrafts';
 import { watchStats } from '../../../../data/liveActivity/watchMetrics';
-import { RouteMap } from '../../../../components/maps/RouteMap';
-import { decodeRoute } from '../../../../data/engine/route';
 import { withSharingDefaults } from '../../../../data/engine/sharing';
 
 type Params = { SessionDetailScreen: { sessionId: string; workoutName?: string } };
@@ -43,40 +37,6 @@ const Stat = ({ label, value }: { label: string; value: string }) => {
       <CustomText variant="heading">{value}</CustomText>
     </View>
   );
-};
-
-/** The two logged values of a set as display text, by measurement. */
-const setValues = (ex: SessionExercise, s: LoggedSet, u: Units): [string, string] => {
-  switch (ex.measurement) {
-    case 'weight_reps':
-      return [s.weightKg === null ? '—' : String(toDisplayWeight(s.weightKg, u.weight)), s.reps === null ? '—' : String(s.reps)];
-    case 'reps':
-      return [s.weightKg ? `+${toDisplayWeight(s.weightKg, u.weight)}` : 'BW', s.reps === null ? '—' : String(s.reps)];
-    case 'time':
-      return [s.weightKg === null ? '—' : String(toDisplayWeight(s.weightKg, u.weight)), formatDuration(s.durationSec)];
-    case 'distance_time':
-      return [s.distanceM === null ? '—' : String(toDisplayDistance(s.distanceM, u.distance)), formatDuration(s.durationSec)];
-  }
-};
-
-const weightLabel = (t: SetTarget, unit: 'kg' | 'lb'): string => {
-  const range = targetWeightRange(t);
-  if (!range) return formatWeight(null, unit);
-  return range.min === range.max ? formatWeight(range.max, unit) : `${formatWeight(range.min, unit).replace(` ${unit}`, '')}–${formatWeight(range.max, unit)}`;
-};
-
-const describeTarget = (ex: SessionExercise, u: Units): string => {
-  const t = ex.target;
-  switch (ex.measurement) {
-    case 'weight_reps':
-      return `${t.sets} × ${targetRepsLabel(t)} @ ${weightLabel(t, u.weight)}`;
-    case 'reps':
-      return `${t.sets} × ${targetRepsLabel(t)}${targetWeightRange(t)?.max ? ` +${weightLabel(t, u.weight)}` : ''}`;
-    case 'time':
-      return `${t.sets} × ${formatDuration(t.durationSec)}`;
-    case 'distance_time':
-      return `${formatDistance(t.distanceM, u.distance)} in ${formatDuration(t.durationSec)}`;
-  }
 };
 
 /**
@@ -97,7 +57,7 @@ export const SessionDetailScreen = () => {
 export const SessionDetail = ({ sessionId, workoutName, embedded = false }: { sessionId: string; workoutName?: string; embedded?: boolean }) => {
   const navigation = useNavigation<NativeStackNavigationProp<Params>>();
   const params = { sessionId, workoutName };
-  const { colors, spacing, radius } = useTheme();
+  const { colors, spacing } = useTheme();
   const bottomInset = useTabScrollInset();
   const { uid, profile } = useAuth();
   const units: Units = { weight: profile?.weightUnit ?? 'lb', distance: profile?.distanceUnit ?? 'mi' };
@@ -114,6 +74,12 @@ export const SessionDetail = ({ sessionId, workoutName, embedded = false }: { se
   // Buddies' reactions land on the activity lines this session wrote.
   // Pull to refresh re-reads them (and the session), for reactions that arrived since.
   const [activity, setActivity] = useState<Activity[]>([]);
+  // The workouts before this one, to find the sets here that broke a record (B22-15): read once.
+  const [earlier, setEarlier] = useState<Session[] | null>(null);
+  useEffect(() => {
+    if (!uid) return;
+    sessionRepository.listCompleted(uid).then(setEarlier).catch(() => setEarlier([]));
+  }, [uid]);
   const [refreshing, setRefreshing] = useState(false);
   const loadActivity = () => (uid ? buddyRepository.listActivityForSession(uid, params.sessionId).then(setActivity).catch(() => undefined) : Promise.resolve());
   useEffect(() => {
@@ -225,6 +191,10 @@ export const SessionDetail = ({ sessionId, workoutName, embedded = false }: { se
     const duration = shown.finishedAt ? Math.round((shown.finishedAt - shown.startedAt) / 1000) : null;
     return { setsDone, duration, volume: toDisplayWeight(totalVolumeKg([shown]), units.weight) ?? 0, cardio: cardioStats(shown, units.distance) };
   }, [shown, units.weight, units.distance]);
+  const recordSets = useMemo(
+    () => (shown && earlier ? recordSetIds(shown, findPersonalRecords([shown], earlier.filter(e => e.id !== shown.id && e.startedAt < shown.startedAt))) : new Set<string>()),
+    [shown, earlier],
+  );
 
   if (!loaded || !shown || !stats) {
     return (
@@ -268,26 +238,16 @@ export const SessionDetail = ({ sessionId, workoutName, embedded = false }: { se
 
           <OwnReactions items={activity} />
 
-          {/* Skipped exercises come last, as they did in the workout (build 22). */}
+          {/* Skipped exercises come last, as they did in the workout (build 22). An exercise with nothing logged is left
+              out unless it was skipped, or while editing, where a forgotten set can still be ticked. */}
           {[...shown.exercises]
+            .filter(ex => editing || ex.skipped || ex.sets.some(st => st.completed))
             .sort((a, b) => Number(!!a.skipped) - Number(!!b.skipped) || a.order - b.order)
             .map(ex => {
-              const catalog = getCatalogExercise(ex.exerciseId);
               const labels = unitLabels(ex, units);
               return (
-                <Card key={ex.id} style={{ padding: spacing.md, gap: spacing.sm }}>
-                  <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.md }}>
-                    {catalog && <MuscleMap primary={catalog.primaryMuscles} secondary={catalog.secondaryMuscles} height={56} views="auto" />}
-                    <View style={{ flex: 1 }}>
-                      <CustomText variant="bodyStrong">{ex.exerciseName}</CustomText>
-                      <CustomText variant="caption" color={colors.inkMuted}>
-                        {catalog?.primaryMuscles.join(', ')}{catalog?.primaryMuscles.length ? ' · ' : ''}target {describeTarget(ex, units)}
-                      </CustomText>
-                    </View>
-                  </View>
-                  {ex.skipped ? (
-                    <CustomText variant="label" color={colors.inkMuted}>Skipped · target stays for next time</CustomText>
-                  ) : editing ? (
+                <LoggedExerciseCard key={ex.id} ex={ex} units={units} recordSetIds={recordSets} routesShared={routesShared}>
+                  {editing ? (
                     // The same table as during the workout (B22-14).
                     <View>
                       <SetHeader unitLabels={labels} timed={ex.measurement === 'time' || ex.measurement === 'distance_time'} />
@@ -306,43 +266,8 @@ export const SessionDetail = ({ sessionId, workoutName, embedded = false }: { se
                         />
                       ))}
                     </View>
-                  ) : (
-                    <View>
-                      <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.md, paddingVertical: spacing.xs }}>
-                        <View style={{ width: 28 }} />
-                        <CustomText variant="overline" color={colors.inkMuted} style={{ flex: 1, textAlign: 'center' }}>{labels.a}</CustomText>
-                        <CustomText variant="overline" color={colors.inkMuted} style={{ flex: 1, textAlign: 'center' }}>{labels.b}</CustomText>
-                        <View style={{ width: 32 }} />
-                      </View>
-                      {ex.sets.map(set => {
-                        const [a, b] = setValues(ex, set, units);
-                        return (
-                          <View key={set.id} style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.md, paddingVertical: spacing.sm, borderTopWidth: 1, borderTopColor: colors.line, opacity: set.completed ? 1 : 0.5 }}>
-                            <View style={{ width: 28 }}>
-                              {/* Cardio is one entry, not a numbered set. */}
-                              {!isCardio(ex) && <CustomText variant="label" color={colors.inkMuted}>{setLabel(set)}</CustomText>}
-                            </View>
-                            <CustomText variant="bodyStrong" style={{ flex: 1, textAlign: 'center' }}>{a}</CustomText>
-                            <CustomText variant="bodyStrong" style={{ flex: 1, textAlign: 'center' }}>{b}</CustomText>
-                            <View style={{ width: 32, height: 32, borderRadius: radius.sm, backgroundColor: set.completed ? colors.successTint : colors.surfaceRaised, alignItems: 'center', justifyContent: 'center' }}>
-                              <Icon icon={set.completed ? generalIcons.check : generalIcons.minus} size={16} color={set.completed ? colors.success : colors.inkMuted} strokeWidth={3} />
-                            </View>
-                          </View>
-                        );
-                      })}
-                    </View>
-                  )}
-                  {/* An outdoor run, walk or ride: the line marking the path taken (v1 #10.8). */}
-                  {isCardio(ex) && ex.sets[0]?.route && (
-                    <View style={{ height: 240, borderRadius: radius.lg, overflow: 'hidden', borderWidth: 1, borderColor: colors.line, marginTop: spacing.xs }}>
-                      <RouteMap points={decodeRoute(ex.sets[0].route.line)} style={{ flex: 1 }} />
-                    </View>
-                  )}
-                  {/* Only while Route maps is on (v1 #10.9). */}
-                  {isCardio(ex) && ex.sets[0]?.route && routesShared && (
-                    <CustomText variant="caption" color={colors.inkMuted}>Buddies see this map too</CustomText>
-                  )}
-                </Card>
+                  ) : undefined}
+                </LoggedExerciseCard>
               );
             })}
         </ScrollView>
