@@ -4,6 +4,26 @@ Every decision the owner makes, newest first, with why. Open questions sit at th
 bottom until they're answered. Decisions before 2026-11-07 were recorded only in
 commit messages, `docs/RELEASES.md` and Claude's session notes.
 
+## 2026-11-27 · Set card becomes a plain table
+
+- **Project:** FlexCoach
+- **Type:** design
+- **Decision:** The workout's set card drops its box: a full-width table on
+  the page with SET / LB / REPS named once in a header (no unit under every
+  number), a line between rows, numbers centred in their fields, done sets
+  as plain numbers, and the same square check as before, 40 pt in a 44 pt
+  tap area. Warm-ups stay first in the same table. "+ Warm-up set" and
+  "+ Add set" sit under it. Timed sets and cardio keep their own card.
+- **Why:** Tester: the card "looks too AI" (build 22 fb-3). On the canvas row
+  "Set card redesign (build 22)" the owner picked A (table) over one set at a
+  time and a ledger, then asked for the square check kept ("basically the same
+  component we have currently"), centred numbers, a scroll-wheel version
+  (2.5 lb / 1 rep steps) and warm-ups in their own table. After seeing them:
+  "let's just keep it without scrolling wheels", and "just keep warmups how
+  they are now as part of the same table".
+- **Source:** feature work, B22-14.
+- **Decided by:** owner.
+
 ## 2026-11-25 · Skip an exercise mid-workout: swipe, Skipped section, cleared sets
 
 - **Project:** FlexCoach

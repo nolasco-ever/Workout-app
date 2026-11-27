@@ -49,7 +49,7 @@ import { PrimaryButton } from '../../../../components/buttons/PrimaryButton';
 import { GLASS_BUTTON_SIZE, GlassIconButton } from '../../../../components/buttons/GlassIconButton';
 import { MuscleMap } from '../../../../components/anatomy/MuscleMap';
 import { RestPill, SessionTitle } from '../components/SessionHeader';
-import { SetDraft, SetRow } from '../components/SetRow';
+import { SetDraft, SetHeader, SetRow } from '../components/SetRow';
 import { CardioSetCard, CardioTimer, timerElapsed } from '../components/CardioSetCard';
 import { SwipeToDelete } from '../../../../components/list-items/SwipeToDelete';
 import Animated, { Easing, useAnimatedStyle, useSharedValue, withTiming } from 'react-native-reanimated';
@@ -960,8 +960,10 @@ export const SessionScreen = () => {
             fromWatch={exercise.sets[0].distanceSource === 'watch' && parseNumber(drafts[exercise.sets[0].id]?.a ?? '') === toDisplayDistance(exercise.sets[0].distanceM, units.distance)}
           />
           ) : (
-          <View style={{ backgroundColor: colors.surface, borderRadius: radius.lg, borderWidth: 1, borderColor: colors.line, paddingVertical: spacing.md, overflow: 'hidden' }}>
-            {exercise.sets.map(set => {
+          // A plain table on the page (build 22, B22-14): the columns named once, warm-ups first in the same table.
+          <View>
+            <SetHeader unitLabels={unitLabels(exercise, units)} />
+            {exercise.sets.map((set, i) => {
               const row = (
                 <SetRow
                   set={set}
@@ -970,18 +972,19 @@ export const SessionScreen = () => {
                   unitLabels={unitLabels(exercise, units)}
                   onChange={d => setDrafts(prev => ({ ...prev, [set.id]: d }))}
                   onToggleDone={() => toggleDone(set)}
-                  inset={spacing.md}
+                  table
+                  first={i === 0}
                 />
               );
               return exercise.sets.length > 1 ? (
-                <SwipeToDelete key={set.id} label="Remove set" onDelete={() => removeSet(set)}>
+                <SwipeToDelete key={set.id} label="Remove set" onDelete={() => removeSet(set)} background={colors.ground}>
                   {row}
                 </SwipeToDelete>
               ) : (
                 <View key={set.id}>{row}</View>
               );
             })}
-            <View style={{ flexDirection: 'row', justifyContent: 'center', gap: spacing.xl }}>
+            <View style={{ flexDirection: 'row', gap: spacing.xl, borderTopWidth: 1, borderTopColor: colors.line, paddingTop: spacing.xs }}>
               {exercise.measurement === 'weight_reps' && (
                 <TouchableOpacity onPress={addWarmupSet} style={{ paddingVertical: spacing.sm }}>
                   <CustomText variant="label" color={colors.accent}>

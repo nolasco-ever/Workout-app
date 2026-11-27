@@ -44,7 +44,7 @@ Design (canvas first)
       focused icon; light mode and header unchanged.
 - [x] B22-13 Too much orange, looks bland (fb-2). Pairs with B22-12. Owner
       picked colour A 'Spark': orange only for actions and the streak.
-- [ ] B22-14 Set-logging card "looks too AI" (fb-3).
+- [x] B22-14 Set-logging card "looks too AI" (fb-3).
 - [ ] B22-15 Workout done screen feels bare (fb-4, fb-20).
 - [ ] B22-16 Past streaks lined on the calendar, unlike the current one (fb-6).
 - [ ] B22-17 Cardio detail shows all collected data: calories, avg pace, heart

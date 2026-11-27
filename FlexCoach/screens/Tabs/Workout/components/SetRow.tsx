@@ -27,20 +27,45 @@ interface Props {
   alwaysEditable?: boolean;
   /** Horizontal padding, for rows that sit edge to edge in a card (so a swipe action can reach the card's edge). */
   inset?: number;
+  /**
+   * The table look (build 22, B22-14): no unit under each number, since a
+   * SetHeader above the rows names the columns once, and a line between rows.
+   */
+  table?: boolean;
+  /** In the table, the first row has no line above it. */
+  first?: boolean;
 }
+
+/** The table's column names over the set rows: SET, then the two units, centred over their fields. */
+export const SetHeader = ({ unitLabels, inset = 0 }: { unitLabels: { a: string; b: string }; inset?: number }) => {
+  const { colors, spacing } = useTheme();
+  return (
+    <View accessibilityElementsHidden importantForAccessibility="no-hide-descendants" style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.md, paddingHorizontal: inset, paddingBottom: spacing.sm }}>
+      <CustomText variant="overline" color={colors.inkMuted} style={{ width: 32 }}>Set</CustomText>
+      <CustomText variant="overline" color={colors.inkMuted} style={{ flex: 1, textAlign: 'center' }}>{unitLabels.a}</CustomText>
+      <CustomText variant="overline" color={colors.inkMuted} style={{ flex: 1, textAlign: 'center' }}>{unitLabels.b}</CustomText>
+      <View style={{ width: CHECK_HIT }} />
+    </View>
+  );
+};
+
+/** The done check: a square, a little smaller in the table so the row stays slim; tappable across 44 points either way. */
+const CHECK_HIT = 44;
 
 /**
  * One editable set. Field A and B mean different things by measurement:
  * weight/reps, added weight/reps, weight/seconds, or distance/seconds.
  */
-export const SetRow = ({ set, measurement, draft, unitLabels, onChange, onToggleDone, alwaysEditable = false, inset = 0 }: Props) => {
+export const SetRow = ({ set, measurement, draft, unitLabels, onChange, onToggleDone, alwaysEditable = false, inset = 0, table = false, first = false }: Props) => {
   const { colors, radius, spacing, fonts } = useTheme();
   const done = set.completed;
   const editable = alwaysEditable || !done;
   // Each input has a unit caption under it, so the input's centre sits half a
   // caption above the row's. The set number and the check take the same
   // offset so they line up with the boxes rather than the column.
-  const captionHeight = 16;
+  // The table names the columns once, in its header.
+  const captionHeight = table ? 0 : 16;
+  const checkSize = table ? 40 : CHECK_HIT;
   const showA = measurement !== 'reps' || true; // reps-only still allows added weight
   const timed = measurement === 'time' || measurement === 'distance_time';
   const inputStyle = {
@@ -62,10 +87,12 @@ export const SetRow = ({ set, measurement, draft, unitLabels, onChange, onToggle
         gap: spacing.md,
         paddingVertical: spacing.sm,
         paddingHorizontal: inset,
-        opacity: done && !alwaysEditable ? 0.75 : 1,
+        borderTopWidth: table && !first ? 1 : 0,
+        borderTopColor: colors.line,
+        opacity: done && !alwaysEditable && !table ? 0.75 : 1,
       }}
     >
-      <View style={{ width: 28, marginBottom: captionHeight }}>
+      <View style={{ width: table ? 32 : 28, marginBottom: captionHeight }}>
         {/* Cardio is one entry, not a numbered set. */}
         {measurement !== 'distance_time' && (
           <CustomText variant="label" color={colors.inkMuted}>
@@ -79,15 +106,18 @@ export const SetRow = ({ set, measurement, draft, unitLabels, onChange, onToggle
             id={`set-${set.id}-a`}
             value={draft.a}
             onChangeText={a => onChange({ ...draft, a })}
+            accessibilityLabel={`Set ${setLabel(set)}, ${unitLabels.a}`}
             keyboardType="decimal-pad"
             editable={editable}
             placeholder={measurement === 'reps' ? '+0' : '—'}
             placeholderTextColor={colors.inactive}
             style={inputStyle}
           />
-          <CustomText variant="caption" color={colors.inkMuted} centered>
-            {unitLabels.a}
-          </CustomText>
+          {!table && (
+            <CustomText variant="caption" color={colors.inkMuted} centered>
+              {unitLabels.a}
+            </CustomText>
+          )}
         </View>
       )}
       {timed ? (
@@ -100,31 +130,31 @@ export const SetRow = ({ set, measurement, draft, unitLabels, onChange, onToggle
             id={`set-${set.id}-b`}
             value={draft.b}
             onChangeText={b => onChange({ ...draft, b })}
+            accessibilityLabel={`Set ${setLabel(set)}, ${unitLabels.b}`}
             keyboardType="number-pad"
             editable={editable}
             placeholder="—"
             placeholderTextColor={colors.inactive}
             style={inputStyle}
           />
-          <CustomText variant="caption" color={colors.inkMuted} centered>
-            {unitLabels.b}
-          </CustomText>
+          {!table && (
+            <CustomText variant="caption" color={colors.inkMuted} centered>
+              {unitLabels.b}
+            </CustomText>
+          )}
         </View>
       )}
       <TouchableOpacity
         onPress={onToggleDone}
         hitSlop={8}
-        style={{
-          width: 44,
-          height: 44,
-          marginBottom: captionHeight,
-          borderRadius: radius.md,
-          alignItems: 'center',
-          justifyContent: 'center',
-          backgroundColor: done ? colors.success : colors.surfaceRaised,
-        }}
+        accessibilityRole="checkbox"
+        accessibilityState={{ checked: done }}
+        accessibilityLabel={`Set ${setLabel(set)} done`}
+        style={{ width: CHECK_HIT, height: CHECK_HIT, marginBottom: captionHeight, alignItems: 'center', justifyContent: 'center' }}
       >
-        <Icon icon={generalIcons.check} color={done ? colors.onAccent : colors.inkMuted} size={22} strokeWidth={3} />
+        <View style={{ width: checkSize, height: checkSize, borderRadius: radius.md, alignItems: 'center', justifyContent: 'center', backgroundColor: done ? colors.success : colors.surfaceRaised }}>
+          <Icon icon={generalIcons.check} color={done ? colors.onAccent : colors.inkMuted} size={table ? 20 : 22} strokeWidth={3} />
+        </View>
       </TouchableOpacity>
     </View>
   );

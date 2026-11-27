@@ -42,6 +42,8 @@ interface Props {
   label?: string;
   /** Delete unless said otherwise; `onDelete` runs for whichever it is. */
   kind?: SwipeKind;
+  /** What the row paints over the action: the card's surface unless the row sits straight on the page. */
+  background?: string;
 }
 
 /**
@@ -50,7 +52,7 @@ interface Props {
  * runs it. The row itself must paint its own background so the action
  * stays hidden until the drag starts.
  */
-export const SwipeToDelete = ({ children, onDelete, label, kind = 'delete' }: Props) => {
+export const SwipeToDelete = ({ children, onDelete, label, kind = 'delete', background }: Props) => {
   const { colors } = useTheme();
   const ref = useRef<SwipeableMethods>(null);
 
@@ -77,7 +79,7 @@ export const SwipeToDelete = ({ children, onDelete, label, kind = 'delete' }: Pr
         if (direction === 'right') onDelete();
       }}
     >
-      <View style={{ backgroundColor: colors.surface }}>{children}</View>
+      <View style={{ backgroundColor: background ?? colors.surface }}>{children}</View>
     </ReanimatedSwipeable>
   );
 };
