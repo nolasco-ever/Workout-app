@@ -8,7 +8,7 @@ import { LocalDate, Session } from '../../../../data/models';
 import { addDays, fromLocalDate, today } from '../../../../data/engine/dates';
 import { describeLogged, totalVolumeKg } from '../../../../data/engine/stats';
 import { formatWeight } from '../../../../data/engine/units';
-import { CalendarMonth, StreakRun, calendarMonths, summarizeStreaks, trainingDays } from '../../../../data/engine/streaks';
+import { CalendarMonth, StreakRun, calendarMonths, pastStreaks, summarizeStreaks, trainingDays } from '../../../../data/engine/streaks';
 import { CustomText } from '../../../../components/text/customText';
 import { SurfaceCard } from '../../../../components/cards/SurfaceCard';
 import { StreakFire } from '../../../../components/streaks/StreakFire';
@@ -73,6 +73,7 @@ export const StreaksScreen = () => {
 
   const days = useMemo(() => trainingDays(sessions ?? []), [sessions]);
   const { current, best } = useMemo(() => summarizeStreaks(days.keys(), todayDate), [days, todayDate]);
+  const past = useMemo(() => pastStreaks([...days.keys()], todayDate), [days, todayDate]);
   const months = useMemo(() => calendarMonths([...days.keys()].sort()[0] ?? null, todayDate), [days, todayDate]);
   // Oldest first, opening on this month: a swipe to the right goes back in time, as a paper calendar does.
   useEffect(() => setPage(months.length - 1), [months.length]);
@@ -111,11 +112,12 @@ export const StreaksScreen = () => {
                 </CustomText>
               </View>
             );
-            // The current streak sits on a green band (build 20, canvas option A), one per week row,
-            // rounded where the streak starts or ends and where the row does.
-            const banded = inRun(current, d);
-            const startsBand = banded && (di === 0 || !inRun(current, addDays(d, -1)));
-            const endsBand = banded && (di === 6 || !inRun(current, addDays(d, 1)));
+            // The current streak sits on a green band (build 20, canvas option A), past ones on a grey band (build 22,
+            // option B); one per week row, rounded where the streak starts or ends and where the row does.
+            const run = inRun(current, d) ? current : past.find(r => inRun(r, d)) ?? null;
+            const banded = !!run;
+            const startsBand = banded && (di === 0 || !inRun(run, addDays(d, -1)));
+            const endsBand = banded && (di === 6 || !inRun(run, addDays(d, 1)));
             return (
               <View key={di} style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
                 {banded && (
@@ -128,7 +130,7 @@ export const StreaksScreen = () => {
                       right: endsBand ? '50%' : 0,
                       marginLeft: startsBand ? -DOT / 2 : 0,
                       marginRight: endsBand ? -DOT / 2 : 0,
-                      backgroundColor: colors.successTint,
+                      backgroundColor: run === current ? colors.successTint : colors.dataMuted,
                       borderTopLeftRadius: startsBand ? DOT / 2 : 0,
                       borderBottomLeftRadius: startsBand ? DOT / 2 : 0,
                       borderTopRightRadius: endsBand ? DOT / 2 : 0,
@@ -153,7 +155,6 @@ export const StreaksScreen = () => {
 
   const shown = months[page];
   const openSessions = openDay ? days.get(openDay) ?? [] : [];
-  const dayLine = openDay && inRun(current, openDay) && current ? `Day ${Math.round((fromLocalDate(openDay).getTime() - fromLocalDate(current.start).getTime()) / 86_400_000) + 1} of your current streak` : null;
 
   return (
     <SafeAreaView edges={['left', 'right']} style={{ flex: 1, backgroundColor: colors.ground }}>
@@ -192,6 +193,19 @@ export const StreaksScreen = () => {
               </View>
             </View>
 
+            {/* The key: the bands' colours named, so they don't rely on colour alone. */}
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.lg }}>
+              {[
+                { label: 'Current streak', color: colors.successTint },
+                { label: 'Past streaks', color: colors.dataMuted },
+              ].map(k => (
+                <View key={k.label} style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.xs }}>
+                  <View style={{ width: 26, height: 14, borderRadius: 7, backgroundColor: k.color }} />
+                  <CustomText variant="caption" color={colors.inkMuted}>{k.label}</CustomText>
+                </View>
+              ))}
+            </View>
+
             <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.lg }}>
               <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.xs }}>
                 <StreakFire days={current?.length ?? 0} size={18} />
@@ -211,7 +225,6 @@ export const StreaksScreen = () => {
 
       <BottomSheet open={openDay !== null} title={openDay ? longDate(openDay) : ''} onClose={() => setOpenDay(null)}>
         <View style={{ gap: spacing.md }}>
-          {dayLine && <CustomText variant="caption" color={colors.success}>{dayLine}</CustomText>}
           <SurfaceCard style={{ padding: 0 }}>
             {openSessions.map((s, i) => (
               <TouchableOpacity

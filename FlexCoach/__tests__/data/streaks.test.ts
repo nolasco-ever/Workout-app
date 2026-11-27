@@ -1,4 +1,4 @@
-import { calendarMonth, calendarMonths, streakFireStage, streakRuns, summarizeStreaks, trainingDays } from '../../data/engine/streaks';
+import { calendarMonth, calendarMonths, pastStreaks, streakFireStage, streakRuns, summarizeStreaks, trainingDays } from '../../data/engine/streaks';
 import { Session } from '../../data/models';
 
 const session = (date: string, startedAt: number, status: Session['status'] = 'completed'): Session =>
@@ -45,5 +45,15 @@ describe('streaks', () => {
 describe('streakFireStage (build 20)', () => {
   it('has no fire below two days, then steps up at 2, 10, 25, 50 and 100', () => {
     expect([0, 1, 2, 9, 10, 24, 25, 49, 50, 99, 100, 365].map(d => streakFireStage(d))).toEqual([0, 0, 1, 1, 2, 2, 3, 3, 4, 4, 5, 5]);
+  });
+});
+
+describe('past streaks', () => {
+  const days = ['2026-10-03', '2026-10-04', '2026-10-05', '2026-10-08', '2026-10-14', '2026-10-15', '2026-10-31', '2026-11-01'];
+  it('are the runs of two days or more, not single days and not the current streak', () => {
+    expect(pastStreaks(days, '2026-11-01').map(r => [r.start, r.end])).toEqual([['2026-10-03', '2026-10-05'], ['2026-10-14', '2026-10-15']]);
+  });
+  it('take in the last run once it has ended', () => {
+    expect(pastStreaks(days, '2026-11-05').map(r => r.start)).toEqual(['2026-10-03', '2026-10-14', '2026-10-31']);
   });
 });

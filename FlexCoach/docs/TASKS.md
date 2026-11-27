@@ -46,7 +46,7 @@ Design (canvas first)
       picked colour A 'Spark': orange only for actions and the streak.
 - [x] B22-14 Set-logging card "looks too AI" (fb-3).
 - [x] B22-15 Workout done screen feels bare (fb-4, fb-20).
-- [ ] B22-16 Past streaks lined on the calendar, unlike the current one (fb-6).
+- [x] B22-16 Past streaks lined on the calendar, unlike the current one (fb-6).
 - [ ] B22-17 Cardio detail shows all collected data: calories, avg pace, heart
       rate (fb-14).
 - [ ] B22-18 Route map: clear start and finish markers, cues from Strava

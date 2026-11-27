@@ -4,6 +4,23 @@ Every decision the owner makes, newest first, with why. Open questions sit at th
 bottom until they're answered. Decisions before 2026-11-07 were recorded only in
 commit messages, `docs/RELEASES.md` and Claude's session notes.
 
+## 2026-11-27 · Past streaks on a grey band
+
+- **Project:** FlexCoach
+- **Type:** design
+- **Decision:** On the Streaks calendar, every past streak (a run of two days
+  or more, other than the current one) sits on a quiet grey band in the same
+  pill shape as the current streak's green band. A key under the calendar
+  names both ("Current streak", "Past streaks"). The day sheet no longer says
+  "Day N of your current streak".
+- **Why:** Tester: past streaks should be lined on the calendar but look
+  different from an active one (build 22 fb-6). Canvas options A outlined,
+  B grey band, C underline; owner picked B, kept the key, and asked for the
+  day line to go ("we don't even need 'day 3 of your current streak'").
+  A streak is two days or more, as already established.
+- **Source:** feature work, B22-16.
+- **Decided by:** owner.
+
 ## 2026-11-27 · Workout done gets muscles and exercises; history shows done sets only
 
 - **Project:** FlexCoach

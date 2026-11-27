@@ -58,6 +58,15 @@ export const summarizeStreaks = (days: Iterable<LocalDate>, todayDate: LocalDate
 };
 
 /**
+ * Streaks that are over: every run of two days or more, other than the
+ * current one. The calendar lays them on a grey band (build 22, B22-16).
+ */
+export const pastStreaks = (days: Iterable<LocalDate>, todayDate: LocalDate): StreakRun[] => {
+  const { current } = summarizeStreaks(days, todayDate);
+  return streakRuns(days).filter(r => r.length >= 2 && r.start !== current?.start);
+};
+
+/**
  * How much fire a streak of `days` shows: 0 for none, then 1 to 5, one step
  * at each milestone in config (2, 10, 25, 50, 100 days).
  */
